@@ -25,15 +25,13 @@ services:
       dockerfile: BerberApp.Api/Dockerfile
     container_name: berberapp-api
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=BerberAppDb;Username=postgres;Password=berber123
-      - Jwt__Key=BerberApp_SuperSecret_Key_2024!@#$%^&*_MustBe32Chars
-      - Jwt__Issuer=BerberApp
-      - Jwt__Audience=BerberApp
-      - Twilio__AccountSid=YOUR_TWILIO_ACCOUNT_SID
-      - Twilio__AuthToken=YOUR_TWILIO_AUTH_TOKEN
-      - Twilio__FromNumber=whatsapp:+14155238886
+    - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=BerberAppDb;Username=postgres;Password=${DB_PASSWORD}
+    - Jwt__Key=${JWT_KEY}
+    - Jwt__Issuer=BerberApp
+    - Jwt__Audience=BerberApp
+    - Twilio__AccountSid=${TWILIO_ACCOUNT_SID}
+    - Twilio__AuthToken=${TWILIO_AUTH_TOKEN}
+    - Twilio__FromNumber=whatsapp:+14155238886
     ports:
       - "8080:8080"
     depends_on:

@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/Çözüm Öğeleri/">
+    <File Path=".env" />
     <File Path=".gitignore" />
     <File Path="docker-compose.yml" />
   </Folder>
