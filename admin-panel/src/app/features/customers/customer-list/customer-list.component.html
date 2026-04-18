@@ -1,0 +1,134 @@
+<div class="page">
+
+  <div class="page-header">
+    <div>
+      <h2>Müşteriler</h2>
+      <p>{{ customerList.length }} müşteri kayıtlı</p>
+    </div>
+    <button class="btn btn-primary" (click)="openDrawer()">+ Müşteri Ekle</button>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input
+      type="text"
+      placeholder="İsim, telefon veya email ile ara..."
+      (input)="onSearch($event)"/>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    @if (isLoading) {
+      <div class="loading-state"><div class="spinner"></div></div>
+    } @else if (filteredList.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">👥</span>
+        @if (searchQuery) {
+          <h3>Sonuç bulunamadı</h3>
+          <p>"{{ searchQuery }}" için müşteri bulunamadı.</p>
+        } @else {
+          <h3>Henüz müşteri eklenmedi</h3>
+          <p>İlk müşteriyi eklemek için butona tıklayın.</p>
+          <button class="btn btn-primary" (click)="openDrawer()">+ Müşteri Ekle</button>
+        }
+      </div>
+    } @else {
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Müşteri</th>
+            <th>Telefon</th>
+            <th>Email</th>
+            <th>Toplam Ziyaret</th>
+            <th>Notlar</th>
+            <th>İşlemler</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (customer of filteredList; track customer.id) {
+            <tr>
+              <td>
+                <div class="customer-info">
+                  <div class="avatar">{{ getInitials(customer.fullName) }}</div>
+                  <span class="customer-name">{{ customer.fullName }}</span>
+                </div>
+              </td>
+              <td class="text-muted">{{ customer.phone }}</td>
+              <td class="text-muted">{{ customer.email || '—' }}</td>
+              <td>
+                <span class="visit-badge">{{ customer.totalVisits }} ziyaret</span>
+              </td>
+              <td class="text-muted notes-cell">{{ customer.notes || '—' }}</td>
+              <td>
+                <div class="actions">
+                  <button class="action-btn edit" (click)="openDrawer(customer)" title="Düzenle">✏</button>
+                  <button class="action-btn delete" (click)="deleteCustomer(customer.id)" title="Sil">🗑</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+</div>
+
+@if (isDrawerOpen) {
+  <div class="drawer-overlay" (click)="closeDrawer()"></div>
+}
+
+<div class="drawer" [class.open]="isDrawerOpen">
+  <div class="drawer-header">
+    <h3>{{ editingCustomer ? 'Müşteri Düzenle' : 'Yeni Müşteri' }}</h3>
+    <button class="drawer-close" (click)="closeDrawer()">✕</button>
+  </div>
+
+  <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="drawer-body">
+
+    <div class="form-group">
+      <label>Ad Soyad *</label>
+      <input type="text" formControlName="fullName" placeholder="Mehmet Yılmaz"
+        [class.error]="customerForm.get('fullName')?.invalid && customerForm.get('fullName')?.touched"/>
+      @if (customerForm.get('fullName')?.invalid && customerForm.get('fullName')?.touched) {
+        <span class="error-text">Ad soyad zorunludur.</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label>Telefon *</label>
+      <input type="text" formControlName="phone" placeholder="0555 123 45 67"
+        [class.error]="customerForm.get('phone')?.invalid && customerForm.get('phone')?.touched"/>
+      @if (customerForm.get('phone')?.invalid && customerForm.get('phone')?.touched) {
+        <span class="error-text">Telefon zorunludur.</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" formControlName="email" placeholder="mehmet@mail.com"
+        [class.error]="customerForm.get('email')?.invalid && customerForm.get('email')?.touched"/>
+      @if (customerForm.get('email')?.invalid && customerForm.get('email')?.touched) {
+        <span class="error-text">Geçerli bir email giriniz.</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label>Notlar</label>
+      <textarea formControlName="notes" placeholder="Müşteri hakkında notlar..." rows="4"></textarea>
+    </div>
+
+    @if (errorMessage) {
+      <div class="error-message">{{ errorMessage }}</div>
+    }
+
+    <div class="drawer-footer">
+      <button type="button" class="btn btn-outline" (click)="closeDrawer()">İptal</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Kaydediliyor...' : (editingCustomer ? 'Güncelle' : 'Kaydet') }}
+      </button>
+    </div>
+
+  </form>
+</div>

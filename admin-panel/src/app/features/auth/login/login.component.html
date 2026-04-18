@@ -1,0 +1,62 @@
+<div class="login-wrapper">
+
+  <div class="bg-circles">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    <div class="circle circle-3"></div>
+  </div>
+
+  <div class="login-card">
+
+    <div class="login-icon">✂</div>
+
+    <h1>BerberApp</h1>
+    <p class="subtitle">Admin Paneli — Giriş Yapın</p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+      <div class="field">
+        <label>EMAİL</label>
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="admin@berber.com"
+          [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"/>
+        <span class="error-text"
+          *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          Geçerli bir email giriniz.
+        </span>
+      </div>
+
+      <div class="field">
+        <label>ŞİFRE</label>
+        <input
+          type="password"
+          formControlName="password"
+          placeholder="••••••••"
+          [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"/>
+        <span class="error-text"
+          *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          Şifre zorunludur.
+        </span>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <button type="submit" [disabled]="isLoading" class="btn-login">
+        <span *ngIf="!isLoading">Giriş Yap</span>
+        <span *ngIf="isLoading" class="loading">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </span>
+      </button>
+
+    </form>
+
+    <p class="footer-text">BerberApp © 2026 — Tüm hakları saklıdır.</p>
+
+  </div>
+</div>

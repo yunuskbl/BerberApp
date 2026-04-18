@@ -1,0 +1,77 @@
+<aside class="sidebar" [class.collapsed]="isCollapsed">
+
+  <div class="sidebar-logo">
+    <div class="logo-icon">✂</div>
+    @if (!isCollapsed) {
+      <div class="logo-text">
+        <span class="logo-name">BerberApp</span>
+        <span class="logo-sub">Admin Panel</span>
+      </div>
+    }
+    <button class="toggle-btn" (click)="toggle()">
+      @if (isCollapsed) { ☰ } @else { ✕ }
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    @if (!isCollapsed) {
+      <div class="nav-section-label">ANA MENÜ</div>
+    }
+
+    @for (item of menuItems; track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        class="nav-item"
+        [title]="item.label"
+        (click)="navigateTo(item.route)">
+        <span class="nav-icon">{{ item.icon }}</span>
+        @if (!isCollapsed) {
+          <span class="nav-label">{{ item.label }}</span>
+          <span class="nav-indicator"></span>
+        }
+      </a>
+    }
+  </nav>
+
+  <div class="sidebar-bottom">
+    @if (!isCollapsed) {
+      <div class="nav-section-label">DİĞER</div>
+    }
+
+    @for (item of bottomItems; track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        class="nav-item"
+        [title]="item.label">
+        <span class="nav-icon">{{ item.icon }}</span>
+        @if (!isCollapsed) {
+          <span class="nav-label">{{ item.label }}</span>
+        }
+      </a>
+    }
+
+    <button class="nav-item logout-btn" (click)="logout()" title="Çıkış Yap">
+      <span class="nav-icon">🚪</span>
+      @if (!isCollapsed) {
+        <span class="nav-label">Çıkış Yap</span>
+      }
+    </button>
+  </div>
+
+  @if (!isCollapsed) {
+    <div class="sidebar-user">
+      <div class="user-avatar">{{ user?.fullName?.charAt(0) }}</div>
+      <div class="user-info">
+        <span class="user-name">{{ user?.fullName }}</span>
+        <span class="user-role">{{ user?.role }}</span>
+      </div>
+    </div>
+  } @else {
+    <div class="sidebar-user collapsed-user">
+      <div class="user-avatar">{{ user?.fullName?.charAt(0) }}</div>
+    </div>
+  }
+
+</aside>

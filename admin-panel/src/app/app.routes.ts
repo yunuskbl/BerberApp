@@ -1,0 +1,81 @@
+import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
+import { MainLayoutComponent } from './shared/layout/main-layout/main-layout.component';
+
+export const routes: Routes = [
+  // Public routes — guard yok
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./features/auth/login/login.component').then(
+        (m) => m.LoginComponent,
+      ),
+  },
+  {
+    path: 'salons',
+    loadComponent: () =>
+      import('./features/salons/salons.component').then(
+        (m) => m.SalonsComponent,
+      ),
+  },
+  {
+    path: 'book/:subdomain',
+    loadComponent: () =>
+      import('./features/booking/booking.component').then(
+        (m) => m.BookingComponent,
+      ),
+  },
+
+  // Protected routes — guard var
+  {
+    path: '',
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/dashboard/dashboard.component').then(
+            (m) => m.DashboardComponent,
+          ),
+      },
+      {
+        path: 'staff',
+        loadComponent: () =>
+          import('./features/staff/staff-list/staff-list.component').then(
+            (m) => m.StaffListComponent,
+          ),
+      },
+      {
+        path: 'services',
+        loadComponent: () =>
+          import('./features/services/service-list/service-list.component').then(
+            (m) => m.ServiceListComponent,
+          ),
+      },
+      {
+        path: 'customers',
+        loadComponent: () =>
+          import('./features/customers/customer-list/customer-list.component').then(
+            (m) => m.CustomerListComponent,
+          ),
+      },
+      {
+        path: 'appointments',
+        loadComponent: () =>
+          import('./features/appointments/appointment-list/appointment-list.component').then(
+            (m) => m.AppointmentListComponent,
+          ),
+      },
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
+    ],
+  },
+  {
+    path: '**',
+    redirectTo: 'login',
+  },
+];

@@ -1,0 +1,52 @@
+<div class="calendar">
+
+  <!-- Header -->
+  <div class="cal-header">
+    <button class="nav-btn" (click)="prevMonth()" [disabled]="!canGoPrev()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5"
+          stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <span class="month-label">{{ months[currentMonth] }} {{ currentYear }}</span>
+    <button class="nav-btn" (click)="nextMonth()" [disabled]="!canGoNext()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5"
+          stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Week Days -->
+  <div class="cal-weekdays">
+    @for (day of weekDays; track day) {
+      <div class="weekday">{{ day }}</div>
+    }
+  </div>
+
+  <!-- Days -->
+  <div class="cal-days">
+    @for (day of days; track $index) {
+      <div
+        class="cal-day"
+        [class.empty]="!day"
+        [class.today]="isToday(day)"
+        [class.selected]="isSelected(day)"
+        [class.disabled]="isDisabled(day)"
+        (click)="selectDay(day)">
+        @if (day) {
+          <span>{{ day }}</span>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Selected Date -->
+  @if (value) {
+    <div class="cal-footer">
+      <span class="selected-label">Seçilen:</span>
+      <span class="selected-date">{{ selectedDisplayDate }}</span>
+    </div>
+  }
+
+</div>

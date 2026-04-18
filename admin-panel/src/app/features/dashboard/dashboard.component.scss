@@ -1,0 +1,336 @@
+.dashboard {
+  max-width: 1200px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+
+  h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+  }
+
+  p {
+    font-size: 13px;
+    color: #94a3b8;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+
+  &-primary {
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    color: white;
+    box-shadow: 0 4px 12px rgba(124,58,237,0.3);
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(124,58,237,0.4);
+    }
+  }
+}
+
+// Stats Grid
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-decoration: none;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+  }
+
+  &.stat-purple::before { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
+  &.stat-blue::before   { background: linear-gradient(90deg, #60a5fa, #2563eb); }
+  &.stat-green::before  { background: linear-gradient(90deg, #4ade80, #16a34a); }
+  &.stat-amber::before  { background: linear-gradient(90deg, #fbbf24, #d97706); }
+}
+
+.stat-icon {
+  font-size: 28px;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .stat-purple & { background: #ede9fe; }
+  .stat-blue &   { background: #dbeafe; }
+  .stat-green &  { background: #dcfce7; }
+  .stat-amber &  { background: #fef3c7; }
+}
+
+.stat-info {
+  flex: 1;
+
+  .stat-value {
+    display: block;
+    font-family: 'Poppins', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 500;
+  }
+}
+
+.stat-arrow {
+  font-size: 16px;
+  color: #cbd5e1;
+}
+
+// Content Grid
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f1f5f9;
+
+  h3 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+}
+
+.card-link {
+  font-size: 13px;
+  color: #7c3aed;
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover { text-decoration: underline; }
+}
+
+// Loading
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #f1f5f9;
+    border-top-color: #7c3aed;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Empty State
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  gap: 12px;
+
+  .empty-icon { font-size: 36px; }
+
+  p {
+    font-size: 14px;
+    color: #94a3b8;
+  }
+}
+
+// Appointment List
+.appointment-list {
+  padding: 8px 0;
+}
+
+.appointment-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  border-bottom: 1px solid #f8fafc;
+  transition: background 0.15s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: #fafafa; }
+}
+
+.apt-time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 52px;
+
+  .time-start {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .time-end {
+    font-size: 11px;
+    color: #94a3b8;
+  }
+}
+
+.apt-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
+  .apt-customer {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .apt-service {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 2px;
+  }
+}
+
+// Badge
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &-success { background: #dcfce7; color: #16a34a; }
+  &-danger  { background: #fee2e2; color: #dc2626; }
+  &-warning { background: #fef3c7; color: #d97706; }
+  &-info    { background: #dbeafe; color: #2563eb; }
+  &-gray    { background: #f1f5f9; color: #64748b; }
+}
+
+// Quick Actions
+.quick-actions {
+  padding: 8px 0;
+}
+
+.quick-action-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 24px;
+  text-decoration: none;
+  border-bottom: 1px solid #f8fafc;
+  transition: background 0.15s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: #fafafa; }
+}
+
+.qa-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+
+  &.qa-purple { background: #ede9fe; }
+  &.qa-blue   { background: #dbeafe; }
+  &.qa-green  { background: #dcfce7; }
+  &.qa-amber  { background: #fef3c7; }
+}
+
+.qa-info {
+  flex: 1;
+
+  .qa-title {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .qa-desc {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 1px;
+  }
+}
+
+.qa-arrow {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+@media (max-width: 768px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .content-grid { grid-template-columns: 1fr; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}

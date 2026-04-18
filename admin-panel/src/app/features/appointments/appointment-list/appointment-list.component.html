@@ -1,0 +1,292 @@
+<div class="page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h2>Randevular</h2>
+      <p>{{ appointments.length }} randevu listeleniyor</p>
+    </div>
+    <button class="btn btn-primary" (click)="openDrawer()">
+      + Yeni Randevu
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+
+  <!-- Tarih Filter -->
+  <div class="filter-date-wrapper">
+    <button class="filter-date-btn" (click)="isDatePickerOpen = !isDatePickerOpen">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="2" y="3" width="12" height="11" rx="2" stroke="#7c3aed" stroke-width="1.5"/>
+        <path d="M5 1v4M11 1v4M2 7h12" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span>{{ filterDateDisplay }}</span>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M3 4.5l3 3 3-3" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    @if (isDatePickerOpen) {
+      <div class="filter-calendar-dropdown">
+        <app-custom-calendar
+          [minDate]="''"
+          [maxDate]="''"
+          [value]="selectedDate"
+          (valueChange)="onFilterDateChange($event)">
+        </app-custom-calendar>
+      </div>
+    }
+  </div>
+
+  <!-- Personel Filter -->
+  <div class="filter-select-wrapper">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="5" r="3" stroke="#7c3aed" stroke-width="1.5"/>
+      <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <app-custom-select
+      [options]="allStaffOptions"
+      placeholder="Tüm Personel"
+      [value]="selectedStaffId"
+      (valueChange)="selectedStaffId = $event; loadAppointments()">
+    </app-custom-select>
+  </div>
+
+</div>
+
+  <!-- Table -->
+  <div class="card">
+    @if (isLoading) {
+      <div class="loading-state"><div class="spinner"></div></div>
+    } @else if (appointments.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">📅</span>
+        <h3>Randevu bulunamadı</h3>
+        <p>Seçili tarih için randevu bulunmuyor.</p>
+        <button class="btn btn-primary" (click)="openDrawer()">
+          + Yeni Randevu
+        </button>
+      </div>
+    } @else {
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Saat</th>
+            <th>Müşteri</th>
+            <th>Personel</th>
+            <th>Hizmet</th>
+            <th>Süre</th>
+            <th>Durum</th>
+            <th>İşlemler</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (apt of appointments; track apt.id) {
+            <tr>
+              <td>
+                <div class="time-cell">
+                  <span class="time-start">{{
+                    formatTime(apt.startTime)
+                  }}</span>
+                  <span class="time-end">{{ formatTime(apt.endTime) }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="person-info">
+                  <div class="avatar">{{ getInitials(apt.customerName) }}</div>
+                  <span>{{ apt.customerName }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="person-info">
+                  <div class="avatar staff-avatar">
+                    {{ getInitials(apt.staffName) }}
+                  </div>
+                  <span>{{ apt.staffName }}</span>
+                </div>
+              </td>
+              <td class="text-muted">{{ apt.serviceName }}</td>
+              <td class="text-muted">{{ apt.durationMinutes }} dk</td>
+              <td>
+                <span class="badge {{ getStatusClass(apt.status) }}">
+                  {{ getStatusLabel(apt.status) }}
+                </span>
+              </td>
+              <td>
+                <div class="actions">
+                  @if (apt.status === AppointmentStatus.Confirmed) {
+                    <button
+                      class="action-btn complete"
+                      (click)="completeAppointment(apt.id)"
+                      title="Tamamla"
+                    >
+                      ✓
+                    </button>
+                    <button
+                      class="action-btn cancel"
+                      (click)="cancelAppointment(apt.id)"
+                      title="İptal Et"
+                    >
+                      ✕
+                    </button>
+                  }
+                  @if (apt.status === AppointmentStatus.Pending) {
+                    <button
+                      class="action-btn cancel"
+                      (click)="cancelAppointment(apt.id)"
+                      title="İptal Et"
+                    >
+                      ✕
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>
+
+<!-- Drawer Overlay -->
+@if (isDrawerOpen) {
+  <div class="drawer-overlay" (click)="closeDrawer()"></div>
+}
+
+<!-- Drawer -->
+<div class="drawer" [class.open]="isDrawerOpen">
+  <div class="drawer-header">
+    <h3>Yeni Randevu</h3>
+    <button class="drawer-close" (click)="closeDrawer()">✕</button>
+  </div>
+
+  <form
+    [formGroup]="appointmentForm"
+    (ngSubmit)="onSubmit()"
+    class="drawer-body"
+  >
+    <div class="form-group">
+      <label>Müşteri *</label>
+      <app-custom-select
+        [options]="customerOptions"
+        placeholder="Müşteri seçin"
+        [value]="appointmentForm.get('customerId')?.value"
+        [hasError]="
+          !!appointmentForm.get('customerId')?.invalid &&
+          !!appointmentForm.get('customerId')?.touched
+        "
+        (valueChange)="onSelectChange('customerId', $event)"
+      >
+      </app-custom-select>
+    </div>
+
+    <div class="form-group">
+      <label>Personel *</label>
+      <app-custom-select
+        [options]="staffOptions"
+        placeholder="Personel seçin"
+        [value]="appointmentForm.get('staffId')?.value"
+        [hasError]="
+          !!appointmentForm.get('staffId')?.invalid &&
+          !!appointmentForm.get('staffId')?.touched
+        "
+        (valueChange)="onSelectChange('staffId', $event)"
+      >
+      </app-custom-select>
+    </div>
+
+    <div class="form-group">
+      <label>Hizmet *</label>
+      <app-custom-select
+        [options]="serviceOptions"
+        placeholder="Hizmet seçin"
+        [value]="appointmentForm.get('serviceId')?.value"
+        [hasError]="
+          !!appointmentForm.get('serviceId')?.invalid &&
+          !!appointmentForm.get('serviceId')?.touched
+        "
+        (valueChange)="onSelectChange('serviceId', $event)"
+      >
+      </app-custom-select>
+    </div>
+
+    <div class="form-group">
+      <label>Tarih *</label>
+      <app-custom-calendar
+        [minDate]="minDate"
+        [maxDate]="maxDate"
+        [value]="appointmentForm.get('date')?.value || ''"
+        (valueChange)="
+          appointmentForm.patchValue({ date: $event }); onFormFieldChange()
+        "
+      >
+      </app-custom-calendar>
+    </div>
+
+    <!-- Müsait Slotlar -->
+    @if (isLoadingSlots) {
+      <div class="slots-loading">
+        <div class="spinner-sm"></div>
+        <span>Müsait saatler yükleniyor...</span>
+      </div>
+    } @else if (availableSlots.length > 0) {
+      <div class="form-group">
+        <label>Saat Seç *</label>
+        <div class="slots-grid">
+          @for (slot of availableSlots; track slot.startTime) {
+            <button
+              type="button"
+              class="slot-btn"
+              [class.selected]="
+                appointmentForm.get('startTime')?.value ===
+                formatSlotValue(slot.startTime)
+              "
+              (click)="
+                appointmentForm.patchValue({
+                  startTime: formatSlotValue(slot.startTime),
+                })
+              "
+            >
+              {{ formatSlotTime(slot.startTime) }}
+            </button>
+          }
+        </div>
+      </div>
+    } @else if (
+      appointmentForm.get("staffId")?.value &&
+      appointmentForm.get("serviceId")?.value &&
+      appointmentForm.get("date")?.value
+    ) {
+      <div class="no-slots">
+        <span>Bu tarih için müsait saat bulunmuyor.</span>
+      </div>
+    }
+
+    <div class="form-group">
+      <label>Notlar</label>
+      <textarea
+        formControlName="notes"
+        placeholder="Randevu notları..."
+        rows="3"
+      ></textarea>
+    </div>
+
+    @if (errorMessage) {
+      <div class="error-message">{{ errorMessage }}</div>
+    }
+
+    <div class="drawer-footer">
+      <button type="button" class="btn btn-outline" (click)="closeDrawer()">
+        İptal
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="isSubmitting || appointmentForm.invalid"
+      >
+        {{ isSubmitting ? "Kaydediliyor..." : "Randevu Oluştur" }}
+      </button>
+    </div>
+  </form>
+</div>

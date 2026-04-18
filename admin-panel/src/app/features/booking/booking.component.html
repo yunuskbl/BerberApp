@@ -1,0 +1,240 @@
+<div class="booking-page">
+
+  @if (isLoading) {
+    <div class="loading-screen">
+      <div class="spinner"></div>
+      <p>Salon bilgileri yükleniyor...</p>
+    </div>
+  } @else if (errorMessage && !salon) {
+    <div class="error-screen">
+      <span class="error-icon">✂</span>
+      <h2>Salon Bulunamadı</h2>
+      <p>{{ errorMessage }}</p>
+    </div>
+  } @else if (isSuccess) {
+    <div class="success-screen">
+      <div class="success-card">
+        <div class="success-icon">✓</div>
+        <h2>Randevunuz Alındı!</h2>
+        <p>Randevu bilgileriniz aşağıda.</p>
+
+        <div class="booking-summary">
+          <div class="summary-item">
+            <span class="summary-label">Salon</span>
+            <span class="summary-value">{{ salon?.name }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Hizmet</span>
+            <span class="summary-value">{{ selectedService?.name }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Personel</span>
+            <span class="summary-value">{{ selectedStaff?.fullName }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Tarih</span>
+            <span class="summary-value">{{ formatDate(selectedSlot) }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Saat</span>
+            <span class="summary-value">{{ formatTime(selectedSlot) }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Ücret</span>
+            <span class="summary-value">
+              {{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}
+            </span>
+          </div>
+        </div>
+
+        <p class="success-note">
+          Randevunuzu değiştirmek veya iptal etmek için salonumuzu arayabilirsiniz.
+        </p>
+
+        @if (salon?.phone) {
+          <a [href]="'tel:' + salon?.phone" class="btn-call">
+            📞 {{ salon?.phone }}
+          </a>
+        }
+      </div>
+    </div>
+  } @else {
+    <!-- Salon Header -->
+    <div class="salon-header">
+      <div class="salon-logo">{{ getInitials(salon?.name || '') }}</div>
+      <div class="salon-info">
+        <h1>{{ salon?.name }}</h1>
+        @if (salon?.address) {
+          <p class="salon-address">📍 {{ salon?.address }}</p>
+        }
+        @if (salon?.phone) {
+          <p class="salon-phone">📞 {{ salon?.phone }}</p>
+        }
+      </div>
+    </div>
+
+    <div class="booking-container">
+
+      <!-- Hizmet Seç -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-number">1</div>
+          <h2>Hizmet Seçin</h2>
+        </div>
+        <div class="service-list">
+          @for (service of services; track service.id) {
+            <div
+              class="service-item"
+              [class.selected]="selectedService?.id === service.id"
+              (click)="selectService(service)">
+              <div class="service-color" [style.background]="service.color || '#7c3aed'"></div>
+              <div class="service-details">
+                <span class="service-name">{{ service.name }}</span>
+                <span class="service-meta">⏱ {{ service.durationMinutes }} dk</span>
+              </div>
+              <span class="service-price">
+                {{ formatPrice(service.price, service.currency) }}
+              </span>
+              @if (selectedService?.id === service.id) {
+                <span class="check">✓</span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Personel Seç -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-number">2</div>
+          <h2>Personel Seçin</h2>
+        </div>
+        <div class="staff-list">
+          @for (staff of staffList; track staff.id) {
+            <div
+              class="staff-item"
+              [class.selected]="selectedStaff?.id === staff.id"
+              (click)="selectStaff(staff)">
+              <div class="staff-avatar">{{ getInitials(staff.fullName) }}</div>
+              <div class="staff-details">
+                <span class="staff-name">{{ staff.fullName }}</span>
+                @if (staff.bio) {
+                  <span class="staff-bio">{{ staff.bio }}</span>
+                }
+              </div>
+              @if (selectedStaff?.id === staff.id) {
+                <span class="check">✓</span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Tarih Seç -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-number">3</div>
+          <h2>Tarih Seçin</h2>
+        </div>
+        <app-custom-calendar
+          [minDate]="minDate"
+          [maxDate]="maxDate"
+          [value]="selectedDate"
+          (valueChange)="onDateChange($event)">
+        </app-custom-calendar>
+      </div>
+
+      <!-- Saat Seç -->
+      @if (slots.length > 0) {
+        <div class="section">
+          <div class="section-header">
+            <div class="section-number">4</div>
+            <h2>Saat Seçin</h2>
+          </div>
+          <div class="slots-grid">
+            @for (slot of slots; track slot.startTime) {
+              <button
+                class="slot-btn"
+                [class.selected]="selectedSlot === slot.startTime"
+                (click)="selectSlot(slot)">
+                {{ formatTime(slot.startTime) }}
+              </button>
+            }
+          </div>
+        </div>
+      } @else if (selectedService && selectedStaff && selectedDate) {
+        <div class="no-slots">
+          Bu tarih için müsait saat bulunmuyor.
+        </div>
+      }
+
+      <!-- Bilgiler -->
+      @if (canProceed()) {
+        <div class="section">
+          <div class="section-header">
+            <div class="section-number">5</div>
+            <h2>Bilgilerinizi Girin</h2>
+          </div>
+
+          <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+              <label>Ad Soyad *</label>
+              <input type="text" formControlName="fullName" placeholder="Adınız Soyadınız"/>
+            </div>
+            <div class="form-group">
+              <label>Telefon *</label>
+              <input type="tel" formControlName="phone" placeholder="05XX XXX XX XX"/>
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" formControlName="email" placeholder="email@mail.com"/>
+            </div>
+            <div class="form-group">
+              <label>Notlar</label>
+              <textarea formControlName="notes" placeholder="Eklemek istediğiniz notlar..." rows="3"></textarea>
+            </div>
+
+            <!-- Özet -->
+            <div class="booking-preview">
+              <h3>Randevu Özeti</h3>
+              <div class="preview-item">
+                <span>Hizmet</span>
+                <span>{{ selectedService?.name }}</span>
+              </div>
+              <div class="preview-item">
+                <span>Personel</span>
+                <span>{{ selectedStaff?.fullName }}</span>
+              </div>
+              <div class="preview-item">
+                <span>Tarih & Saat</span>
+                <span>{{ formatDate(selectedSlot) }} - {{ formatTime(selectedSlot) }}</span>
+              </div>
+              <div class="preview-item total">
+                <span>Toplam</span>
+                <span>{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span>
+              </div>
+            </div>
+
+            @if (errorMessage) {
+              <div class="error-message">{{ errorMessage }}</div>
+            }
+
+            <button
+              type="submit"
+              class="btn-submit"
+              [disabled]="isSubmitting || customerForm.invalid">
+              {{ isSubmitting ? 'Randevu Oluşturuluyor...' : 'Randevu Al' }}
+            </button>
+          </form>
+        </div>
+      }
+
+    </div>
+
+    <!-- Footer -->
+    <div class="booking-footer">
+      <p>BerberApp ile güçlendirildi</p>
+    </div>
+  }
+
+</div>

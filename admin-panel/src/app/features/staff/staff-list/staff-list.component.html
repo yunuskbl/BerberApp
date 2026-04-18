@@ -1,0 +1,133 @@
+<div class="page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h2>Personel</h2>
+      <p>{{ staffList.length }} personel kayıtlı</p>
+    </div>
+    <button class="btn btn-primary" (click)="openDrawer()">
+      + Personel Ekle
+    </button>
+  </div>
+
+  <!-- Table Card -->
+  <div class="card">
+    @if (isLoading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+      </div>
+    } @else if (staffList.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">👤</span>
+        <h3>Henüz personel eklenmedi</h3>
+        <p>İlk personeli eklemek için butona tıklayın.</p>
+        <button class="btn btn-primary" (click)="openDrawer()">+ Personel Ekle</button>
+      </div>
+    } @else {
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Personel</th>
+            <th>Telefon</th>
+            <th>Bio</th>
+            <th>Durum</th>
+            <th>İşlemler</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (staff of staffList; track staff.id) {
+            <tr>
+              <td>
+                <div class="staff-info">
+                  <div class="avatar">{{ getInitials(staff.fullName) }}</div>
+                  <span class="staff-name">{{ staff.fullName }}</span>
+                </div>
+              </td>
+              <td class="text-muted">{{ staff.phone || '—' }}</td>
+              <td class="text-muted bio-cell">{{ staff.bio || '—' }}</td>
+              <td>
+                @if (staff.isActive) {
+                  <span class="badge badge-success">Aktif</span>
+                } @else {
+                  <span class="badge badge-danger">Pasif</span>
+                }
+              </td>
+              <td>
+                <div class="actions">
+                  <button class="action-btn edit" (click)="openDrawer(staff)" title="Düzenle">✏</button>
+                  <button class="action-btn delete" (click)="deleteStaff(staff.id)" title="Sil">🗑</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+</div>
+
+<!-- Drawer Overlay -->
+@if (isDrawerOpen) {
+  <div class="drawer-overlay" (click)="closeDrawer()"></div>
+}
+
+<!-- Drawer -->
+<div class="drawer" [class.open]="isDrawerOpen">
+  <div class="drawer-header">
+    <h3>{{ editingStaff ? 'Personel Düzenle' : 'Yeni Personel' }}</h3>
+    <button class="drawer-close" (click)="closeDrawer()">✕</button>
+  </div>
+
+  <form [formGroup]="staffForm" (ngSubmit)="onSubmit()" class="drawer-body">
+
+    <div class="form-group">
+      <label>Ad Soyad *</label>
+      <input
+        type="text"
+        formControlName="fullName"
+        placeholder="Ahmet Yılmaz"
+        [class.error]="staffForm.get('fullName')?.invalid && staffForm.get('fullName')?.touched"/>
+      @if (staffForm.get('fullName')?.invalid && staffForm.get('fullName')?.touched) {
+        <span class="error-text">Ad soyad zorunludur.</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label>Telefon</label>
+      <input type="text" formControlName="phone" placeholder="0555 123 45 67"/>
+    </div>
+
+    <div class="form-group">
+      <label>Profil Fotoğrafı URL</label>
+      <input type="text" formControlName="avatarUrl" placeholder="https://..."/>
+    </div>
+
+    <div class="form-group">
+      <label>Biyografi</label>
+      <textarea formControlName="bio" placeholder="Personel hakkında kısa bilgi..." rows="3"></textarea>
+    </div>
+
+    @if (editingStaff) {
+      <div class="form-group">
+        <label class="toggle-label">
+          <input type="checkbox" formControlName="isActive"/>
+          <span class="toggle-text">Aktif</span>
+        </label>
+      </div>
+    }
+
+    @if (errorMessage) {
+      <div class="error-message">{{ errorMessage }}</div>
+    }
+
+    <div class="drawer-footer">
+      <button type="button" class="btn btn-outline" (click)="closeDrawer()">İptal</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Kaydediliyor...' : (editingStaff ? 'Güncelle' : 'Kaydet') }}
+      </button>
+    </div>
+
+  </form>
+</div>

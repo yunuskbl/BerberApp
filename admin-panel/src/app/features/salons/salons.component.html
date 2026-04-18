@@ -1,0 +1,78 @@
+<div class="salons-page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-logo">✂</div>
+      <h1>BerberApp</h1>
+      <p>Yakınındaki berberi bul, hemen randevu al</p>
+
+      <!-- Search -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Salon adı veya şehir ara..."
+          (keyup.enter)="onSearch()"/>
+        <button (click)="onSearch()">Ara</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Salon List -->
+  <div class="salons-container">
+
+    @if (isLoading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Salonlar yükleniyor...</p>
+      </div>
+    } @else if (salons.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">✂</span>
+        <h3>Salon bulunamadı</h3>
+        <p>Farklı bir arama terimi deneyin.</p>
+      </div>
+    } @else {
+      <div class="salons-header">
+        <h2>{{ salons.length }} Salon Bulundu</h2>
+      </div>
+
+      <div class="salons-grid">
+        @for (salon of salons; track salon.id) {
+          <div class="salon-card">
+            <div class="salon-card-top">
+              <div class="salon-avatar">{{ getInitials(salon.name) }}</div>
+              <div class="salon-info">
+                <h3>{{ salon.name }}</h3>
+                @if (salon.address) {
+                  <p class="salon-address">
+                    <span>📍</span> {{ salon.address }}
+                  </p>
+                }
+                @if (salon.phone) {
+                  <p class="salon-phone">
+                    <span>📞</span> {{ salon.phone }}
+                  </p>
+                }
+              </div>
+            </div>
+            <div class="salon-card-bottom">
+              <a [routerLink]="['/book', salon.subdomain]" class="btn-book">
+                Randevu Al →
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+
+  <!-- Footer -->
+  <div class="salons-footer">
+    <p>BerberApp © 2026 — Tüm hakları saklıdır.</p>
+  </div>
+
+</div>

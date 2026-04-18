@@ -1,0 +1,132 @@
+<div class="page">
+
+  <div class="page-header">
+    <div>
+      <h2>Hizmetler</h2>
+      <p>{{ serviceList.length }} hizmet tanımlı</p>
+    </div>
+    <button class="btn btn-primary" (click)="openDrawer()">+ Hizmet Ekle</button>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading-state"><div class="spinner"></div></div>
+  } @else if (serviceList.length === 0) {
+    <div class="card">
+      <div class="empty-state">
+        <span class="empty-icon">✂</span>
+        <h3>Henüz hizmet eklenmedi</h3>
+        <p>İlk hizmeti eklemek için butona tıklayın.</p>
+        <button class="btn btn-primary" (click)="openDrawer()">+ Hizmet Ekle</button>
+      </div>
+    </div>
+  } @else {
+    <div class="service-grid">
+      @for (service of serviceList; track service.id) {
+        <div class="service-card">
+          <div class="service-color-bar" [style.background]="service.color || '#7c3aed'"></div>
+          <div class="service-body">
+            <div class="service-top">
+              <div class="service-icon" [style.background]="(service.color || '#7c3aed') + '20'">
+                <span [style.color]="service.color || '#7c3aed'">✂</span>
+              </div>
+              @if (service.isActive) {
+                <span class="badge badge-success">Aktif</span>
+              } @else {
+                <span class="badge badge-danger">Pasif</span>
+              }
+            </div>
+            <h4 class="service-name">{{ service.name }}</h4>
+            <div class="service-meta">
+              <div class="meta-item">
+                <span class="meta-icon">⏱</span>
+                <span>{{ formatDuration(service.durationMinutes) }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-icon">💰</span>
+                <span>{{ formatPrice(service.price, service.currency) }}</span>
+              </div>
+            </div>
+            <div class="service-actions">
+              <button class="action-btn edit" (click)="openDrawer(service)">✏ Düzenle</button>
+              <button class="action-btn delete" (click)="deleteService(service.id)">🗑</button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+@if (isDrawerOpen) {
+  <div class="drawer-overlay" (click)="closeDrawer()"></div>
+}
+
+<div class="drawer" [class.open]="isDrawerOpen">
+  <div class="drawer-header">
+    <h3>{{ editingService ? 'Hizmet Düzenle' : 'Yeni Hizmet' }}</h3>
+    <button class="drawer-close" (click)="closeDrawer()">✕</button>
+  </div>
+
+  <form [formGroup]="serviceForm" (ngSubmit)="onSubmit()" class="drawer-body">
+
+    <div class="form-group">
+      <label>Hizmet Adı *</label>
+      <input type="text" formControlName="name" placeholder="Saç Kesimi"
+        [class.error]="serviceForm.get('name')?.invalid && serviceForm.get('name')?.touched"/>
+      @if (serviceForm.get('name')?.invalid && serviceForm.get('name')?.touched) {
+        <span class="error-text">Hizmet adı zorunludur.</span>
+      }
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Süre (Dakika) *</label>
+        <input type="number" formControlName="durationMinutes" placeholder="30" min="1" max="480"/>
+      </div>
+      <div class="form-group">
+        <label>Fiyat *</label>
+        <input type="number" formControlName="price" placeholder="0" min="0"/>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Para Birimi</label>
+        <select formControlName="currency">
+          <option value="TRY">TRY — Türk Lirası</option>
+          <option value="USD">USD — Dolar</option>
+          <option value="EUR">EUR — Euro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Renk</label>
+        <div class="color-input">
+          <input type="color" formControlName="color"/>
+          <span>{{ serviceForm.get('color')?.value }}</span>
+        </div>
+      </div>
+    </div>
+
+    @if (editingService) {
+      <div class="form-group">
+        <label class="toggle-label">
+          <input type="checkbox" formControlName="isActive"/>
+          <span class="toggle-text">Aktif</span>
+        </label>
+      </div>
+    }
+
+    @if (errorMessage) {
+      <div class="error-message">{{ errorMessage }}</div>
+    }
+
+    <div class="drawer-footer">
+      <button type="button" class="btn btn-outline" (click)="closeDrawer()">İptal</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Kaydediliyor...' : (editingService ? 'Güncelle' : 'Kaydet') }}
+      </button>
+    </div>
+
+  </form>
+</div>
