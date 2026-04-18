@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Çözüm Öğeleri/">
+    <File Path=".gitignore" />
+    <File Path="docker-compose.yml" />
+  </Folder>
+  <Project Path="BerberApp.Api/BerberApp.Api.csproj" />
+  <Project Path="BerberApp.Application/BerberApp.Application.csproj" />
+  <Project Path="BerberApp.Domain/BerberApp.Domain.csproj" />
+  <Project Path="BerberApp.Infrastructure/BerberApp.Infrastructure.csproj" />
+</Solution>

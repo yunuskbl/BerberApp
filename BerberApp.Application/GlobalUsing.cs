@@ -1,0 +1,9 @@
+﻿global using TenantEntity = BerberApp.Domain.Entities.Tenant;
+global using UserEntity = BerberApp.Domain.Entities.User;
+global using StaffEntity = BerberApp.Domain.Entities.Staff;
+global using ServiceEntity = BerberApp.Domain.Entities.Service;
+global using CustomerEntity = BerberApp.Domain.Entities.Customer;
+global using AppointmentEntity = BerberApp.Domain.Entities.Appointment;
+global using WorkingHourEntity = BerberApp.Domain.Entities.WorkingHour;
+global using NotificationEntity = BerberApp.Domain.Entities.Notification;
+global using BerberApp.Application.Common.Extensions;

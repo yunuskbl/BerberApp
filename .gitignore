@@ -1,0 +1,24 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.log
+appsettings.Development.json
+
+# Angular
+admin-panel/node_modules/
+admin-panel/dist/
+admin-panel/.angular/
+
+# Docker
+postgres_data/
+
+# Environment
+*.env
+.env
+
+# IDE
+.idea/
+.vscode/

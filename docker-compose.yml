@@ -1,0 +1,66 @@
+services:
+  db:
+    image: postgres:16
+    container_name: berberapp-db
+    environment:
+      POSTGRES_DB: BerberAppDb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: berber123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - berberapp-network
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: BerberApp.Api/Dockerfile
+    container_name: berberapp-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=BerberAppDb;Username=postgres;Password=berber123
+      - Jwt__Key=BerberApp_SuperSecret_Key_2024!@#$%^&*_MustBe32Chars
+      - Jwt__Issuer=BerberApp
+      - Jwt__Audience=BerberApp
+      - Twilio__AccountSid=YOUR_TWILIO_ACCOUNT_SID
+      - Twilio__AuthToken=YOUR_TWILIO_AUTH_TOKEN
+      - Twilio__FromNumber=whatsapp:+14155238886
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - berberapp-network
+    restart: always
+
+  admin-panel:
+    build:
+      context: ./admin-panel
+      dockerfile: Dockerfile
+    container_name: berberapp-admin
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+    networks:
+      - berberapp-network
+    restart: always
+
+volumes:
+  postgres_data:
+  
+
+
+networks:
+  berberapp-network:
+    driver: bridge
