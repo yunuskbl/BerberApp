@@ -80,3 +80,48 @@ BerberApp/
 ├── BerberApp.Api/             # Controllers, Middleware
 ├── admin-panel/               # Angular 19
 └── docker-compose.yml
+
+### Admin Panel
+- Dashboard — İstatistik kartları ve bugünkü randevular
+- Randevular — Takvim filtreli randevu listesi ve slot seçimi
+- Personel — CRUD işlemleri
+- Hizmetler — Renk kodlu kart tasarımı
+- Müşteriler — Arama destekli liste
+
+### Müşteri Sayfaları
+- Salon Discovery — Tüm salonları listele ve ara
+- Booking Wizard — Adım adım randevu alma
+
+## 🔔 WhatsApp Bildirimleri
+
+Twilio Sandbox kullanılmaktadır. Production için:
+1. Twilio hesabınızda WhatsApp Business hesabı açın
+2. `docker-compose.yml`'de credentials'ları güncelleyin
+
+## 📋 API Endpoints
+
+### Auth
+- `POST /api/auth/register` — Yeni salon kaydı
+- `POST /api/auth/login` — Giriş
+
+### Admin (JWT gerekli)
+- `GET/POST /api/staff` — Personel
+- `GET/POST /api/services` — Hizmetler
+- `GET/POST /api/customers` — Müşteriler
+- `GET/POST /api/appointments` — Randevular
+
+### Public
+- `GET /api/salons` — Tüm salonlar
+- `GET /api/booking/{subdomain}` — Salon bilgisi
+- `GET /api/booking/{subdomain}/services` — Hizmetler
+- `GET /api/booking/{subdomain}/staff` — Personel
+- `GET /api/booking/{subdomain}/available-slots` — Müsait slotlar
+- `POST /api/booking/{subdomain}/appointments` — Randevu oluştur
+
+## 📄 Lisans
+
+MIT License
+
+---
+
+**BerberApp** — Modern berberler için modern çözüm ✂
