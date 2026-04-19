@@ -11,4 +11,5 @@ export interface LoginResponse {
   fullName: string;
   role: string;
   tenantId: string;
+  subdomain?: string;
 }

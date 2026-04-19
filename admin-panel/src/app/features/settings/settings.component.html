@@ -1,0 +1,285 @@
+<div class="page">
+  <div class="page-header">
+    <div class="header-left">
+      <button class="btn-back" routerLink="/dashboard">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M19 12H5M12 19l-7-7 7-7"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <div>
+        <h2>Ayarlar</h2>
+        <p>Salon ve hesap ayarlarınızı yönetin</p>
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading-state"><div class="spinner"></div></div>
+  } @else {
+    <div class="settings-grid">
+      <!-- Salon Bilgileri -->
+      <div class="settings-card">
+        <div class="card-header">
+          <div class="card-icon">🏪</div>
+          <div>
+            <h3>Salon Bilgileri</h3>
+            <p>Müşterilerinizin göreceği salon bilgileri</p>
+          </div>
+        </div>
+
+        <form [formGroup]="salonForm" (ngSubmit)="onSaveSalon()">
+          <div class="form-group">
+            <label>Salon Adı *</label>
+            <input
+              type="text"
+              formControlName="name"
+              placeholder="Salon adınız"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Telefon</label>
+            <input
+              type="text"
+              formControlName="phone"
+              placeholder="05XX XXX XX XX"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Adres</label>
+            <input
+              type="text"
+              formControlName="address"
+              placeholder="Salon adresiniz"
+            />
+          </div>
+
+          @if (successMessage) {
+            <div class="alert alert-success">✓ {{ successMessage }}</div>
+          }
+          @if (errorMessage) {
+            <div class="alert alert-error">{{ errorMessage }}</div>
+          }
+
+          <div class="form-group">
+            <label>Müşteri Booking Linki</label>
+            <div class="link-box">
+              <span class="link-text">{{
+                user?.subdomain ? "/book/" + user?.subdomain : "/book/..."
+              }}</span>
+              <button class="btn-copy" (click)="copyLink()" title="Kopyala">
+                @if (copied) {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M20 6L9 17l-5-5"
+                      stroke="#16a34a"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                } @else {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <rect
+                      x="9"
+                      y="9"
+                      width="13"
+                      height="13"
+                      rx="2"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
+                    <path
+                      d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
+                  </svg>
+                }
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+            {{ isSaving ? "Kaydediliyor..." : "Kaydet" }}
+          </button>
+        </form>
+      </div>
+
+      <!-- Profil Bilgileri -->
+      <div class="settings-card">
+        <div class="card-header">
+          <div class="card-icon">👤</div>
+          <div>
+            <h3>Profil Bilgileri</h3>
+            <p>Hesap bilgileriniz</p>
+          </div>
+        </div>
+
+        <div class="profile-info">
+          <div class="profile-avatar">{{ user?.fullName?.charAt(0) }}</div>
+          <div class="profile-details">
+            <span class="profile-name">{{ user?.fullName }}</span>
+            <span class="profile-email">{{ user?.email }}</span>
+            <span class="profile-role">{{ user?.role }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Şifre Değiştir -->
+      <div class="settings-card">
+        <div class="card-header">
+          <div class="card-icon">🔒</div>
+          <div>
+            <h3>Şifre Değiştir</h3>
+            <p>Hesap güvenliğiniz için şifrenizi güncelleyin</p>
+          </div>
+        </div>
+
+        <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()">
+          <div class="form-group">
+            <label>Mevcut Şifre</label>
+            <input
+              type="password"
+              formControlName="currentPassword"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Yeni Şifre</label>
+            <input
+              type="password"
+              formControlName="newPassword"
+              placeholder="••••••••"
+            />
+            @if (
+              passwordForm.get("newPassword")?.invalid &&
+              passwordForm.get("newPassword")?.touched
+            ) {
+              <span class="error-text">En az 6 karakter olmalı.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label>Yeni Şifre Tekrar</label>
+            <input
+              type="password"
+              formControlName="confirmPassword"
+              placeholder="••••••••"
+            />
+            @if (
+              passwordForm.errors?.["passwordMismatch"] &&
+              passwordForm.get("confirmPassword")?.touched
+            ) {
+              <span class="error-text">Şifreler eşleşmiyor.</span>
+            }
+          </div>
+
+          @if (passSuccess) {
+            <div class="alert alert-success">✓ {{ passSuccess }}</div>
+          }
+          @if (passError) {
+            <div class="alert alert-error">{{ passError }}</div>
+          }
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isChangingPass"
+          >
+            {{ isChangingPass ? "Değiştiriliyor..." : "Şifreyi Değiştir" }}
+          </button>
+        </form>
+      </div>
+
+      <!-- Booking Link -->
+      <!-- Müşteri Randevu Linki -->
+      <div class="settings-card">
+        <div class="card-header">
+          <div class="card-icon">🔗</div>
+          <div>
+            <h3>Müşteri Randevu Linki</h3>
+            <p>Bu linki müşterilerinizle paylaşın</p>
+          </div>
+        </div>
+
+        <div class="qr-section">
+          <div class="booking-url">
+            <span>{{ bookingUrl }}</span>
+          </div>
+          <div class="link-actions">
+            <button
+              class="btn-copy-main"
+              (click)="copyMainLink()"
+              title="Linki Kopyala"
+            >
+              @if (copiedMain) {
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M20 6L9 17l-5-5"
+                    stroke="#16a34a"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              } @else {
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <rect
+                    x="9"
+                    y="9"
+                    width="13"
+                    height="13"
+                    rx="2"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                  <path
+                    d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                </svg>
+              }
+            </button>
+            <a [href]="bookingUrl" target="_blank" class="btn btn-outline">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+                <polyline
+                  points="15 3 21 3 21 9"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <line
+                  x1="10"
+                  y1="14"
+                  x2="21"
+                  y2="3"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+              Önizle
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

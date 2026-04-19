@@ -17,4 +17,5 @@ public class CreateAppointmentCommand : IRequest<AppointmentDto>
     public Guid ServiceId { get; set; }
     public DateTime StartTime { get; set; }
     public string? Notes { get; set; }
+    public bool IsFromBookingPage { get; set; } = false;
 }

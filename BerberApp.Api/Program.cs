@@ -30,6 +30,7 @@ builder.Host.UseSerilog();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMemoryCache();
 
 // DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -105,6 +106,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 
 // Middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<RateLimitingMiddleware>();
 app.UseMiddleware<TenantResolutionMiddleware>();
 
 app.UseCors("AllowAngular");
@@ -128,6 +130,13 @@ RecurringJob.AddOrUpdate<AppointmentReminderJob>(
     job => job.SendRemindersAsync(),
     "0 10 * * *"
 );
+// Her 5 dakikada bir kontrol et
+RecurringJob.AddOrUpdate<ExpireAppointmentsJob>(
+    "expire-appointments",
+    job => job.ExpireOldAppointmentsAsync(),
+    "*/5 * * * *"
+);
 
 app.MapControllers();
+
 app.Run();

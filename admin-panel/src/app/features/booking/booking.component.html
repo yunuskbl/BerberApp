@@ -1,5 +1,4 @@
 <div class="booking-page">
-
   @if (isLoading) {
     <div class="loading-screen">
       <div class="spinner"></div>
@@ -18,6 +17,10 @@
         <h2>Randevunuz Alındı!</h2>
         <p>Randevu bilgileriniz aşağıda.</p>
 
+        <div class="pending-note">
+          ⏳ Randevunuz onay bekliyor. Salon onayladıktan sonra WhatsApp'a
+          bildirim gelecektir.
+        </div>
         <div class="booking-summary">
           <div class="summary-item">
             <span class="summary-label">Salon</span>
@@ -42,13 +45,19 @@
           <div class="summary-item">
             <span class="summary-label">Ücret</span>
             <span class="summary-value">
-              {{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}
+              {{
+                formatPrice(
+                  selectedService?.price || 0,
+                  selectedService?.currency || "TRY"
+                )
+              }}
             </span>
           </div>
         </div>
 
         <p class="success-note">
-          Randevunuzu değiştirmek veya iptal etmek için salonumuzu arayabilirsiniz.
+          Randevunuzu değiştirmek veya iptal etmek için salonumuzu
+          arayabilirsiniz.
         </p>
 
         @if (salon?.phone) {
@@ -61,7 +70,7 @@
   } @else {
     <!-- Salon Header -->
     <div class="salon-header">
-      <div class="salon-logo">{{ getInitials(salon?.name || '') }}</div>
+      <div class="salon-logo">{{ getInitials(salon?.name || "") }}</div>
       <div class="salon-info">
         <h1>{{ salon?.name }}</h1>
         @if (salon?.address) {
@@ -74,7 +83,6 @@
     </div>
 
     <div class="booking-container">
-
       <!-- Hizmet Seç -->
       <div class="section">
         <div class="section-header">
@@ -86,11 +94,17 @@
             <div
               class="service-item"
               [class.selected]="selectedService?.id === service.id"
-              (click)="selectService(service)">
-              <div class="service-color" [style.background]="service.color || '#7c3aed'"></div>
+              (click)="selectService(service)"
+            >
+              <div
+                class="service-color"
+                [style.background]="service.color || '#7c3aed'"
+              ></div>
               <div class="service-details">
                 <span class="service-name">{{ service.name }}</span>
-                <span class="service-meta">⏱ {{ service.durationMinutes }} dk</span>
+                <span class="service-meta"
+                  >⏱ {{ service.durationMinutes }} dk</span
+                >
               </div>
               <span class="service-price">
                 {{ formatPrice(service.price, service.currency) }}
@@ -114,7 +128,8 @@
             <div
               class="staff-item"
               [class.selected]="selectedStaff?.id === staff.id"
-              (click)="selectStaff(staff)">
+              (click)="selectStaff(staff)"
+            >
               <div class="staff-avatar">{{ getInitials(staff.fullName) }}</div>
               <div class="staff-details">
                 <span class="staff-name">{{ staff.fullName }}</span>
@@ -140,7 +155,8 @@
           [minDate]="minDate"
           [maxDate]="maxDate"
           [value]="selectedDate"
-          (valueChange)="onDateChange($event)">
+          (valueChange)="onDateChange($event)"
+        >
         </app-custom-calendar>
       </div>
 
@@ -156,16 +172,15 @@
               <button
                 class="slot-btn"
                 [class.selected]="selectedSlot === slot.startTime"
-                (click)="selectSlot(slot)">
+                (click)="selectSlot(slot)"
+              >
                 {{ formatTime(slot.startTime) }}
               </button>
             }
           </div>
         </div>
       } @else if (selectedService && selectedStaff && selectedDate) {
-        <div class="no-slots">
-          Bu tarih için müsait saat bulunmuyor.
-        </div>
+        <div class="no-slots">Bu tarih için müsait saat bulunmuyor.</div>
       }
 
       <!-- Bilgiler -->
@@ -179,19 +194,98 @@
           <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
             <div class="form-group">
               <label>Ad Soyad *</label>
-              <input type="text" formControlName="fullName" placeholder="Adınız Soyadınız"/>
+              <input
+                type="text"
+                formControlName="fullName"
+                placeholder="Adınız Soyadınız"
+              />
             </div>
             <div class="form-group">
               <label>Telefon *</label>
-              <input type="tel" formControlName="phone" placeholder="05XX XXX XX XX"/>
+              <div class="phone-input-group">
+                <input
+                  type="tel"
+                  formControlName="phone"
+                  placeholder="05XX XXX XX XX"
+                  [readonly]="otpVerified"
+                />
+                @if (!otpVerified) {
+                  <button
+                    type="button"
+                    class="btn-otp"
+                    [disabled]="
+                      !customerForm.get('phone')?.value ||
+                      isSendingOtp ||
+                      otpTimer > 0
+                    "
+                    (click)="sendOtp()"
+                  >
+                    @if (isSendingOtp) {
+                      <span class="spinner-xs"></span>
+                    } @else if (otpTimer > 0) {
+                      {{ timerDisplay }}
+                    } @else {
+                      Kod Gönder
+                    }
+                  </button>
+                } @else {
+                  <span class="verified-badge">✓ Doğrulandı</span>
+                }
+              </div>
             </div>
+
+            @if (otpSent && !otpVerified) {
+              <div class="otp-section">
+                <label>Doğrulama Kodu</label>
+                <div class="otp-input-group">
+                  <input
+                    type="text"
+                    [(ngModel)]="otpCode"
+                    [ngModelOptions]="{ standalone: true }"
+                    placeholder="6 haneli kod"
+                    maxlength="6"
+                    class="otp-input"
+                  />
+                  <button
+                    type="button"
+                    class="btn-verify"
+                    [disabled]="otpCode.length !== 6 || isVerifyingOtp"
+                    (click)="verifyOtp()"
+                  >
+                    @if (isVerifyingOtp) {
+                      <span class="spinner-xs"></span>
+                    } @else {
+                      Doğrula
+                    }
+                  </button>
+                </div>
+                @if (otpError) {
+                  <span class="error-text">{{ otpError }}</span>
+                }
+                @if (otpSuccess && !otpVerified) {
+                  <span class="success-text">{{ otpSuccess }}</span>
+                }
+              </div>
+            }
+
+            @if (otpVerified) {
+              <div class="otp-verified-msg">✓ Telefon numaranız doğrulandı</div>
+            }
             <div class="form-group">
               <label>Email</label>
-              <input type="email" formControlName="email" placeholder="email@mail.com"/>
+              <input
+                type="email"
+                formControlName="email"
+                placeholder="email@mail.com"
+              />
             </div>
             <div class="form-group">
               <label>Notlar</label>
-              <textarea formControlName="notes" placeholder="Eklemek istediğiniz notlar..." rows="3"></textarea>
+              <textarea
+                formControlName="notes"
+                placeholder="Eklemek istediğiniz notlar..."
+                rows="3"
+              ></textarea>
             </div>
 
             <!-- Özet -->
@@ -207,11 +301,19 @@
               </div>
               <div class="preview-item">
                 <span>Tarih & Saat</span>
-                <span>{{ formatDate(selectedSlot) }} - {{ formatTime(selectedSlot) }}</span>
+                <span
+                  >{{ formatDate(selectedSlot) }} -
+                  {{ formatTime(selectedSlot) }}</span
+                >
               </div>
               <div class="preview-item total">
                 <span>Toplam</span>
-                <span>{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span>
+                <span>{{
+                  formatPrice(
+                    selectedService?.price || 0,
+                    selectedService?.currency || "TRY"
+                  )
+                }}</span>
               </div>
             </div>
 
@@ -222,13 +324,13 @@
             <button
               type="submit"
               class="btn-submit"
-              [disabled]="isSubmitting || customerForm.invalid">
-              {{ isSubmitting ? 'Randevu Oluşturuluyor...' : 'Randevu Al' }}
+              [disabled]="isSubmitting || customerForm.invalid || !otpVerified"
+            >
+              {{ isSubmitting ? "Randevu Oluşturuluyor..." : "Randevu Al" }}
             </button>
           </form>
         </div>
       }
-
     </div>
 
     <!-- Footer -->
@@ -236,5 +338,4 @@
       <p>BerberApp ile güçlendirildi</p>
     </div>
   }
-
 </div>

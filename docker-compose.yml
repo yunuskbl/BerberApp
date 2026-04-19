@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: BerberAppDb
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: berber123
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -25,6 +25,8 @@ services:
       dockerfile: BerberApp.Api/Dockerfile
     container_name: berberapp-api
     environment:
+    - ASPNETCORE_ENVIRONMENT=Production
+    - ASPNETCORE_URLS=http://+:8080
     - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=BerberAppDb;Username=postgres;Password=${DB_PASSWORD}
     - Jwt__Key=${JWT_KEY}
     - Jwt__Issuer=BerberApp

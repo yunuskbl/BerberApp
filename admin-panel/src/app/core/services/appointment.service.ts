@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import {
   Appointment,
   AvailableSlot,
-  CreateAppointmentRequest
+  CreateAppointmentRequest,
 } from '../models/appointment.model';
 import { ApiResponse } from '../models/api-response.model';
 import { environment } from '../../../environments/environment';
@@ -15,10 +15,13 @@ export class AppointmentService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(staffId?: string, date?: string): Observable<ApiResponse<Appointment[]>> {
+  getAll(
+    staffId?: string,
+    date?: string,
+  ): Observable<ApiResponse<Appointment[]>> {
     let params = new HttpParams();
     if (staffId) params = params.set('staffId', staffId);
-    if (date)    params = params.set('date', date);
+    if (date) params = params.set('date', date);
     return this.http.get<ApiResponse<Appointment[]>>(this.apiUrl, { params });
   }
 
@@ -26,15 +29,29 @@ export class AppointmentService {
     return this.http.get<ApiResponse<Appointment>>(`${this.apiUrl}/${id}`);
   }
 
-  getAvailableSlots(staffId: string, serviceId: string, date: string): Observable<ApiResponse<AvailableSlot[]>> {
+  getAvailableSlots(
+    staffId: string,
+    serviceId: string,
+    date: string,
+  ): Observable<ApiResponse<AvailableSlot[]>> {
     const params = new HttpParams()
-      .set('staffId',   staffId)
+      .set('staffId', staffId)
       .set('serviceId', serviceId)
-      .set('date',      date);
-    return this.http.get<ApiResponse<AvailableSlot[]>>(`${this.apiUrl}/available-slots`, { params });
+      .set('date', date);
+    return this.http.get<ApiResponse<AvailableSlot[]>>(
+      `${this.apiUrl}/available-slots`,
+      { params },
+    );
   }
 
-  create(request: CreateAppointmentRequest): Observable<ApiResponse<Appointment>> {
+  confirm(id: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}/confirm`, {});
+    
+  }
+  
+  create(
+    request: CreateAppointmentRequest,
+  ): Observable<ApiResponse<Appointment>> {
     return this.http.post<ApiResponse<Appointment>>(this.apiUrl, request);
   }
 

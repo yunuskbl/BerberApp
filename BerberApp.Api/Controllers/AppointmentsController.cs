@@ -10,7 +10,7 @@ namespace BerberApp.Api.Controllers;
 public class AppointmentsController : BaseApiController
 {
     public AppointmentsController(IMediator mediator) : base(mediator) { }
-
+    
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] Guid? staffId, [FromQuery] DateTime? date)
         => Success(await Mediator.Send(new GetAllAppointmentsQuery
@@ -48,6 +48,16 @@ public class AppointmentsController : BaseApiController
         return Created(await Mediator.Send(command));
     }
 
+    [HttpPut("{id}/confirm")]
+    public async Task<IActionResult> Confirm(Guid id)
+    {
+        var result = await Mediator.Send(new ConfirmAppointmentCommand
+        {
+            Id = id,
+            TenantId = TenantId
+        });
+        return Ok(new { success = true, data = result });
+    }
     [HttpPatch("{id}/cancel")]
     public async Task<IActionResult> Cancel(Guid id)
     {
@@ -61,4 +71,5 @@ public class AppointmentsController : BaseApiController
         await Mediator.Send(new CompleteAppointmentCommand { Id = id, TenantId = TenantId });
         return NoContent();
     }
+
 }

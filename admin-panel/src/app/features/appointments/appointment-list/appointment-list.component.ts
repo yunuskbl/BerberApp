@@ -27,7 +27,12 @@ import { CustomCalendarComponent } from '../../../shared/components/custom-calen
 @Component({
   selector: 'app-appointment-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CustomSelectComponent, CustomCalendarComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    CustomSelectComponent,
+    CustomCalendarComponent,
+  ],
   templateUrl: './appointment-list.component.html',
   styleUrl: './appointment-list.component.scss',
 })
@@ -86,25 +91,26 @@ export class AppointmentListComponent implements OnInit {
   }
   isDatePickerOpen = false;
 
-get filterDateDisplay(): string {
-  if (!this.selectedDate) return 'Tarih Seç';
-  const d = new Date(this.selectedDate);
-  return d.toLocaleDateString('tr-TR', {
-    day: 'numeric', month: 'long'
-  });
-}
-@HostListener('document:click', ['$event'])
-onDocumentClick(event: MouseEvent): void {
-  const target = event.target as HTMLElement;
-  if (!target.closest('.filter-date-wrapper')) {
-    this.isDatePickerOpen = false;
+  get filterDateDisplay(): string {
+    if (!this.selectedDate) return 'Tarih Seç';
+    const d = new Date(this.selectedDate);
+    return d.toLocaleDateString('tr-TR', {
+      day: 'numeric',
+      month: 'long',
+    });
   }
-}
-onFilterDateChange(value: string): void {
-  this.selectedDate    = value;
-  this.isDatePickerOpen = false;
-  this.loadAppointments();
-}
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.filter-date-wrapper')) {
+      this.isDatePickerOpen = false;
+    }
+  }
+  onFilterDateChange(value: string): void {
+    this.selectedDate = value;
+    this.isDatePickerOpen = false;
+    this.loadAppointments();
+  }
   get allStaffOptions(): SelectOption[] {
     return [{ value: '', label: 'Tüm Personel' }, ...this.staffOptions];
   }
@@ -120,12 +126,11 @@ onFilterDateChange(value: string): void {
   loadAppointments(): void {
   this.isLoading = true;
 
-  // Seçilen tarihi UTC'ye çevir — günün başı ve sonu
   let dateStr: string | undefined;
   if (this.selectedDate) {
-    // Yerel tarihi UTC'ye çevir
-    const localDate = new Date(this.selectedDate + 'T00:00:00');
-    dateStr = localDate.toISOString();
+    const [year, month, day] = this.selectedDate.split('-').map(Number);
+    const d = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+    dateStr = d.toISOString(); // → 2026-04-22T00:00:00.000Z
   }
 
   this.appointmentService.getAll(
@@ -263,12 +268,12 @@ onFilterDateChange(value: string): void {
   }
 
   formatTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleTimeString('tr-TR', {
-    hour:   '2-digit',
-    minute: '2-digit',
-    timeZone: 'Europe/Istanbul'  // ← ekle
-  });
-}
+    return new Date(dateStr).toLocaleTimeString('tr-TR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Istanbul'
+    });
+  }
   formatSlotTime(dateStr: string): string {
     return new Date(dateStr).toLocaleTimeString('tr-TR', {
       hour: '2-digit',
@@ -305,7 +310,12 @@ onFilterDateChange(value: string): void {
       label: `${s.name} — ${s.durationMinutes} dk`,
     }));
   }
-
+  confirmAppointment(id: string): void {
+  this.appointmentService.confirm(id).subscribe({
+    next: () => this.loadAppointments(),
+    error: (err) => console.error('Confirm error:', err)
+  });
+}
   onSelectChange(field: string, value: string): void {
     this.appointmentForm.patchValue({ [field]: value });
     if (field === 'staffId' || field === 'serviceId') {

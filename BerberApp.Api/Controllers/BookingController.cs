@@ -1,10 +1,13 @@
 ﻿using BerberApp.Application.Appointment.Commands;
 using BerberApp.Application.Appointment.Queries;
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+
 
 namespace BerberApp.Api.Controllers;
 
@@ -15,11 +18,13 @@ public class BookingController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IAppDbContext _context;
+    private readonly IMemoryCache _cache;
 
-    public BookingController(IMediator mediator, IAppDbContext context)
+    public BookingController(IMediator mediator, IAppDbContext context, IMemoryCache cache)
     {
         _mediator = mediator;
         _context = context;
+        _cache = cache;
     }
 
     // Salon bilgilerini getir
@@ -121,11 +126,10 @@ public class BookingController : ControllerBase
         return Ok(new { success = true, data = result });
     }
 
-    // Randevu oluştur (müşteri)
     [HttpPost("{subdomain}/appointments")]
     public async Task<IActionResult> CreateAppointment(
-        string subdomain,
-        [FromBody] CustomerBookingRequest request)
+    string subdomain,
+    [FromBody] CustomerBookingRequest request)
     {
         var tenant = await _context.Tenants
             .FirstOrDefaultAsync(x => x.Subdomain == subdomain && x.IsActive);
@@ -133,10 +137,39 @@ public class BookingController : ControllerBase
         if (tenant is null)
             return NotFound(new { success = false, message = "Salon bulunamadı." });
 
-        // Müşteriyi bul veya oluştur
-        var customer = await _context.Customers
+        // Telefon doğrulanmış mı kontrol et
+        if (!_cache.TryGetValue($"verified:{request.Phone}", out bool isVerified) || !isVerified)
+            return BadRequest(new { success = false, message = "Telefon numarası doğrulanmamış." });
+        // Telefon başına günlük limit kontrolü
+        var today = DateTime.UtcNow.Date;
+        var tomorrow = today.AddDays(1);
+
+        var phone = request.Phone.Replace(" ", "").Replace("-", "");
+        if (phone.StartsWith("0")) phone = "+90" + phone[1..];
+
+        var existingCustomer = await _context.Customers
             .FirstOrDefaultAsync(x => x.Phone == request.Phone && x.TenantId == tenant.Id);
 
+        if (existingCustomer != null)
+        {
+            var dailyBookings = await _context.Appointments
+                .CountAsync(x => x.CustomerId == existingCustomer.Id &&
+                                 x.TenantId == tenant.Id &&
+                                 x.StartTime >= today &&
+                                 x.StartTime < tomorrow &&
+                                 x.Status != AppointmentStatus.Cancelled);
+
+            if (dailyBookings >= 2)
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Bu telefon numarasıyla bugün için maksimum randevu sayısına ulaşıldı."
+                });
+        }
+
+
+        // Müşteriyi bul veya oluştur
+        var customer = existingCustomer;
         if (customer is null)
         {
             customer = new BerberApp.Domain.Entities.Customer
@@ -157,7 +190,8 @@ public class BookingController : ControllerBase
             StaffId = request.StaffId,
             ServiceId = request.ServiceId,
             StartTime = request.StartTime,
-            Notes = request.Notes
+            Notes = request.Notes,
+            IsFromBookingPage = true
         });
 
         return Ok(new { success = true, data = result });

@@ -35,15 +35,14 @@ public class GetAllAppointmentsHandler : IRequestHandler<GetAllAppointmentsQuery
 
         if (request.Date.HasValue)
         {
-            // UTC tarih aralığı — Türkiye saati için +3 saat farkı
-            var utcDate = request.Date.Value.Date;
-            var startOfDay = utcDate;
-            var endOfDay = utcDate.AddDays(1);
+            var startOfDay = request.Date.Value.Date;
+            var endOfDay = startOfDay.AddDays(1);
 
             query = query.Where(x =>
                 x.StartTime >= startOfDay &&
                 x.StartTime < endOfDay);
         }
+
 
         var appointments = await query
             .OrderBy(x => x.StartTime)

@@ -27,11 +27,8 @@ public class WhatsAppService : IWhatsAppService
     string phone, string customerName, string serviceName,
     string staffName, DateTime startTime)
     {
-        // UTC → Türkiye saatine çevir
-        var turkeyTime = TimeZoneInfo.ConvertTimeFromUtc(
-            startTime,
-            TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time")
-        );
+        var turkeyTime = ToTurkeyTime(startTime);
+        var culture = new System.Globalization.CultureInfo("tr-TR");
 
         var message = $"""
         ✂ *BerberApp - Randevu Onayı*
@@ -40,7 +37,7 @@ public class WhatsAppService : IWhatsAppService
         
         Randevunuz başarıyla oluşturuldu.
         
-        📅 Tarih: {turkeyTime:dd MMMM yyyy}
+        📅 Tarih: {turkeyTime.ToString("dd MMMM yyyy", culture)}
         ⏰ Saat: {turkeyTime:HH:mm}
         💈 Hizmet: {serviceName}
         👤 Personel: {staffName}
@@ -52,13 +49,11 @@ public class WhatsAppService : IWhatsAppService
     }
 
     public async Task SendAppointmentReminderAsync(
-    string phone, string customerName,
-    string serviceName, DateTime startTime)
+        string phone, string customerName,
+        string serviceName, DateTime startTime)
     {
-        var turkeyTime = TimeZoneInfo.ConvertTimeFromUtc(
-            startTime,
-            TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time")
-        );
+        var turkeyTime = ToTurkeyTime(startTime);
+        var culture = new System.Globalization.CultureInfo("tr-TR");
 
         var message = $"""
         ✂ *BerberApp - Randevu Hatırlatması*
@@ -67,7 +62,7 @@ public class WhatsAppService : IWhatsAppService
         
         Yarın randevunuz var!
         
-        📅 Tarih: {turkeyTime:dd MMMM yyyy}
+        📅 Tarih: {turkeyTime.ToString("dd MMMM yyyy", culture)}
         ⏰ Saat: {turkeyTime:HH:mm}
         💈 Hizmet: {serviceName}
         
@@ -78,19 +73,17 @@ public class WhatsAppService : IWhatsAppService
     }
 
     public async Task SendAppointmentCancelledAsync(
-    string phone, string customerName, DateTime startTime)
+        string phone, string customerName, DateTime startTime)
     {
-        var turkeyTime = TimeZoneInfo.ConvertTimeFromUtc(
-            startTime,
-            TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time")
-        );
+        var turkeyTime = ToTurkeyTime(startTime);
+        var culture = new System.Globalization.CultureInfo("tr-TR");
 
         var message = $"""
         ✂ *BerberApp - Randevu İptali*
         
         Merhaba {customerName},
         
-        {turkeyTime:dd MMMM yyyy} tarihli {turkeyTime:HH:mm} saatindeki randevunuz iptal edilmiştir.
+        {turkeyTime.ToString("dd MMMM yyyy", culture)} tarihli {turkeyTime:HH:mm} saatindeki randevunuz iptal edilmiştir.
         
         Yeni randevu almak için salonumuzu arayabilirsiniz.
         """;
@@ -120,8 +113,25 @@ public class WhatsAppService : IWhatsAppService
             phone = "+90" + phone;
         return phone;
     }
+    public async Task SendOtpAsync(string phone, string otp)
+    {
+        var message = $"""
+        🔐 *BerberApp - Doğrulama Kodu*
+        
+        Doğrulama kodunuz: *{otp}*
+        
+        Bu kod 5 dakika geçerlidir.
+        Kodu kimseyle paylaşmayın.
+        """;
+
+        await SendMessageAsync(phone, message);
+    }
     private static DateTime ToTurkeyTime(DateTime utcTime)
     {
+        // Kind'ı UTC olarak zorla
+        if (utcTime.Kind != DateTimeKind.Utc)
+            utcTime = DateTime.SpecifyKind(utcTime, DateTimeKind.Utc);
+
         try
         {
             var tz = TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time");

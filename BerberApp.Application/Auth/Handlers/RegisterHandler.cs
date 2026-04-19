@@ -46,6 +46,8 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
         {
             Name = request.TenantName,
             Subdomain = request.Subdomain,
+            Phone = request.Phone,      
+            Address = request.Address,  
             IsActive = true
         };
 

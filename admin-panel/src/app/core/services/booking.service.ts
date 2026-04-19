@@ -4,43 +4,43 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface SalonInfo {
-  id:       string;
-  name:     string;
-  phone?:   string;
+  id: string;
+  name: string;
+  phone?: string;
   address?: string;
   logoUrl?: string;
 }
 
 export interface BookingService {
-  id:              string;
-  name:            string;
+  id: string;
+  name: string;
   durationMinutes: number;
-  price:           number;
-  currency:        string;
-  color?:          string;
+  price: number;
+  currency: string;
+  color?: string;
 }
 
 export interface BookingStaff {
-  id:        string;
-  fullName:  string;
+  id: string;
+  fullName: string;
   avatarUrl?: string;
-  bio?:      string;
+  bio?: string;
 }
 
 export interface BookingSlot {
-  startTime:   string;
-  endTime:     string;
+  startTime: string;
+  endTime: string;
   isAvailable: boolean;
 }
 
 export interface BookingRequest {
-  fullName:  string;
-  phone:     string;
-  email?:    string;
-  staffId:   string;
+  fullName: string;
+  phone: string;
+  email?: string;
+  staffId: string;
   serviceId: string;
   startTime: string;
-  notes?:    string;
+  notes?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -61,15 +61,36 @@ export class BookingApiService {
     return this.http.get(`${this.apiUrl}/booking/${subdomain}/staff`);
   }
 
-  getAvailableSlots(subdomain: string, staffId: string, serviceId: string, date: string): Observable<any> {
+  getAvailableSlots(
+    subdomain: string,
+    staffId: string,
+    serviceId: string,
+    date: string,
+  ): Observable<any> {
     const params = new HttpParams()
-      .set('staffId',   staffId)
+      .set('staffId', staffId)
       .set('serviceId', serviceId)
-      .set('date',      date);
-    return this.http.get(`${this.apiUrl}/booking/${subdomain}/available-slots`, { params });
+      .set('date', date);
+    return this.http.get(
+      `${this.apiUrl}/booking/${subdomain}/available-slots`,
+      { params },
+    );
   }
 
-  createAppointment(subdomain: string, request: BookingRequest): Observable<any> {
-    return this.http.post(`${this.apiUrl}/booking/${subdomain}/appointments`, request);
+  createAppointment(
+    subdomain: string,
+    request: BookingRequest,
+  ): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}/booking/${subdomain}/appointments`,
+      request,
+    );
+  }
+  sendOtp(phone: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/otp/send`, { phone });
+  }
+
+  verifyOtp(phone: string, code: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/otp/verify`, { phone, code });
   }
 }

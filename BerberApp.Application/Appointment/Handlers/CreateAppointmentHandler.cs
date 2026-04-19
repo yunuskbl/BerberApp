@@ -80,6 +80,19 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
         if (conflict)
             throw new ConflictException("Bu saatte başka bir randevu mevcut.");
 
+        // Aynı müşteri aynı gün max 2 randevu
+        var today = DateTime.UtcNow.Date;
+        var tomorrow = today.AddDays(1);
+
+        var dailyCount = await _appointmentRepo.AnyAsync(
+            x => x.CustomerId == request.CustomerId &&
+                 x.TenantId == request.TenantId &&
+                 x.StartTime >= today &&
+                 x.StartTime < tomorrow &&
+                 x.Status != AppointmentStatus.Cancelled, ct);
+
+        if (dailyCount)
+            throw new BadRequestException("Aynı gün için birden fazla randevu oluşturamazsınız.");
         // Randevu oluştur
         var appointment = new AppointmentEntity
         {
@@ -89,26 +102,34 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
             ServiceId = request.ServiceId,
             StartTime = startTimeUtc,
             EndTime = endTimeUtc,
-            Status = AppointmentStatus.Confirmed,
+            Status = request.IsFromBookingPage
+                  ? AppointmentStatus.Pending
+                  : AppointmentStatus.Confirmed,
             Notes = request.Notes
         };
 
         await _appointmentRepo.AddAsync(appointment, ct);
 
+
         // Müşteri ziyaret sayısını artır
         customer.TotalVisits++;
         await _customerRepo.UpdateAsync(customer, ct);
-        try
+
+        // Sadece admin panelden oluşturulanlar için bildirim gönder
+        if (!request.IsFromBookingPage)
         {
-            await _whatsAppService.SendAppointmentConfirmedAsync(
-                customer.Phone,
-                customer.FullName,
-                service.Name,
-                staff.FullName,
-                appointment.StartTime
-            );
+            try
+            {
+                await _whatsAppService.SendAppointmentConfirmedAsync(
+                    customer.Phone,
+                    customer.FullName,
+                    service.Name,
+                    staff.FullName,
+                    appointment.StartTime
+                );
+            }
+            catch { /* Bildirim hatası randevuyu etkilemesin */ }
         }
-        catch { /* Bildirim hatası randevuyu etkilemesin */ }
         return new AppointmentDto
         {
             Id = appointment.Id,

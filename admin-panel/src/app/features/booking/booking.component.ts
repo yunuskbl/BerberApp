@@ -1,41 +1,57 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormsModule,
+} from '@angular/forms';
 import {
   BookingApiService,
   SalonInfo,
   BookingService,
   BookingStaff,
-  BookingSlot
+  BookingSlot,
 } from '../../core/services/booking.service';
 import { CustomCalendarComponent } from '../../shared/components/custom-calendar/custom-calendar.component';
 
 @Component({
   selector: 'app-booking',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CustomCalendarComponent],
+  imports: [CommonModule, ReactiveFormsModule, CustomCalendarComponent,FormsModule],
   templateUrl: './booking.component.html',
-  styleUrl: './booking.component.scss'
+  styleUrl: './booking.component.scss',
 })
 export class BookingComponent implements OnInit {
-  subdomain    = '';
-  salon:       SalonInfo | null = null;
-  services:    BookingService[] = [];
-  staffList:   BookingStaff[]   = [];
-  slots:       BookingSlot[]    = [];
+  subdomain = '';
+  salon: SalonInfo | null = null;
+  services: BookingService[] = [];
+  staffList: BookingStaff[] = [];
+  slots: BookingSlot[] = [];
 
   selectedService: BookingService | null = null;
-  selectedStaff:   BookingStaff   | null = null;
-  selectedDate     = '';
-  selectedSlot     = '';
+  selectedStaff: BookingStaff | null = null;
+  selectedDate = '';
+  selectedSlot = '';
 
-  currentStep  = 1;
-  isLoading    = false;
+  currentStep = 1;
+  isLoading = false;
   isSubmitting = false;
-  isSuccess    = false;
+  isSuccess = false;
   errorMessage = '';
   bookingResult: any = null;
+
+  otpSent = false;
+  otpVerified = false;
+  otpCode = '';
+  isSendingOtp = false;
+  isVerifyingOtp = false;
+  otpError = '';
+  otpSuccess = '';
+  otpTimer = 0;
+  private timerInterval: any;
 
   customerForm: FormGroup;
 
@@ -50,15 +66,15 @@ export class BookingComponent implements OnInit {
   }
 
   constructor(
-    private route:          ActivatedRoute,
+    private route: ActivatedRoute,
     private bookingService: BookingApiService,
-    private fb:             FormBuilder
+    private fb: FormBuilder,
   ) {
     this.customerForm = this.fb.group({
       fullName: ['', [Validators.required]],
-      phone:    ['', [Validators.required]],
-      email:    ['', [Validators.email]],
-      notes:    ['']
+      phone: ['', [Validators.required]],
+      email: ['', [Validators.email]],
+      notes: [''],
     });
   }
 
@@ -80,58 +96,65 @@ export class BookingComponent implements OnInit {
       },
       error: () => {
         this.errorMessage = 'Salon bulunamadı.';
-        this.isLoading    = false;
-      }
+        this.isLoading = false;
+      },
     });
   }
 
   loadServices(): void {
     this.bookingService.getServices(this.subdomain).subscribe({
-      next: (res) => { if (res.success) this.services = res.data; }
+      next: (res) => {
+        if (res.success) this.services = res.data;
+      },
     });
   }
 
   loadStaff(): void {
     this.bookingService.getStaff(this.subdomain).subscribe({
-      next: (res) => { if (res.success) this.staffList = res.data; }
+      next: (res) => {
+        if (res.success) this.staffList = res.data;
+      },
     });
   }
 
   selectService(service: BookingService): void {
     this.selectedService = service;
-    this.selectedSlot    = '';
-    this.slots           = [];
+    this.selectedSlot = '';
+    this.slots = [];
     this.loadSlotsIfReady();
   }
 
   selectStaff(staff: BookingStaff): void {
     this.selectedStaff = staff;
-    this.selectedSlot  = '';
-    this.slots         = [];
+    this.selectedSlot = '';
+    this.slots = [];
     this.loadSlotsIfReady();
   }
 
   onDateChange(date: string): void {
     this.selectedDate = date;
     this.selectedSlot = '';
-    this.slots        = [];
+    this.slots = [];
     this.loadSlotsIfReady();
   }
 
   loadSlotsIfReady(): void {
-    if (!this.selectedService || !this.selectedStaff || !this.selectedDate) return;
+    if (!this.selectedService || !this.selectedStaff || !this.selectedDate)
+      return;
 
-    this.bookingService.getAvailableSlots(
-      this.subdomain,
-      this.selectedStaff.id,
-      this.selectedService.id,
-      new Date(this.selectedDate).toISOString()
-    ).subscribe({
-      next: (res) => {
-        if (res.success)
-          this.slots = res.data.filter((s: BookingSlot) => s.isAvailable);
-      }
-    });
+    this.bookingService
+      .getAvailableSlots(
+        this.subdomain,
+        this.selectedStaff.id,
+        this.selectedService.id,
+        new Date(this.selectedDate).toISOString(),
+      )
+      .subscribe({
+        next: (res) => {
+          if (res.success)
+            this.slots = res.data.filter((s: BookingSlot) => s.isAvailable);
+        },
+      });
   }
 
   selectSlot(slot: BookingSlot): void {
@@ -139,10 +162,12 @@ export class BookingComponent implements OnInit {
   }
 
   canProceed(): boolean {
-    return !!this.selectedService &&
-           !!this.selectedStaff   &&
-           !!this.selectedDate    &&
-           !!this.selectedSlot;
+    return (
+      !!this.selectedService &&
+      !!this.selectedStaff &&
+      !!this.selectedDate &&
+      !!this.selectedSlot
+    );
   }
 
   onSubmit(): void {
@@ -153,50 +178,123 @@ export class BookingComponent implements OnInit {
 
     const { fullName, phone, email, notes } = this.customerForm.value;
 
-    this.bookingService.createAppointment(this.subdomain, {
-      fullName,
-      phone,
-      email,
-      staffId:   this.selectedStaff!.id,
-      serviceId: this.selectedService!.id,
-      startTime: this.selectedSlot,
-      notes
-    }).subscribe({
-      next: (res) => {
-        if (res.success) {
-          this.isSuccess    = true;
-          this.bookingResult = res.data;
-        } else {
-          this.errorMessage = res.message;
-        }
-        this.isSubmitting = false;
-      },
-      error: (err) => {
-        this.errorMessage = err.error?.message || 'Randevu oluşturulamadı.';
-        this.isSubmitting = false;
-      }
-    });
+    this.bookingService
+      .createAppointment(this.subdomain, {
+        fullName,
+        phone,
+        email,
+        staffId: this.selectedStaff!.id,
+        serviceId: this.selectedService!.id,
+        startTime: this.selectedSlot,
+        notes,
+      })
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.isSuccess = true;
+            this.bookingResult = res.data;
+          } else {
+            this.errorMessage = res.message;
+          }
+          this.isSubmitting = false;
+        },
+        error: (err) => {
+          this.errorMessage = err.error?.message || 'Randevu oluşturulamadı.';
+          this.isSubmitting = false;
+        },
+      });
   }
 
   formatTime(dateStr: string): string {
     return new Date(dateStr).toLocaleTimeString('tr-TR', {
-      hour: '2-digit', minute: '2-digit'
+      hour: '2-digit',
+      minute: '2-digit',
     });
   }
 
   formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString('tr-TR', {
-      weekday: 'long', day: 'numeric', month: 'long'
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
     });
   }
 
   formatPrice(price: number, currency: string): string {
     return new Intl.NumberFormat('tr-TR', {
-      style: 'currency', currency: currency || 'TRY'
+      style: 'currency',
+      currency: currency || 'TRY',
     }).format(price);
   }
 
   getInitials(name: string): string {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  }
+
+  sendOtp(): void {
+    const phone = this.customerForm.get('phone')?.value;
+    if (!phone) return;
+
+    this.isSendingOtp = true;
+    this.otpError = '';
+
+    this.bookingService.sendOtp(phone).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.otpSent = true;
+          this.otpSuccess = "Doğrulama kodu WhatsApp'a gönderildi!";
+          this.startTimer();
+        }
+        this.isSendingOtp = false;
+      },
+      error: (err) => {
+        this.otpError = err.error?.message || 'Kod gönderilemedi.';
+        this.isSendingOtp = false;
+      },
+    });
+  }
+
+  verifyOtp(): void {
+    const phone = this.customerForm.get('phone')?.value;
+    if (!phone || !this.otpCode) return;
+
+    this.isVerifyingOtp = true;
+    this.otpError = '';
+
+    this.bookingService.verifyOtp(phone, this.otpCode).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.otpVerified = true;
+          this.otpSuccess = 'Telefon doğrulandı! ✓';
+        }
+        this.isVerifyingOtp = false;
+      },
+      error: (err) => {
+        this.otpError = err.error?.message || 'Hatalı kod.';
+        this.isVerifyingOtp = false;
+      },
+    });
+  }
+
+  startTimer(): void {
+    this.otpTimer = 120; // 2 dakika
+    this.timerInterval = setInterval(() => {
+      this.otpTimer--;
+      if (this.otpTimer <= 0) {
+        clearInterval(this.timerInterval);
+        this.otpSent = false;
+      }
+    }, 1000);
+  }
+
+  get timerDisplay(): string {
+    const m = Math.floor(this.otpTimer / 60);
+    const s = this.otpTimer % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
   }
 }

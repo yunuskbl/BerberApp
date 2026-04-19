@@ -2,6 +2,7 @@
 using BerberApp.Application.Auth.DTOs;
 using BerberApp.Application.Common.Exceptions;
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -32,10 +33,9 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResponse>
         if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             throw new UnauthorizedException("Email veya şifre hatalı.");
 
-        var passwordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
-
-        if (!passwordValid)
-            throw new Exception("Email veya şifre hatalı.");
+        // Tenant'ı al
+        var tenant = await _context.Tenants
+            .FirstOrDefaultAsync(x => x.Id == user.TenantId, ct);
 
         var accessToken = _jwtService.GenerateAccessToken(user);
         var refreshToken = _jwtService.GenerateRefreshToken();
@@ -48,11 +48,12 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResponse>
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            AccessTokenExpiry = DateTime.UtcNow.AddMinutes(15),
             Email = user.Email,
             FullName = $"{user.FirstName} {user.LastName}",
             Role = user.Role.ToString(),
-            TenantId = user.TenantId
+            TenantId = user.TenantId,
+            Subdomain = tenant?.Subdomain
         };
+
     }
 }

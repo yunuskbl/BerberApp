@@ -19,6 +19,11 @@ export const routes: Routes = [
       ),
   },
   {
+  path: 'settings',
+  loadComponent: () =>
+    import('./features/settings/settings.component').then(m => m.SettingsComponent)
+},
+  {
     path: 'book/:subdomain',
     loadComponent: () =>
       import('./features/booking/booking.component').then(

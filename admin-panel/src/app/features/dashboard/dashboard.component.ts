@@ -42,10 +42,11 @@ export class DashboardComponent implements OnInit {
   }
 
  loadDashboard(): void {
-  // Bugünkü randevular
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const dateStr = todayStart.toISOString();
+  const today  = new Date();
+  const year   = today.getFullYear();
+  const month  = today.getMonth();
+  const day    = today.getDate();
+  const dateStr = new Date(Date.UTC(year, month, day, 0, 0, 0)).toISOString();
 
   this.appointmentService.getAll(undefined, dateStr).subscribe({
     next: (res) => {
