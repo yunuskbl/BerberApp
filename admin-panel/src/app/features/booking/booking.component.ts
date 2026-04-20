@@ -16,11 +16,17 @@ import {
   BookingSlot,
 } from '../../core/services/booking.service';
 import { CustomCalendarComponent } from '../../shared/components/custom-calendar/custom-calendar.component';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-booking',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CustomCalendarComponent,FormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    CustomCalendarComponent,
+    FormsModule,
+  ],
   templateUrl: './booking.component.html',
   styleUrl: './booking.component.scss',
 })
@@ -69,6 +75,7 @@ export class BookingComponent implements OnInit {
     private route: ActivatedRoute,
     private bookingService: BookingApiService,
     private fb: FormBuilder,
+    private titleService: Title,
   ) {
     this.customerForm = this.fb.group({
       fullName: ['', [Validators.required]],
@@ -89,6 +96,7 @@ export class BookingComponent implements OnInit {
       next: (res) => {
         if (res.success) {
           this.salon = res.data;
+          this.titleService.setTitle(this.salon!.name + ' - BerberApp');
           this.loadServices();
           this.loadStaff();
         }
@@ -247,7 +255,7 @@ export class BookingComponent implements OnInit {
       next: (res) => {
         if (res.success) {
           this.otpSent = true;
-          this.otpSuccess = "Doğrulama kodu Sms gönderildi!";
+          this.otpSuccess = 'Doğrulama kodu Sms gönderildi!';
           this.startTimer();
         }
         this.isSendingOtp = false;
