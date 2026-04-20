@@ -56,11 +56,28 @@ public class SmsService : ISmsService
 
         var payload = new
         {
-            api_key = _apiKey,
-            hash = _hash,
-            sender = _sender,
-            message = message,
-            phones = new[] { phone }
+            request = new
+            {
+                authentication = new
+                {
+                    key = _apiKey,
+                    hash = _hash
+                },
+                order = new
+                {
+                    sender = _sender,
+                    iys = "1",
+                    iysList = "BIREYSEL",
+                    message = new
+                    {
+                        text = message,
+                        receipents = new
+                        {
+                            number = new[] { phone }
+                        }
+                    }
+                }
+            }
         };
 
         var json = JsonSerializer.Serialize(payload);
