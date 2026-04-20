@@ -34,6 +34,7 @@ export class SettingsComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private authService: AuthService,
+    private router: Router
   ) {
     this.salonForm = this.fb.group({
       name: ['', Validators.required],
@@ -153,4 +154,8 @@ export class SettingsComponent implements OnInit {
     this.copiedMain = true;
     setTimeout(() => (this.copiedMain = false), 2000);
   }
+  logout(): void {
+  this.authService.logout();
+  this.router.navigate(['/login']);
+}
 }

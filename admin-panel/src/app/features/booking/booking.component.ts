@@ -247,7 +247,7 @@ export class BookingComponent implements OnInit {
       next: (res) => {
         if (res.success) {
           this.otpSent = true;
-          this.otpSuccess = "Doğrulama kodu WhatsApp'a gönderildi!";
+          this.otpSuccess = "Doğrulama kodu Sms gönderildi!";
           this.startTimer();
         }
         this.isSendingOtp = false;

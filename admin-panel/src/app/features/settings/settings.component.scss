@@ -282,8 +282,38 @@
   display: flex;
   gap: 10px;
 }
+.btn-danger {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
 
-// Responsive
+  &:hover { background: #fecaca; }
+}
+
 @media (max-width: 768px) {
-  .settings-grid { grid-template-columns: 1fr; }
+  .settings-grid {
+    grid-template-columns: 1fr ;
+  }
+
+  .page-header {
+    flex-direction: row ;
+    align-items: flex-start;
+    gap: 12px;
+
+    h2 { font-size: 18px; }
+    p  { font-size: 12px; }
+
+    .btn-danger {
+      flex-shrink: 0;
+      padding: 8px 12px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+  }
 }

@@ -19,13 +19,13 @@
   overflow-y: auto;
 }
 
-// Responsive
 @media (max-width: 768px) {
   .layout-content {
-    margin-left: 68px;
+    margin-left: 0 !important;
   }
 
   .main-content {
     padding: 16px;
+    padding-bottom: 80px; // bottom nav için boşluk
   }
 }

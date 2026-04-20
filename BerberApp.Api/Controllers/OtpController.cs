@@ -14,11 +14,13 @@ public class OtpController : ControllerBase
 {
     private readonly IMemoryCache _cache;
     private readonly IWhatsAppService _whatsAppService;
+    private readonly ISmsService _smsService;   
 
-    public OtpController(IMemoryCache cache, IWhatsAppService whatsAppService)
+    public OtpController(IMemoryCache cache, IWhatsAppService whatsAppService, ISmsService smsService)
     {
         _cache = cache;
         _whatsAppService = whatsAppService;
+        _smsService = smsService;
     }
 
     [HttpPost("send")]
@@ -37,7 +39,8 @@ public class OtpController : ControllerBase
         // WhatsApp'tan gönder
         try
         {
-            await _whatsAppService.SendOtpAsync(request.Phone, otp);
+            //await _whatsAppService.SendOtpAsync(request.Phone, otp);
+            await _smsService.SendOtpAsync(request.Phone, otp);
         }
         catch
         {

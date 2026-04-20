@@ -34,6 +34,9 @@ services:
     - Twilio__AccountSid=${TWILIO_ACCOUNT_SID}
     - Twilio__AuthToken=${TWILIO_AUTH_TOKEN}
     - Twilio__FromNumber=whatsapp:+14155238886
+    - IletiMerkezi__ApiKey=${ILETIMERKEZI_API_KEY}
+    - IletiMerkezi__Hash=${ILETIMERKEZI_HASH}
+    - IletiMerkezi__Sender=${ILETIMERKEZI_SENDER}
     ports:
       - "8080:8080"
     depends_on:

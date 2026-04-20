@@ -72,6 +72,7 @@ builder.Services.AddAuthorization();
 // Services
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
+builder.Services.AddScoped<ISmsService, SmsService>();
 
 // Hangfire
 builder.Services.AddHangfire(config =>
@@ -80,7 +81,6 @@ builder.Services.AddHangfire(config =>
             builder.Configuration.GetConnectionString("DefaultConnection"))));
 builder.Services.AddHangfireServer();
 
-// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -89,7 +89,9 @@ builder.Services.AddCors(options =>
                 "http://localhost:4200",
                 "https://localhost:4200",
                 "http://localhost:80",
-                "http://berberapp-admin")
+                "http://berberapp-admin",
+                "https://berberapp.com.tr",
+                "http://berberapp.com.tr")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });

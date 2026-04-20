@@ -355,6 +355,21 @@
   border-top: 1px solid #f1f5f9;
 }
 @media (max-width: 768px) {
-  .service-grid { grid-template-columns: 1fr; }
-  .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+
+    .btn { width: 100%; justify-content: center; }
+  }
+
+  .service-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .drawer { width: 100%; }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
 }

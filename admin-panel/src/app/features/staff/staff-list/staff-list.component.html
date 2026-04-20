@@ -55,6 +55,7 @@
               </td>
               <td>
                 <div class="actions">
+                  <button class="action-btn schedule" (click)="openWorkingHours(staff)" title="Çalışma Saatleri">⏰</button>
                   <button class="action-btn edit" (click)="openDrawer(staff)" title="Düzenle">✏</button>
                   <button class="action-btn delete" (click)="deleteStaff(staff.id)" title="Sil">🗑</button>
                 </div>
@@ -100,11 +101,6 @@
     </div>
 
     <div class="form-group">
-      <label>Profil Fotoğrafı URL</label>
-      <input type="text" formControlName="avatarUrl" placeholder="https://..."/>
-    </div>
-
-    <div class="form-group">
       <label>Biyografi</label>
       <textarea formControlName="bio" placeholder="Personel hakkında kısa bilgi..." rows="3"></textarea>
     </div>
@@ -130,4 +126,50 @@
     </div>
 
   </form>
+</div>
+<!-- Working Hours Overlay -->
+@if (isWorkingHoursOpen) {
+  <div class="drawer-overlay" (click)="closeWorkingHours()"></div>
+}
+
+<!-- Working Hours Drawer -->
+<div class="drawer" [class.open]="isWorkingHoursOpen">
+  <div class="drawer-header">
+    <h3>{{ selectedStaffForWH?.fullName }} — Çalışma Saatleri</h3>
+    <button class="drawer-close" (click)="closeWorkingHours()">✕</button>
+  </div>
+
+  @if (workingHoursForm) {
+    <form [formGroup]="workingHoursForm" (ngSubmit)="saveWorkingHours()" class="drawer-body">
+      <div formArrayName="hours">
+        @for (day of days; track day.value; let i = $index) {
+          <div class="wh-row" [formGroupName]="i">
+            <div class="wh-day">{{ day.label }}</div>
+
+            <label class="wh-toggle">
+              <input type="checkbox" formControlName="isOff"/>
+              <span class="toggle-label">Kapalı</span>
+            </label>
+
+            @if (!hoursArray.at(i).get('isOff')?.value) {
+              <div class="wh-times">
+                <input type="time" formControlName="startTime"/>
+                <span>—</span>
+                <input type="time" formControlName="endTime"/>
+              </div>
+            } @else {
+              <div class="wh-closed">Kapalı</div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="drawer-footer">
+        <button type="button" class="btn btn-outline" (click)="closeWorkingHours()">İptal</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSavingWH">
+          {{ isSavingWH ? 'Kaydediliyor...' : 'Kaydet' }}
+        </button>
+      </div>
+    </form>
+  }
 </div>

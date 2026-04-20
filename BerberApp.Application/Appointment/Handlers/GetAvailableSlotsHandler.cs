@@ -38,7 +38,12 @@ public class GetAvailableSlotsHandler : IRequestHandler<GetAvailableSlotsQuery, 
         if (!staffExists)
             throw new NotFoundException("Personel", request.StaffId);
 
-        var dayOfWeek = request.Date.DayOfWeek;
+        // UTC → Türkiye saatine çevir
+        var turkeyTz = GetTurkeyTimeZone();
+        var turkeyDate = TimeZoneInfo.ConvertTimeFromUtc(
+            DateTime.SpecifyKind(request.Date, DateTimeKind.Utc), turkeyTz);
+
+        var dayOfWeek = turkeyDate.DayOfWeek;
         var workingHour = await _workingHourRepo.GetAsync(
             x => x.StaffId == request.StaffId &&
                  x.DayOfWeek == dayOfWeek &&
@@ -47,24 +52,41 @@ public class GetAvailableSlotsHandler : IRequestHandler<GetAvailableSlotsQuery, 
         if (workingHour is null)
             return new List<AvailableSlotDto>();
 
-        var dateStart = request.Date.Date.ToUtc();
-        var dateEnd = dateStart.AddDays(1);
+        // Türkiye saatine göre günün başı ve sonu
+        var turkeyDayStart = new DateTime(turkeyDate.Year, turkeyDate.Month, turkeyDate.Day,
+            workingHour.StartTime.Hour, workingHour.StartTime.Minute, 0);
+        var turkeyDayEnd = new DateTime(turkeyDate.Year, turkeyDate.Month, turkeyDate.Day,
+            workingHour.EndTime.Hour, workingHour.EndTime.Minute, 0);
+
+        // Gece yarısını geçerse ertesi güne al
+        if (workingHour.EndTime.Hour == 0 && workingHour.EndTime.Minute == 0)
+            turkeyDayEnd = turkeyDayEnd.AddDays(1);
+
+        // UTC'ye çevir
+        var startUtc = TimeZoneInfo.ConvertTimeToUtc(
+            DateTime.SpecifyKind(turkeyDayStart, DateTimeKind.Unspecified), turkeyTz);
+        var endUtc = TimeZoneInfo.ConvertTimeToUtc(
+            DateTime.SpecifyKind(turkeyDayEnd, DateTimeKind.Unspecified), turkeyTz);
+
+        // Günün UTC aralığı
+        var dateStartUtc = TimeZoneInfo.ConvertTimeToUtc(
+            DateTime.SpecifyKind(
+                new DateTime(turkeyDate.Year, turkeyDate.Month, turkeyDate.Day, 0, 0, 0),
+                DateTimeKind.Unspecified), turkeyTz);
+        var dateEndUtc = dateStartUtc.AddDays(1);
 
         var existingAppointments = await _appointmentRepo.GetAllAsync(
             x => x.StaffId == request.StaffId &&
                  x.TenantId == request.TenantId &&
-                 x.StartTime >= dateStart &&
-                 x.StartTime < dateEnd &&
+                 x.StartTime >= dateStartUtc &&
+                 x.StartTime < dateEndUtc &&
                  x.Status != AppointmentStatus.Cancelled, ct);
 
         var slots = new List<AvailableSlotDto>();
         var duration = TimeSpan.FromMinutes(service.DurationMinutes);
-        var startTs = new TimeSpan(workingHour.StartTime.Hour, workingHour.StartTime.Minute, 0);
-        var endTs = new TimeSpan(workingHour.EndTime.Hour, workingHour.EndTime.Minute, 0);
-        var current = (request.Date.Date + startTs).ToUtc();
-        var endOfDay = (request.Date.Date + endTs).ToUtc();
+        var current = startUtc;
 
-        while (current + duration <= endOfDay)
+        while (current + duration <= endUtc)
         {
             var slotEnd = current + duration;
 
@@ -82,5 +104,11 @@ public class GetAvailableSlotsHandler : IRequestHandler<GetAvailableSlotsQuery, 
         }
 
         return slots;
+    }
+
+    private static TimeZoneInfo GetTurkeyTimeZone()
+    {
+        try { return TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time"); }
+        catch { return TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul"); }
     }
 }
