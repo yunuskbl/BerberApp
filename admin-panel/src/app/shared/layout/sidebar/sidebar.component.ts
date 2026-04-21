@@ -1,8 +1,10 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, EventEmitter, HostListener, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
+
+
 
 @Component({
   selector: 'app-sidebar',
@@ -13,13 +15,14 @@ import { Router } from '@angular/router';
 })
 export class SidebarComponent {
   isCollapsed = false;
-
+  @Output() collapsedChange = new EventEmitter<boolean>();  
   menuItems = [
     { label: 'Dashboard',  icon: '▦',  route: '/dashboard'    },
     { label: 'Randevular', icon: '📅', route: '/appointments' },
     { label: 'Personel',   icon: '👤', route: '/staff'        },
     { label: 'Hizmetler',  icon: '✂',  route: '/services'    },
-    { label: 'Müşteriler', icon: '👥', route: '/customers'   },
+    { label: 'Müşteriler', icon: '👥', route: '/customers'  },
+    { label: 'Raporlar',   icon: '📊', route: '/reports'    },
   ];
 
   bottomItems = [
@@ -29,20 +32,12 @@ export class SidebarComponent {
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {
-    this.checkScreenSize();
-  }
+  ) { }
 
   @HostListener('window:resize')
-  checkScreenSize(): void {
-    this.isCollapsed = window.innerWidth < 768;
-  }
+
 
   get user() { return this.authService.getUser(); }
-
-  toggle(): void {
-    this.isCollapsed = !this.isCollapsed;
-  }
 
   logout(): void {
     this.authService.logout();

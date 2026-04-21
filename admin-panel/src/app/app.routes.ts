@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { MainLayoutComponent } from './shared/layout/main-layout/main-layout.component';
+import { ReportsListComponent } from './features/reports/reports-list/reports-list.component';
 
 export const routes: Routes = [
   // Public routes — guard yok
@@ -18,11 +19,6 @@ export const routes: Routes = [
         (m) => m.SalonsComponent,
       ),
   },
-  {
-  path: 'settings',
-  loadComponent: () =>
-    import('./features/settings/settings.component').then(m => m.SettingsComponent)
-},
   {
     path: 'book/:subdomain',
     loadComponent: () =>
@@ -49,6 +45,20 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/staff/staff-list/staff-list.component').then(
             (m) => m.StaffListComponent,
+          ),
+      },
+      {
+        path: 'reports',
+        loadComponent: () =>
+          import('./features/reports/reports-list/reports-list.component').then(
+            (m) => m.ReportsListComponent,
+          ),
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./features/settings/settings.component').then(
+            (m) => m.SettingsComponent,
           ),
       },
       {

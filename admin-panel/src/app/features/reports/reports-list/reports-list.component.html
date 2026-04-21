@@ -1,0 +1,111 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h2>Raporlar</h2>
+      <p>Kazanç ve randevu analizi</p>
+    </div>
+  </div>
+
+  <!-- Tarih Filtresi -->
+  <div class="filter-section">
+    <div class="filter-group">
+      <label>Başlangıç Tarihi</label>
+      <input type="date" [(ngModel)]="reportStartDate" (change)="loadEarnings()"/>
+    </div>
+    <div class="filter-group">
+      <label>Bitiş Tarihi</label>
+      <input type="date" [(ngModel)]="reportEndDate" (change)="loadEarnings()"/>
+    </div>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+    </div>
+  } @else if (earnings) {
+    <!-- Özet Kartları -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Toplam Kazanç</div>
+        <div class="stat-value">{{ formatCurrency(earnings.totalEarnings) }}</div>
+        <div class="stat-sub">{{ earnings.totalAppointments }} randevu</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Ort. Randevu Başına</div>
+        <div class="stat-value">{{ formatCurrency(earnings.averagePerAppointment) }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Bu Ay</div>
+        <div class="stat-value">{{ formatCurrency(earnings.monthEarnings) }}</div>
+        <div class="stat-sub">{{ earnings.monthAppointments }} randevu</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Bu Hafta</div>
+        <div class="stat-value">{{ formatCurrency(earnings.weekEarnings) }}</div>
+        <div class="stat-sub">{{ earnings.weekAppointments }} randevu</div>
+      </div>
+    </div>
+
+    <!-- Personele Göre Kazanç -->
+    <div class="report-section">
+      <h3>Personele Göre Kazanç</h3>
+      <div class="table-card">
+        @if (earnings.byStaff.length > 0) {
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Personel</th>
+                <th>Toplam Kazanç</th>
+                <th>Randevu</th>
+                <th>Ortalama</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (staff of earnings.byStaff; track staff.staffId) {
+                <tr>
+                  <td class="staff-name">{{ staff.staffName }}</td>
+                  <td>{{ formatCurrency(staff.totalEarnings) }}</td>
+                  <td>{{ staff.appointmentCount }}</td>
+                  <td>{{ formatCurrency(staff.average) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="empty-text">Veri bulunmuyor</p>
+        }
+      </div>
+    </div>
+
+    <!-- Hizmet Bazında Kazanç -->
+    <div class="report-section">
+      <h3>Hizmet Bazında Kazanç</h3>
+      <div class="table-card">
+        @if (earnings.byService.length > 0) {
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Hizmet</th>
+                <th>Fiyat</th>
+                <th>Toplam Kazanç</th>
+                <th>Satış Sayısı</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (service of earnings.byService; track service.serviceId) {
+                <tr>
+                  <td class="service-name">{{ service.serviceName }}</td>
+                  <td>{{ formatCurrency(service.price) }}</td>
+                  <td>{{ formatCurrency(service.totalEarnings) }}</td>
+                  <td>{{ service.appointmentCount }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="empty-text">Veri bulunmuyor</p>
+        }
+      </div>
+    </div>
+  }
+</div>

@@ -10,7 +10,7 @@ import { AuthService } from '../../../core/services/auth.service';
   template: `
   <nav class="bottom-nav">
     <a routerLink="/dashboard" routerLinkActive="active" class="bottom-nav-item">
-      <span class="nav-icon">📊</span>
+      <span class="nav-icon">🏠</span>
       <span class="nav-label">Ana Sayfa</span>
     </a>
     <a routerLink="/appointments" routerLinkActive="active" class="bottom-nav-item">
@@ -24,6 +24,10 @@ import { AuthService } from '../../../core/services/auth.service';
     <a routerLink="/services" routerLinkActive="active" class="bottom-nav-item">
       <span class="nav-icon">✂</span>
       <span class="nav-label">Hizmetler</span>
+    </a>
+    <a routerLink="/reports" routerLinkActive="active" class="bottom-nav-item">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Raporlar</span>
     </a>
     <a routerLink="/settings" routerLinkActive="active" class="bottom-nav-item">
       <span class="nav-icon">⚙️</span>

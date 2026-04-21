@@ -21,6 +21,7 @@ export class HeaderComponent {
     '/services':     { title: 'Hizmetler',   subtitle: 'Hizmet ve fiyat yönetimi'        },
     '/customers':    { title: 'Müşteriler',  subtitle: 'Müşteri kayıtları ve geçmiş'     },
     '/settings':     { title: 'Ayarlar',     subtitle: 'Sistem ve hesap ayarları'        },
+    '/reports':      { title: 'Raporlar',    subtitle: 'Gelir ve performans raporları'  },
   };
 
   constructor(private router: Router) {
