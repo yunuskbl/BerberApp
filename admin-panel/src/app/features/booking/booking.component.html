@@ -185,174 +185,152 @@
 
       <!-- Bilgiler -->
       @if (canProceed()) {
-  <div class="section">
-    <div class="section-header">
-      <div class="section-number">5</div>
-      <h2>Bilgilerinizi Girin</h2>
-    </div>
+        <div class="section">
+          <div class="section-header">
+            <div class="section-number">5</div>
+            <h2>Bilgilerinizi Girin</h2>
+          </div>
 
-    <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label>Ad Soyad *</label>
-        <input
-          type="text"
-          formControlName="fullName"
-          placeholder="Adınız Soyadınız"
-        />
-      </div>
-      <div class="form-group">
-        <label>Telefon *</label>
-        <input
-          type="tel"
-          formControlName="phone"
-          placeholder="05XX XXX XX XX"
-        />
-      </div>
+          <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+              <label>Ad Soyad *</label>
+              <input
+                type="text"
+                formControlName="fullName"
+                placeholder="Adınız Soyadınız"
+              />
+            </div>
+            <div class="form-group">
+              <label>Telefon *</label>
+              <div class="phone-input-group">
+                <input
+                  type="tel"
+                  formControlName="phone"
+                  placeholder="05XX XXX XX XX"
+                  [readonly]="otpVerified"
+                />
+                <!-- @if (!otpVerified) {
+                  <button
+                    type="button"
+                    class="btn-otp"
+                    [disabled]="
+                      !customerForm.get('phone')?.value ||
+                      isSendingOtp ||
+                      otpTimer > 0
+                    "
+                    (click)="sendOtp()"
+                  >
+                    @if (isSendingOtp) {
+                      <span class="spinner-xs"></span>
+                    } @else if (otpTimer > 0) {
+                      {{ timerDisplay }}
+                    } @else {
+                      Kod Gönder
+                    }
+                  </button>
+                } @else {
+                  <span class="verified-badge">✓ Doğrulandı</span>
+                } -->
+              </div>
+            </div>
 
-      <div class="form-group">
-        <label>Email <span class="optional">(opsiyonel)</span></label>
-        <input
-          type="email"
-          formControlName="email"
-          placeholder="email@mail.com"
-        />
-      </div>
-      <div class="form-group">
-        <label>Notlar</label>
-        <textarea
-          formControlName="notes"
-          placeholder="Eklemek istediğiniz notlar..."
-          rows="3"
-        ></textarea>
-      </div>
+            <!-- @if (otpSent && !otpVerified) {
+              <div class="otp-section">
+                <label>Doğrulama Kodu</label>
+                <div class="otp-input-group">
+                  <input
+                    type="text"
+                    [(ngModel)]="otpCode"
+                    [ngModelOptions]="{ standalone: true }"
+                    placeholder="6 haneli kod"
+                    maxlength="6"
+                    class="otp-input"
+                  />
+                  <button
+                    type="button"
+                    class="btn-verify"
+                    [disabled]="otpCode.length !== 6 || isVerifyingOtp"
+                    (click)="verifyOtp()"
+                  >
+                    @if (isVerifyingOtp) {
+                      <span class="spinner-xs"></span>
+                    } @else {
+                      Doğrula
+                    }
+                  </button>
+                </div>
+                @if (otpError) {
+                  <span class="error-text">{{ otpError }}</span>
+                }
+                @if (otpSuccess && !otpVerified) {
+                  <span class="success-text">{{ otpSuccess }}</span>
+                }
+              </div>
+            }
 
-      <!-- Özet -->
-      <div class="booking-preview">
-        <h3>Randevu Özeti</h3>
-        <div class="preview-item">
-          <span>Hizmet</span>
-          <span>{{ selectedService?.name }}</span>
-        </div>
-        <div class="preview-item">
-          <span>Personel</span>
-          <span>{{ selectedStaff?.fullName }}</span>
-        </div>
-        <div class="preview-item">
-          <span>Tarih & Saat</span>
-          <span
-            >{{ formatDate(selectedSlot) }} -
-            {{ formatTime(selectedSlot) }}</span
-          >
-        </div>
-        <div class="preview-item total">
-          <span>Toplam</span>
-          <span>{{
-            formatPrice(
-              selectedService?.price || 0,
-              selectedService?.currency || "TRY"
-            )
-          }}</span>
-        </div>
-      </div>
+            @if (otpVerified) {
+              <div class="otp-verified-msg">✓ Telefon numaranız doğrulandı</div>
+            } -->
+            <div class="form-group">
+              <label>Email <span class="optional">(opsiyonel)</span></label>
+              <input
+                type="email"
+                formControlName="email"
+                placeholder="email@mail.com"
+              />
+            </div>
+            <div class="form-group">
+              <label>Notlar</label>
+              <textarea
+                formControlName="notes"
+                placeholder="Eklemek istediğiniz notlar..."
+                rows="3"
+              ></textarea>
+            </div>
 
-      @if (errorMessage) {
-        <div class="error-message">{{ errorMessage }}</div>
+            <!-- Özet -->
+            <div class="booking-preview">
+              <h3>Randevu Özeti</h3>
+              <div class="preview-item">
+                <span>Hizmet</span>
+                <span>{{ selectedService?.name }}</span>
+              </div>
+              <div class="preview-item">
+                <span>Personel</span>
+                <span>{{ selectedStaff?.fullName }}</span>
+              </div>
+              <div class="preview-item">
+                <span>Tarih & Saat</span>
+                <span
+                  >{{ formatDate(selectedSlot) }} -
+                  {{ formatTime(selectedSlot) }}</span
+                >
+              </div>
+              <div class="preview-item total">
+                <span>Toplam</span>
+                <span>{{
+                  formatPrice(
+                    selectedService?.price || 0,
+                    selectedService?.currency || "TRY"
+                  )
+                }}</span>
+              </div>
+            </div>
+
+            @if (errorMessage) {
+              <div class="error-message">{{ errorMessage }}</div>
+            }
+
+            <button
+              type="submit"
+              class="btn-submit"
+              [disabled]="isSubmitting || customerForm.invalid || !otpVerified"
+            >
+              {{ isSubmitting ? "Randevu Oluşturuluyor..." : "Randevu Al" }}
+            </button>
+          </form>
+        </div>
       }
-
-      <button
-        type="submit"
-        class="btn-submit"
-        [disabled]="isSubmitting || customerForm.invalid || !canProceed()"
-      >
-        {{ isSubmitting ? "Randevu Oluşturuluyor..." : "Randevu Al" }}
-      </button>
-    </form>
-  </div>
-}@if (canProceed()) {
-  <div class="section">
-    <div class="section-header">
-      <div class="section-number">5</div>
-      <h2>Bilgilerinizi Girin</h2>
-    </div>
-
-    <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label>Ad Soyad *</label>
-        <input
-          type="text"
-          formControlName="fullName"
-          placeholder="Adınız Soyadınız"
-        />
-      </div>
-      <div class="form-group">
-        <label>Telefon *</label>
-        <input
-          type="tel"
-          formControlName="phone"
-          placeholder="05XX XXX XX XX"
-        />
-      </div>
-
-      <div class="form-group">
-        <label>Email <span class="optional">(opsiyonel)</span></label>
-        <input
-          type="email"
-          formControlName="email"
-          placeholder="email@mail.com"
-        />
-      </div>
-      <div class="form-group">
-        <label>Notlar</label>
-        <textarea
-          formControlName="notes"
-          placeholder="Eklemek istediğiniz notlar..."
-          rows="3"
-        ></textarea>
-      </div>
-
-      <!-- Özet -->
-      <div class="booking-preview">
-        <h3>Randevu Özeti</h3>
-        <div class="preview-item">
-          <span>Hizmet</span>
-          <span>{{ selectedService?.name }}</span>
-        </div>
-        <div class="preview-item">
-          <span>Personel</span>
-          <span>{{ selectedStaff?.fullName }}</span>
-        </div>
-        <div class="preview-item">
-          <span>Tarih & Saat</span>
-          <span
-            >{{ formatDate(selectedSlot) }} -
-            {{ formatTime(selectedSlot) }}</span
-          >
-        </div>
-        <div class="preview-item total">
-          <span>Toplam</span>
-          <span>{{
-            formatPrice(
-              selectedService?.price || 0,
-              selectedService?.currency || "TRY"
-            )
-          }}</span>
-        </div>
-      </div>
-
-      @if (errorMessage) {
-        <div class="error-message">{{ errorMessage }}</div>
-      }
-
-      <button
-        type="submit"
-        class="btn-submit"
-        [disabled]="isSubmitting || customerForm.invalid || !canProceed()"
-      >
-        {{ isSubmitting ? "Randevu Oluşturuluyor..." : "Randevu Al" }}
-      </button>
-    </form>
-  </div>
-}
     </div>
 
     <!-- Footer -->
