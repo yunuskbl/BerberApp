@@ -1,9 +1,10 @@
-﻿using BerberApp.Application.Common.Exceptions;
-using BerberApp.Application.Common.Interfaces;
-using BerberApp.Application.Appointment.Commands;
+﻿using BerberApp.Application.Appointment.Commands;
 using BerberApp.Application.Appointment.DTOs;
+using BerberApp.Application.Common.Exceptions;
+using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Enums;
 using MediatR;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace BerberApp.Application.Appointment.Handlers;
 
@@ -93,6 +94,7 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
 
         if (dailyCount)
             throw new BadRequestException("Aynı gün için birden fazla randevu oluşturamazsınız.");
+
         // Randevu oluştur
         var appointment = new AppointmentEntity
         {
@@ -110,13 +112,32 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
 
         await _appointmentRepo.AddAsync(appointment, ct);
 
-
         // Müşteri ziyaret sayısını artır
         customer.TotalVisits++;
         await _customerRepo.UpdateAsync(customer, ct);
 
-        // Sadece admin panelden oluşturulanlar için bildirim gönder
-        if (!request.IsFromBookingPage)
+        // Booking sayfasından oluşturulmuşsa berbere bildirim
+        if (request.IsFromBookingPage)
+        {
+            try
+            {
+                var message = $"Yeni Randevu: {customer.FullName}\n" +
+                              $"📅 {appointment.StartTime:dd.MM.yyyy HH:mm}\n" +
+                              $"🔧 {service.Name}\n" +
+                              $"👤 {staff.FullName}";
+
+                await _whatsAppService.SendAppointmentConfirmedAsync(
+                    staff.Phone,
+                    "BerberApp",
+                    message,
+                    "",
+                    appointment.StartTime
+                );
+            }
+            catch { /* Bildirim hatası randevuyu etkilemesin */ }
+        }
+        // Admin panelden oluşturulanlar için müşteriye bildirim
+        else
         {
             try
             {
@@ -130,6 +151,7 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
             }
             catch { /* Bildirim hatası randevuyu etkilemesin */ }
         }
+
         return new AppointmentDto
         {
             Id = appointment.Id,
@@ -145,7 +167,5 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
             Notes = appointment.Notes,
             DurationMinutes = service.DurationMinutes
         };
-
-
     }
 }
