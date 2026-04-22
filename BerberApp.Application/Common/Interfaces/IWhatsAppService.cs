@@ -12,4 +12,5 @@ public interface IWhatsAppService
     Task SendAppointmentReminderAsync(string phone, string customerName, string serviceName, DateTime startTime);
     Task SendAppointmentCancelledAsync(string phone, string customerName, DateTime startTime);
     Task SendOtpAsync(string phone, string otp);
+    Task SendNewAppointmentRequestAsync(string staffPhone, string customerName, string customerPhone, string serviceName, DateTime startTime);
 }

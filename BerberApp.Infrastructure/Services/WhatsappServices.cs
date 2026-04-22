@@ -126,6 +126,26 @@ public class WhatsAppService : IWhatsAppService
 
         await SendMessageAsync(phone, message);
     }
+    public async Task SendNewAppointmentRequestAsync(
+    string staffPhone, string customerName,
+    string customerPhone, string serviceName, DateTime startTime)
+    {
+        var culture = new System.Globalization.CultureInfo("tr-TR");
+
+        var message = $"""
+    🔔 *Yeni Randevu Talebi!*
+    
+    👤 Müşteri: {customerName}
+    📞 Telefon: {customerPhone}
+    🔧 Hizmet: {serviceName}
+    📅 Tarih: {startTime.ToString("dd MMMM yyyy", culture)}
+    ⏰ Saat: {startTime:HH:mm}
+    
+    Lütfen admin panelden onaylayın.
+    """;
+
+        await SendMessageAsync(staffPhone, message);
+    }
     private static DateTime ToTurkeyTime(DateTime utcTime)
     {
         // Kind'ı UTC olarak zorla

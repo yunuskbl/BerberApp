@@ -106,6 +106,15 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
         if (dailyCount)
             throw new BadRequestException("Aynı gün için birden fazla randevu oluşturamazsınız.");
 
+        // Onay bekleyen randevusu olan müşteri tekrar alamasın
+        var hasPending = await _appointmentRepo.AnyAsync(
+            x => x.CustomerId == request.CustomerId &&
+                 x.TenantId == request.TenantId &&
+                 x.Status == AppointmentStatus.Pending, ct);
+
+        if (hasPending)
+            throw new BadRequestException("Onay bekleyen bir randevunuz bulunuyor. Yeni randevu alamazsınız.");
+
         // Randevu oluştur
         var appointment = new AppointmentEntity
         {
@@ -130,15 +139,18 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
         {
             try
             {
-                var message = $"Yeni Randevu: {customer.FullName}\n" +
-                              $"📅 {startTimeTurkey:dd.MM.yyyy HH:mm}\n" +
-                              $"🔧 {service.Name}\n" +
-                              $"👤 {staff.FullName}";
-
-                await _whatsAppService.SendAppointmentConfirmedAsync(
-                    staff.Phone, "BerberApp", message, "", startTimeUtc);
+                await _whatsAppService.SendNewAppointmentRequestAsync(
+                    staff.Phone,
+                    customer.FullName,
+                    customer.Phone,
+                    service.Name,
+                    startTimeTurkey  // zaten Türkiye saati
+                );
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WHATSAPP HATA] {ex.Message}");
+            }
         }
         else
         {
