@@ -73,6 +73,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
 builder.Services.AddScoped<ISmsService, SmsService>();
+builder.Services.AddScoped<INotificationService, LinkNotificationService>();
 
 // Hangfire
 builder.Services.AddHangfire(config =>
@@ -91,7 +92,8 @@ builder.Services.AddCors(options =>
                 "http://localhost:80",
                 "http://berberapp-admin",
                 "https://berberapp.com.tr",
-                "http://berberapp.com.tr")
+                "http://berberapp.com.tr",
+        "https://bless-overcoat-duct.ngrok-free.dev")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });

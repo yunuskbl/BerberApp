@@ -53,21 +53,30 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
         if (customer is null)
             throw new NotFoundException("Müşteri", request.CustomerId);
 
-        // UTC'ye çevir
-        var startTimeUtc = request.StartTime.ToUtc();
-        var endTimeUtc = request.StartTime.AddMinutes(service.DurationMinutes).ToUtc();
+        // request.StartTime zaten UTC geliyor, ToUtc() ÇAĞIRMA
+        var startTimeUtc = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc);
+        var endTimeUtc = startTimeUtc.AddMinutes(service.DurationMinutes);
 
-        // Çalışma saati kontrolü
+        // Geçmiş tarih kontrolü
+        if (startTimeUtc <= DateTime.UtcNow)
+            throw new BadRequestException("Randevu saati geçmiş bir tarih olamaz.");
+
+        // Türkiye saatine çevir — çalışma saati karşılaştırması için
+        var turkeyTz = GetTurkeyTimeZone();
+        var startTimeTurkey = TimeZoneInfo.ConvertTimeFromUtc(startTimeUtc, turkeyTz);
+        var endTimeTurkey = TimeZoneInfo.ConvertTimeFromUtc(endTimeUtc, turkeyTz);
+
+        // Çalışma saati kontrolü — Türkiye saatiyle karşılaştır
         var workingHour = await _workingHourRepo.GetAsync(
             x => x.StaffId == request.StaffId &&
-                 x.DayOfWeek == request.StartTime.DayOfWeek &&
+                 x.DayOfWeek == startTimeTurkey.DayOfWeek &&
                  !x.IsOff, ct);
 
         if (workingHour is null)
             throw new BadRequestException("Personel bu gün çalışmıyor.");
 
-        if (startTimeUtc.TimeOfDay < workingHour.StartTime.ToTimeSpan() ||
-            endTimeUtc.TimeOfDay > workingHour.EndTime.ToTimeSpan())
+        if (startTimeTurkey.TimeOfDay < workingHour.StartTime.ToTimeSpan() ||
+            endTimeTurkey.TimeOfDay > workingHour.EndTime.ToTimeSpan())
             throw new BadRequestException("Seçilen saat çalışma saatleri dışında.");
 
         // Çakışma kontrolü
@@ -81,15 +90,17 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
         if (conflict)
             throw new ConflictException("Bu saatte başka bir randevu mevcut.");
 
-        // Aynı müşteri aynı gün max 2 randevu
-        var today = DateTime.UtcNow.Date;
-        var tomorrow = today.AddDays(1);
+        // Aynı müşteri aynı gün max 1 randevu (Türkiye günü bazında)
+        var turkeyDayStart = new DateTime(startTimeTurkey.Year, startTimeTurkey.Month, startTimeTurkey.Day, 0, 0, 0);
+        var turkeyDayEnd = turkeyDayStart.AddDays(1);
+        var dayStartUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(turkeyDayStart, DateTimeKind.Unspecified), turkeyTz);
+        var dayEndUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(turkeyDayEnd, DateTimeKind.Unspecified), turkeyTz);
 
         var dailyCount = await _appointmentRepo.AnyAsync(
             x => x.CustomerId == request.CustomerId &&
                  x.TenantId == request.TenantId &&
-                 x.StartTime >= today &&
-                 x.StartTime < tomorrow &&
+                 x.StartTime >= dayStartUtc &&
+                 x.StartTime < dayEndUtc &&
                  x.Status != AppointmentStatus.Cancelled, ct);
 
         if (dailyCount)
@@ -112,44 +123,31 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
 
         await _appointmentRepo.AddAsync(appointment, ct);
 
-        // Müşteri ziyaret sayısını artır
         customer.TotalVisits++;
         await _customerRepo.UpdateAsync(customer, ct);
 
-        // Booking sayfasından oluşturulmuşsa berbere bildirim
         if (request.IsFromBookingPage)
         {
             try
             {
                 var message = $"Yeni Randevu: {customer.FullName}\n" +
-                              $"📅 {appointment.StartTime:dd.MM.yyyy HH:mm}\n" +
+                              $"📅 {startTimeTurkey:dd.MM.yyyy HH:mm}\n" +
                               $"🔧 {service.Name}\n" +
                               $"👤 {staff.FullName}";
 
                 await _whatsAppService.SendAppointmentConfirmedAsync(
-                    staff.Phone,
-                    "BerberApp",
-                    message,
-                    "",
-                    appointment.StartTime
-                );
+                    staff.Phone, "BerberApp", message, "", startTimeUtc);
             }
-            catch { /* Bildirim hatası randevuyu etkilemesin */ }
+            catch { }
         }
-        // Admin panelden oluşturulanlar için müşteriye bildirim
         else
         {
             try
             {
                 await _whatsAppService.SendAppointmentConfirmedAsync(
-                    customer.Phone,
-                    customer.FullName,
-                    service.Name,
-                    staff.FullName,
-                    appointment.StartTime
-                );
+                    customer.Phone, customer.FullName, service.Name, staff.FullName, startTimeUtc);
             }
-            catch { /* Bildirim hatası randevuyu etkilemesin */ }
+            catch { }
         }
 
         return new AppointmentDto
@@ -167,5 +165,11 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
             Notes = appointment.Notes,
             DurationMinutes = service.DurationMinutes
         };
+    }
+
+    private static TimeZoneInfo GetTurkeyTimeZone()
+    {
+        try { return TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time"); }
+        catch { return TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul"); }
     }
 }

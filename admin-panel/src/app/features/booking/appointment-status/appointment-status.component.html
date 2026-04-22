@@ -1,0 +1,58 @@
+<div class="status-page">
+  @if (isLoading) {
+    <div class="loading-screen">
+      <div class="spinner"></div>
+      <p>Yükleniyor...</p>
+    </div>
+  } @else if (errorMessage) {
+    <div class="error-screen">
+      <span class="error-icon">✂</span>
+      <h2>Randevu Bulunamadı</h2>
+      <p>{{ errorMessage }}</p>
+    </div>
+  } @else if (appointment) {
+    <div class="status-card">
+      <div class="status-icon {{ getStatusClass() }}">
+        {{ getStatusIcon() }}
+      </div>
+      <h2>{{ getStatusText() }}</h2>
+
+      @if (appointment.status === "Pending") {
+        <div class="pending-note">
+          📌 Randevu durumunuzu takip etmek için bu sayfayı kapatmayın.<br /><br />
+          📞 Onay için salonumuzu arayabilirsiniz.
+        </div>
+      }
+
+      <div class="appointment-details">
+        <div class="detail-item">
+          <span class="label">Hizmet</span>
+          <span class="value">{{ appointment.serviceName }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Personel</span>
+          <span class="value">{{ appointment.staffName }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Tarih</span>
+          <span class="value">{{ formatDate(appointment.startTime) }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Saat</span>
+          <span class="value">{{ formatTime(appointment.startTime) }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Ücret</span>
+          <span class="value">{{
+            formatPrice(appointment.price, appointment.currency)
+          }}</span>
+        </div>
+      </div>
+
+      <p class="footer-note">
+        Randevunuzu değiştirmek veya iptal etmek için salonumuzu
+        arayabilirsiniz.
+      </p>
+    </div>
+  }
+</div>

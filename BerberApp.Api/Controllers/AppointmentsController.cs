@@ -45,6 +45,7 @@ public class AppointmentsController : BaseApiController
     public async Task<IActionResult> Create([FromBody] CreateAppointmentCommand command)
     {
         command.TenantId = TenantId;
+        command.IsFromBookingPage  = true;
         return Created(await Mediator.Send(command));
     }
 

@@ -86,11 +86,16 @@ export class BookingApiService {
       request,
     );
   }
-  sendOtp(phone: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/otp/send`, { phone });
-  }
+  getAppointmentStatus(subdomain: string, appointmentId: string): Observable<any> {
+  return this.http.get(
+    `${this.apiUrl}/booking/${subdomain}/appointments/${appointmentId}`
+  );
+}
+  // sendOtp(phone: string): Observable<any> {
+  //   return this.http.post(`${this.apiUrl}/otp/send`, { phone });
+  // }
 
-  verifyOtp(phone: string, code: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/otp/verify`, { phone, code });
-  }
+  // verifyOtp(phone: string, code: string): Observable<any> {
+  //   return this.http.post(`${this.apiUrl}/otp/verify`, { phone, code });
+  // }
 }

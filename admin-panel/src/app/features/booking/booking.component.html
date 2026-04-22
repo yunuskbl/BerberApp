@@ -207,7 +207,6 @@
                   type="tel"
                   formControlName="phone"
                   placeholder="05XX XXX XX XX"
-                  [readonly]="otpVerified"
                 />
                 <!-- @if (!otpVerified) {
                   <button
@@ -324,7 +323,7 @@
             <button
               type="submit"
               class="btn-submit"
-              [disabled]="isSubmitting || customerForm.invalid || !otpVerified"
+              [disabled]="isSubmitting || customerForm.invalid"
             >
               {{ isSubmitting ? "Randevu Oluşturuluyor..." : "Randevu Al" }}
             </button>

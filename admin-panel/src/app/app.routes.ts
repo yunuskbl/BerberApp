@@ -26,6 +26,13 @@ export const routes: Routes = [
         (m) => m.BookingComponent,
       ),
   },
+  {
+  path: 'randevu/:subdomain/:appointmentId',
+  loadComponent: () =>
+    import('./features/booking/appointment-status/appointment-status.component').then(
+      (m) => m.AppointmentStatusComponent,
+    ),
+},
 
   // Protected routes — guard var
   {

@@ -1,4 +1,5 @@
 ﻿using BerberApp.Application.Appointment.Commands;
+using BerberApp.Application.Appointment.DTOs;
 using BerberApp.Application.Appointment.Queries;
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Enums;
@@ -138,11 +139,15 @@ public class BookingController : ControllerBase
             return NotFound(new { success = false, message = "Salon bulunamadı." });
 
         // Telefon doğrulanmış mı kontrol et
-        if (!_cache.TryGetValue($"verified:{request.Phone}", out bool isVerified) || !isVerified)
-            return BadRequest(new { success = false, message = "Telefon numarası doğrulanmamış." });
+        //if (!_cache.TryGetValue($"verified:{request.Phone}", out bool isVerified) || !isVerified)
+        //    return BadRequest(new { success = false, message = "Telefon numarası doğrulanmamış." });
         // Telefon başına günlük limit kontrolü
-        var today = DateTime.UtcNow.Date;
+        var turkeyTz = GetTurkeyTimeZone();
+        var nowTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, turkeyTz);
+        var today = new DateTime(nowTurkey.Year, nowTurkey.Month, nowTurkey.Day, 0, 0, 0);
         var tomorrow = today.AddDays(1);
+        var todayUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(today, DateTimeKind.Unspecified), turkeyTz);
+        var tomorrowUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(tomorrow, DateTimeKind.Unspecified), turkeyTz);
 
         var phone = request.Phone.Replace(" ", "").Replace("-", "");
         if (phone.StartsWith("0")) phone = "+90" + phone[1..];
@@ -153,11 +158,11 @@ public class BookingController : ControllerBase
         if (existingCustomer != null)
         {
             var dailyBookings = await _context.Appointments
-                .CountAsync(x => x.CustomerId == existingCustomer.Id &&
-                                 x.TenantId == tenant.Id &&
-                                 x.StartTime >= today &&
-                                 x.StartTime < tomorrow &&
-                                 x.Status != AppointmentStatus.Cancelled);
+    .CountAsync(x => x.CustomerId == existingCustomer.Id &&
+                     x.TenantId == tenant.Id &&
+                     x.StartTime >= todayUtc &&  
+                     x.StartTime < tomorrowUtc &&
+                     x.Status != AppointmentStatus.Cancelled);
 
             if (dailyBookings >= 2)
                 return BadRequest(new
@@ -189,9 +194,27 @@ public class BookingController : ControllerBase
             CustomerId = customer.Id,
             StaffId = request.StaffId,
             ServiceId = request.ServiceId,
-            StartTime = request.StartTime,
+            StartTime = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc),  
             Notes = request.Notes,
             IsFromBookingPage = true
+        });
+
+        return Ok(new { success = true, data = result, appointmentId = result.Id });
+    }
+
+    [HttpGet("{subdomain}/appointments/{appointmentId}")]
+    public async Task<IActionResult> GetAppointmentStatus(string subdomain, Guid appointmentId)
+    {
+        var tenant = await _context.Tenants
+            .FirstOrDefaultAsync(x => x.Subdomain == subdomain && x.IsActive);
+
+        if (tenant is null)
+            return NotFound(new { success = false, message = "Salon bulunamadı." });
+
+        var result = await _mediator.Send(new GetAppointmentStatusQuery
+        {
+            AppointmentId = appointmentId,
+            TenantId = tenant.Id
         });
 
         return Ok(new { success = true, data = result });
@@ -206,4 +229,11 @@ public class BookingController : ControllerBase
         public DateTime StartTime { get; set; }
         public string? Notes { get; set; }
     }
+
+    private static TimeZoneInfo GetTurkeyTimeZone()
+    {
+        try { return TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time"); }
+        catch { return TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul"); }
+    }
+
 }
