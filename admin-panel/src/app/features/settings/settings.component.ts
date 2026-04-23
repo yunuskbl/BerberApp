@@ -39,6 +39,7 @@ export class SettingsComponent implements OnInit {
     this.salonForm = this.fb.group({
       name: ['', Validators.required],
       phone: [''],
+      notificationPhone: [''],
       address: [''],
     });
 
@@ -63,6 +64,7 @@ export class SettingsComponent implements OnInit {
           this.salonForm.patchValue({
             name: res.data.name,
             phone: res.data.phone,
+            notificationPhone: res.data.notificationPhone,
             address: res.data.address,
           });
         }

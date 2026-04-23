@@ -46,8 +46,8 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
         {
             Name = request.TenantName,
             Subdomain = request.Subdomain,
-            Phone = request.Phone,      
-            Address = request.Address,  
+            Phone = request.Phone,
+            Address = request.Address,
             IsActive = true
         };
 
@@ -69,8 +69,11 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
         _context.Users.Add(user);
         await _context.SaveChangesAsync(ct);
 
+        // Yeni user'a default plan ver (Basic)
+        var userPlan = BerberApp.Domain.Enums.PlanType.Basic;
+
         // Token üret
-        var accessToken = _jwtService.GenerateAccessToken(user);
+        var accessToken = _jwtService.GenerateAccessToken(user, userPlan);
         var refreshToken = _jwtService.GenerateRefreshToken();
 
         // Refresh token kaydet

@@ -137,29 +137,37 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
 
         if (request.IsFromBookingPage)
         {
-            try
+            var notificationPhone = request.NotificationPhone ?? staff.Phone;
+            Console.WriteLine($"[WHATSAPP] Bildirim numarası: '{notificationPhone}'");
+
+            if (!string.IsNullOrWhiteSpace(notificationPhone))
             {
-                await _whatsAppService.SendNewAppointmentRequestAsync(
-                    staff.Phone,
-                    customer.FullName,
-                    customer.Phone,
-                    service.Name,
-                    startTimeTurkey  // zaten Türkiye saati
-                );
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[WHATSAPP HATA] {ex.Message}");
+                try
+                {
+                    var pendingList = await _appointmentRepo.GetAllAsync(
+                        x => x.TenantId == request.TenantId && x.Status == AppointmentStatus.Pending, ct);
+                    var sequenceNumber = pendingList.OrderBy(x => x.StartTime).ToList()
+                        .FindIndex(x => x.Id == appointment.Id) + 1;
+                    if (sequenceNumber == 0) sequenceNumber = pendingList.Count;
+                    await _whatsAppService.SendNewAppointmentRequestAsync(
+                        notificationPhone,
+                        customer.FullName,
+                        customer.Phone,
+                        service.Name,
+                        startTimeTurkey,
+                        sequenceNumber
+                    );
+                    Console.WriteLine($"[WHATSAPP] Bildirim gönderildi: {notificationPhone}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[WHATSAPP HATA] {ex.Message}");
+                }
             }
         }
         else
         {
-            try
-            {
-                await _whatsAppService.SendAppointmentConfirmedAsync(
-                    customer.Phone, customer.FullName, service.Name, staff.FullName, startTimeUtc);
-            }
-            catch { }
+            Console.WriteLine("[WHATSAPP] Bildirim numarası boş, mesaj gönderilmedi.");
         }
 
         return new AppointmentDto

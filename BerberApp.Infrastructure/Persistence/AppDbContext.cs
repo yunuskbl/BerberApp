@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BerberApp.Infrastructure.Persistence;
 
-public class AppDbContext : DbContext, IAppDbContext 
+public class AppDbContext : DbContext, IAppDbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -16,6 +16,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<WorkingHour> WorkingHours => Set<WorkingHour>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

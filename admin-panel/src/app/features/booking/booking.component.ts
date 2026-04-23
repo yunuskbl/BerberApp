@@ -76,13 +76,20 @@ export class BookingComponent implements OnInit {
     private bookingService: BookingApiService,
     private fb: FormBuilder,
     private titleService: Title,
-    private router: Router
+    private router: Router,
   ) {
     this.customerForm = this.fb.group({
-      fullName: ['', [Validators.required]],
-      phone: ['', [Validators.required]],
-      email: ['', [Validators.email]],
-      notes: [''],
+      fullName: ['', [Validators.required, Validators.maxLength(30)]],
+      phone: [
+        '',
+        [
+          Validators.required,
+          Validators.maxLength(11),
+          Validators.pattern(/^[0-9\s\-\+\(\)]{10,15}$/),
+        ],
+      ],
+      email: ['', [Validators.email, Validators.maxLength(80)]],
+      notes: ['', [Validators.maxLength(200)]],
     });
   }
 
@@ -148,7 +155,8 @@ export class BookingComponent implements OnInit {
   }
 
   loadSlotsIfReady(): void {
-    if (!this.selectedService || !this.selectedStaff || !this.selectedDate) return;
+    if (!this.selectedService || !this.selectedStaff || !this.selectedDate)
+      return;
 
     // "2025-04-23" → timezone kayması olmadan UTC'ye gönder
     const dateUtc = this.selectedDate + 'T00:00:00Z';
@@ -158,7 +166,7 @@ export class BookingComponent implements OnInit {
         this.subdomain,
         this.selectedStaff.id,
         this.selectedService.id,
-        dateUtc,  // <-- değişti
+        dateUtc, // <-- değişti
       )
       .subscribe({
         next: (res) => {
@@ -166,7 +174,7 @@ export class BookingComponent implements OnInit {
             this.slots = res.data.filter((s: BookingSlot) => s.isAvailable);
         },
       });
-}
+  }
 
   selectSlot(slot: BookingSlot): void {
     this.selectedSlot = slot.startTime;
@@ -182,38 +190,42 @@ export class BookingComponent implements OnInit {
   }
 
   onSubmit(): void {
-  if (this.customerForm.invalid || !this.canProceed()) return;
+    if (this.customerForm.invalid || !this.canProceed()) return;
 
-  this.isSubmitting = true;
-  this.errorMessage = '';
+    this.isSubmitting = true;
+    this.errorMessage = '';
 
-  const { fullName, phone, email, notes } = this.customerForm.value;
+    const { fullName, phone, email, notes } = this.customerForm.value;
 
-  this.bookingService
-    .createAppointment(this.subdomain, {
-      fullName,
-      phone,
-      email,
-      staffId: this.selectedStaff!.id,
-      serviceId: this.selectedService!.id,
-      startTime: this.selectedSlot,
-      notes,
-    })
-    .subscribe({
-      next: (res) => {
-        if (res.success) {
-          this.router.navigate(['/randevu', this.subdomain, res.appointmentId]);
-        } else {
-          this.errorMessage = res.message;
-        }
-        this.isSubmitting = false;
-      },
-      error: (err) => {
-        this.errorMessage = err.error?.message || 'Randevu oluşturulamadı.';
-        this.isSubmitting = false;
-      },
-    });
-}
+    this.bookingService
+      .createAppointment(this.subdomain, {
+        fullName,
+        phone,
+        email,
+        staffId: this.selectedStaff!.id,
+        serviceId: this.selectedService!.id,
+        startTime: this.selectedSlot,
+        notes,
+      })
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.router.navigate([
+              '/randevu',
+              this.subdomain,
+              res.appointmentId,
+            ]);
+          } else {
+            this.errorMessage = res.message;
+          }
+          this.isSubmitting = false;
+        },
+        error: (err) => {
+          this.errorMessage = err.error?.message || 'Randevu oluşturulamadı.';
+          this.isSubmitting = false;
+        },
+      });
+  }
 
   formatTime(dateStr: string): string {
     return new Date(dateStr).toLocaleTimeString('tr-TR', {

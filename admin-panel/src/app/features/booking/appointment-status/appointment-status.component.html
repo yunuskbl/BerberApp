@@ -18,9 +18,24 @@
       <h2>{{ getStatusText() }}</h2>
 
       @if (appointment.status === "Pending") {
-        <div class="pending-note">
-          📌 Randevu durumunuzu takip etmek için bu sayfayı kapatmayın.<br /><br />
-          📞 Onay için salonumuzu arayabilirsiniz.
+        <div class="save-link-banner">
+          <p class="save-link-title">📎 Bu linki kaydedin</p>
+          <p class="save-link-desc">Randevu onay durumunuzu buradan takip edebilirsiniz.</p>
+          <div class="link-box">
+            <span class="link-text">{{ statusUrl }}</span>
+          </div>
+          <div class="link-actions">
+            <button class="btn-copy" (click)="copyLink()">
+              @if (copied) {
+                ✓ Kopyalandı
+              } @else {
+                📋 Linki Kopyala
+              }
+            </button>
+            <button class="btn-whatsapp" (click)="shareOnWhatsApp()">
+              💬 WhatsApp'ta Paylaş
+            </button>
+          </div>
         </div>
       }
 

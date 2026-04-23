@@ -4,6 +4,7 @@ import { Observable, tap } from 'rxjs';
 import { LoginRequest, LoginResponse } from '../models/auth.model';
 import { ApiResponse } from '../models/api-response.model';
 import { environment } from '../../../environments/environment';
+import { jwtDecode } from 'jwt-decode';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -19,6 +20,16 @@ export class AuthService {
           localStorage.setItem('refreshToken', response.data.refreshToken);
           localStorage.setItem('user', JSON.stringify(response.data));
           localStorage.setItem('subdomain', response.data.subdomain || '');
+
+          // 🔑 Decode JWT ve plan'ı al
+          try {
+            const decoded: any = jwtDecode(response.data.accessToken);
+            const userPlan = decoded.plan_type || 'Basic';
+            localStorage.setItem('userPlan', userPlan);
+          } catch (error) {
+            console.error('Token decode error:', error);
+            localStorage.setItem('userPlan', 'Basic');
+          }
         }
       })
     );
@@ -28,6 +39,7 @@ export class AuthService {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+    localStorage.removeItem('userPlan');
   }
 
   getToken(): string | null {
@@ -37,6 +49,10 @@ export class AuthService {
   getUser(): LoginResponse | null {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
+  }
+
+  getUserPlan(): string {
+    return localStorage.getItem('userPlan') || 'Basic';
   }
 
   isLoggedIn(): boolean {

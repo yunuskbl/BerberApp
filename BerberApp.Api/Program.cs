@@ -1,5 +1,6 @@
 using BerberApp.Application.Common.Behaviors;
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Application.Common.Services;
 using BerberApp.Infrastructure.Identity;
 using BerberApp.Infrastructure.Jobs;
 using BerberApp.Infrastructure.Persistence;
@@ -72,8 +73,10 @@ builder.Services.AddAuthorization();
 // Services
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
+builder.Services.AddHttpClient<SmsService>();
 builder.Services.AddScoped<ISmsService, SmsService>();
 builder.Services.AddScoped<INotificationService, LinkNotificationService>();
+builder.Services.AddScoped<IPlanService, PlanService>();
 
 // Hangfire
 builder.Services.AddHangfire(config =>

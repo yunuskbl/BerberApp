@@ -3,6 +3,7 @@ using BerberApp.Application.Auth.DTOs;
 using BerberApp.Application.Common.Exceptions;
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Entities;
+using BerberApp.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -37,7 +38,28 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResponse>
         var tenant = await _context.Tenants
             .FirstOrDefaultAsync(x => x.Id == user.TenantId, ct);
 
-        var accessToken = _jwtService.GenerateAccessToken(user);
+        var userPlan = PlanType.Basic;
+        Subscription subscription = null;
+        // Aktif aboneliği al
+        try
+        {
+            subscription = await _context.Subscriptions
+       .Where(x => x.TenantId == user.TenantId &&
+                x.Status == SubscriptionStatus.Active &&
+                x.ExpiryDate > DateTime.UtcNow)
+       .OrderByDescending(x => x.StartDate)
+       .FirstOrDefaultAsync(ct);
+
+            userPlan = subscription?.Plan ?? PlanType.Basic;  // ← Default: Basic
+        }
+        catch (Exception)
+        {
+
+            userPlan = subscription?.Plan ?? PlanType.Basic;
+        }
+        
+
+        var accessToken = _jwtService.GenerateAccessToken(user, userPlan);
         var refreshToken = _jwtService.GenerateRefreshToken();
 
         user.RefreshToken = refreshToken;

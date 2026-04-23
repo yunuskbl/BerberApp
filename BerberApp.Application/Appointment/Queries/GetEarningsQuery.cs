@@ -25,6 +25,7 @@ public class EarningsDto
     public decimal MonthEarnings { get; set; }
     public int MonthAppointments { get; set; }
 
+
     public List<DailyEarningDto> Daily { get; set; } = new();
     public List<StaffEarningDto> ByStaff { get; set; } = new();
     public List<ServiceEarningDto> ByService { get; set; } = new();
@@ -39,8 +40,8 @@ public class DailyEarningDto
 
 public class StaffEarningDto
 {
-    public string StaffId { get; set; }
-    public string StaffName { get; set; }
+    public string? StaffId { get; set; }
+    public string? StaffName { get; set; }
     public decimal TotalEarnings { get; set; }
     public int AppointmentCount { get; set; }
     public decimal Average { get; set; }
@@ -48,8 +49,8 @@ public class StaffEarningDto
 
 public class ServiceEarningDto
 {
-    public string ServiceId { get; set; }
-    public string ServiceName { get; set; }
+    public string? ServiceId { get; set; }
+    public string? ServiceName { get; set; }
     public decimal TotalEarnings { get; set; }
     public int AppointmentCount { get; set; }
     public decimal Price { get; set; }

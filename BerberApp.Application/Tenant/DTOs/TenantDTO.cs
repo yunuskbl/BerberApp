@@ -13,6 +13,7 @@ public class TenantDto
     public string Subdomain { get; set; } = string.Empty;
     public string? LogoUrl { get; set; }
     public string? Phone { get; set; }
+    public string? NotificationPhone { get; set; }
     public string? Address { get; set; }
     public bool IsActive { get; set; }
 }

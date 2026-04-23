@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Entities;
+using BerberApp.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -18,7 +19,7 @@ public class JwtTokenService : IJwtTokenService
         _config = config;
     }
 
-    public string GenerateAccessToken(User user)
+    public string GenerateAccessToken(User user, PlanType userPlan = PlanType.Basic)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -29,7 +30,10 @@ public class JwtTokenService : IJwtTokenService
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(JwtRegisteredClaimNames.Jti,   Guid.NewGuid().ToString()),
             new("tenant_id",                   user.TenantId.ToString()),
-            new(ClaimTypes.Role,               user.Role.ToString())
+            new(ClaimTypes.Role,               user.Role.ToString()),
+            
+            // Plan type claim for authorization
+            new("plan_type",                   userPlan.ToString())
         };
 
         var token = new JwtSecurityToken(

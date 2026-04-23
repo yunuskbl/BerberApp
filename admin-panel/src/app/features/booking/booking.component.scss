@@ -29,6 +29,12 @@
   p { font-size: 14px; color: #94a3b8; }
 }
 
+.field-error {
+  color: #e53e3e;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
+}
 @keyframes spin { to { transform: rotate(360deg); } }
 
 // Error

@@ -128,20 +128,22 @@ public class WhatsAppService : IWhatsAppService
     }
     public async Task SendNewAppointmentRequestAsync(
     string staffPhone, string customerName,
-    string customerPhone, string serviceName, DateTime startTime)
+    string customerPhone, string serviceName, DateTime startTime, int sequenceNumber)
     {
         var culture = new System.Globalization.CultureInfo("tr-TR");
 
         var message = $"""
-    🔔 *Yeni Randevu Talebi!*
+    🔔 *Yeni Randevu Talebi! (#{sequenceNumber})*
     
     👤 Müşteri: {customerName}
     📞 Telefon: {customerPhone}
     🔧 Hizmet: {serviceName}
     📅 Tarih: {startTime.ToString("dd MMMM yyyy", culture)}
     ⏰ Saat: {startTime:HH:mm}
-    
-    Lütfen admin panelden onaylayın.
+    ✅ Onaylamak için yanıtlayın:
+    ONAYLA {sequenceNumber}
+    REDDETMEK için yanıtlayın:
+    REDDET {sequenceNumber}
     """;
 
         await SendMessageAsync(staffPhone, message);

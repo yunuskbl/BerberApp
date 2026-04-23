@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { MainLayoutComponent } from './shared/layout/main-layout/main-layout.component';
 import { ReportsListComponent } from './features/reports/reports-list/reports-list.component';
+import { PlanGuard } from './core/guards/plan.guard';
 
 export const routes: Routes = [
   // Public routes — guard yok
@@ -27,12 +28,19 @@ export const routes: Routes = [
       ),
   },
   {
-  path: 'randevu/:subdomain/:appointmentId',
-  loadComponent: () =>
-    import('./features/booking/appointment-status/appointment-status.component').then(
-      (m) => m.AppointmentStatusComponent,
-    ),
-},
+    path: 'randevu/:subdomain/:appointmentId',
+    loadComponent: () =>
+      import('./features/booking/appointment-status/appointment-status.component').then(
+        (m) => m.AppointmentStatusComponent,
+      ),
+  },
+  {
+        path: 'pricing', 
+        loadComponent: () =>
+          import('./features/pricing/pricing.component').then(
+            (m) => m.PricingComponent,
+          ),
+      },
 
   // Protected routes — guard var
   {
@@ -48,6 +56,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'upgrade',
+        loadComponent: () =>
+          import('./features/upgrade/upgrade.component').then(
+            (m) => m.UpgradeComponent,
+          ),
+      },
+
+      {
         path: 'staff',
         loadComponent: () =>
           import('./features/staff/staff-list/staff-list.component').then(
@@ -60,6 +76,8 @@ export const routes: Routes = [
           import('./features/reports/reports-list/reports-list.component').then(
             (m) => m.ReportsListComponent,
           ),
+        canActivate: [PlanGuard],
+        data: { requiredPlan: 'Standard' },
       },
       {
         path: 'settings',

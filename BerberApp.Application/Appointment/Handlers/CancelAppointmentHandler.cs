@@ -36,9 +36,18 @@ public class CancelAppointmentHandler : IRequestHandler<CancelAppointmentCommand
         if (appointment.Status == AppointmentStatus.Cancelled)
             throw new BadRequestException("Randevu zaten iptal edilmiş.");
 
+        var wasPending = appointment.Status == AppointmentStatus.Pending;
         appointment.Status = AppointmentStatus.Cancelled;
         await _appointmentRepo.UpdateAsync(appointment, ct);
-
+        if (wasPending)
+        {
+            var customerToUpdate = await _customerRepo.GetByIdAsync(appointment.CustomerId, ct);
+            if (customerToUpdate is not null && customerToUpdate.TotalVisits > 0)
+            {
+                customerToUpdate.TotalVisits--;
+                await _customerRepo.UpdateAsync(customerToUpdate, ct);
+            }
+        }
         // WhatsApp bildirimi
         try
         {

@@ -196,7 +196,8 @@ public class BookingController : ControllerBase
             ServiceId = request.ServiceId,
             StartTime = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc),  
             Notes = request.Notes,
-            IsFromBookingPage = true
+            IsFromBookingPage = true,
+            NotificationPhone = tenant.NotificationPhone
         });
 
         return Ok(new { success = true, data = result, appointmentId = result.Id });
