@@ -22,10 +22,14 @@ export class SettingsComponent implements OnInit {
   isLoading = true;
   isSaving = false;
   isChangingPass = false;
+  isUploadingLogo = false;
   successMessage = '';
   errorMessage = '';
   passSuccess = '';
   passError = '';
+  logoUploadError = '';
+  logoPreview: string | null = null;
+  logoVersion = Date.now();
 
   salonForm: FormGroup;
   passwordForm: FormGroup;
@@ -41,6 +45,7 @@ export class SettingsComponent implements OnInit {
       phone: [''],
       notificationPhone: [''],
       address: [''],
+      logoUrl: [''],
     });
 
     this.passwordForm = this.fb.group(
@@ -66,7 +71,11 @@ export class SettingsComponent implements OnInit {
             phone: res.data.phone,
             notificationPhone: res.data.notificationPhone,
             address: res.data.address,
+            logoUrl: res.data.logoUrl ?? '',
           });
+          if (res.data.logoUrl) {
+            this.logoPreview = res.data.logoUrl;
+          }
         }
         this.isLoading = false;
       },
@@ -140,6 +149,44 @@ export class SettingsComponent implements OnInit {
   get bookingUrl(): string {
     const subdomain = this.authService.getUser()?.subdomain;
     return subdomain ? `${window.location.origin}/book/${subdomain}` : '';
+  }
+
+  onLogoFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+    this.logoUploadError = '';
+    this.isUploadingLogo = true;
+
+    // Anlık önizleme
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.logoPreview = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+
+    // API'ye yükle
+    const formData = new FormData();
+    formData.append('file', file);
+
+    this.http.post<any>(`${environment.apiUrl}/tenants/logo`, formData).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.salonForm.patchValue({ logoUrl: res.data.logoUrl });
+          this.logoPreview = res.data.logoUrl;
+          this.logoVersion = Date.now();
+        }
+        this.isUploadingLogo = false;
+      },
+      error: (err) => {
+        this.logoUploadError = err.error?.message || 'Logo yüklenemedi.';
+        this.isUploadingLogo = false;
+      },
+    });
+
+    // Aynı dosyayı tekrar seçebilmek için input'u sıfırla
+    input.value = '';
   }
 
   copied = false; // salon bilgileri kopyala

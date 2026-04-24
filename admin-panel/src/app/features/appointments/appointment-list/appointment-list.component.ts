@@ -52,6 +52,16 @@ export class AppointmentListComponent implements OnInit {
   selectedDate = new Date().toISOString().split('T')[0];
   selectedStaffId = '';
 
+  // Takvim görünümü
+  viewMode: 'list' | 'calendar' = 'list';
+  readonly hourHeight = 64; // px per hour
+  readonly calendarStart = 8; // 08:00
+  readonly calendarEnd = 21;  // 21:00
+  readonly calendarHours = Array.from(
+    { length: 21 - 8 },
+    (_, i) => i + 8
+  );
+
   AppointmentStatus = AppointmentStatus;
 
   appointmentForm: FormGroup;
@@ -283,6 +293,37 @@ export class AppointmentListComponent implements OnInit {
 
   formatSlotValue(dateStr: string): string {
     return new Date(dateStr).toTimeString().slice(0, 5);
+  }
+
+  // Takvim: UTC zamanını Türkiye saatine çevir
+  private getTurkeyHM(dateStr: string): { h: number; m: number } {
+    const d = new Date(dateStr);
+    const timeStr = d.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Europe/Istanbul',
+    });
+    const [h, m] = timeStr.split(':').map(Number);
+    return { h, m };
+  }
+
+  getAptBlockStyle(apt: Appointment): { [key: string]: string } {
+    const { h, m } = this.getTurkeyHM(apt.startTime);
+    const minutesFromStart = (h - this.calendarStart) * 60 + m;
+    const topPx = (minutesFromStart / 60) * this.hourHeight;
+    const heightPx = Math.max(
+      (apt.durationMinutes / 60) * this.hourHeight,
+      28
+    );
+    return {
+      top: `${topPx}px`,
+      height: `${heightPx}px`,
+    };
+  }
+
+  get calendarTotalHeight(): number {
+    return (this.calendarEnd - this.calendarStart) * this.hourHeight;
   }
 
   getInitials(name: string): string {

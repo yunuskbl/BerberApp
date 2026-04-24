@@ -484,6 +484,152 @@ select {
   &.complete { background: #dcfce7; color: #16a34a; &:hover { background: #bbf7d0; } }
   &.cancel   { background: #fee2e2; color: #dc2626; &:hover { background: #fecaca; } }
 }
+
+// ── Görünüm Toggle ──────────────────────────────────────────
+.view-toggle {
+  display: flex;
+  gap: 2px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.toggle-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+
+  &:hover { color: #7c3aed; }
+
+  &.active {
+    background: white;
+    color: #7c3aed;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+}
+
+// ── Takvim ──────────────────────────────────────────────────
+.calendar-card {
+  background: white;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.calendar-wrapper {
+  display: flex;
+  overflow-y: auto;
+  max-height: 75vh;
+}
+
+.cal-labels {
+  width: 56px;
+  flex-shrink: 0;
+  border-right: 1px solid #e2e8f0;
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 2;
+}
+
+.cal-hour-label {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #94a3b8;
+  border-bottom: 1px solid #f1f5f9;
+  box-sizing: border-box;
+}
+
+.cal-events-area {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+
+.cal-grid-line {
+  border-bottom: 1px solid #f1f5f9;
+  box-sizing: border-box;
+}
+
+.cal-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #94a3b8;
+  font-size: 14px;
+  span { font-size: 36px; }
+}
+
+// ── Randevu Blokları ─────────────────────────────────────────
+.apt-block {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  border-radius: 8px;
+  padding: 5px 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  cursor: default;
+  transition: box-shadow 0.15s;
+  z-index: 1;
+
+  &:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); z-index: 5; }
+
+  .apt-time    { font-size: 10px; font-weight: 700; opacity: 0.85; }
+  .apt-name    { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .apt-service { font-size: 11px; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .apt-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 2px;
+  }
+
+  // Durum renkleri
+  &.status-0 { background: #fef3c7; color: #92400e; border-left: 3px solid #f59e0b; } // Pending
+  &.status-1 { background: #dbeafe; color: #1e40af; border-left: 3px solid #3b82f6; } // Confirmed
+  &.status-2 { background: #dcfce7; color: #166534; border-left: 3px solid #22c55e; } // Completed
+  &.status-3 { background: #fee2e2; color: #991b1b; border-left: 3px solid #ef4444; } // Cancelled
+  &.status-4 { background: #f1f5f9; color: #475569; border-left: 3px solid #94a3b8; } // NoShow
+}
+
+.apt-action-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+
+  &.confirm  { background: rgba(37,99,235,0.2);  color: #1d4ed8; &:hover { background: rgba(37,99,235,0.35); } }
+  &.complete { background: rgba(22,163,74,0.2);  color: #166534; &:hover { background: rgba(22,163,74,0.35); } }
+  &.cancel   { background: rgba(220,38,38,0.2);  color: #991b1b; &:hover { background: rgba(220,38,38,0.35); } }
+}
+
 @media (max-width: 768px) {
   .page-header {
     flex-direction: column;
@@ -582,6 +728,52 @@ select {
 
   .slots-grid { grid-template-columns: repeat(3, 1fr); }
   .drawer { width: 100%; }
+
+  // Toggle — filtreler sütuna geçince toggle en sona alınır
+  .filters {
+    flex-wrap: wrap;
+
+    .view-toggle {
+      margin-left: auto;
+      align-self: flex-start;
+    }
+    .filter-date-wrapper { flex: 1; min-width: 0; }
+    .filter-select-wrapper { flex: 1; min-width: 0; }
+  }
+
+  // Takvim mobil
+  .calendar-card {
+    border-radius: 10px;
+  }
+
+  .calendar-wrapper {
+    max-height: 65vh;
+  }
+
+  .cal-labels {
+    width: 44px;
+  }
+
+  .cal-hour-label {
+    font-size: 10px;
+    padding-top: 4px;
+  }
+
+  .apt-block {
+    left: 4px;
+    right: 4px;
+    padding: 3px 5px;
+
+    .apt-time    { font-size: 9px; }
+    .apt-name    { font-size: 11px; }
+    .apt-service { display: none; }
+  }
+
+  .apt-action-btn {
+    width: 18px;
+    height: 18px;
+    font-size: 9px;
+  }
 }
 
 @media (max-width: 480px) {

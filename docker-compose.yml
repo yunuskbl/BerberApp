@@ -39,6 +39,8 @@ services:
     - IletiMerkezi__Sender=${ILETIMERKEZI_SENDER}
     ports:
       - "8080:8080"
+    volumes:
+      - uploads_data:/app/wwwroot/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -61,6 +63,7 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:
   
 
 

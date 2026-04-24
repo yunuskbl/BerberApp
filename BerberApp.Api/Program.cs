@@ -144,6 +144,9 @@ RecurringJob.AddOrUpdate<ExpireAppointmentsJob>(
     "*/5 * * * *"
 );
 
+// Static Files (logo uploads vs.)
+app.UseStaticFiles();
+
 app.MapControllers();
 
 app.Run();

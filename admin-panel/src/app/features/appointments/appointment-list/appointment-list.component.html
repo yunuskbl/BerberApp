@@ -78,9 +78,25 @@
       >
       </app-custom-select>
     </div>
+    <!-- Görünüm Toggle -->
+    <div class="view-toggle">
+      <button class="toggle-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Liste">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="toggle-btn" [class.active]="viewMode === 'calendar'" (click)="viewMode = 'calendar'" title="Takvim">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+          <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
-  <!-- Table -->
+  <!-- ════ LİSTE GÖRÜNÜMÜ ════ -->
+  @if (viewMode === 'list') {
   <div class="card">
     @if (isLoading) {
       <div class="loading-state"><div class="spinner"></div></div>
@@ -180,7 +196,64 @@
       </table>
     }
   </div>
-</div>
+  } <!-- /viewMode === 'list' -->
+
+  <!-- ════ TAKVİM GÖRÜNÜMÜ ════ -->
+  @if (viewMode === 'calendar') {
+  <div class="calendar-card">
+    @if (isLoading) {
+      <div class="loading-state"><div class="spinner"></div></div>
+    } @else {
+      <div class="calendar-wrapper">
+        <!-- Saat etiketleri -->
+        <div class="cal-labels">
+          @for (h of calendarHours; track h) {
+            <div class="cal-hour-label" [style.height.px]="hourHeight">
+              {{ h.toString().padStart(2, '0') }}:00
+            </div>
+          }
+        </div>
+
+        <!-- Etkinlik alanı -->
+        <div class="cal-events-area" [style.height.px]="calendarTotalHeight">
+          <!-- Grid çizgileri -->
+          @for (h of calendarHours; track h) {
+            <div class="cal-grid-line" [style.height.px]="hourHeight"></div>
+          }
+
+          <!-- Randevu blokları -->
+          @if (appointments.length === 0) {
+            <div class="cal-empty">
+              <span>📅</span>
+              <p>Bu tarih için randevu yok</p>
+            </div>
+          }
+          @for (apt of appointments; track apt.id) {
+            <div class="apt-block"
+                 [ngClass]="'status-' + apt.status"
+                 [ngStyle]="getAptBlockStyle(apt)">
+              <span class="apt-time">{{ formatTime(apt.startTime) }} – {{ formatTime(apt.endTime) }}</span>
+              <span class="apt-name">{{ apt.customerName }}</span>
+              <span class="apt-service">{{ apt.serviceName }}</span>
+              <div class="apt-actions">
+                @if (apt.status === AppointmentStatus.Pending) {
+                  <button class="apt-action-btn confirm" (click)="confirmAppointment(apt.id)" title="Onayla">✓</button>
+                  <button class="apt-action-btn cancel"  (click)="cancelAppointment(apt.id)"  title="İptal">✕</button>
+                }
+                @if (apt.status === AppointmentStatus.Confirmed) {
+                  <button class="apt-action-btn complete" (click)="completeAppointment(apt.id)" title="Tamamla">✓</button>
+                  <button class="apt-action-btn cancel"   (click)="cancelAppointment(apt.id)"   title="İptal">✕</button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+  } <!-- /viewMode === 'calendar' -->
+
+</div> <!-- /.page -->
 
 <!-- Drawer Overlay -->
 @if (isDrawerOpen) {
