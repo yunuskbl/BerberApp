@@ -61,7 +61,7 @@
                 <button type="button" class="btn-upload-logo" (click)="logoInput.click()" [disabled]="isUploadingLogo">
                   {{ isUploadingLogo ? 'Yükleniyor...' : logoPreview ? 'Logoyu Değiştir' : 'Logo Seç' }}
                 </button>
-                <small>JPG, PNG veya WebP · Maks 2MB</small>
+                <small>JPG, PNG veya WebP · Maks 5MB</small>
                 @if (logoUploadError) {
                   <span class="logo-error">{{ logoUploadError }}</span>
                 }

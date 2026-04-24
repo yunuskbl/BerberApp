@@ -42,12 +42,19 @@ import { AuthService } from '../../../core/services/auth.service';
     bottom: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: calc(60px + env(safe-area-inset-bottom, 0px));
     background: #0f172a;
     border-top: 1px solid rgba(255,255,255,0.08);
-    z-index: 200;
+    z-index: 1000;
     padding: 0 4px;
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+
+    /* iOS Safari'de askıda kalma sorununu önler */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 
     @media (max-width: 768px) {
       display: flex;

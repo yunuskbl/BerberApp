@@ -158,6 +158,13 @@
   color: white;
   flex-shrink: 0;
   box-shadow: 0 8px 20px rgba(124,58,237,0.4);
+  overflow: hidden;
+}
+
+.salon-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .salon-info {

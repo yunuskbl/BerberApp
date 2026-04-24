@@ -49,8 +49,8 @@ public class TenantsController : BaseApiController
         if (!allowedTypes.Contains(file.ContentType.ToLower()))
             return BadRequest(new { success = false, message = "Sadece JPG, PNG veya WebP yükleyebilirsiniz." });
 
-        if (file.Length > 2 * 1024 * 1024)
-            return BadRequest(new { success = false, message = "Dosya boyutu 2MB'yi geçemez." });
+        if (file.Length > 5 * 1024 * 1024)
+            return BadRequest(new { success = false, message = "Dosya boyutu 5MB'yi geçemez." });
 
         var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "logos");
         Directory.CreateDirectory(uploadsDir);

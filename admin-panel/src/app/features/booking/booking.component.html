@@ -70,7 +70,13 @@
   } @else {
     <!-- Salon Header -->
     <div class="salon-header">
-      <div class="salon-logo">{{ getInitials(salon?.name || "") }}</div>
+      <div class="salon-logo">
+        @if (salon?.logoUrl) {
+          <img [src]="salon!.logoUrl" [alt]="salon?.name" class="salon-logo-img" />
+        } @else {
+          {{ getInitials(salon?.name || "") }}
+        }
+      </div>
       <div class="salon-info">
         <h1>{{ salon?.name }}</h1>
         @if (salon?.address) {
