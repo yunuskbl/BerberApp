@@ -111,6 +111,9 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwaggerUI();
 }
 
+// Static Files — auth'tan önce, en başta olmalı
+app.UseStaticFiles();
+
 // Middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<RateLimitingMiddleware>();
@@ -143,9 +146,6 @@ RecurringJob.AddOrUpdate<ExpireAppointmentsJob>(
     job => job.ExpireOldAppointmentsAsync(),
     "*/5 * * * *"
 );
-
-// Static Files (logo uploads vs.)
-app.UseStaticFiles();
 
 app.MapControllers();
 
