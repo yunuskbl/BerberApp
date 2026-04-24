@@ -22,3 +22,6 @@ postgres_data/
 # IDE
 .idea/
 .vscode/
+
+# Claude Code
+.claude/

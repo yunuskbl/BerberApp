@@ -21,6 +21,10 @@ public class TenantsController : BaseApiController
     public async Task<IActionResult> GetMyTenant()
         => Success(await Mediator.Send(new GetTenantByIdQuery { Id = TenantId }));
 
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateTenantCommand command)
+    => Success(await Mediator.Send(command));
+
     [HttpGet]
     public async Task<IActionResult> GetAll()
         => Success(await Mediator.Send(new GetAllTenantsQuery()));
@@ -40,6 +44,7 @@ public class TenantsController : BaseApiController
     }
 
     [HttpPost("logo")]
+    [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadLogo([FromForm] IFormFile file)
     {
         if (file == null || file.Length == 0)
