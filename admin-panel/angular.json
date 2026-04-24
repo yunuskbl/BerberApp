@@ -69,7 +69,8 @@
               "buildTarget": "admin-panel:build:production"
             },
             "development": {
-              "buildTarget": "admin-panel:build:development"
+              "buildTarget": "admin-panel:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

@@ -11,14 +11,6 @@ import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/services/auth.service';
 import { Router, RouterModule } from '@angular/router';
 
-/** /uploads/... gibi göreceli path'leri tam URL'e çevirir (dev + prod uyumlu) */
-function resolveMediaUrl(url: string | null | undefined): string {
-  if (!url) return '';
-  if (url.startsWith('data:') || url.startsWith('http') || url.startsWith('blob:')) return url;
-  const base = environment.apiUrl.replace(/\/api$/, '');
-  return base + url;
-}
-
 @Component({
   selector: 'app-settings',
   standalone: true,
@@ -82,7 +74,7 @@ export class SettingsComponent implements OnInit {
             logoUrl: res.data.logoUrl ?? '',
           });
           if (res.data.logoUrl) {
-            this.logoPreview = resolveMediaUrl(res.data.logoUrl);
+            this.logoPreview = res.data.logoUrl;
           }
         }
         this.isLoading = false;
@@ -182,7 +174,7 @@ export class SettingsComponent implements OnInit {
       next: (res) => {
         if (res.success) {
           this.salonForm.patchValue({ logoUrl: res.data.logoUrl });
-          this.logoPreview = resolveMediaUrl(res.data.logoUrl);
+          this.logoPreview = res.data.logoUrl;
           this.logoVersion = Date.now();
         }
         this.isUploadingLogo = false;

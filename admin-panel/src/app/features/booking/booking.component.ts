@@ -17,14 +17,6 @@ import {
 } from '../../core/services/booking.service';
 import { CustomCalendarComponent } from '../../shared/components/custom-calendar/custom-calendar.component';
 import { Title } from '@angular/platform-browser';
-import { environment } from '../../../environments/environment';
-
-function resolveMediaUrl(url: string | null | undefined): string {
-  if (!url) return '';
-  if (url.startsWith('data:') || url.startsWith('http') || url.startsWith('blob:')) return url;
-  const base = environment.apiUrl.replace(/\/api$/, '');
-  return base + url;
-}
 
 @Component({
   selector: 'app-booking',
@@ -112,9 +104,6 @@ export class BookingComponent implements OnInit {
       next: (res) => {
         if (res.success) {
           this.salon = res.data;
-          if (this.salon?.logoUrl) {
-            this.salon.logoUrl = resolveMediaUrl(this.salon.logoUrl);
-          }
           this.titleService.setTitle(this.salon!.name + ' - BerberApp');
           this.loadServices();
           this.loadStaff();
