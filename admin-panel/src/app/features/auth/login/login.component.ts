@@ -36,7 +36,12 @@ export class LoginComponent {
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
         if (response.success) {
-          this.router.navigate(['/dashboard']);
+          // SuperAdmin'i ayrı panele yönlendir
+          if (this.authService.isSuperAdmin()) {
+            this.router.navigate(['/superadmin']);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         } else {
           this.errorMessage = response.message;
         }

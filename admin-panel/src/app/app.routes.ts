@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { MainLayoutComponent } from './shared/layout/main-layout/main-layout.component';
+import { SuperAdminLayoutComponent } from './shared/layout/super-admin-layout/super-admin-layout.component';
 import { ReportsListComponent } from './features/reports/reports-list/reports-list.component';
 import { PlanGuard } from './core/guards/plan.guard';
+import { SuperAdminGuard } from './core/guards/superadmin.guard';
 
 export const routes: Routes = [
   // Public routes — guard yok
@@ -41,6 +43,27 @@ export const routes: Routes = [
             (m) => m.PricingComponent,
           ),
       },
+
+  // SuperAdmin routes — separate layout
+  {
+    path: 'superadmin',
+    component: SuperAdminLayoutComponent,
+    canActivate: [SuperAdminGuard],
+    children: [
+      {
+        path: 'tenants',
+        loadComponent: () =>
+          import('./features/super-admin/tenants/super-admin-tenants.component').then(
+            (m) => m.SuperAdminTenantsComponent,
+          ),
+      },
+      {
+        path: '',
+        redirectTo: 'tenants',
+        pathMatch: 'full',
+      },
+    ],
+  },
 
   // Protected routes — guard var
   {

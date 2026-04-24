@@ -1,0 +1,194 @@
+<div class="page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h2>İşletmeler</h2>
+      <p>{{ totalTenants }} işletme · {{ activeTenants }} aktif</p>
+    </div>
+    <button class="btn btn-primary" (click)="openDrawer()">+ Yeni İşletme</button>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading-state"><div class="spinner"></div></div>
+  } @else {
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">🏪</div>
+        <div class="stat-content">
+          <div class="stat-label">Toplam İşletme</div>
+          <div class="stat-value">{{ totalTenants }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✓</div>
+        <div class="stat-content">
+          <div class="stat-label">Aktif</div>
+          <div class="stat-value">{{ activeTenants }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-content">
+          <div class="stat-label">Toplam Randevu</div>
+          <div class="stat-value">{{ totalAppointments }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <div class="stat-label">Toplam Müşteri</div>
+          <div class="stat-value">{{ totalCustomers }}</div>
+        </div>
+      </div>
+    </div>
+
+    @if (successMessage) {
+      <div class="alert alert-success">✓ {{ successMessage }}</div>
+    }
+    @if (errorMessage) {
+      <div class="alert alert-error">{{ errorMessage }}</div>
+    }
+
+    <!-- Tenants Table -->
+    @if (tenants.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">🏢</span>
+        <h3>Henüz işletme yok</h3>
+        <p>Yeni işletme eklemek için butona tıklayın.</p>
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="tenants-table">
+          <thead>
+            <tr>
+              <th>İşletme Adı</th>
+              <th>Subdomain</th>
+              <th>Personel</th>
+              <th>Müşteri</th>
+              <th>Randevu</th>
+              <th>Bekleyen</th>
+              <th>Tamamlanan</th>
+              <th>Plan</th>
+              <th>Eklenme Tarihi</th>
+              <th>Durum</th>
+              <th>İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (tenant of tenants; track tenant.id) {
+              <tr [class.inactive]="!tenant.isActive">
+                <td class="name-cell">
+                  <div class="tenant-name">{{ tenant.name }}</div>
+                </td>
+                <td class="subdomain-cell">
+                  <code>{{ tenant.subdomain }}</code>
+                </td>
+                <td class="center">{{ tenant.staffCount }}</td>
+                <td class="center">{{ tenant.customerCount }}</td>
+                <td class="center">{{ tenant.totalAppointments }}</td>
+                <td class="center pending">{{ tenant.pendingAppointments }}</td>
+                <td class="center completed">{{ tenant.completedAppointments }}</td>
+                <td class="plan-cell">
+                  <span class="badge">{{ tenant.plan }}</span>
+                </td>
+                <td class="date-cell">{{ formatDate(tenant.createdAt) }}</td>
+                <td class="status-cell">
+                  <span [class]="'status ' + (tenant.isActive ? 'active' : 'inactive')">
+                    {{ tenant.isActive ? 'Aktif' : 'Pasif' }}
+                  </span>
+                </td>
+                <td class="actions-cell">
+                  <button
+                    class="btn-action toggle"
+                    (click)="toggleTenantActive(tenant.id, tenant.isActive)"
+                    title="Durumunu Değiştir">
+                    {{ tenant.isActive ? '⊘' : '✓' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  }
+
+</div>
+
+<!-- Drawer —Yeni İşletme -->
+@if (isDrawerOpen) {
+  <div class="drawer-overlay" (click)="closeDrawer()"></div>
+}
+
+<div class="drawer" [class.open]="isDrawerOpen">
+  <div class="drawer-header">
+    <h3>Yeni İşletme</h3>
+    <button class="drawer-close" (click)="closeDrawer()">✕</button>
+  </div>
+
+  <form [formGroup]="createTenantForm" (ngSubmit)="onSubmit()" class="drawer-body">
+
+    <div class="form-group">
+      <label>İşletme Adı *</label>
+      <input type="text" formControlName="tenantName" placeholder="Ör: Mehmet Berber Salonu"
+        [class.error]="createTenantForm.get('tenantName')?.invalid && createTenantForm.get('tenantName')?.touched"/>
+    </div>
+
+    <div class="form-group">
+      <label>Subdomain * (URL'de görünecek)</label>
+      <input type="text" formControlName="subdomain" placeholder="ör: mehmet-berber"
+        [class.error]="createTenantForm.get('subdomain')?.invalid && createTenantForm.get('subdomain')?.touched"/>
+      <small>Sadece küçük harf, rakam ve tire (-) kullanabilirsiniz.</small>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Ad *</label>
+        <input type="text" formControlName="firstName" placeholder="Mehmet"
+          [class.error]="createTenantForm.get('firstName')?.invalid && createTenantForm.get('firstName')?.touched"/>
+      </div>
+      <div class="form-group">
+        <label>Soyad *</label>
+        <input type="text" formControlName="lastName" placeholder="Yılmaz"
+          [class.error]="createTenantForm.get('lastName')?.invalid && createTenantForm.get('lastName')?.touched"/>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>E-posta *</label>
+      <input type="email" formControlName="email" placeholder="mehmet@berber.com"
+        [class.error]="createTenantForm.get('email')?.invalid && createTenantForm.get('email')?.touched"/>
+    </div>
+
+    <div class="form-group">
+      <label>Şifre * (En az 8 karakter)</label>
+      <input type="password" formControlName="password" placeholder="••••••••"
+        [class.error]="createTenantForm.get('password')?.invalid && createTenantForm.get('password')?.touched"/>
+    </div>
+
+    <div class="form-group">
+      <label>Telefon (Opsiyonel)</label>
+      <input type="tel" formControlName="phone" placeholder="05XXXXXXXXX"/>
+    </div>
+
+    <div class="form-group">
+      <label>Adres (Opsiyonel)</label>
+      <input type="text" formControlName="address" placeholder="Salon adresi"/>
+    </div>
+
+    @if (errorMessage) {
+      <div class="error-message">{{ errorMessage }}</div>
+    }
+
+    <div class="drawer-footer">
+      <button type="button" class="btn btn-outline" (click)="closeDrawer()">İptal</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Oluşturuluyor...' : 'İşletme Oluştur' }}
+      </button>
+    </div>
+
+  </form>
+</div>
