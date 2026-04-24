@@ -1,5 +1,4 @@
-﻿using BerberApp.Api.Authorization;
-using BerberApp.Application.Appointment.Queries;
+﻿using BerberApp.Application.Appointment.Queries;
 using BerberApp.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -7,14 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BerberApp.Api.Controllers;
 
-/// <summary>
-/// Earnings and revenue reports
-/// Plan: Standard + Full
-/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-[RequirePlan(PlanType.Standard, PlanType.Full)]
 public class EarningsController : ControllerBase
 {
     private readonly IMediator _mediator;

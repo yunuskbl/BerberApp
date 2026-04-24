@@ -243,6 +243,7 @@ export class BookingComponent implements OnInit {
   }
 
   formatPrice(price: number, currency: string): string {
+    if (!price || price <= 0) return 'Belirtilmemiş';
     return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
       currency: currency || 'TRY',

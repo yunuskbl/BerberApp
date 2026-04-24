@@ -28,7 +28,7 @@ export class ServiceListComponent implements OnInit {
     this.serviceForm = this.fb.group({
       name:            ['', [Validators.required, Validators.maxLength(100)]],
       durationMinutes: [30,  [Validators.required, Validators.min(1), Validators.max(480)]],
-      price:           [0,   [Validators.required, Validators.min(0)]],
+      price:           [null, [Validators.min(0)]],
       currency:        ['TRY', Validators.required],
       color:           ['#7c3aed'],
       isActive:        [true]
@@ -55,11 +55,14 @@ export class ServiceListComponent implements OnInit {
     this.errorMessage   = '';
 
     if (service) {
-      this.serviceForm.patchValue(service);
+      this.serviceForm.patchValue({
+        ...service,
+        price: service.price > 0 ? service.price : null,
+      });
     } else {
       this.serviceForm.reset({
         durationMinutes: 30,
-        price:           0,
+        price:           null,
         currency:        'TRY',
         color:           '#7c3aed',
         isActive:        true
@@ -79,7 +82,10 @@ export class ServiceListComponent implements OnInit {
 
     this.isSubmitting = true;
     this.errorMessage = '';
-    const value = this.serviceForm.value;
+    const value = {
+      ...this.serviceForm.value,
+      price: this.serviceForm.value.price ?? 0,
+    };
 
     if (this.editingService) {
       this.serviceService.update(this.editingService.id, value).subscribe({
@@ -114,6 +120,7 @@ export class ServiceListComponent implements OnInit {
   }
 
   formatPrice(price: number, currency: string): string {
+    if (!price || price <= 0) return '—';
     return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
       currency: currency || 'TRY'

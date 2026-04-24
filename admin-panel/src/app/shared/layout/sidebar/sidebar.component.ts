@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Output } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -33,9 +33,6 @@ export class SidebarComponent {
     private authService: AuthService,
     private router: Router
   ) { }
-
-  @HostListener('window:resize')
-
 
   get user() { return this.authService.getUser(); }
 
