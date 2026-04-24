@@ -12,7 +12,9 @@ using Hangfire;
 using Hangfire.PostgreSql;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
@@ -112,7 +114,13 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 }
 
 // Static Files — auth'tan önce, en başta olmalı
-app.UseStaticFiles();
+var staticFileOptions = new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
+    RequestPath = ""
+};
+app.UseStaticFiles(staticFileOptions);
 
 // Middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();

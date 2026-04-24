@@ -20,5 +20,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 RUN mkdir -p /app/logs /app/wwwroot/uploads
 COPY --from=publish /app/publish .
+RUN if [ -d /app/wwwroot ]; then chmod -R 755 /app/wwwroot; fi
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "BerberApp.Api.dll"]
