@@ -97,3 +97,61 @@
     border-bottom: 1px solid #f1f5f9;
   }
 }
+
+// Arama kutusu
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+
+  svg { flex-shrink: 0; }
+
+  input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    color: #1e293b;
+    background: transparent;
+
+    &::placeholder { color: #94a3b8; }
+  }
+}
+
+.search-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  opacity: 0.6;
+  &:hover { opacity: 1; }
+}
+
+// Seçili değer yanındaki temizle butonu
+.clear-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  opacity: 0.5;
+  &:hover { opacity: 1; }
+}
+
+.select-empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #94a3b8;
+}
