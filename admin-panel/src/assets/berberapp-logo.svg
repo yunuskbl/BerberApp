@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5b21b6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#f3f4f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:1" />
+    </linearGradient>
+    <clipPath id="poleClip">
+      <rect x="88" y="38" width="24" height="124" rx="12"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="96" fill="url(#bgGrad)"/>
+
+  <!-- Outer ring glow -->
+  <circle cx="100" cy="100" r="96" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+
+  <!-- Barber Pole body -->
+  <rect x="88" y="38" width="24" height="124" rx="12" fill="url(#poleGrad)"/>
+
+  <!-- Pole stripes (red) -->
+  <g clip-path="url(#poleClip)">
+    <!-- Diagonal red stripes -->
+    <line x1="72" y1="30"  x2="128" y2="86"  stroke="#ef4444" stroke-width="9" opacity="0.9"/>
+    <line x1="72" y1="54"  x2="128" y2="110" stroke="#ef4444" stroke-width="9" opacity="0.9"/>
+    <line x1="72" y1="78"  x2="128" y2="134" stroke="#ef4444" stroke-width="9" opacity="0.9"/>
+    <line x1="72" y1="102" x2="128" y2="158" stroke="#ef4444" stroke-width="9" opacity="0.9"/>
+    <line x1="72" y1="126" x2="128" y2="182" stroke="#ef4444" stroke-width="9" opacity="0.9"/>
+  </g>
+
+  <!-- Pole top cap -->
+  <ellipse cx="100" cy="38" rx="14" ry="6" fill="#7c3aed"/>
+  <ellipse cx="100" cy="38" rx="14" ry="6" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+
+  <!-- Pole bottom cap -->
+  <ellipse cx="100" cy="162" rx="14" ry="6" fill="#5b21b6"/>
+  <ellipse cx="100" cy="162" rx="14" ry="6" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+
+  <!-- Scissors (right side) -->
+  <g transform="translate(128, 72) rotate(35)" opacity="0.95">
+    <!-- Top blade -->
+    <path d="M0,0 Q18,-6 30,-2 Q22,4 0,0Z" fill="white"/>
+    <circle cx="0" cy="0" r="5" fill="white" stroke="#7c3aed" stroke-width="1.5"/>
+    <!-- Bottom blade -->
+    <path d="M0,0 Q18,6 30,2 Q22,-4 0,0Z" fill="white"/>
+    <!-- Screw -->
+    <circle cx="0" cy="0" r="2.5" fill="#7c3aed"/>
+    <!-- Handles -->
+    <ellipse cx="-9" cy="-8" rx="5" ry="7" fill="none" stroke="white" stroke-width="2.5" transform="rotate(-15,-9,-8)"/>
+    <ellipse cx="-9" cy="8"  rx="5" ry="7" fill="none" stroke="white" stroke-width="2.5" transform="rotate(15,-9,8)"/>
+  </g>
+
+  <!-- Comb (left side) -->
+  <g transform="translate(56, 100)" opacity="0.95">
+    <!-- Comb body -->
+    <rect x="-6" y="-28" width="12" height="56" rx="3" fill="white"/>
+    <!-- Comb teeth -->
+    <rect x="-4" y="-26" width="4" height="14" rx="2" fill="rgba(124,58,237,0.3)"/>
+    <rect x="0"  y="-26" width="4" height="14" rx="2" fill="rgba(124,58,237,0.3)"/>
+    <rect x="-4" y="-8"  width="4" height="14" rx="2" fill="rgba(124,58,237,0.3)"/>
+    <rect x="0"  y="-8"  width="4" height="14" rx="2" fill="rgba(124,58,237,0.3)"/>
+    <rect x="-4" y="10"  width="4" height="14" rx="2" fill="rgba(124,58,237,0.3)"/>
+    <rect x="0"  y="10"  width="4" height="14" rx="2" fill="rgba(124,58,237,0.3)"/>
+  </g>
+
+  <!-- Shine overlay -->
+  <ellipse cx="78" cy="60" rx="18" ry="10" fill="white" opacity="0.07" transform="rotate(-30,78,60)"/>
+</svg>
