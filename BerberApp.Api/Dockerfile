@@ -18,7 +18,7 @@ RUN dotnet publish "BerberApp.Api.csproj" -c Release -o /app/publish /p:UseAppHo
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-RUN mkdir -p /app/logs
+RUN mkdir -p /app/logs /app/wwwroot/uploads
 COPY --from=publish /app/publish .
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "BerberApp.Api.dll"]
