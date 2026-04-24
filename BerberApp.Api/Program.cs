@@ -132,6 +132,7 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
     await SeedData.SeedAsync(db);
+    await SeedData.SeedSuperAdminAsync(db);
 }
 
 // Hangfire Recurring Job

@@ -11,6 +11,9 @@ namespace BerberApp.Infrastructure.Persistence;
 
 public static class SeedData
 {
+    // SuperAdmin'in ait olacağı sistem tenant ID'si (sabit)
+    private static readonly Guid SYSTEM_TENANT_ID = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
     public static async Task SeedAsync(AppDbContext context)
     {
         if (await context.Tenants.AnyAsync()) return; // Zaten veri varsa çalıştırma
@@ -260,5 +263,47 @@ public static class SeedData
 
         context.Appointments.AddRange(appointments);
         await context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// SuperAdmin kullanıcısını seed'le (her zaman çalışır, sadece SuperAdmin yoksa oluşturur)
+    /// </summary>
+    public static async Task SeedSuperAdminAsync(AppDbContext context)
+    {
+        // Sistem tenant'ı oluştur (yok ise)
+        var systemTenant = await context.Tenants.FirstOrDefaultAsync(t => t.Id == SYSTEM_TENANT_ID);
+        if (systemTenant == null)
+        {
+            systemTenant = new Tenant
+            {
+                Id = SYSTEM_TENANT_ID,
+                Name = "BerberApp System",
+                Subdomain = "system",
+                IsActive = false // Listelemede görünmeyecek
+            };
+            context.Tenants.Add(systemTenant);
+            await context.SaveChangesAsync();
+        }
+
+        // SuperAdmin kullanıcısını oluştur (yok ise)
+        var superAdminExists = await context.Users
+            .IgnoreQueryFilters()
+            .AnyAsync(u => u.Role == UserRole.SuperAdmin);
+
+        if (!superAdminExists)
+        {
+            var superAdmin = new User
+            {
+                TenantId = SYSTEM_TENANT_ID,
+                Email = "superadmin@berberapp.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("SuperAdmin123!"),
+                FirstName = "Super",
+                LastName = "Admin",
+                Role = UserRole.SuperAdmin,
+                IsVerified = true
+            };
+            context.Users.Add(superAdmin);
+            await context.SaveChangesAsync();
+        }
     }
 }
