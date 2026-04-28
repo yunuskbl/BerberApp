@@ -8,6 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BerberApp.Api.Controllers;
 
+public class LogoUploadRequest
+{
+    public IFormFile File { get; set; } = null!;
+}
+
 public class TenantsController : BaseApiController
 {
     private readonly IAppDbContext _context;
@@ -45,8 +50,9 @@ public class TenantsController : BaseApiController
 
     [HttpPost("logo")]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UploadLogo([FromForm] IFormFile file)
+    public async Task<IActionResult> UploadLogo([FromForm] LogoUploadRequest request)
     {
+        var file = request.File;
         if (file == null || file.Length == 0)
             return BadRequest(new { success = false, message = "Dosya seçilmedi." });
 

@@ -354,7 +354,7 @@ export class AppointmentListComponent implements OnInit {
   confirmAppointment(id: string): void {
   this.appointmentService.confirm(id).subscribe({
     next: () => this.loadAppointments(),
-    error: (err) => console.error('Confirm error:', err)
+    error: () => { /* handled by GlobalErrorHandler */ }
   });
 }
   onSelectChange(field: string, value: string): void {

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, catchError, of } from 'rxjs';
 import { LoginRequest, LoginResponse } from '../models/auth.model';
 import { ApiResponse } from '../models/api-response.model';
 import { environment } from '../../../environments/environment';
@@ -21,13 +21,10 @@ export class AuthService {
           localStorage.setItem('user', JSON.stringify(response.data));
           localStorage.setItem('subdomain', response.data.subdomain || '');
 
-          // 🔑 Decode JWT ve plan'ı al
           try {
             const decoded: any = jwtDecode(response.data.accessToken);
-            const userPlan = decoded.plan_type || 'Basic';
-            localStorage.setItem('userPlan', userPlan);
-          } catch (error) {
-            console.error('Token decode error:', error);
+            localStorage.setItem('userPlan', decoded.plan_type || 'Basic');
+          } catch {
             localStorage.setItem('userPlan', 'Basic');
           }
         }
@@ -36,14 +33,40 @@ export class AuthService {
   }
 
   logout(): void {
+    // Sunucuda refresh token'ı geçersiz kıl (hata olursa yine de local temizle)
+    this.http.post(`${this.apiUrl}/logout`, {}).pipe(
+      catchError(() => of(null))
+    ).subscribe();
+
+    this.clearLocalStorage();
+  }
+
+  refreshToken(): Observable<any> {
+    const refreshToken = localStorage.getItem('refreshToken');
+    return this.http.post<any>(`${this.apiUrl}/refresh`, { refreshToken }).pipe(
+      tap(response => {
+        if (response.success) {
+          localStorage.setItem('accessToken', response.data.accessToken);
+          localStorage.setItem('refreshToken', response.data.refreshToken);
+        }
+      })
+    );
+  }
+
+  private clearLocalStorage(): void {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     localStorage.removeItem('userPlan');
+    localStorage.removeItem('subdomain');
   }
 
   getToken(): string | null {
     return localStorage.getItem('accessToken');
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refreshToken');
   }
 
   getUser(): LoginResponse | null {
@@ -60,8 +83,7 @@ export class AuthService {
   }
 
   getUserRole(): string {
-    const user = this.getUser();
-    return user?.role || '';
+    return this.getUser()?.role || '';
   }
 
   isSuperAdmin(): boolean {

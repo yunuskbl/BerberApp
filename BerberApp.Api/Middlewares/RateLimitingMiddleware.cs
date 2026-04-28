@@ -9,8 +9,8 @@ public class RateLimitingMiddleware
     private readonly IMemoryCache _cache;
 
     // Limitler
-    private const int MaxRequestsPerHour = 10;  // IP başına saatte max istek
-    private const int MaxBookingsPerDay = 3;   // Telefon başına günde max randevu
+    private const int MaxBookingRequestsPerHour = 10;  // IP başına saatte max booking isteği
+    private const int MaxLoginAttemptsPerWindow = 5;   // IP başına 15 dakikada max login denemesi
 
     public RateLimitingMiddleware(RequestDelegate next, IMemoryCache cache)
     {
@@ -20,13 +20,36 @@ public class RateLimitingMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // Sadece booking endpoint'ini kontrol et
+        var ip = GetClientIp(context);
+
+        // Login brute-force koruması — 15 dakikada 5 deneme
+        if (context.Request.Path.StartsWithSegments("/api/auth/login") &&
+            context.Request.Method == "POST")
+        {
+            var window = DateTime.UtcNow.ToString("yyyyMMddHHmm")[..11]; // 15 dakikalık pencere
+            var loginKey = $"ratelimit:login:{ip}:{window}";
+            var loginCount = _cache.GetOrCreate(loginKey, entry =>
+            {
+                entry.AbsoluteExpiration = DateTime.UtcNow.AddMinutes(15);
+                return 0;
+            });
+
+            if (loginCount >= MaxLoginAttemptsPerWindow)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(
+                    "{\"success\":false,\"message\":\"Çok fazla giriş denemesi. 15 dakika bekleyin.\"}");
+                return;
+            }
+
+            _cache.Set(loginKey, loginCount + 1, DateTimeOffset.UtcNow.AddMinutes(15));
+        }
+
+        // Booking rate limit — saatte 10 istek
         if (context.Request.Path.StartsWithSegments("/api/booking") &&
             context.Request.Method == "POST")
         {
-            var ip = GetClientIp(context);
-
-            // IP rate limit — saatte 10 istek
             var ipKey = $"ratelimit:ip:{ip}:{DateTime.UtcNow:yyyyMMddHH}";
             var ipCount = _cache.GetOrCreate(ipKey, entry =>
             {
@@ -34,7 +57,7 @@ public class RateLimitingMiddleware
                 return 0;
             });
 
-            if (ipCount >= MaxRequestsPerHour)
+            if (ipCount >= MaxBookingRequestsPerHour)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
                 context.Response.ContentType = "application/json";
