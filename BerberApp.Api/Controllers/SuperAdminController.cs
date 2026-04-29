@@ -88,30 +88,145 @@ public class SuperAdminController : ControllerBase
     }
 
     /// <summary>
+    /// İşletme detayı
+    /// </summary>
+    [HttpGet("tenants/{id}")]
+    public async Task<IActionResult> GetTenantDetail(Guid id)
+    {
+        var tenant = await _context.Tenants
+            .IgnoreQueryFilters()
+            .Where(t => t.Id == id && t.Id != SYSTEM_TENANT_ID)
+            .Select(t => new
+            {
+                t.Id, t.Name, t.Subdomain, t.Phone, t.Address, t.LogoUrl,
+                t.IsActive, t.IsDeleted, t.CreatedAt,
+                StaffCount = t.Staff.Count(),
+                CustomerCount = t.Customers.Count(),
+                TotalAppointments = t.Appointments.Count(),
+                PendingAppointments = t.Appointments.Count(a => a.Status == AppointmentStatus.Pending),
+                CompletedAppointments = t.Appointments.Count(a => a.Status == AppointmentStatus.Completed),
+                CancelledAppointments = t.Appointments.Count(a => a.Status == AppointmentStatus.Cancelled),
+                RecentAppointments = t.Appointments
+                    .OrderByDescending(a => a.CreatedAt)
+                    .Take(10)
+                    .Select(a => new {
+                        a.Id, a.StartTime, a.Status,
+                        CustomerName = a.Customer != null ? a.Customer.FullName : "—",
+                        ServiceName = a.Service != null ? a.Service.Name : "—"
+                    }).ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        if (tenant == null)
+            return NotFound(new { success = false, message = "İşletme bulunamadı." });
+
+        return Ok(new { success = true, data = tenant });
+    }
+
+    /// <summary>
     /// İşletmeyi aktif/pasif yap
     /// </summary>
     [HttpPatch("tenants/{id}/toggle")]
     public async Task<IActionResult> ToggleTenantActive(Guid id)
     {
-        try
-        {
-            var tenant = await _context.Tenants
-                .IgnoreQueryFilters()
-                .FirstOrDefaultAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
+        var tenant = await _context.Tenants
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
 
-            if (tenant == null)
-                return NotFound(new { success = false, message = "İşletme bulunamadı." });
+        if (tenant == null)
+            return NotFound(new { success = false, message = "İşletme bulunamadı." });
 
-            tenant.IsActive = !tenant.IsActive;
-            _context.Tenants.Update(tenant);
-            await _context.SaveChangesAsync();
+        tenant.IsActive = !tenant.IsActive;
+        await _context.SaveChangesAsync();
 
-            return Ok(new { success = true, message = "İşletme durumu güncellendi.", data = new { id, isActive = tenant.IsActive } });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Tenant toggle error");
-            return StatusCode(500, new { success = false, message = "Hata oluştu." });
-        }
+        return Ok(new { success = true, message = $"İşletme {(tenant.IsActive ? "aktif" : "pasif")} yapıldı.", data = new { id, isActive = tenant.IsActive } });
     }
+
+    /// <summary>
+    /// Plan değiştir
+    /// </summary>
+    [HttpPatch("tenants/{id}/plan")]
+    public async Task<IActionResult> ChangePlan(Guid id, [FromBody] ChangePlanRequest request)
+    {
+        if (!Enum.TryParse<BerberApp.Domain.Enums.PlanType>(request.Plan, ignoreCase: true, out var planType))
+            return BadRequest(new { success = false, message = "Geçersiz plan." });
+
+        var subscription = await _context.Subscriptions
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(s => s.TenantId == id);
+
+        if (subscription == null)
+        {
+            // Subscription yoksa oluştur
+            subscription = new BerberApp.Domain.Entities.Subscription
+            {
+                Id = Guid.NewGuid(),
+                TenantId = id,
+                Plan = planType,
+                StartDate = DateTime.UtcNow,
+                ExpiryDate = DateTime.UtcNow.AddYears(1),
+                Status = BerberApp.Domain.Enums.SubscriptionStatus.Active,
+                Price = 0,
+                Currency = "TRY",
+                IsAutoRenewal = false,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Subscriptions.Add(subscription);
+        }
+        else
+        {
+            subscription.Plan = planType;
+            subscription.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok(new { success = true, message = "Plan güncellendi." });
+    }
+
+    /// <summary>
+    /// Soft delete — işletmeyi pasif sil (geri alınabilir)
+    /// </summary>
+    [HttpDelete("tenants/{id}")]
+    public async Task<IActionResult> SoftDeleteTenant(Guid id)
+    {
+        var tenant = await _context.Tenants
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
+
+        if (tenant == null)
+            return NotFound(new { success = false, message = "İşletme bulunamadı." });
+
+        tenant.IsDeleted = true;
+        tenant.IsActive = false;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { success = true, message = "İşletme silindi (geri alınabilir)." });
+    }
+
+    /// <summary>
+    /// Hard delete — işletmeyi kalıcı sil
+    /// </summary>
+    [HttpDelete("tenants/{id}/permanent")]
+    public async Task<IActionResult> HardDeleteTenant(Guid id)
+    {
+        var tenant = await _context.Tenants
+            .IgnoreQueryFilters()
+            .Include(t => t.Appointments)
+            .Include(t => t.Customers)
+            .Include(t => t.Staff)
+            .FirstOrDefaultAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
+
+        if (tenant == null)
+            return NotFound(new { success = false, message = "İşletme bulunamadı." });
+
+        _context.Tenants.Remove(tenant);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { success = true, message = "İşletme kalıcı olarak silindi." });
+    }
+}
+
+public class ChangePlanRequest
+{
+    public string Plan { get; set; } = string.Empty;
 }

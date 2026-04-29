@@ -199,6 +199,10 @@
 }
 
 .actions-cell {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+
   .btn-action {
     background: none;
     border: 1px solid #1e293b;
@@ -208,10 +212,18 @@
     cursor: pointer;
     font-size: 14px;
     transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
 
     &:hover {
       border-color: #7c3aed;
       color: #7c3aed;
+    }
+
+    &.detail:hover {
+      border-color: #f59e0b;
+      color: #f59e0b;
     }
 
     &.toggle:hover {

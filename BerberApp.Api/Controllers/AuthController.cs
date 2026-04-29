@@ -56,6 +56,22 @@ public class AuthController : ControllerBase
         return Ok(new { success = true, data = result, message = "Şifre değiştirildi." });
     }
 
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand command)
+    {
+        await _mediator.Send(command);
+        return Ok(new { success = true, message = "Eğer bu numaraya kayıtlı hesap varsa SMS gönderildi." });
+    }
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordCommand command)
+    {
+        await _mediator.Send(command);
+        return Ok(new { success = true, message = "Şifreniz başarıyla güncellendi." });
+    }
+
     [HttpPost("logout")]
     [Authorize]
     public async Task<IActionResult> Logout()

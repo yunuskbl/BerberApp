@@ -45,6 +45,10 @@
         {{ errorMessage }}
       </div>
 
+      <div class="forgot-link">
+        <a routerLink="/forgot-password">Şifremi Unuttum</a>
+      </div>
+
       <button type="submit" [disabled]="isLoading" class="btn-login">
         <span *ngIf="!isLoading">Giriş Yap</span>
         <span *ngIf="isLoading" class="loading">

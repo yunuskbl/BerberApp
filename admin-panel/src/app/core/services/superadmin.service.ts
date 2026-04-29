@@ -49,4 +49,20 @@ export class SuperAdminService {
   toggleTenantActive(tenantId: string): Observable<ApiResponse<any>> {
     return this.http.patch<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}/toggle`, {});
   }
+
+  getTenantDetail(tenantId: string): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}`);
+  }
+
+  changePlan(tenantId: string, plan: string): Observable<ApiResponse<any>> {
+    return this.http.patch<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}/plan`, { plan });
+  }
+
+  softDeleteTenant(tenantId: string): Observable<ApiResponse<any>> {
+    return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}`);
+  }
+
+  hardDeleteTenant(tenantId: string): Observable<ApiResponse<any>> {
+    return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}/permanent`);
+  }
 }

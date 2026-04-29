@@ -452,6 +452,35 @@
   border-radius: 8px;
 }
 
+.kvkk-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0 20px 16px;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    margin-top: 2px;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    accent-color: #7c3aed;
+    cursor: pointer;
+  }
+
+  span {
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.5;
+
+    a {
+      color: #7c3aed;
+      text-decoration: underline;
+      &:hover { color: #6d28d9; }
+    }
+  }
+}
+
 .btn-submit {
   width: calc(100% - 40px);
   margin: 0 20px 20px;
@@ -586,6 +615,16 @@
   padding: 20px;
 
   p { font-size: 12px; color: #94a3b8; }
+
+  .footer-links {
+    margin-top: 6px;
+    a {
+      font-size: 11px;
+      color: #94a3b8;
+      text-decoration: underline;
+      &:hover { color: #64748b; }
+    }
+  }
 }
 .pending-note {
   background: #fef9c3;

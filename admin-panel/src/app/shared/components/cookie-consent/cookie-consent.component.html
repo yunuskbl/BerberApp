@@ -1,0 +1,13 @@
+<div class="cookie-banner" *ngIf="visible">
+  <div class="cookie-content">
+    <span class="cookie-icon">🍪</span>
+    <p>
+      Bu site yalnızca zorunlu çerezler kullanmaktadır.
+      <a routerLink="/gizlilik-politikasi" target="_blank">Gizlilik Politikası</a>
+    </p>
+  </div>
+  <div class="cookie-actions">
+    <button class="btn-decline" (click)="decline()">Reddet</button>
+    <button class="btn-accept" (click)="accept()">Kabul Et</button>
+  </div>
+</div>

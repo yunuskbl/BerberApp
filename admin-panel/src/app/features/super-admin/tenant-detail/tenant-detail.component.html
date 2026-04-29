@@ -1,0 +1,166 @@
+<div class="detail-page">
+
+  @if (isLoading) {
+    <div class="loading"><div class="spinner"></div></div>
+  } @else if (errorMessage) {
+    <div class="error-screen">{{ errorMessage }}</div>
+  } @else if (tenant) {
+
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-left">
+        <a routerLink="/superadmin/tenants" class="back-btn">← İşletmeler</a>
+        <div>
+          <h1>{{ tenant.name }}</h1>
+          <p class="subdomain">{{ tenant.subdomain }}.berberapp.com.tr</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="badge" [class.active]="tenant.isActive" [class.passive]="!tenant.isActive">
+          {{ tenant.isActive ? 'Aktif' : 'Pasif' }}
+        </span>
+        <button class="btn btn-secondary" (click)="toggleActive()">
+          {{ tenant.isActive ? 'Pasif Yap' : 'Aktif Yap' }}
+        </button>
+        <button class="btn btn-plan" (click)="openPlanModal()">Plan Değiştir</button>
+        <button class="btn btn-soft-delete" (click)="openDeleteModal('soft')">Pasif Sil</button>
+        <button class="btn btn-hard-delete" (click)="openDeleteModal('hard')">Kalıcı Sil</button>
+      </div>
+    </div>
+
+    <div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-icon">👥</span>
+        <div>
+          <p class="stat-value">{{ tenant.staffCount }}</p>
+          <p class="stat-label">Personel</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🧑</span>
+        <div>
+          <p class="stat-value">{{ tenant.customerCount }}</p>
+          <p class="stat-label">Müşteri</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">📅</span>
+        <div>
+          <p class="stat-value">{{ tenant.totalAppointments }}</p>
+          <p class="stat-label">Toplam Randevu</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">⏳</span>
+        <div>
+          <p class="stat-value">{{ tenant.pendingAppointments }}</p>
+          <p class="stat-label">Bekleyen</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">✅</span>
+        <div>
+          <p class="stat-value">{{ tenant.completedAppointments }}</p>
+          <p class="stat-label">Tamamlanan</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🏷️</span>
+        <div>
+          <p class="stat-value">{{ tenant.plan || 'Basic' }}</p>
+          <p class="stat-label">Plan</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="info-card">
+      <h2>İşletme Bilgileri</h2>
+      <div class="info-grid">
+        <div class="info-item"><span>Telefon</span><span>{{ tenant.phone || '—' }}</span></div>
+        <div class="info-item"><span>Adres</span><span>{{ tenant.address || '—' }}</span></div>
+        <div class="info-item"><span>Kayıt Tarihi</span><span>{{ formatDate(tenant.createdAt) }}</span></div>
+        <div class="info-item"><span>Durum</span><span>{{ tenant.isDeleted ? 'Silinmiş' : tenant.isActive ? 'Aktif' : 'Pasif' }}</span></div>
+      </div>
+    </div>
+
+    <!-- Recent Appointments -->
+    <div class="appointments-card">
+      <h2>Son Randevular</h2>
+      @if (tenant.recentAppointments?.length === 0) {
+        <p class="empty">Henüz randevu yok.</p>
+      } @else {
+        <table>
+          <thead>
+            <tr>
+              <th>Tarih</th>
+              <th>Müşteri</th>
+              <th>Hizmet</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (a of tenant.recentAppointments; track a.id) {
+              <tr>
+                <td>{{ formatTime(a.startTime) }}</td>
+                <td>{{ a.customerName }}</td>
+                <td>{{ a.serviceName }}</td>
+                <td><span class="status-badge" [class]="statusClass(a.status)">{{ statusLabel(a.status) }}</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+</div>
+
+<!-- Plan Modal -->
+@if (showPlanModal) {
+  <div class="modal-overlay" (click)="showPlanModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Plan Değiştir</h3>
+      <p>{{ tenant.name }} için yeni planı seçin.</p>
+      <div class="plan-options">
+        @for (p of plans; track p) {
+          <label class="plan-option" [class.selected]="selectedPlan === p">
+            <input type="radio" [(ngModel)]="selectedPlan" [value]="p" />
+            {{ p }}
+          </label>
+        }
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="showPlanModal = false">İptal</button>
+        <button class="btn btn-plan" (click)="savePlan()" [disabled]="isProcessing">
+          {{ isProcessing ? 'Kaydediliyor...' : 'Kaydet' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Delete Modal -->
+@if (showDeleteModal) {
+  <div class="modal-overlay" (click)="showDeleteModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>{{ deleteType === 'soft' ? 'Pasif Silme' : 'Kalıcı Silme' }}</h3>
+      <p class="delete-warning">
+        @if (deleteType === 'soft') {
+          <strong>{{ tenant.name }}</strong> işletmesi pasif olarak silinecek. Bu işlem geri alınabilir.
+        } @else {
+          <strong>{{ tenant.name }}</strong> işletmesi ve tüm verileri <strong>kalıcı olarak silinecek</strong>. Bu işlem geri alınamaz!
+        }
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="showDeleteModal = false">İptal</button>
+        <button class="btn" [class.btn-soft-delete]="deleteType === 'soft'" [class.btn-hard-delete]="deleteType === 'hard'"
+          (click)="confirmDelete()" [disabled]="isProcessing">
+          {{ isProcessing ? 'Siliniyor...' : 'Evet, Sil' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

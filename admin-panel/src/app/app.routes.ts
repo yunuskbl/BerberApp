@@ -16,6 +16,20 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'gizlilik-politikasi',
+    loadComponent: () =>
+      import('./features/legal/privacy-policy/privacy-policy.component').then(
+        (m) => m.PrivacyPolicyComponent,
+      ),
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./features/auth/forgot-password/forgot-password.component').then(
+        (m) => m.ForgotPasswordComponent,
+      ),
+  },
+  {
     path: 'salons',
     loadComponent: () =>
       import('./features/salons/salons.component').then(
@@ -55,6 +69,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/super-admin/tenants/super-admin-tenants.component').then(
             (m) => m.SuperAdminTenantsComponent,
+          ),
+      },
+      {
+        path: 'tenants/:id',
+        loadComponent: () =>
+          import('./features/super-admin/tenant-detail/tenant-detail.component').then(
+            (m) => m.TenantDetailComponent,
           ),
       },
       {

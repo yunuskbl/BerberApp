@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { SuperAdminService, SuperAdminTenant, CreateTenantRequest } from '../../../core/services/superadmin.service';
 
 @Component({
   selector: 'app-super-admin-tenants',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './super-admin-tenants.component.html',
   styleUrl: './super-admin-tenants.component.scss'
 })

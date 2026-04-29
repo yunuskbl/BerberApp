@@ -20,6 +20,8 @@ public class User : BaseEntity
     public bool IsVerified { get; set; } = false;
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiry { get; set; }
+    public string? PasswordResetOtp { get; set; }
+    public DateTime? PasswordResetOtpExpiry { get; set; }
 
     // Navigation
     public Tenant Tenant { get; set; } = null!;

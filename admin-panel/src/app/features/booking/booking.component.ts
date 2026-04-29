@@ -8,6 +8,7 @@ import {
   Validators,
   FormsModule,
 } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import {
   BookingApiService,
   SalonInfo,
@@ -26,6 +27,7 @@ import { Title } from '@angular/platform-browser';
     ReactiveFormsModule,
     CustomCalendarComponent,
     FormsModule,
+    RouterModule,
   ],
   templateUrl: './booking.component.html',
   styleUrl: './booking.component.scss',
@@ -90,6 +92,7 @@ export class BookingComponent implements OnInit {
       ],
       email: ['', [Validators.email, Validators.maxLength(80)]],
       notes: ['', [Validators.maxLength(200)]],
+      kvkkConsent: [false, Validators.requiredTrue],
     });
   }
 

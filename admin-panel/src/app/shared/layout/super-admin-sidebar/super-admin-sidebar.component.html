@@ -1,0 +1,33 @@
+<aside class="sa-sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🔐</div>
+    <div class="logo-text">
+      <span class="logo-name">BerberApp</span>
+      <span class="logo-sub">SuperAdmin</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">YÖNETİM</div>
+    @for (item of menuItems; track item.route) {
+      <a [routerLink]="item.route" routerLinkActive="active" class="nav-item" [title]="item.label">
+        <span class="nav-icon">{{ item.icon }}</span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <div class="sidebar-bottom">
+    <button class="nav-item logout-btn" (click)="logout()" title="Çıkış Yap">
+      <span class="nav-icon">🚪</span>
+      <span class="nav-label">Çıkış Yap</span>
+    </button>
+    <div class="sidebar-user">
+      <div class="user-avatar">S</div>
+      <div class="user-info">
+        <span class="user-name">{{ user?.email }}</span>
+        <span class="user-role">SuperAdmin</span>
+      </div>
+    </div>
+  </div>
+</aside>
