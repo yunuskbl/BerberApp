@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { BookingApiService } from '../../../core/services/booking.service';
@@ -12,6 +12,7 @@ import { BookingApiService } from '../../../core/services/booking.service';
 })
 export class AppointmentStatusComponent implements OnInit {
   appointment: any = null;
+  salon: any = null;
   isLoading = true;
   errorMessage = '';
   subdomain = '';
@@ -20,13 +21,53 @@ export class AppointmentStatusComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private bookingService: BookingApiService,
+    private el: ElementRef,
   ) {}
 
   ngOnInit(): void {
     const subdomain = this.route.snapshot.paramMap.get('subdomain') || '';
     const appointmentId = this.route.snapshot.paramMap.get('appointmentId') || '';
     this.subdomain = subdomain;
+    this.loadSalon(subdomain);
     this.loadStatus(subdomain, appointmentId);
+  }
+
+  loadSalon(subdomain: string): void {
+    this.bookingService.getSalon(subdomain).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.salon = res.data;
+          this.applyTheme(res.data.themeColor || '#7c3aed');
+        }
+      },
+    });
+  }
+
+  private applyTheme(color: string): void {
+    const el = this.el.nativeElement as HTMLElement;
+    el.style.setProperty('--theme', color);
+    el.style.setProperty('--theme-dark', this.darkenColor(color, 0.28));
+    el.style.setProperty('--theme-light', this.lightenColor(color, 0.88));
+  }
+
+  private darkenColor(hex: string, factor: number): string {
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const num = parseInt(hex, 16);
+    const r = Math.round(((num >> 16) & 0xff) * (1 - factor));
+    const g = Math.round(((num >> 8) & 0xff) * (1 - factor));
+    const b = Math.round((num & 0xff) * (1 - factor));
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  }
+
+  private lightenColor(hex: string, factor: number): string {
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const num = parseInt(hex, 16);
+    const r = Math.round(((num >> 16) & 0xff) + (255 - ((num >> 16) & 0xff)) * factor);
+    const g = Math.round(((num >> 8) & 0xff) + (255 - ((num >> 8) & 0xff)) * factor);
+    const b = Math.round((num & 0xff) + (255 - (num & 0xff)) * factor);
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   }
 
   loadStatus(subdomain: string, appointmentId: string): void {
@@ -60,49 +101,59 @@ export class AppointmentStatusComponent implements OnInit {
 
   getStatusIcon(): string {
     switch (this.appointment?.status) {
-      case 'Pending': return '⏳';
-      case 'Confirmed': return '✅';
-      case 'Cancelled': return '❌';
-      case 'Completed': return '🎉';
-      default: return '❓';
+      case 'Pending':   return '⏳';
+      case 'Confirmed': return '✓';
+      case 'Cancelled': return '✕';
+      case 'Completed': return '★';
+      default:          return '?';
     }
   }
 
   getStatusText(): string {
     switch (this.appointment?.status) {
-      case 'Pending': return 'Onay Bekleniyor';
-      case 'Confirmed': return 'Onaylandı';
-      case 'Cancelled': return 'İptal Edildi';
-      case 'Completed': return 'Tamamlandı';
-      default: return 'Bilinmiyor';
+      case 'Pending':   return 'Onay Bekleniyor';
+      case 'Confirmed': return 'Randevunuz Onaylandı';
+      case 'Cancelled': return 'Randevu İptal Edildi';
+      case 'Completed': return 'Randevu Tamamlandı';
+      default:          return 'Bilinmiyor';
+    }
+  }
+
+  getStatusSubtext(): string {
+    switch (this.appointment?.status) {
+      case 'Pending':   return 'Salon onayı bekleniyor, kısa süre içinde bilgilendirileceksiniz.';
+      case 'Confirmed': return 'Randevunuz salon tarafından onaylandı. Görüşmek üzere!';
+      case 'Cancelled': return 'Randevunuz iptal edildi. Yeni randevu almak için salonu arayabilirsiniz.';
+      case 'Completed': return 'Randevunuzu tamamladınız. Bizi tercih ettiğiniz için teşekkürler!';
+      default:          return '';
     }
   }
 
   getStatusClass(): string {
     switch (this.appointment?.status) {
-      case 'Pending': return 'status-pending';
+      case 'Pending':   return 'status-pending';
       case 'Confirmed': return 'status-confirmed';
       case 'Cancelled': return 'status-cancelled';
       case 'Completed': return 'status-completed';
-      default: return '';
+      default:          return '';
     }
   }
 
   formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString('tr-TR', {
-      weekday: 'long', day: 'numeric', month: 'long'
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     });
   }
 
   formatTime(dateStr: string): string {
     return new Date(dateStr).toLocaleTimeString('tr-TR', {
-      hour: '2-digit', minute: '2-digit'
+      hour: '2-digit', minute: '2-digit',
     });
   }
 
   formatPrice(price: number, currency: string): string {
     return new Intl.NumberFormat('tr-TR', {
-      style: 'currency', currency: currency || 'TRY'
+      style: 'currency', currency: currency || 'TRY',
     }).format(price);
   }
 }

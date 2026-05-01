@@ -3,12 +3,19 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+export interface SalonPhoto {
+  id: string;
+  url: string;
+}
+
 export interface SalonInfo {
   id: string;
   name: string;
   phone?: string;
   address?: string;
   logoUrl?: string;
+  themeColor?: string;
+  photos?: SalonPhoto[];
 }
 
 export interface BookingService {

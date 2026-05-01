@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -8,7 +8,6 @@ import {
   Validators,
   FormsModule,
 } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 import {
   BookingApiService,
   SalonInfo,
@@ -27,7 +26,6 @@ import { Title } from '@angular/platform-browser';
     ReactiveFormsModule,
     CustomCalendarComponent,
     FormsModule,
-    RouterModule,
   ],
   templateUrl: './booking.component.html',
   styleUrl: './booking.component.scss',
@@ -50,6 +48,30 @@ export class BookingComponent implements OnInit {
   isSuccess = false;
   errorMessage = '';
   bookingResult: any = null;
+
+  lightboxPhoto: string | null = null;
+  lightboxIndex = 0;
+
+  openLightbox(index: number): void {
+    const photos = this.salon?.photos;
+    if (!photos?.length) return;
+    this.lightboxIndex = index;
+    this.lightboxPhoto = photos[index].url;
+  }
+
+  closeLightbox(): void { this.lightboxPhoto = null; }
+
+  lightboxNext(): void {
+    const photos = this.salon?.photos ?? [];
+    this.lightboxIndex = (this.lightboxIndex + 1) % photos.length;
+    this.lightboxPhoto = photos[this.lightboxIndex].url;
+  }
+
+  lightboxPrev(): void {
+    const photos = this.salon?.photos ?? [];
+    this.lightboxIndex = (this.lightboxIndex - 1 + photos.length) % photos.length;
+    this.lightboxPhoto = photos[this.lightboxIndex].url;
+  }
 
   otpSent = false;
   otpVerified = true;
@@ -79,6 +101,8 @@ export class BookingComponent implements OnInit {
     private fb: FormBuilder,
     private titleService: Title,
     private router: Router,
+    private el: ElementRef,
+    private renderer: Renderer2,
   ) {
     this.customerForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.maxLength(30)]],
@@ -92,7 +116,6 @@ export class BookingComponent implements OnInit {
       ],
       email: ['', [Validators.email, Validators.maxLength(80)]],
       notes: ['', [Validators.maxLength(200)]],
-      kvkkConsent: [false, Validators.requiredTrue],
     });
   }
 
@@ -108,6 +131,8 @@ export class BookingComponent implements OnInit {
         if (res.success) {
           this.salon = res.data;
           this.titleService.setTitle(this.salon!.name + ' - BerberApp');
+          const color = this.salon!.themeColor || '#111111';
+          (this.el.nativeElement as HTMLElement).style.setProperty('--accent', color);
           this.loadServices();
           this.loadStaff();
         }

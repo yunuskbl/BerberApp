@@ -2,48 +2,59 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { LanguageService, Lang } from '../../../core/services/language.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TranslatePipe],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+  styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
-  pageTitle    = 'Dashboard';
-  pageSubtitle = 'Genel bakış';
+  currentPath = '/dashboard';
 
-  private pageTitles: Record<string, { title: string; subtitle: string }> = {
-    '/dashboard':    { title: 'Dashboard',   subtitle: 'Genel bakış ve özet bilgiler'    },
-    '/appointments': { title: 'Randevular',  subtitle: 'Randevu yönetimi ve takvim'      },
-    '/staff':        { title: 'Personel',    subtitle: 'Personel yönetimi'               },
-    '/services':     { title: 'Hizmetler',   subtitle: 'Hizmet ve fiyat yönetimi'        },
-    '/customers':    { title: 'Müşteriler',  subtitle: 'Müşteri kayıtları ve geçmiş'     },
-    '/settings':     { title: 'Ayarlar',     subtitle: 'Sistem ve hesap ayarları'        },
-    '/reports':      { title: 'Raporlar',    subtitle: 'Gelir ve performans raporları'  },
+  languages: { code: Lang; flag: string; label: string }[] = [
+    { code: 'tr', flag: '🇹🇷', label: 'TR' },
+    { code: 'en', flag: '🇬🇧', label: 'EN' },
+    { code: 'ru', flag: '🇷🇺', label: 'RU' },
+  ];
+
+  private pathToKey: Record<string, string> = {
+    '/dashboard':    'page.dashboard',
+    '/appointments': 'page.appointments',
+    '/staff':        'page.staff',
+    '/services':     'page.services',
+    '/customers':    'page.customers',
+    '/settings':     'page.settings',
+    '/reports':      'page.reports',
   };
 
-  constructor(private router: Router) {
-    this.updateTitle(this.router.url);
-
+  constructor(
+    private router: Router,
+    public langService: LanguageService,
+  ) {
+    this.currentPath = this.router.url;
     this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
-      .subscribe((e: any) => this.updateTitle(e.urlAfterRedirects));
+      .subscribe((e: any) => (this.currentPath = e.urlAfterRedirects));
   }
 
-  private updateTitle(url: string): void {
-    const page = this.pageTitles[url] ?? { title: 'BerberApp', subtitle: '' };
-    this.pageTitle    = page.title;
-    this.pageSubtitle = page.subtitle;
+  get pageTitleKey(): string {
+    return this.pathToKey[this.currentPath] ?? 'page.dashboard';
   }
 
   get currentDate(): string {
-    return new Date().toLocaleDateString('tr-TR', {
+    return new Date().toLocaleDateString(this.langService.dateLocale, {
       weekday: 'long',
       year:    'numeric',
       month:   'long',
-      day:     'numeric'
+      day:     'numeric',
     });
+  }
+
+  setLang(code: Lang): void {
+    this.langService.setLang(code);
   }
 }

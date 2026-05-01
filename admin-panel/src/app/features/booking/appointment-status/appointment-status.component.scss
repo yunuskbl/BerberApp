@@ -1,151 +1,289 @@
+:host {
+  --theme:       #7c3aed;
+  --theme-dark:  #4a1aaa;
+  --theme-light: #f3eeff;
+}
+
+/* ─── Page background ─── */
 .status-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 1rem;
+  padding: 24px 16px;
+  background: linear-gradient(150deg, var(--theme-dark) 0%, var(--theme) 100%);
+  font-family: 'Inter', sans-serif;
 }
 
+/* ─── Loading / Error ─── */
+.loading-screen,
+.error-screen {
+  text-align: center;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.25);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  p { font-size: 14px; color: rgba(255,255,255,0.75); }
+
+  .error-icon { font-size: 52px; }
+  h2 { font-size: 22px; font-weight: 700; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Card ─── */
 .status-card {
   background: white;
-  border-radius: 1.5rem;
-  padding: 2.5rem 2rem;
-  max-width: 420px;
+  border-radius: 24px;
+  max-width: 440px;
   width: 100%;
-  text-align: center;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-
-  h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 1rem 0 0.5rem;
-    color: #1a1a2e;
-  }
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255,255,255,0.08);
 }
 
-.status-icon {
-  font-size: 3rem;
-  width: 80px;
-  height: 80px;
+/* ─── Card Header (colored) ─── */
+.card-header {
+  background: var(--theme);
+  padding: 28px 24px 36px;
+  text-align: center;
+}
+
+.salon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 20px;
+  padding: 6px 14px 6px 8px;
+  margin-bottom: 24px;
+}
+
+.salon-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--theme);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.salon-name-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: 0.1px;
+}
+
+/* Status icon circle */
+.status-icon-wrap {
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto;
+  margin: 0 auto 18px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 3px solid rgba(255, 255, 255, 0.38);
+  font-size: 30px;
 
-  &.status-pending { background: #fff8e1; }
-  &.status-confirmed { background: #e8f5e9; }
-  &.status-cancelled { background: #ffebee; }
-  &.status-completed { background: #e3f2fd; }
+  &.status-pending {
+    background: rgba(251, 191, 36, 0.22);
+    border-color: rgba(251, 191, 36, 0.55);
+  }
+
+  &.status-cancelled {
+    background: rgba(239, 68, 68, 0.22);
+    border-color: rgba(239, 68, 68, 0.55);
+  }
+
+  /* confirmed & completed stay in theme color style */
 }
 
+.status-icon-inner {
+  line-height: 1;
+  font-size: 32px;
+}
+
+.card-header h2 {
+  font-size: 21px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 8px;
+  letter-spacing: -0.3px;
+}
+
+.status-subtext {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0 auto;
+  max-width: 300px;
+  line-height: 1.55;
+}
+
+/* ─── Card Body ─── */
+.card-body {
+  padding: 24px;
+}
+
+/* Save link banner */
 .save-link-banner {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 0.75rem;
-  padding: 1rem;
-  margin: 1rem 0;
-  text-align: left;
+  background: var(--theme-light);
+  border: 1.5px solid var(--theme);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
 
   .save-link-title {
+    font-size: 13px;
     font-weight: 700;
-    color: #15803d;
-    margin: 0 0 0.25rem;
-    font-size: 0.9rem;
+    color: var(--theme);
+    margin: 0 0 4px;
   }
 
   .save-link-desc {
-    font-size: 0.8rem;
-    color: #4b5563;
-    margin: 0 0 0.75rem;
+    font-size: 12px;
+    color: #64748b;
+    margin: 0 0 12px;
+    line-height: 1.5;
   }
 
   .link-box {
     background: white;
-    border: 1px solid #d1fae5;
-    border-radius: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    margin-bottom: 0.75rem;
-    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
 
     .link-text {
-      font-size: 0.72rem;
-      color: #374151;
+      font-size: 11px;
+      color: var(--theme);
+      font-weight: 500;
       word-break: break-all;
     }
   }
 
   .link-actions {
     display: flex;
-    gap: 0.5rem;
-  }
-
-  .btn-copy, .btn-whatsapp {
-    flex: 1;
-    padding: 0.5rem 0.75rem;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s;
-
-    &:active { opacity: 0.8; }
-  }
-
-  .btn-copy {
-    background: #e0e7ff;
-    color: #3730a3;
-  }
-
-  .btn-whatsapp {
-    background: #dcfce7;
-    color: #15803d;
+    gap: 8px;
   }
 }
 
-.appointment-details {
-  background: #f8f9fa;
-  border-radius: 1rem;
-  padding: 1.25rem;
-  margin: 1.5rem 0;
-  text-align: left;
-
-  .detail-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #eee;
-
-    &:last-child { border-bottom: none; }
-
-    .label { color: #888; font-size: 0.875rem; }
-    .value { font-weight: 600; color: #1a1a2e; }
-  }
-}
-
-.footer-note {
-  font-size: 0.8rem;
-  color: #aaa;
-  margin-top: 1rem;
-}
-
-.loading-screen, .error-screen {
-  text-align: center;
+.btn-copy {
+  flex: 1;
+  padding: 10px 8px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--theme);
   color: white;
+  font-family: 'Inter', sans-serif;
+  transition: opacity 0.15s;
 
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 1rem;
+  &:hover  { opacity: 0.88; }
+  &:active { opacity: 0.75; }
+}
+
+.btn-whatsapp {
+  flex: 1;
+  padding: 10px 8px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #22c55e;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  transition: opacity 0.15s;
+
+  &:hover  { opacity: 0.88; }
+  &:active { opacity: 0.75; }
+}
+
+/* Appointment detail rows */
+.appointment-details {
+  background: #f8fafc;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+
+  &:last-child { border-bottom: none; }
+
+  .label {
+    font-size: 13px;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    svg { flex-shrink: 0; }
+  }
+
+  .value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    text-align: right;
+    max-width: 58%;
+  }
+
+  &.price-row .value {
+    font-size: 15px;
+    color: var(--theme);
   }
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+/* Footer */
+.footer-note {
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ─── Mobile ─── */
+@media (max-width: 480px) {
+  .status-page {
+    align-items: flex-start;
+    padding-top: 36px;
+  }
+
+  .card-header {
+    padding: 22px 20px 30px;
+  }
+
+  .card-body {
+    padding: 20px;
+  }
 }

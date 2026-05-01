@@ -1,12 +1,29 @@
 <header class="header">
   <div class="header-left">
-    <h2 class="page-title">{{ pageTitle }}</h2>
+    <h2 class="page-title">{{ pageTitleKey | translate }}</h2>
     <span class="page-date">{{ currentDate }}</span>
   </div>
+
   <div class="header-right">
+    <!-- Language switcher -->
+    <div class="lang-switcher">
+      @for (l of languages; track l.code) {
+        <button
+          class="lang-btn"
+          [class.active]="langService.lang() === l.code"
+          (click)="setLang(l.code)"
+          [title]="l.label"
+        >
+          <span class="lang-flag">{{ l.flag }}</span>
+          <span class="lang-label">{{ l.label }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- System badge -->
     <div class="header-badge">
       <span class="badge-dot"></span>
-      Sistem Aktif
+      {{ 'header.system' | translate }}
     </div>
   </div>
 </header>

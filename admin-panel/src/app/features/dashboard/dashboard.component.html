@@ -3,24 +3,22 @@
   <!-- Page Header -->
   <div class="page-header">
     <div>
-      <h2>Dashboard</h2>
-      <p>Hoş geldiniz! İşte bugünün özeti.</p>
+      <h2>{{ 'page.dashboard' | translate }}</h2>
+      <p>{{ 'dashboard.subtitle' | translate }}</p>
     </div>
     <a routerLink="/appointments" class="btn btn-primary">
-      + Yeni Randevu
+      {{ 'dashboard.newAppointment' | translate }}
     </a>
   </div>
 
-
-  
   <!-- Stats Cards -->
   <div class="stats-grid">
-    @for (stat of stats; track stat.label) {
+    @for (stat of stats; track stat.key) {
       <a [routerLink]="stat.route" class="stat-card stat-{{ stat.color }}">
         <div class="stat-icon">{{ stat.icon }}</div>
         <div class="stat-info">
           <span class="stat-value">{{ stat.value }}</span>
-          <span class="stat-label">{{ stat.label }}</span>
+          <span class="stat-label">{{ stat.key | translate }}</span>
         </div>
         <div class="stat-arrow">→</div>
       </a>
@@ -33,18 +31,16 @@
     <!-- Bugünkü Randevular -->
     <div class="card">
       <div class="card-header">
-        <h3>Bugünkü Randevular</h3>
-        <a routerLink="/appointments" class="card-link">Tümünü Gör →</a>
+        <h3>{{ 'dashboard.todayAppts' | translate }}</h3>
+        <a routerLink="/appointments" class="card-link">{{ 'dashboard.viewAll' | translate }}</a>
       </div>
 
       @if (isLoading) {
-        <div class="loading-state">
-          <div class="spinner"></div>
-        </div>
+        <div class="loading-state"><div class="spinner"></div></div>
       } @else if (todayAppointments.length === 0) {
         <div class="empty-state">
           <span class="empty-icon">📅</span>
-          <p>Bugün randevu bulunmuyor.</p>
+          <p>{{ 'dashboard.noAppts' | translate }}</p>
         </div>
       } @else {
         <div class="appointment-list">
@@ -59,7 +55,7 @@
                 <span class="apt-service">{{ apt.serviceName }} — {{ apt.staffName }}</span>
               </div>
               <span class="badge {{ getStatusClass(apt.status) }}">
-                {{ getStatusLabel(apt.status) }}
+                {{ getStatusKey(apt.status) | translate }}
               </span>
             </div>
           }
@@ -70,15 +66,15 @@
     <!-- Hızlı İşlemler -->
     <div class="card">
       <div class="card-header">
-        <h3>Hızlı İşlemler</h3>
+        <h3>{{ 'dashboard.quickActions' | translate }}</h3>
       </div>
 
       <div class="quick-actions">
         <a routerLink="/appointments" class="quick-action-item">
           <div class="qa-icon qa-purple">📅</div>
           <div class="qa-info">
-            <span class="qa-title">Yeni Randevu</span>
-            <span class="qa-desc">Randevu oluştur</span>
+            <span class="qa-title">{{ 'dashboard.q1' | translate }}</span>
+            <span class="qa-desc">{{ 'dashboard.q1sub' | translate }}</span>
           </div>
           <span class="qa-arrow">→</span>
         </a>
@@ -86,8 +82,8 @@
         <a routerLink="/customers" class="quick-action-item">
           <div class="qa-icon qa-blue">👥</div>
           <div class="qa-info">
-            <span class="qa-title">Müşteri Ekle</span>
-            <span class="qa-desc">Yeni müşteri kaydı</span>
+            <span class="qa-title">{{ 'dashboard.q2' | translate }}</span>
+            <span class="qa-desc">{{ 'dashboard.q2sub' | translate }}</span>
           </div>
           <span class="qa-arrow">→</span>
         </a>
@@ -95,8 +91,8 @@
         <a routerLink="/staff" class="quick-action-item">
           <div class="qa-icon qa-green">👤</div>
           <div class="qa-info">
-            <span class="qa-title">Personel Ekle</span>
-            <span class="qa-desc">Yeni personel kaydı</span>
+            <span class="qa-title">{{ 'dashboard.q3' | translate }}</span>
+            <span class="qa-desc">{{ 'dashboard.q3sub' | translate }}</span>
           </div>
           <span class="qa-arrow">→</span>
         </a>
@@ -104,8 +100,8 @@
         <a routerLink="/services" class="quick-action-item">
           <div class="qa-icon qa-amber">✂</div>
           <div class="qa-info">
-            <span class="qa-title">Hizmet Ekle</span>
-            <span class="qa-desc">Yeni hizmet tanımla</span>
+            <span class="qa-title">{{ 'dashboard.q4' | translate }}</span>
+            <span class="qa-desc">{{ 'dashboard.q4sub' | translate }}</span>
           </div>
           <span class="qa-arrow">→</span>
         </a>

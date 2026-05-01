@@ -3,111 +3,134 @@
     <div class="header-left">
       <button class="btn-back" routerLink="/dashboard">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M19 12H5M12 19l-7-7 7-7"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
+          <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
       <div>
-        <h2>Ayarlar</h2>
-        <p>Salon ve hesap ayarlarınızı yönetin</p>
+        <h2>{{ 'settings.title' | translate }}</h2>
+        <p>{{ 'settings.subtitle' | translate }}</p>
       </div>
     </div>
-    <button class="btn btn-danger" (click)="logout()">🚪 Çıkış Yap</button>
+    <button class="btn btn-danger" (click)="logout()">
+      {{ 'settings.logout' | translate }}
+    </button>
   </div>
 
   @if (isLoading) {
     <div class="loading-state"><div class="spinner"></div></div>
   } @else {
     <div class="settings-grid">
-      <!-- Salon Bilgileri -->
+
+      <!-- ── Salon Bilgileri ── -->
       <div class="settings-card">
         <div class="card-header">
           <div class="card-icon">🏪</div>
           <div>
-            <h3>Salon Bilgileri</h3>
-            <p>Müşterilerinizin göreceği salon bilgileri</p>
+            <h3>{{ 'settings.salon.card' | translate }}</h3>
+            <p>{{ 'settings.salon.cardSub' | translate }}</p>
           </div>
         </div>
 
         <form [formGroup]="salonForm" (ngSubmit)="onSaveSalon()">
 
-          <!-- Logo Upload -->
+          <!-- Logo -->
           <div class="logo-upload-group">
-            <label>Salon Logosu</label>
+            <label>{{ 'settings.salon.logo' | translate }}</label>
             <div class="logo-area">
               <div class="logo-preview-box" (click)="logoInput.click()">
                 @if (isUploadingLogo) {
                   <div class="logo-spinner"><div class="spinner"></div></div>
                 } @else if (logoPreview) {
-                  <img [src]="logoPreview + '?v=' + logoVersion" alt="Logo" class="logo-img" />
-                  <div class="logo-change-overlay">Değiştir</div>
+                  <img [src]="logoPreview + '?v=' + logoVersion" alt="Logo" class="logo-img"/>
+                  <div class="logo-change-overlay">{{ 'settings.salon.logoChange' | translate }}</div>
                 } @else {
                   <div class="logo-empty">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
                       <rect x="3" y="3" width="18" height="18" rx="3" stroke="#a78bfa" stroke-width="1.5"/>
                       <circle cx="8.5" cy="8.5" r="1.5" fill="#a78bfa"/>
-                      <path d="M3 15l5-5 4 4 3-3 6 6" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M3 15l5-5 4 4 3-3 6 6" stroke="#a78bfa" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span>Logo Yükle</span>
+                    <span>{{ 'settings.salon.logoSelect' | translate }}</span>
                   </div>
                 }
               </div>
               <div class="logo-info">
                 <button type="button" class="btn-upload-logo" (click)="logoInput.click()" [disabled]="isUploadingLogo">
-                  {{ isUploadingLogo ? 'Yükleniyor...' : logoPreview ? 'Logoyu Değiştir' : 'Logo Seç' }}
+                  {{ isUploadingLogo
+                      ? ('settings.salon.logoUploading' | translate)
+                      : logoPreview
+                        ? ('settings.salon.logoChange' | translate)
+                        : ('settings.salon.logoSelect' | translate) }}
                 </button>
-                <small>JPG, PNG veya WebP · Maks 5MB</small>
-                @if (logoUploadError) {
-                  <span class="logo-error">{{ logoUploadError }}</span>
-                }
+                <small>{{ 'settings.salon.logoHint' | translate }}</small>
+                @if (logoUploadError) { <span class="logo-error">{{ logoUploadError }}</span> }
               </div>
             </div>
             <input #logoInput type="file" accept="image/jpeg,image/png,image/webp"
-              (change)="onLogoFileSelected($event)" style="display:none" />
+              (change)="onLogoFileSelected($event)" style="display:none"/>
           </div>
 
+          <!-- Salon Adı -->
           <div class="form-group">
-            <label>Salon Adı *</label>
-            <input
-              type="text"
-              formControlName="name"
-              placeholder="Salon adınız"
-            />
+            <label>{{ 'settings.salon.name' | translate }}</label>
+            <input type="text" formControlName="name"
+              [placeholder]="'settings.salon.namePh' | translate"/>
           </div>
 
+          <!-- Telefon -->
           <div class="form-group">
-            <label>Telefon</label>
-            <input
-              type="text"
-              formControlName="phone"
-              placeholder="05XX XXX XX XX"
-            />
+            <label>{{ 'settings.salon.phone' | translate }}</label>
+            <input type="text" formControlName="phone"
+              [placeholder]="'settings.salon.phonePh' | translate"/>
+            @if (salonForm.get('phone')?.invalid && salonForm.get('phone')?.touched) {
+              <span class="error-text">{{ 'settings.salon.phoneErr' | translate }}</span>
+            }
           </div>
 
+          <!-- WhatsApp -->
           <div class="form-group">
-            <label>WhatsApp Bildirim Numarası</label>
-            <input
-              type="text"
-              formControlName="notificationPhone"
-              placeholder="05XX XXX XX XX"
-            />
-            <small style="color: #6b7280; font-size: 0.75rem"
-              >Yeni randevu taleplerinde bu numaraya WhatsApp bildirimi
-              gönderilir.</small
-            >
+            <label>{{ 'settings.salon.whatsapp' | translate }}</label>
+            <input type="text" formControlName="notificationPhone"
+              [placeholder]="'settings.salon.whatsappPh' | translate"/>
+            @if (salonForm.get('notificationPhone')?.invalid && salonForm.get('notificationPhone')?.touched) {
+              <span class="error-text">{{ 'settings.salon.phoneErr' | translate }}</span>
+            }
+            <small style="color:#6b7280;font-size:.75rem">
+              {{ 'settings.salon.whatsappHint' | translate }}
+            </small>
           </div>
+
+          <!-- Adres -->
           <div class="form-group">
-            <label>Adres</label>
-            <input
-              type="text"
-              formControlName="address"
-              placeholder="Salon adresiniz"
-            />
+            <label>{{ 'settings.salon.address' | translate }}</label>
+            <input type="text" formControlName="address"
+              [placeholder]="'settings.salon.addressPh' | translate"/>
+          </div>
+
+          <!-- Tema Rengi -->
+          <div class="form-group">
+            <label>{{ 'settings.salon.themeColor' | translate }}</label>
+            <div class="color-swatches">
+              @for (color of presetColors; track color.value) {
+                <button type="button" class="swatch"
+                  [style.background]="color.value"
+                  [class.active]="salonForm.get('themeColor')?.value === color.value"
+                  [title]="color.label"
+                  (click)="salonForm.get('themeColor')?.setValue(color.value)">
+                </button>
+              }
+            </div>
+            <div class="color-input-group" style="margin-top:10px">
+              <input type="color" formControlName="themeColor" class="color-picker"
+                [title]="'settings.salon.custom' | translate"/>
+              <span class="color-value">{{ salonForm.get('themeColor')?.value || '#111111' }}</span>
+              <span class="color-label">{{ 'settings.salon.custom' | translate }}</span>
+            </div>
+            <small style="color:#6b7280;font-size:.75rem">
+              {{ 'settings.salon.themeHint' | translate }}
+            </small>
           </div>
 
           @if (successMessage) {
@@ -117,61 +140,80 @@
             <div class="alert alert-error">{{ errorMessage }}</div>
           }
 
+          <!-- Booking Link (inline) -->
           <div class="form-group">
-            <label>Müşteri Booking Linki</label>
+            <label>{{ 'settings.salon.bookingLink' | translate }}</label>
             <div class="link-box">
-              <span class="link-text">{{
-                user?.subdomain ? "/book/" + user?.subdomain : "/book/..."
-              }}</span>
-              <button class="btn-copy" (click)="copyLink()" title="Kopyala">
+              <span class="link-text">
+                {{ user?.subdomain ? '/book/' + user?.subdomain : '/book/...' }}
+              </span>
+              <button class="btn-copy" type="button" (click)="copyLink()" title="Kopyala">
                 @if (copied) {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M20 6L9 17l-5-5"
-                      stroke="#16a34a"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
+                    <path d="M20 6L9 17l-5-5" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
                   </svg>
                 } @else {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <rect
-                      x="9"
-                      y="9"
-                      width="13"
-                      height="13"
-                      rx="2"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    />
-                    <path
-                      d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    />
+                    <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
+                          stroke="currentColor" stroke-width="2"/>
                   </svg>
                 }
               </button>
             </div>
           </div>
 
-          <button type="submit" class="btn btn-primary" [disabled]="isSaving">
-            {{ isSaving ? "Kaydediliyor..." : "Kaydet" }}
+          <button type="submit" class="btn btn-primary" [disabled]="isSaving || salonForm.invalid">
+            {{ isSaving ? ('settings.salon.saving' | translate) : ('settings.salon.save' | translate) }}
           </button>
         </form>
       </div>
 
-      <!-- Profil Bilgileri -->
+      <!-- ── Salon Fotoğrafları ── -->
+      <div class="settings-card">
+        <div class="card-header">
+          <div class="card-icon">🖼️</div>
+          <div>
+            <h3>{{ 'settings.photos.card' | translate }}</h3>
+            <p>{{ 'settings.photos.cardSub' | translate }}</p>
+          </div>
+        </div>
+
+        <div class="photo-grid">
+          @for (photo of salonPhotos; track photo.id) {
+            <div class="photo-item">
+              <img [src]="photo.url" alt="Salon fotoğrafı"/>
+              <button class="photo-delete" (click)="deletePhoto(photo.id)" title="Sil">✕</button>
+            </div>
+          }
+          @if (salonPhotos.length < 6) {
+            <div class="photo-add" (click)="photoInput.click()">
+              @if (isUploadingPhoto) {
+                <div class="spinner"></div>
+              } @else {
+                <span class="photo-add-icon">+</span>
+                <span>{{ 'settings.photos.add' | translate }}</span>
+              }
+            </div>
+          }
+        </div>
+
+        @if (photoUploadError) {
+          <div class="alert alert-error" style="margin-top:12px">{{ photoUploadError }}</div>
+        }
+        <input #photoInput type="file" accept="image/jpeg,image/png,image/webp"
+          (change)="onPhotoSelected($event)" style="display:none"/>
+      </div>
+
+      <!-- ── Profil Bilgileri ── -->
       <div class="settings-card">
         <div class="card-header">
           <div class="card-icon">👤</div>
           <div>
-            <h3>Profil Bilgileri</h3>
-            <p>Hesap bilgileriniz</p>
+            <h3>{{ 'settings.profile.card' | translate }}</h3>
+            <p>{{ 'settings.profile.cardSub' | translate }}</p>
           </div>
         </div>
-
         <div class="profile-info">
           <div class="profile-avatar">{{ user?.fullName?.charAt(0) }}</div>
           <div class="profile-details">
@@ -182,53 +224,49 @@
         </div>
       </div>
 
-      <!-- Şifre Değiştir -->
+      <!-- ── Şifre Değiştir ── -->
       <div class="settings-card">
         <div class="card-header">
           <div class="card-icon">🔒</div>
           <div>
-            <h3>Şifre Değiştir</h3>
-            <p>Hesap güvenliğiniz için şifrenizi güncelleyin</p>
+            <h3>{{ 'settings.password.card' | translate }}</h3>
+            <p>{{ 'settings.password.cardSub' | translate }}</p>
           </div>
         </div>
 
         <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()">
+
           <div class="form-group">
-            <label>Mevcut Şifre</label>
-            <input
-              type="password"
-              formControlName="currentPassword"
-              placeholder="••••••••"
-            />
+            <label>{{ 'settings.password.current' | translate }}</label>
+            <input type="password" formControlName="currentPassword" placeholder="••••••••"/>
           </div>
 
           <div class="form-group">
-            <label>Yeni Şifre</label>
-            <input
-              type="password"
-              formControlName="newPassword"
-              placeholder="••••••••"
-            />
-            @if (
-              passwordForm.get("newPassword")?.invalid &&
-              passwordForm.get("newPassword")?.touched
-            ) {
-              <span class="error-text">En az 6 karakter olmalı.</span>
-            }
+            <label>{{ 'settings.password.new' | translate }}</label>
+            <input type="password" formControlName="newPassword" placeholder="••••••••"/>
+
+            <!-- Canlı kural göstergesi -->
+            <div class="password-rules" [class.visible]="newPassTouched || newPassValue.length > 0">
+              <div class="rule-item" [class.met]="passRuleMinLen">
+                <span class="rule-icon">{{ passRuleMinLen ? '✓' : '○' }}</span>
+                {{ 'settings.password.rule.minLen' | translate }}
+              </div>
+              <div class="rule-item" [class.met]="passRuleUpper">
+                <span class="rule-icon">{{ passRuleUpper ? '✓' : '○' }}</span>
+                {{ 'settings.password.rule.upper' | translate }}
+              </div>
+              <div class="rule-item" [class.met]="passRuleNumber">
+                <span class="rule-icon">{{ passRuleNumber ? '✓' : '○' }}</span>
+                {{ 'settings.password.rule.number' | translate }}
+              </div>
+            </div>
           </div>
 
           <div class="form-group">
-            <label>Yeni Şifre Tekrar</label>
-            <input
-              type="password"
-              formControlName="confirmPassword"
-              placeholder="••••••••"
-            />
-            @if (
-              passwordForm.errors?.["passwordMismatch"] &&
-              passwordForm.get("confirmPassword")?.touched
-            ) {
-              <span class="error-text">Şifreler eşleşmiyor.</span>
+            <label>{{ 'settings.password.confirm' | translate }}</label>
+            <input type="password" formControlName="confirmPassword" placeholder="••••••••"/>
+            @if (passwordForm.errors?.['passwordMismatch'] && passwordForm.get('confirmPassword')?.touched) {
+              <span class="error-text">{{ 'settings.password.noMatch' | translate }}</span>
             }
           </div>
 
@@ -239,96 +277,53 @@
             <div class="alert alert-error">{{ passError }}</div>
           }
 
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="isChangingPass"
-          >
-            {{ isChangingPass ? "Değiştiriliyor..." : "Şifreyi Değiştir" }}
+          <button type="submit" class="btn btn-primary" [disabled]="isChangingPass">
+            {{ isChangingPass
+                ? ('settings.password.changing' | translate)
+                : ('settings.password.change' | translate) }}
           </button>
         </form>
       </div>
 
-      <!-- Booking Link -->
-      <!-- Müşteri Randevu Linki -->
+      <!-- ── Müşteri Randevu Linki ── -->
       <div class="settings-card">
         <div class="card-header">
           <div class="card-icon">🔗</div>
           <div>
-            <h3>Müşteri Randevu Linki</h3>
-            <p>Bu linki müşterilerinizle paylaşın</p>
+            <h3>{{ 'settings.booking.card' | translate }}</h3>
+            <p>{{ 'settings.booking.cardSub' | translate }}</p>
           </div>
         </div>
 
         <div class="qr-section">
-          <div class="booking-url">
-            <span>{{ bookingUrl }}</span>
-          </div>
+          <div class="booking-url"><span>{{ bookingUrl }}</span></div>
           <div class="link-actions">
-            <button
-              class="btn-copy-main"
-              (click)="copyMainLink()"
-              title="Linki Kopyala"
-            >
+            <button class="btn-copy-main" (click)="copyMainLink()" title="Linki Kopyala">
               @if (copiedMain) {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M20 6L9 17l-5-5"
-                    stroke="#16a34a"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
+                  <path d="M20 6L9 17l-5-5" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
                 </svg>
               } @else {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <rect
-                    x="9"
-                    y="9"
-                    width="13"
-                    height="13"
-                    rx="2"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  />
-                  <path
-                    d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  />
+                  <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
+                        stroke="currentColor" stroke-width="2"/>
                 </svg>
               }
             </button>
             <a [href]="bookingUrl" target="_blank" class="btn btn-outline">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                />
-                <polyline
-                  points="15 3 21 3 21 9"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-                <line
-                  x1="10"
-                  y1="14"
-                  x2="21"
-                  y2="3"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                />
+                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <polyline points="15 3 21 3 21 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
-              Önizle
+              {{ 'settings.booking.preview' | translate }}
             </a>
           </div>
         </div>
       </div>
+
     </div>
   }
 </div>

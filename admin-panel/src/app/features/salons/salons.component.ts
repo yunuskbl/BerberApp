@@ -6,12 +6,13 @@ import { FormsModule } from '@angular/forms';
 import { environment } from '../../../environments/environment';
 
 interface Salon {
-  id:        string;
-  name:      string;
-  subdomain: string;
-  phone?:    string;
-  address?:  string;
-  logoUrl?:  string;
+  id:         string;
+  name:       string;
+  subdomain:  string;
+  phone?:     string;
+  address?:   string;
+  logoUrl?:   string;
+  themeColor?: string;
 }
 
 @Component({

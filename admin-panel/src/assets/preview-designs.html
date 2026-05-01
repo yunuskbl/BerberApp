@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tasarım Önizleme</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #f5f4f2; color: #111; }
+
+.tabs {
+  display: flex; gap: 6px; padding: 14px 20px;
+  background: white; border-bottom: 1px solid #ebebeb;
+  position: sticky; top: 0; z-index: 100; align-items: center;
+}
+.tab-btn {
+  padding: 8px 20px; border-radius: 6px;
+  border: 1px solid #e5e5e5; background: white; color: #666;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  font-family: 'Inter', sans-serif; transition: all 0.15s;
+}
+.tab-btn.active { background: #111; color: white; border-color: #111; }
+.color-swatches { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+.color-label { font-size: 12px; color: #999; margin-right: 2px; }
+.color-swatch {
+  width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent; transition: all 0.15s;
+}
+.color-swatch:hover, .color-swatch.active { border-color: #111; transform: scale(1.15); }
+
+.design { display: none; }
+.design.active { display: block; }
+
+/* ══ BOOKING ══ */
+.booking-wrap { display: flex; height: calc(100vh - 53px); }
+
+.left {
+  width: 320px; flex-shrink: 0; background: white;
+  border-right: 1px solid #ebebeb; display: flex;
+  flex-direction: column; overflow-y: auto; scrollbar-width: none;
+}
+.left::-webkit-scrollbar { display: none; }
+
+.salon-identity { padding: 28px 24px 22px; border-bottom: 1px solid #f0f0f0; }
+.salon-logo {
+  width: 50px; height: 50px; border-radius: 12px;
+  background: var(--accent, #111); display: flex; align-items: center;
+  justify-content: center; font-weight: 800; font-size: 17px; color: #fff; margin-bottom: 14px;
+}
+.salon-name { font-size: 19px; font-weight: 700; color: #111; letter-spacing: -0.4px; margin-bottom: 4px; }
+.salon-location { font-size: 13px; color: #999; }
+.salon-rating {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 10px;
+  padding: 5px 10px; background: #f7f7f7; border: 1px solid #eee;
+  border-radius: 6px; font-size: 12px; color: #888;
+}
+.salon-rating span { color: #111; font-weight: 600; }
+.section-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; color: #bbb; margin-bottom: 10px;
+}
+
+.photos-section { padding: 18px 24px; border-bottom: 1px solid #f0f0f0; }
+.photos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.photo-item {
+  border-radius: 8px; border: 1px solid #eee;
+  aspect-ratio: 4/3; overflow: hidden; position: relative;
+}
+.photo-item:first-child { grid-column: 1/-1; aspect-ratio: 16/7; }
+.photo-item svg { width: 100%; height: 100%; display: block; }
+
+.map-section { padding: 18px 24px; border-bottom: 1px solid #f0f0f0; }
+.map-card { border: 1px solid #eee; border-radius: 10px; overflow: hidden; cursor: pointer; }
+.map-thumb { height: 90px; overflow: hidden; position: relative; }
+.map-thumb svg { width: 100%; height: 100%; display: block; }
+.map-info { padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; }
+.map-address { font-size: 12px; color: #999; }
+.map-btn-small {
+  font-size: 11px; font-weight: 600; color: #111;
+  background: #f5f5f5; border: 1px solid #e5e5e5;
+  padding: 4px 10px; border-radius: 5px; cursor: pointer;
+}
+
+.summary-section { padding: 18px 24px; margin-top: auto; border-top: 1px solid #f0f0f0; }
+.summary-rows { display: flex; flex-direction: column; gap: 7px; }
+.sum-row { display: flex; justify-content: space-between; font-size: 13px; }
+.sum-row .k { color: #bbb; } .sum-row .v { color: #555; font-weight: 500; }
+.sum-divider { height: 1px; background: #f0f0f0; margin: 10px 0; }
+.sum-total { display: flex; justify-content: space-between; align-items: center; }
+.sum-total .k { font-size: 13px; color: #aaa; }
+.sum-total .v { font-size: 24px; font-weight: 700; color: #111; letter-spacing: -0.5px; }
+
+.right { flex: 1; background: #f5f4f2; overflow-y: auto; }
+.right-inner { max-width: 540px; margin: 0 auto; padding: 36px 36px 80px; }
+
+.step-block { margin-bottom: 32px; }
+.step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.step-num {
+  width: 22px; height: 22px; border-radius: 50%; background: #eee;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #bbb; flex-shrink: 0;
+}
+.step-num.active { background: var(--accent, #111); color: #fff; }
+.step-title { font-size: 14px; font-weight: 600; color: #111; }
+.step-sep { flex: 1; height: 1px; background: #e8e8e8; }
+
+.service-list { display: flex; flex-direction: column; gap: 2px; }
+.service-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; border-radius: 10px; background: white;
+  border: 1px solid #ebebeb; cursor: pointer; transition: all 0.15s;
+}
+.service-row:hover { border-color: #ccc; }
+.service-row.sel { border-color: var(--accent, #111); }
+.service-left { display: flex; align-items: center; gap: 10px; }
+.service-radio {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 1.5px solid #ddd; flex-shrink: 0; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.service-row.sel .service-radio { border-color: var(--accent, #111); }
+.service-row.sel .service-radio::after {
+  content: ''; width: 6px; height: 6px;
+  background: var(--accent, #111); border-radius: 50%; display: block;
+}
+.service-name { font-size: 14px; font-weight: 500; color: #333; }
+.service-row.sel .service-name { color: #111; }
+.service-dur { font-size: 12px; color: #bbb; margin-top: 1px; }
+.service-price { font-size: 14px; font-weight: 600; color: #bbb; }
+.service-row.sel .service-price { color: var(--accent, #111); }
+
+.staff-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+.staff-card {
+  display: flex; align-items: center; gap: 9px; padding: 9px 13px;
+  background: white; border: 1px solid #ebebeb; border-radius: 10px; cursor: pointer; transition: all 0.15s;
+}
+.staff-card:hover { border-color: #bbb; }
+.staff-card.sel { border-color: var(--accent, #111); }
+.staff-av {
+  width: 30px; height: 30px; border-radius: 50%; background: #f0f0f0;
+  display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #999;
+}
+.staff-card.sel .staff-av { background: var(--accent, #111); color: #fff; }
+.staff-name { font-size: 13px; font-weight: 500; color: #999; }
+.staff-card.sel .staff-name { color: #111; }
+
+.slots-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.slot {
+  padding: 10px 0; text-align: center; background: white;
+  border: 1px solid #ebebeb; border-radius: 8px;
+  font-size: 13px; font-weight: 500; color: #aaa; cursor: pointer; transition: all 0.15s;
+}
+.slot:hover { border-color: #999; color: #333; }
+.slot.sel { background: var(--accent, #111); color: #fff; border-color: var(--accent, #111); font-weight: 600; }
+
+.form-fields { display: flex; flex-direction: column; gap: 8px; }
+.field-input {
+  width: 100%; padding: 13px 16px; background: white;
+  border: 1px solid #ebebeb; border-radius: 10px;
+  font-size: 14px; font-family: 'Inter', sans-serif; color: #111; outline: none; transition: border-color 0.15s;
+}
+.field-input:focus { border-color: var(--accent, #111); }
+.field-input::placeholder { color: #ccc; }
+.submit-btn {
+  width: 100%; padding: 15px; background: var(--accent, #111);
+  border: none; border-radius: 10px; font-size: 15px; font-weight: 600;
+  color: #fff; cursor: pointer; font-family: 'Inter', sans-serif; margin-top: 4px;
+}
+.submit-btn:hover { opacity: 0.85; }
+
+/* ══ SALONS ══ */
+.salons-wrap { background: #f5f4f2; min-height: calc(100vh - 53px); }
+.salons-hero { background: white; border-bottom: 1px solid #ebebeb; padding: 32px 40px; }
+.salons-hero-inner { max-width: 860px; margin: 0 auto; }
+.salons-hero h1 { font-size: 28px; font-weight: 700; color: #111; letter-spacing: -0.5px; margin-bottom: 4px; }
+.salons-hero p { font-size: 14px; color: #999; margin-bottom: 20px; }
+.search-bar { display: flex; gap: 8px; max-width: 480px; }
+.search-input {
+  flex: 1; padding: 12px 16px; background: #f5f4f2;
+  border: 1px solid #e5e5e5; border-radius: 10px;
+  font-size: 14px; font-family: 'Inter', sans-serif; color: #111; outline: none;
+}
+.search-input::placeholder { color: #bbb; }
+.search-btn {
+  padding: 12px 20px; background: var(--accent, #111); border: none;
+  border-radius: 10px; font-size: 14px; font-weight: 600; color: white;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+}
+.salons-content { max-width: 860px; margin: 0 auto; padding: 28px 40px 60px; }
+.salons-count { font-size: 13px; color: #999; margin-bottom: 16px; }
+.salons-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.salon-card {
+  background: white; border: 1px solid #ebebeb; border-radius: 14px;
+  overflow: hidden; cursor: pointer; transition: all 0.15s; text-decoration: none; display: block;
+}
+.salon-card:hover { border-color: #ccc; box-shadow: 0 4px 16px rgba(0,0,0,0.06); transform: translateY(-1px); }
+.card-illus { height: 130px; overflow: hidden; position: relative; }
+.card-illus svg { width: 100%; height: 100%; display: block; }
+.card-body { padding: 16px; }
+.card-logo {
+  width: 40px; height: 40px; border-radius: 10px;
+  color: white; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; margin-top: -32px; margin-bottom: 10px;
+  border: 3px solid white; position: relative;
+}
+.card-name { font-size: 15px; font-weight: 600; color: #111; margin-bottom: 4px; }
+.card-address { font-size: 12px; color: #999; margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-footer { display: flex; align-items: center; justify-content: space-between; }
+.card-rating { font-size: 12px; color: #888; }
+.card-btn {
+  font-size: 12px; font-weight: 600; color: #111;
+  background: #f5f4f2; border: 1px solid #e5e5e5;
+  padding: 6px 14px; border-radius: 7px; text-decoration: none;
+}
+.salon-card:hover .card-btn { background: var(--accent, #111); color: white; border-color: var(--accent, #111); }
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="show('booking', this)">Booking Sayfası</button>
+  <button class="tab-btn" onclick="show('salons', this)">Salonlar Sayfası</button>
+  <div class="color-swatches">
+    <span class="color-label">Tema:</span>
+    <div class="color-swatch active" style="background:#111" onclick="setColor('#111',this)"></div>
+    <div class="color-swatch" style="background:#7c3aed" onclick="setColor('#7c3aed',this)"></div>
+    <div class="color-swatch" style="background:#0ea5e9" onclick="setColor('#0ea5e9',this)"></div>
+    <div class="color-swatch" style="background:#059669" onclick="setColor('#059669',this)"></div>
+    <div class="color-swatch" style="background:#dc2626" onclick="setColor('#dc2626',this)"></div>
+    <div class="color-swatch" style="background:#c9a227" onclick="setColor('#c9a227',this)"></div>
+    <div class="color-swatch" style="background:#f97316" onclick="setColor('#f97316',this)"></div>
+  </div>
+</div>
+
+<!-- ══ BOOKING ══ -->
+<div id="design-booking" class="design active">
+<div class="booking-wrap">
+  <div class="left">
+    <div class="salon-identity">
+      <div class="salon-logo">BS</div>
+      <div class="salon-name">Barber Studio</div>
+      <div class="salon-location">📍 Kadıköy, İstanbul</div>
+      <div class="salon-rating">⭐ <span>4.9</span> · 127 değerlendirme</div>
+    </div>
+
+    <div class="photos-section">
+      <div class="section-label">Fotoğraflar</div>
+      <div class="photos-grid">
+
+        <!-- MAIN: full barber shop interior bg -->
+        <div class="photo-item">
+          <svg viewBox="0 0 272 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- bg gradient -->
+            <defs>
+              <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#f0ede8"/>
+                <stop offset="100%" stop-color="#e8e3db"/>
+              </linearGradient>
+            </defs>
+            <rect width="272" height="100" fill="url(#wallGrad)"/>
+            <!-- floor -->
+            <rect y="72" width="272" height="28" fill="#e0dbd2"/>
+            <!-- tile grid -->
+            <line x1="0" y1="24" x2="272" y2="24" stroke="#e5e0d8" stroke-width="0.8"/>
+            <line x1="0" y1="48" x2="272" y2="48" stroke="#e5e0d8" stroke-width="0.8"/>
+            <line x1="68" y1="0" x2="68" y2="72" stroke="#e5e0d8" stroke-width="0.8"/>
+            <line x1="136" y1="0" x2="136" y2="72" stroke="#e5e0d8" stroke-width="0.8"/>
+            <line x1="204" y1="0" x2="204" y2="72" stroke="#e5e0d8" stroke-width="0.8"/>
+            <!-- barber pole -->
+            <rect x="14" y="8" width="10" height="66" rx="3" fill="white" stroke="#ddd" stroke-width="0.8"/>
+            <rect x="14" y="8" width="10" height="10" rx="3" fill="#eee"/>
+            <path d="M14,22 Q19,29 24,22" fill="#e44" opacity="0.75"/>
+            <path d="M14,36 Q19,43 24,36" fill="#e44" opacity="0.75"/>
+            <path d="M14,50 Q19,57 24,50" fill="#e44" opacity="0.75"/>
+            <path d="M14,64 Q19,71 24,64" fill="#e44" opacity="0.75"/>
+            <circle cx="19" cy="8" r="4" fill="#eee" stroke="#ddd" stroke-width="0.8"/>
+            <circle cx="19" cy="74" r="4" fill="#eee" stroke="#ddd" stroke-width="0.8"/>
+            <!-- big mirror -->
+            <rect x="34" y="6" width="52" height="64" rx="3" fill="#d8e8f4" stroke="#ccc" stroke-width="0.8"/>
+            <rect x="37" y="9" width="46" height="58" rx="2" fill="#e8f2fa" opacity="0.7"/>
+            <line x1="56" y1="9" x2="38" y2="65" stroke="rgba(255,255,255,0.5)" stroke-width="3"/>
+            <!-- shelf -->
+            <rect x="32" y="68" width="58" height="3" rx="1" fill="#d0c8be"/>
+            <!-- bottles -->
+            <rect x="40" y="52" width="7" height="16" rx="2" fill="#a8c4d8"/>
+            <rect x="50" y="55" width="6" height="13" rx="2" fill="#c4b8d0"/>
+            <rect x="59" y="53" width="7" height="15" rx="2" fill="#d4c4a0"/>
+            <rect x="68" y="56" width="5" height="12" rx="2" fill="#b8d0b8"/>
+            <!-- chair base/pedestal -->
+            <rect x="96" y="64" width="80" height="8" rx="2" fill="#b8b0a4"/>
+            <rect x="110" y="72" width="8" height="14" rx="2" fill="#c0b8ac"/>
+            <rect x="154" y="72" width="8" height="14" rx="2" fill="#c0b8ac"/>
+            <!-- chair seat -->
+            <rect x="94" y="46" width="84" height="20" rx="5" fill="#cdc6bc"/>
+            <!-- chair back -->
+            <rect x="104" y="30" width="64" height="18" rx="6" fill="#c4bdb3"/>
+            <!-- chair headrest -->
+            <rect x="112" y="20" width="48" height="12" rx="5" fill="#cdc6bc"/>
+            <!-- armrests -->
+            <rect x="90" y="50" width="14" height="6" rx="3" fill="#bab3a9"/>
+            <rect x="168" y="50" width="14" height="6" rx="3" fill="#bab3a9"/>
+            <!-- window -->
+            <rect x="196" y="6" width="62" height="56" rx="3" fill="#d4eaf8" stroke="#ccc" stroke-width="0.8"/>
+            <line x1="227" y1="6" x2="227" y2="62" stroke="#ccc" stroke-width="0.8"/>
+            <line x1="196" y1="34" x2="258" y2="34" stroke="#ccc" stroke-width="0.8"/>
+            <!-- window light reflection -->
+            <rect x="199" y="9" width="25" height="22" rx="1" fill="rgba(255,255,255,0.25)"/>
+          </svg>
+        </div>
+
+        <!-- SMALL 1: scissors close-up bg -->
+        <div class="photo-item">
+          <svg viewBox="0 0 130 98" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="scBg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#f5f2f0"/>
+                <stop offset="100%" stop-color="#ebe6e0"/>
+              </linearGradient>
+            </defs>
+            <rect width="130" height="98" fill="url(#scBg)"/>
+            <!-- subtle dot pattern -->
+            <circle cx="20" cy="20" r="1.5" fill="#ddd"/>
+            <circle cx="45" cy="20" r="1.5" fill="#ddd"/>
+            <circle cx="70" cy="20" r="1.5" fill="#ddd"/>
+            <circle cx="95" cy="20" r="1.5" fill="#ddd"/>
+            <circle cx="120" cy="20" r="1.5" fill="#ddd"/>
+            <circle cx="20" cy="45" r="1.5" fill="#ddd"/>
+            <circle cx="45" cy="45" r="1.5" fill="#ddd"/>
+            <circle cx="70" cy="45" r="1.5" fill="#ddd"/>
+            <circle cx="95" cy="45" r="1.5" fill="#ddd"/>
+            <circle cx="120" cy="45" r="1.5" fill="#ddd"/>
+            <circle cx="20" cy="70" r="1.5" fill="#ddd"/>
+            <circle cx="45" cy="70" r="1.5" fill="#ddd"/>
+            <circle cx="70" cy="70" r="1.5" fill="#ddd"/>
+            <circle cx="95" cy="70" r="1.5" fill="#ddd"/>
+            <circle cx="120" cy="70" r="1.5" fill="#ddd"/>
+            <!-- scissors large -->
+            <g transform="translate(65,49) rotate(-25)">
+              <!-- blade 1 -->
+              <circle cx="-24" cy="-16" r="11" fill="none" stroke="#a0a8b0" stroke-width="2.5"/>
+              <circle cx="-24" cy="-16" r="5.5" fill="#c8d0d8"/>
+              <line x1="-24" y1="-5" x2="30" y2="22" stroke="#a0a8b0" stroke-width="3" stroke-linecap="round"/>
+              <!-- blade 2 -->
+              <circle cx="-24" cy="16" r="11" fill="none" stroke="#b8bfc8" stroke-width="2.5"/>
+              <circle cx="-24" cy="16" r="5.5" fill="#d0d8e0"/>
+              <line x1="-24" y1="5" x2="30" y2="-22" stroke="#b8bfc8" stroke-width="3" stroke-linecap="round"/>
+              <!-- screw -->
+              <circle cx="0" cy="0" r="3" fill="#888" opacity="0.6"/>
+            </g>
+          </svg>
+        </div>
+
+        <!-- SMALL 2: products bg -->
+        <div class="photo-item">
+          <svg viewBox="0 0 130 98" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="prBg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#f0f4f8"/>
+                <stop offset="100%" stop-color="#e4ecf4"/>
+              </linearGradient>
+            </defs>
+            <rect width="130" height="98" fill="url(#prBg)"/>
+            <!-- shelf line -->
+            <rect x="10" y="78" width="110" height="3" rx="1.5" fill="#ccd4dc"/>
+            <!-- bottle 1 - tall dark -->
+            <rect x="22" y="40" width="16" height="38" rx="4" fill="#3d4856"/>
+            <rect x="24" y="32" width="12" height="10" rx="3" fill="#2d3844"/>
+            <rect x="26" y="27" width="8" height="7" rx="2" fill="#1e2830"/>
+            <rect x="25" y="48" width="10" height="6" rx="1" fill="rgba(255,255,255,0.12)"/>
+            <!-- bottle 2 - cream round -->
+            <rect x="46" y="48" width="18" height="30" rx="9" fill="#f0e8d8"/>
+            <rect x="50" y="42" width="10" height="8" rx="3" fill="#e0d8c8"/>
+            <rect x="52" y="38" width="6" height="6" rx="2" fill="#d0c8b8"/>
+            <rect x="48" y="56" width="14" height="5" rx="1" fill="rgba(180,160,120,0.3)"/>
+            <!-- bottle 3 - blue pump -->
+            <rect x="72" y="34" width="20" height="44" rx="5" fill="#5588c0"/>
+            <rect x="76" y="26" width="12" height="10" rx="3" fill="#4070a8"/>
+            <rect x="80" y="20" width="4" height="8" rx="1" fill="#3060a0"/>
+            <rect x="86" y="28" width="8" height="3" rx="1" fill="#3060a0"/>
+            <rect x="74" y="48" width="16" height="8" rx="1" fill="rgba(255,255,255,0.2)"/>
+            <!-- bottle 4 - small green -->
+            <rect x="100" y="54" width="14" height="24" rx="3" fill="#4a9060"/>
+            <rect x="103" y="48" width="8" height="8" rx="2" fill="#3a7850"/>
+            <rect x="105" y="44" width="4" height="5" rx="1" fill="#2a6040"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-section">
+      <div class="section-label">Konum</div>
+      <div class="map-card">
+        <div class="map-thumb">
+          <svg viewBox="0 0 272 90" xmlns="http://www.w3.org/2000/svg">
+            <!-- map base -->
+            <rect width="272" height="90" fill="#e8f0e4"/>
+            <!-- park/green areas -->
+            <rect x="5" y="5" width="55" height="28" rx="3" fill="#c8dcc0" opacity="0.9"/>
+            <rect x="5" y="58" width="55" height="27" rx="3" fill="#c8dcc0" opacity="0.9"/>
+            <rect x="185" y="5" width="82" height="28" rx="3" fill="#c8dcc0" opacity="0.9"/>
+            <rect x="185" y="58" width="82" height="27" rx="3" fill="#c8dcc0" opacity="0.9"/>
+            <!-- blocks -->
+            <rect x="68" y="5" width="46" height="28" rx="2" fill="#d8e4d0" opacity="0.9"/>
+            <rect x="120" y="5" width="58" height="28" rx="2" fill="#d4e0cc" opacity="0.9"/>
+            <rect x="68" y="58" width="46" height="27" rx="2" fill="#d8e4d0" opacity="0.9"/>
+            <rect x="120" y="58" width="58" height="27" rx="2" fill="#d4e0cc" opacity="0.9"/>
+            <!-- main road horizontal -->
+            <rect x="0" y="33" width="272" height="20" fill="#f5f3ee"/>
+            <!-- main road vertical -->
+            <rect x="120" y="0" width="20" height="90" fill="#f5f3ee"/>
+            <!-- road markings -->
+            <line x1="0" y1="43" x2="115" y2="43" stroke="#e0dccc" stroke-width="1" stroke-dasharray="10,7"/>
+            <line x1="145" y1="43" x2="272" y2="43" stroke="#e0dccc" stroke-width="1" stroke-dasharray="10,7"/>
+            <line x1="130" y1="0" x2="130" y2="28" stroke="#e0dccc" stroke-width="1" stroke-dasharray="10,7"/>
+            <line x1="130" y1="58" x2="130" y2="90" stroke="#e0dccc" stroke-width="1" stroke-dasharray="10,7"/>
+            <!-- pin shadow -->
+            <ellipse cx="130" cy="47" rx="10" ry="3" fill="rgba(0,0,0,0.1)"/>
+            <!-- pin -->
+            <path d="M130,14 C121,14 114,21 114,30 C114,42 130,55 130,55 C130,55 146,42 146,30 C146,21 139,14 130,14Z" fill="#e85555"/>
+            <circle cx="130" cy="30" r="6" fill="white"/>
+            <circle cx="130" cy="30" r="2.5" fill="#e85555"/>
+          </svg>
+        </div>
+        <div class="map-info">
+          <div class="map-address">Moda Cad. No:12, Kadıköy</div>
+          <button class="map-btn-small">Yol Tarifi</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-section">
+      <div class="section-label" style="margin-bottom:12px">Özet</div>
+      <div class="summary-rows">
+        <div class="sum-row"><span class="k">Hizmet</span><span class="v">Klasik Tıraş</span></div>
+        <div class="sum-row"><span class="k">Berber</span><span class="v">Ahmet Usta</span></div>
+        <div class="sum-row"><span class="k">Tarih</span><span class="v">30 Nis, 10:00</span></div>
+      </div>
+      <div class="sum-divider"></div>
+      <div class="sum-total"><span class="k">Toplam</span><span class="v">₺150</span></div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="right-inner">
+      <div class="step-block">
+        <div class="step-header"><div class="step-num active">1</div><div class="step-title">Hizmet Seçin</div><div class="step-sep"></div></div>
+        <div class="service-list">
+          <div class="service-row sel"><div class="service-left"><div class="service-radio"></div><div><div class="service-name">Klasik Tıraş</div><div class="service-dur">30 dk</div></div></div><div class="service-price">₺150</div></div>
+          <div class="service-row"><div class="service-left"><div class="service-radio"></div><div><div class="service-name">Saç Kesim</div><div class="service-dur">30 dk</div></div></div><div class="service-price">₺180</div></div>
+          <div class="service-row"><div class="service-left"><div class="service-radio"></div><div><div class="service-name">Saç + Sakal</div><div class="service-dur">60 dk</div></div></div><div class="service-price">₺280</div></div>
+          <div class="service-row"><div class="service-left"><div class="service-radio"></div><div><div class="service-name">Cilt Bakımı</div><div class="service-dur">45 dk</div></div></div><div class="service-price">₺220</div></div>
+        </div>
+      </div>
+      <div class="step-block">
+        <div class="step-header"><div class="step-num active">2</div><div class="step-title">Berber Seçin</div><div class="step-sep"></div></div>
+        <div class="staff-grid">
+          <div class="staff-card sel"><div class="staff-av">AK</div><div class="staff-name">Ahmet Usta</div></div>
+          <div class="staff-card"><div class="staff-av">MB</div><div class="staff-name">Mehmet Bey</div></div>
+          <div class="staff-card"><div class="staff-av">KU</div><div class="staff-name">Kemal Usta</div></div>
+        </div>
+      </div>
+      <div class="step-block">
+        <div class="step-header"><div class="step-num active">3</div><div class="step-title">Saat Seçin</div><div class="step-sep"></div></div>
+        <div class="slots-grid">
+          <div class="slot">09:00</div><div class="slot">09:30</div><div class="slot sel">10:00</div><div class="slot">10:30</div><div class="slot">11:00</div>
+          <div class="slot">11:30</div><div class="slot">14:00</div><div class="slot">14:30</div><div class="slot">15:00</div><div class="slot">15:30</div>
+        </div>
+      </div>
+      <div class="step-block">
+        <div class="step-header"><div class="step-num active">4</div><div class="step-title">Bilgileriniz</div><div class="step-sep"></div></div>
+        <div class="form-fields">
+          <input class="field-input" placeholder="Ad Soyad"/>
+          <input class="field-input" placeholder="Telefon"/>
+          <input class="field-input" placeholder="Email (opsiyonel)"/>
+          <button class="submit-btn">Randevu Al →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ SALONS ══ -->
+<div id="design-salons" class="design">
+<div class="salons-wrap">
+  <div class="salons-hero">
+    <div class="salons-hero-inner">
+      <h1>Salon Bul</h1>
+      <p>Yakınındaki berberi bul, hemen randevu al</p>
+      <div class="search-bar">
+        <input class="search-input" placeholder="Salon adı veya şehir ara..."/>
+        <button class="search-btn">Ara</button>
+      </div>
+    </div>
+  </div>
+  <div class="salons-content">
+    <div class="salons-count">4 salon bulundu</div>
+    <div class="salons-grid">
+
+      <a class="salon-card" href="#">
+        <div class="card-illus">
+          <svg viewBox="0 0 280 130" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ede8f5"/><stop offset="100%" stop-color="#e0d8f0"/></linearGradient></defs>
+            <rect width="280" height="130" fill="url(#bg1)"/>
+            <rect y="95" width="280" height="35" fill="#d8d0ec"/>
+            <!-- floor tiles -->
+            <line x1="0" y1="95" x2="280" y2="95" stroke="#ccc4e4" stroke-width="1"/>
+            <!-- barber pole -->
+            <rect x="20" y="10" width="12" height="88" rx="3" fill="white" stroke="#ddd" stroke-width="1"/>
+            <path d="M20,22 Q26,30 32,22" fill="#9b6be8" opacity="0.7"/><path d="M20,38 Q26,46 32,38" fill="#9b6be8" opacity="0.7"/>
+            <path d="M20,54 Q26,62 32,54" fill="#9b6be8" opacity="0.7"/><path d="M20,70 Q26,78 32,70" fill="#9b6be8" opacity="0.7"/>
+            <circle cx="26" cy="10" r="5" fill="#eee" stroke="#ddd" stroke-width="1"/>
+            <circle cx="26" cy="98" r="5" fill="#eee" stroke="#ddd" stroke-width="1"/>
+            <!-- mirror -->
+            <rect x="44" y="8" width="56" height="78" rx="4" fill="#d4e4f8" stroke="#ccc" stroke-width="1"/>
+            <rect x="48" y="12" width="48" height="70" rx="2" fill="#e4eef8" opacity="0.6"/>
+            <line x1="62" y1="12" x2="48" y2="80" stroke="rgba(255,255,255,0.5)" stroke-width="4"/>
+            <!-- shelf -->
+            <rect x="42" y="84" width="62" height="4" rx="1" fill="#c8c0d8"/>
+            <!-- chair -->
+            <rect x="110" y="55" width="90" height="40" rx="5" fill="#c8c0d8"/>
+            <rect x="120" y="40" width="70" height="18" rx="6" fill="#bcb4cc"/>
+            <rect x="130" y="28" width="50" height="14" rx="5" fill="#c8c0d8"/>
+            <rect x="106" y="58" width="16" height="7" rx="3" fill="#b4acc4"/>
+            <rect x="178" y="58" width="16" height="7" rx="3" fill="#b4acc4"/>
+            <rect x="120" y="95" width="10" height="20" rx="2" fill="#c0b8d0"/>
+            <rect x="160" y="95" width="10" height="20" rx="2" fill="#c0b8d0"/>
+            <!-- window -->
+            <rect x="212" y="10" width="58" height="70" rx="3" fill="#d0e8f8" stroke="#ccc" stroke-width="1"/>
+            <line x1="241" y1="10" x2="241" y2="80" stroke="#ccc" stroke-width="1"/>
+            <line x1="212" y1="40" x2="270" y2="40" stroke="#ccc" stroke-width="1"/>
+            <rect x="214" y="12" width="24" height="26" rx="1" fill="rgba(255,255,255,0.3)"/>
+          </svg>
+        </div>
+        <div class="card-body">
+          <div class="card-logo" style="background:#7c3aed">BS</div>
+          <div class="card-name">Barber Studio</div>
+          <div class="card-address">📍 Moda Cad. No:12, Kadıköy</div>
+          <div class="card-footer"><span class="card-rating">⭐ 4.9 · 127 yorum</span><span class="card-btn">Randevu Al →</span></div>
+        </div>
+      </a>
+
+      <a class="salon-card" href="#">
+        <div class="card-illus">
+          <svg viewBox="0 0 280 130" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8f5ee"/><stop offset="100%" stop-color="#d8eee0"/></linearGradient></defs>
+            <rect width="280" height="130" fill="url(#bg2)"/>
+            <!-- dot grid -->
+            <circle cx="30" cy="30" r="2" fill="#b8d8c0" opacity="0.7"/><circle cx="70" cy="30" r="2" fill="#b8d8c0" opacity="0.7"/><circle cx="110" cy="30" r="2" fill="#b8d8c0" opacity="0.7"/><circle cx="150" cy="30" r="2" fill="#b8d8c0" opacity="0.7"/><circle cx="190" cy="30" r="2" fill="#b8d8c0" opacity="0.7"/><circle cx="230" cy="30" r="2" fill="#b8d8c0" opacity="0.7"/><circle cx="270" cy="30" r="2" fill="#b8d8c0" opacity="0.7"/>
+            <circle cx="30" cy="65" r="2" fill="#b8d8c0" opacity="0.7"/><circle cx="70" cy="65" r="2" fill="#b8d8c0" opacity="0.7"/><circle cx="150" cy="65" r="2" fill="#b8d8c0" opacity="0.7"/><circle cx="190" cy="65" r="2" fill="#b8d8c0" opacity="0.7"/><circle cx="250" cy="65" r="2" fill="#b8d8c0" opacity="0.7"/>
+            <circle cx="30" cy="100" r="2" fill="#b8d8c0" opacity="0.7"/><circle cx="70" cy="100" r="2" fill="#b8d8c0" opacity="0.7"/><circle cx="110" cy="100" r="2" fill="#b8d8c0" opacity="0.7"/><circle cx="190" cy="100" r="2" fill="#b8d8c0" opacity="0.7"/><circle cx="230" cy="100" r="2" fill="#b8d8c0" opacity="0.7"/>
+            <!-- scissors -->
+            <g transform="translate(140,65) rotate(-20) scale(1.6)">
+              <circle cx="-24" cy="-16" r="11" fill="none" stroke="#78b890" stroke-width="2.5"/>
+              <circle cx="-24" cy="-16" r="5" fill="#a8d0b8"/>
+              <line x1="-24" y1="-5" x2="30" y2="22" stroke="#78b890" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="-24" cy="16" r="11" fill="none" stroke="#90c4a4" stroke-width="2.5"/>
+              <circle cx="-24" cy="16" r="5" fill="#b8dcc8"/>
+              <line x1="-24" y1="5" x2="30" y2="-22" stroke="#90c4a4" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="0" cy="0" r="3" fill="#60a080" opacity="0.7"/>
+            </g>
+          </svg>
+        </div>
+        <div class="card-body">
+          <div class="card-logo" style="background:#059669">UK</div>
+          <div class="card-name">Usta Kesim</div>
+          <div class="card-address">📍 Bağdat Cad. No:45, Suadiye</div>
+          <div class="card-footer"><span class="card-rating">⭐ 4.7 · 84 yorum</span><span class="card-btn">Randevu Al →</span></div>
+        </div>
+      </a>
+
+      <a class="salon-card" href="#">
+        <div class="card-illus">
+          <svg viewBox="0 0 280 130" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="bg3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f5ece8"/><stop offset="100%" stop-color="#ede0d8"/></linearGradient></defs>
+            <rect width="280" height="130" fill="url(#bg3)"/>
+            <rect x="14" y="88" width="252" height="4" rx="2" fill="#d8ccc4"/>
+            <!-- bottles as full bg -->
+            <rect x="30" y="38" width="24" height="50" rx="6" fill="#4a5468"/>
+            <rect x="34" y="28" width="16" height="12" rx="4" fill="#38404e"/>
+            <rect x="38" y="22" width="8" height="8" rx="2" fill="#2a3038"/>
+            <rect x="33" y="52" width="18" height="10" rx="1" fill="rgba(255,255,255,0.1)"/>
+            <!-- -->
+            <rect x="64" y="50" width="22" height="38" rx="11" fill="#f0e4d0"/>
+            <rect x="68" y="42" width="14" height="10" rx="4" fill="#e0d4c0"/>
+            <rect x="71" y="36" width="8" height="8" rx="2" fill="#d0c4b0"/>
+            <rect x="65" y="62" width="20" height="6" rx="1" fill="rgba(180,160,120,0.25)"/>
+            <!-- -->
+            <rect x="96" y="30" width="28" height="58" rx="6" fill="#5090c8"/>
+            <rect x="100" y="20" width="20" height="12" rx="4" fill="#3878b0"/>
+            <rect x="105" y="13" width="10" height="9" rx="2" fill="#2868a0"/>
+            <rect x="110" y="21" width="12" height="4" rx="1" fill="#2060a0"/>
+            <rect x="98" y="46" width="22" height="10" rx="1" fill="rgba(255,255,255,0.2)"/>
+            <!-- -->
+            <rect x="136" y="45" width="20" height="43" rx="5" fill="#78a870"/>
+            <rect x="139" y="37" width="14" height="10" rx="3" fill="#608860"/>
+            <rect x="142" y="31" width="8" height="8" rx="2" fill="#508050"/>
+            <!-- -->
+            <rect x="168" y="34" width="26" height="54" rx="6" fill="#d0a880"/>
+            <rect x="172" y="25" width="18" height="11" rx="3" fill="#c09870"/>
+            <rect x="175" y="19" width="12" height="8" rx="2" fill="#b08860"/>
+            <rect x="169" y="50" width="24" height="8" rx="1" fill="rgba(255,255,255,0.2)"/>
+            <!-- -->
+            <rect x="206" y="42" width="22" height="46" rx="5" fill="#c8b8d8"/>
+            <rect x="209" y="33" width="16" height="11" rx="3" fill="#b8a8c8"/>
+            <rect x="212" y="27" width="10" height="8" rx="2" fill="#a898b8"/>
+            <!-- -->
+            <rect x="238" y="48" width="18" height="40" rx="4" fill="#e8c890"/>
+            <rect x="241" y="40" width="12" height="10" rx="3" fill="#d8b880"/>
+            <rect x="243" y="34" width="8" height="8" rx="2" fill="#c8a870"/>
+          </svg>
+        </div>
+        <div class="card-body">
+          <div class="card-logo" style="background:#dc2626">MS</div>
+          <div class="card-name">Modern Saç</div>
+          <div class="card-address">📍 İstiklal Cad. No:8, Beyoğlu</div>
+          <div class="card-footer"><span class="card-rating">⭐ 4.8 · 203 yorum</span><span class="card-btn">Randevu Al →</span></div>
+        </div>
+      </a>
+
+      <a class="salon-card" href="#">
+        <div class="card-illus">
+          <svg viewBox="0 0 280 130" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="bg4" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f5f0e4"/><stop offset="100%" stop-color="#ece4d0"/></linearGradient></defs>
+            <rect width="280" height="130" fill="url(#bg4)"/>
+            <!-- diagonal line pattern -->
+            <line x1="-10" y1="20" x2="50" y2="140" stroke="#e0d8c4" stroke-width="8"/>
+            <line x1="30" y1="20" x2="90" y2="140" stroke="#e0d8c4" stroke-width="8"/>
+            <line x1="70" y1="20" x2="130" y2="140" stroke="#e0d8c4" stroke-width="8"/>
+            <line x1="110" y1="20" x2="170" y2="140" stroke="#e0d8c4" stroke-width="8"/>
+            <line x1="150" y1="20" x2="210" y2="140" stroke="#e0d8c4" stroke-width="8"/>
+            <line x1="190" y1="20" x2="250" y2="140" stroke="#e0d8c4" stroke-width="8"/>
+            <line x1="230" y1="20" x2="290" y2="140" stroke="#e0d8c4" stroke-width="8"/>
+            <!-- razor large -->
+            <g transform="translate(105,65) rotate(15)">
+              <rect x="-10" y="-42" width="20" height="84" rx="5" fill="#b8c4d0"/>
+              <rect x="-10" y="-42" width="20" height="14" rx="5" fill="#a0b0c0"/>
+              <rect x="-12" y="-26" width="24" height="5" rx="1" fill="#8898a8"/>
+              <rect x="-12" y="-17" width="24" height="5" rx="1" fill="#8898a8"/>
+              <rect x="-8" y="-6" width="16" height="6" rx="1" fill="rgba(255,255,255,0.2)"/>
+            </g>
+            <!-- comb large -->
+            <g transform="translate(178,65) rotate(-10)">
+              <rect x="-12" y="-38" width="24" height="76" rx="5" fill="#c4b498"/>
+              <rect x="-12" y="-38" width="24" height="14" rx="5" fill="#b4a488"/>
+              <line x1="-6" y1="-20" x2="-6" y2="34" stroke="#a49478" stroke-width="2"/>
+              <line x1="0" y1="-20" x2="0" y2="34" stroke="#a49478" stroke-width="2"/>
+              <line x1="6" y1="-20" x2="6" y2="34" stroke="#a49478" stroke-width="2"/>
+            </g>
+          </svg>
+        </div>
+        <div class="card-body">
+          <div class="card-logo" style="background:#c9a227">KB</div>
+          <div class="card-name">Klasik Berber</div>
+          <div class="card-address">📍 Nişantaşı Cad. No:21, Şişli</div>
+          <div class="card-footer"><span class="card-rating">⭐ 4.6 · 61 yorum</span><span class="card-btn">Randevu Al →</span></div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.design').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('design-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+function setColor(color, el) {
+  document.documentElement.style.setProperty('--accent', color);
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>

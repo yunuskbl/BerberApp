@@ -1,366 +1,331 @@
-<div class="booking-page">
-  @if (isLoading) {
-    <div class="loading-screen">
-      <div class="spinner"></div>
-      <p>Salon bilgileri yükleniyor...</p>
-    </div>
-  } @else if (errorMessage && !salon) {
-    <div class="error-screen">
-      <span class="error-icon">✂</span>
-      <h2>Salon Bulunamadı</h2>
-      <p>{{ errorMessage }}</p>
-    </div>
-  } @else if (isSuccess) {
-    <div class="success-screen">
-      <div class="success-card">
-        <div class="success-icon">✓</div>
-        <h2>Randevunuz Alındı!</h2>
-        <p>Randevu bilgileriniz aşağıda.</p>
+<!-- Loading -->
+@if (isLoading) {
+  <div class="loading-screen">
+    <div class="spinner"></div>
+    <p>Salon bilgileri yükleniyor...</p>
+  </div>
+}
 
-        <div class="pending-note">
-          ⏳ Randevunuz onay bekliyor. Salon onayladıktan sonra WhatsApp'a
-          bildirim gelecektir.
-        </div>
-        <div class="booking-summary">
-          <div class="summary-item">
-            <span class="summary-label">Salon</span>
-            <span class="summary-value">{{ salon?.name }}</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Hizmet</span>
-            <span class="summary-value">{{ selectedService?.name }}</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Personel</span>
-            <span class="summary-value">{{ selectedStaff?.fullName }}</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Tarih</span>
-            <span class="summary-value">{{ formatDate(selectedSlot) }}</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Saat</span>
-            <span class="summary-value">{{ formatTime(selectedSlot) }}</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Ücret</span>
-            <span class="summary-value">
-              {{
-                formatPrice(
-                  selectedService?.price || 0,
-                  selectedService?.currency || "TRY"
-                )
-              }}
-            </span>
-          </div>
-        </div>
+<!-- Error -->
+@else if (errorMessage && !salon) {
+  <div class="error-screen">
+    <span class="error-icon">✂</span>
+    <h2>Salon Bulunamadı</h2>
+    <p>{{ errorMessage }}</p>
+  </div>
+}
 
-        <p class="success-note">
-          Randevunuzu değiştirmek veya iptal etmek için salonumuzu
-          arayabilirsiniz.
-        </p>
-
-        @if (salon?.phone) {
-          <a [href]="'tel:' + salon?.phone" class="btn-call">
-            📞 {{ salon?.phone }}
-          </a>
-        }
+<!-- Success -->
+@else if (isSuccess) {
+  <div class="success-screen">
+    <div class="success-card">
+      <div class="success-icon">✓</div>
+      <h2>Randevunuz Alındı!</h2>
+      <p>Randevu bilgileriniz aşağıda.</p>
+      <div class="pending-note">⏳ Randevunuz onay bekliyor. Salon onayladıktan sonra WhatsApp'a bildirim gelecektir.</div>
+      <div class="booking-summary">
+        <div class="summary-item"><span class="summary-label">Salon</span><span class="summary-value">{{ salon?.name }}</span></div>
+        <div class="summary-item"><span class="summary-label">Hizmet</span><span class="summary-value">{{ selectedService?.name }}</span></div>
+        <div class="summary-item"><span class="summary-label">Personel</span><span class="summary-value">{{ selectedStaff?.fullName }}</span></div>
+        <div class="summary-item"><span class="summary-label">Tarih</span><span class="summary-value">{{ formatDate(selectedSlot) }}</span></div>
+        <div class="summary-item"><span class="summary-label">Saat</span><span class="summary-value">{{ formatTime(selectedSlot) }}</span></div>
+        <div class="summary-item"><span class="summary-label">Ücret</span><span class="summary-value">{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span></div>
       </div>
+      <p class="success-note">Randevunuzu değiştirmek veya iptal etmek için salonumuzu arayabilirsiniz.</p>
+      @if (salon?.phone) {
+        <a [href]="'tel:' + salon?.phone" class="btn-call">📞 {{ salon?.phone }}</a>
+      }
     </div>
-  } @else {
-    <!-- Salon Header -->
-    <div class="salon-header">
-      <div class="salon-logo">
-        @if (salon?.logoUrl) {
-          <img [src]="salon!.logoUrl" [alt]="salon?.name" class="salon-logo-img" />
-        } @else {
-          {{ getInitials(salon?.name || "") }}
-        }
-      </div>
-      <div class="salon-info">
-        <h1>{{ salon?.name }}</h1>
-        @if (salon?.address) {
-          <p class="salon-address">📍 {{ salon?.address }}</p>
-        }
-        @if (salon?.phone) {
-          <p class="salon-phone">📞 {{ salon?.phone }}</p>
-        }
-      </div>
-    </div>
+  </div>
+}
 
-    <div class="booking-container">
-      <!-- Hizmet Seç -->
-      <div class="section">
-        <div class="section-header">
-          <div class="section-number">1</div>
-          <h2>Hizmet Seçin</h2>
-        </div>
-        <div class="service-list">
-          @for (service of services; track service.id) {
-            <div
-              class="service-item"
-              [class.selected]="selectedService?.id === service.id"
-              (click)="selectService(service)"
-            >
-              <div
-                class="service-color"
-                [style.background]="service.color || '#7c3aed'"
-              ></div>
-              <div class="service-details">
-                <span class="service-name">{{ service.name }}</span>
-                <span class="service-meta"
-                  >⏱ {{ service.durationMinutes }} dk</span
-                >
-              </div>
-              <span class="service-price">
-                {{ formatPrice(service.price, service.currency) }}
-              </span>
-              @if (selectedService?.id === service.id) {
-                <span class="check">✓</span>
-              }
-            </div>
+<!-- Main Booking -->
+@else {
+  <div class="booking-page">
+
+    <!-- LEFT PANEL -->
+    <div class="booking-left">
+
+      <div class="left-scroll-area">
+
+      <!-- Salon kimliği -->
+      <div class="salon-identity">
+        <div class="salon-logo-wrap">
+          @if (salon?.logoUrl) {
+            <img [src]="salon!.logoUrl" [alt]="salon?.name" />
+          } @else {
+            {{ getInitials(salon?.name || '') }}
           }
         </div>
+        <div class="salon-name">{{ salon?.name }}</div>
+        @if (salon?.address) {
+          <div class="salon-location">📍 {{ salon?.address }}</div>
+        }
+        <div class="salon-rating">⭐ <span>4.9</span> · Randevu Uygulaması</div>
       </div>
 
-      <!-- Personel Seç -->
-      <div class="section">
-        <div class="section-header">
-          <div class="section-number">2</div>
-          <h2>Personel Seçin</h2>
+      <!-- Fotoğraflar -->
+      <div class="left-section">
+        <div class="left-label">Fotoğraflar</div>
+        @if (salon?.photos?.length) {
+          <!-- Gerçek fotoğraflar -->
+          <div class="photos-grid">
+            @for (photo of salon!.photos!.slice(0,3); track photo.id; let i = $index) {
+              <div class="photo-slot photo-real" (click)="openLightbox(i)">
+                <img [src]="photo.url" alt="Salon fotoğrafı" />
+                <div class="photo-zoom-icon">🔍</div>
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Illustrasyon placeholder -->
+          <div class="photos-grid">
+            <div class="photo-slot">
+              <svg viewBox="0 0 272 100" xmlns="http://www.w3.org/2000/svg">
+                <defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f0ede8"/><stop offset="100%" stop-color="#e8e3db"/></linearGradient></defs>
+                <rect width="272" height="100" fill="url(#wg)"/>
+                <rect y="72" width="272" height="28" fill="#e0dbd2"/>
+                <rect x="94" y="46" width="84" height="20" rx="5" fill="#cdc6bc"/>
+                <rect x="104" y="30" width="64" height="18" rx="6" fill="#c4bdb3"/>
+                <rect x="112" y="20" width="48" height="12" rx="5" fill="#cdc6bc"/>
+              </svg>
+            </div>
+            <div class="photo-slot">
+              <svg viewBox="0 0 130 98" xmlns="http://www.w3.org/2000/svg">
+                <defs><linearGradient id="scBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f5f2f0"/><stop offset="100%" stop-color="#ebe6e0"/></linearGradient></defs>
+                <rect width="130" height="98" fill="url(#scBg)"/>
+                <g transform="translate(65,49) rotate(-25)">
+                  <circle cx="-24" cy="-16" r="11" fill="none" stroke="#a0a8b0" stroke-width="2.5"/>
+                  <circle cx="-24" cy="-16" r="5.5" fill="#c8d0d8"/>
+                  <line x1="-24" y1="-5" x2="30" y2="22" stroke="#a0a8b0" stroke-width="3" stroke-linecap="round"/>
+                  <circle cx="-24" cy="16" r="11" fill="none" stroke="#b8bfc8" stroke-width="2.5"/>
+                  <circle cx="-24" cy="16" r="5.5" fill="#d0d8e0"/>
+                  <line x1="-24" y1="5" x2="30" y2="-22" stroke="#b8bfc8" stroke-width="3" stroke-linecap="round"/>
+                </g>
+              </svg>
+            </div>
+            <div class="photo-slot">
+              <svg viewBox="0 0 130 98" xmlns="http://www.w3.org/2000/svg">
+                <defs><linearGradient id="prBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f0f4f8"/><stop offset="100%" stop-color="#e4ecf4"/></linearGradient></defs>
+                <rect width="130" height="98" fill="url(#prBg)"/>
+                <rect x="72" y="34" width="20" height="44" rx="5" fill="#5588c0"/>
+                <rect x="46" y="48" width="18" height="30" rx="9" fill="#f0e8d8"/>
+                <rect x="100" y="54" width="14" height="24" rx="3" fill="#4a9060"/>
+              </svg>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Konum -->
+      @if (salon?.address) {
+        <div class="left-section">
+          <div class="left-label">Konum</div>
+          <a class="map-card" [href]="'https://www.google.com/maps/search/?api=1&query=' + (salon?.address || '')" target="_blank" rel="noopener">
+            <div class="map-thumb">
+              <svg viewBox="0 0 272 90" xmlns="http://www.w3.org/2000/svg">
+                <rect width="272" height="90" fill="#e8f0e4"/>
+                <rect x="5" y="5" width="55" height="28" rx="3" fill="#c8dcc0" opacity="0.9"/>
+                <rect x="5" y="58" width="55" height="27" rx="3" fill="#c8dcc0" opacity="0.9"/>
+                <rect x="185" y="5" width="82" height="28" rx="3" fill="#c8dcc0" opacity="0.9"/>
+                <rect x="185" y="58" width="82" height="27" rx="3" fill="#c8dcc0" opacity="0.9"/>
+                <rect x="68" y="5" width="46" height="28" rx="2" fill="#d8e4d0" opacity="0.9"/>
+                <rect x="120" y="5" width="58" height="28" rx="2" fill="#d4e0cc" opacity="0.9"/>
+                <rect x="68" y="58" width="46" height="27" rx="2" fill="#d8e4d0" opacity="0.9"/>
+                <rect x="120" y="58" width="58" height="27" rx="2" fill="#d4e0cc" opacity="0.9"/>
+                <rect x="0" y="33" width="272" height="20" fill="#f5f3ee"/>
+                <rect x="120" y="0" width="20" height="90" fill="#f5f3ee"/>
+                <line x1="0" y1="43" x2="115" y2="43" stroke="#e0dccc" stroke-width="1" stroke-dasharray="10,7"/>
+                <line x1="145" y1="43" x2="272" y2="43" stroke="#e0dccc" stroke-width="1" stroke-dasharray="10,7"/>
+                <ellipse cx="130" cy="47" rx="10" ry="3" fill="rgba(0,0,0,0.1)"/>
+                <path d="M130,14 C121,14 114,21 114,30 C114,42 130,55 130,55 C130,55 146,42 146,30 C146,21 139,14 130,14Z" fill="#e85555"/>
+                <circle cx="130" cy="30" r="6" fill="white"/>
+                <circle cx="130" cy="30" r="2.5" fill="#e85555"/>
+              </svg>
+            </div>
+            <div class="map-info">
+              <div class="map-address">{{ salon?.address }}</div>
+              <button class="map-btn-small">Yol Tarifi</button>
+            </div>
+          </a>
         </div>
-        <div class="staff-list">
-          @for (staff of staffList; track staff.id) {
-            <div
-              class="staff-item"
-              [class.selected]="selectedStaff?.id === staff.id"
-              (click)="selectStaff(staff)"
-            >
-              <div class="staff-avatar">{{ getInitials(staff.fullName) }}</div>
-              <div class="staff-details">
-                <span class="staff-name">{{ staff.fullName }}</span>
-                @if (staff.bio) {
-                  <span class="staff-bio">{{ staff.bio }}</span>
+      }
+
+      </div><!-- /left-scroll-area -->
+
+      <!-- Özet -->
+      <div class="left-summary">
+        <div class="left-label" style="margin-bottom:12px">Özet</div>
+        <div class="summary-rows">
+          <div class="sum-row">
+            <span class="k">Hizmet</span>
+            <span class="v">{{ selectedService?.name || '—' }}</span>
+          </div>
+          <div class="sum-row">
+            <span class="k">Berber</span>
+            <span class="v">{{ selectedStaff?.fullName || '—' }}</span>
+          </div>
+          <div class="sum-row">
+            <span class="k">Tarih</span>
+            <span class="v">{{ selectedSlot ? formatDate(selectedSlot) : '—' }}</span>
+          </div>
+        </div>
+        <div class="sum-divider"></div>
+        <div class="sum-total">
+          <span class="k">Toplam</span>
+          <span class="v">{{ selectedService ? formatPrice(selectedService.price, selectedService.currency) : '—' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="booking-right">
+      <div class="booking-right-inner">
+
+        <!-- 1. Hizmet -->
+        <div class="step-block">
+          <div class="step-header">
+            <div class="step-num active">1</div>
+            <div class="step-title">Hizmet Seçin</div>
+            <div class="step-sep"></div>
+          </div>
+          <div class="service-list">
+            @for (service of services; track service.id) {
+              <div class="service-item" [class.selected]="selectedService?.id === service.id" (click)="selectService(service)">
+                <div class="service-left">
+                  <div class="service-radio"></div>
+                  <div>
+                    <div class="service-name">{{ service.name }}</div>
+                    <div class="service-dur">⏱ {{ service.durationMinutes }} dk</div>
+                  </div>
+                </div>
+                <div class="service-price">{{ formatPrice(service.price, service.currency) }}</div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- 2. Personel -->
+        <div class="step-block">
+          <div class="step-header">
+            <div class="step-num active">2</div>
+            <div class="step-title">Personel Seçin</div>
+            <div class="step-sep"></div>
+          </div>
+          <div class="staff-list">
+            @for (staff of staffList; track staff.id) {
+              <div class="staff-item" [class.selected]="selectedStaff?.id === staff.id" (click)="selectStaff(staff)">
+                <div class="staff-avatar">{{ getInitials(staff.fullName) }}</div>
+                <div class="staff-name">{{ staff.fullName }}</div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- 3. Tarih -->
+        <div class="step-block">
+          <div class="step-header">
+            <div class="step-num active">3</div>
+            <div class="step-title">Tarih Seçin</div>
+            <div class="step-sep"></div>
+          </div>
+          <app-custom-calendar
+            [minDate]="minDate"
+            [maxDate]="maxDate"
+            [value]="selectedDate"
+            (valueChange)="onDateChange($event)">
+          </app-custom-calendar>
+        </div>
+
+        <!-- 4. Saat -->
+        @if (slots.length > 0) {
+          <div class="step-block">
+            <div class="step-header">
+              <div class="step-num active">4</div>
+              <div class="step-title">Saat Seçin</div>
+              <div class="step-sep"></div>
+            </div>
+            <div class="slots-grid">
+              @for (slot of slots; track slot.startTime) {
+                <button class="slot-btn" [class.selected]="selectedSlot === slot.startTime" (click)="selectSlot(slot)">
+                  {{ formatTime(slot.startTime) }}
+                </button>
+              }
+            </div>
+          </div>
+        } @else if (selectedService && selectedStaff && selectedDate) {
+          <div class="no-slots">Bu tarih için müsait saat bulunmuyor.</div>
+        }
+
+        <!-- 5. Bilgiler -->
+        @if (canProceed()) {
+          <div class="step-block">
+            <div class="step-header">
+              <div class="step-num active">5</div>
+              <div class="step-title">Bilgilerinizi Girin</div>
+              <div class="step-sep"></div>
+            </div>
+            <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+              <div class="form-group">
+                <input class="form-input" type="text" formControlName="fullName" placeholder="Ad Soyad" maxlength="30" />
+                @if (customerForm.get('fullName')?.errors?.['required'] && customerForm.get('fullName')?.touched) {
+                  <span class="field-error">Ad soyad zorunludur.</span>
                 }
               </div>
-              @if (selectedStaff?.id === staff.id) {
-                <span class="check">✓</span>
+              <div class="form-group">
+                <input class="form-input" type="tel" formControlName="phone" placeholder="05XX XXX XX XX" maxlength="11" />
+                @if (customerForm.get('phone')?.errors?.['required'] && customerForm.get('phone')?.touched) {
+                  <span class="field-error">Telefon numarası zorunludur.</span>
+                }
+                @if (customerForm.get('phone')?.errors?.['pattern'] && customerForm.get('phone')?.touched) {
+                  <span class="field-error">Geçerli bir telefon numarası girin.</span>
+                }
+              </div>
+              <div class="form-group">
+                <input class="form-input" type="email" formControlName="email" placeholder="Email (opsiyonel)" maxlength="80" />
+              </div>
+              <div class="form-group">
+                <textarea class="form-textarea" formControlName="notes" placeholder="Not ekleyin..." rows="3" maxlength="200"></textarea>
+              </div>
+
+              <div class="booking-preview">
+                <h3>Randevu Özeti</h3>
+                <div class="preview-item"><span>Hizmet</span><span>{{ selectedService?.name }}</span></div>
+                <div class="preview-item"><span>Personel</span><span>{{ selectedStaff?.fullName }}</span></div>
+                <div class="preview-item"><span>Tarih & Saat</span><span>{{ formatDate(selectedSlot) }} - {{ formatTime(selectedSlot) }}</span></div>
+                <div class="preview-item total"><span>Toplam</span><span>{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span></div>
+              </div>
+
+              @if (errorMessage) {
+                <div class="error-message">{{ errorMessage }}</div>
               }
-            </div>
-          }
-        </div>
-      </div>
 
-      <!-- Tarih Seç -->
-      <div class="section">
-        <div class="section-header">
-          <div class="section-number">3</div>
-          <h2>Tarih Seçin</h2>
-        </div>
-        <app-custom-calendar
-          [minDate]="minDate"
-          [maxDate]="maxDate"
-          [value]="selectedDate"
-          (valueChange)="onDateChange($event)"
-        >
-        </app-custom-calendar>
-      </div>
-
-      <!-- Saat Seç -->
-      @if (slots.length > 0) {
-        <div class="section">
-          <div class="section-header">
-            <div class="section-number">4</div>
-            <h2>Saat Seçin</h2>
-          </div>
-          <div class="slots-grid">
-            @for (slot of slots; track slot.startTime) {
-              <button
-                class="slot-btn"
-                [class.selected]="selectedSlot === slot.startTime"
-                (click)="selectSlot(slot)"
-              >
-                {{ formatTime(slot.startTime) }}
+              <button type="submit" class="btn-submit" [disabled]="isSubmitting || customerForm.invalid">
+                {{ isSubmitting ? 'Randevu Oluşturuluyor...' : 'Randevu Al →' }}
               </button>
-            }
+            </form>
           </div>
+        }
+
+        <div class="booking-footer">
+          <p>BerberApp ile güçlendirildi</p>
         </div>
-      } @else if (selectedService && selectedStaff && selectedDate) {
-        <div class="no-slots">Bu tarih için müsait saat bulunmuyor.</div>
-      }
-
-      <!-- Bilgiler -->
-      @if (canProceed()) {
-        <div class="section">
-          <div class="section-header">
-            <div class="section-number">5</div>
-            <h2>Bilgilerinizi Girin</h2>
-          </div>
-
-          <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
-            <div class="form-group">
-              <label>Ad Soyad *</label>
-              <input
-                type="text"
-                formControlName="fullName"
-                placeholder="Adınız Soyadınız"
-                maxlength="30"
-              />
-              @if (
-                customerForm.get("fullName")?.errors?.["required"] &&
-                customerForm.get("fullName")?.touched
-              ) {
-                <span class="field-error">Ad soyad zorunludur.</span>
-              }
-              @if (
-                customerForm.get("fullName")?.errors?.["maxlength"] &&
-                customerForm.get("fullName")?.touched
-              ) {
-                <span class="field-error"
-                  >Ad soyad en fazla 30 karakter olabilir.</span
-                >
-              }
-            </div>
-
-            <div class="form-group">
-              <label>Telefon *</label>
-              <div class="phone-input-group">
-                <input
-                  type="tel"
-                  formControlName="phone"
-                  placeholder="05XX XXX XX XX"
-                  maxlength="11"
-                />
-              </div>
-              @if (
-                customerForm.get("phone")?.errors?.["required"] &&
-                customerForm.get("phone")?.touched
-              ) {
-                <span class="field-error">Telefon numarası zorunludur.</span>
-              }
-              @if (
-                customerForm.get("phone")?.errors?.["pattern"] &&
-                customerForm.get("phone")?.touched
-              ) {
-                <span class="field-error"
-                  >Geçerli bir telefon numarası girin. (örn: 05XX XXX XX
-                  XX)</span
-                >
-              }
-              @if (
-                customerForm.get("phone")?.errors?.["maxlength"] &&
-                customerForm.get("phone")?.touched
-              ) {
-                <span class="field-error"
-                  >Telefon numarası en fazla 11 karakter olabilir.</span
-                >
-              }
-            </div>
-
-            <div class="form-group">
-              <label>Email <span class="optional">(opsiyonel)</span></label>
-              <input
-                type="email"
-                formControlName="email"
-                placeholder="email@mail.com"
-                maxlength="80"
-              />
-              @if (
-                customerForm.get("email")?.errors?.["email"] &&
-                customerForm.get("email")?.touched
-              ) {
-                <span class="field-error"
-                  >Geçerli bir email adresi girin. (örn:
-                  isim&#64;mail.com)</span
-                >
-              }
-              @if (
-                customerForm.get("email")?.errors?.["maxlength"] &&
-                customerForm.get("email")?.touched
-              ) {
-                <span class="field-error"
-                  >Email en fazla 80 karakter olabilir.</span
-                >
-              }
-            </div>
-
-            <div class="form-group">
-              <label>Notlar</label>
-              <textarea
-                formControlName="notes"
-                placeholder="Eklemek istediğiniz notlar..."
-                rows="3"
-                maxlength="200"
-              ></textarea>
-              @if (
-                customerForm.get("notes")?.errors?.["maxlength"] &&
-                customerForm.get("notes")?.touched
-              ) {
-                <span class="field-error"
-                  >Not en fazla 200 karakter olabilir.</span
-                >
-              }
-            </div>
-
-            <!-- Özet -->
-            <div class="booking-preview">
-              <h3>Randevu Özeti</h3>
-              <div class="preview-item">
-                <span>Hizmet</span>
-                <span>{{ selectedService?.name }}</span>
-              </div>
-              <div class="preview-item">
-                <span>Personel</span>
-                <span>{{ selectedStaff?.fullName }}</span>
-              </div>
-              <div class="preview-item">
-                <span>Tarih & Saat</span>
-                <span
-                  >{{ formatDate(selectedSlot) }} -
-                  {{ formatTime(selectedSlot) }}</span
-                >
-              </div>
-              <div class="preview-item total">
-                <span>Toplam</span>
-                <span>{{
-                  formatPrice(
-                    selectedService?.price || 0,
-                    selectedService?.currency || "TRY"
-                  )
-                }}</span>
-              </div>
-            </div>
-
-            @if (errorMessage) {
-              <div class="error-message">{{ errorMessage }}</div>
-            }
-
-            <label class="kvkk-consent">
-              <input type="checkbox" formControlName="kvkkConsent" />
-              <span>
-                <a routerLink="/gizlilik-politikasi" target="_blank">Gizlilik Politikası</a>'nı
-                okudum ve kabul ediyorum.
-              </span>
-            </label>
-
-            <button
-              type="submit"
-              class="btn-submit"
-              [disabled]="isSubmitting || customerForm.invalid"
-            >
-              {{ isSubmitting ? "Randevu Oluşturuluyor..." : "Randevu Al" }}
-            </button>
-          </form>
-        </div>
-      }
+      </div>
     </div>
 
-    <!-- Footer -->
-    <div class="booking-footer">
-      <p>BerberApp ile güçlendirildi</p>
-      <p class="footer-links">
-        <a routerLink="/gizlilik-politikasi" target="_blank">Gizlilik Politikası</a>
-      </p>
+  </div>
+
+  <!-- Lightbox -->
+  @if (lightboxPhoto) {
+    <div class="lightbox-overlay" (click)="closeLightbox()">
+      <button class="lightbox-close" (click)="closeLightbox()">✕</button>
+      @if ((salon?.photos?.length ?? 0) > 1) {
+        <button class="lightbox-nav lightbox-prev" (click)="$event.stopPropagation(); lightboxPrev()">‹</button>
+        <button class="lightbox-nav lightbox-next" (click)="$event.stopPropagation(); lightboxNext()">›</button>
+      }
+      <img [src]="lightboxPhoto" (click)="$event.stopPropagation()" alt="Salon fotoğrafı" />
+      <div class="lightbox-counter">{{ lightboxIndex + 1 }} / {{ salon?.photos?.length }}</div>
     </div>
   }
-</div>
+
+}
