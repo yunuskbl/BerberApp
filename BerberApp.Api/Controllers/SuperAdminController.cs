@@ -211,28 +211,48 @@ public class SuperAdminController : ControllerBase
     {
         try
         {
-            var tenant = await _context.Tenants
+            // Tenant var mı kontrol et
+            var tenantExists = await _context.Tenants
                 .IgnoreQueryFilters()
-                .Include(t => t.Appointments)
-                .Include(t => t.Customers)
-                .Include(t => t.Staff)
-                .FirstOrDefaultAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
+                .AnyAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
 
-            if (tenant == null)
+            if (!tenantExists)
                 return NotFound(new { success = false, message = "İşletme bulunamadı." });
 
-            _context.Appointments.RemoveRange(tenant.Appointments);
-            _context.Customers.RemoveRange(tenant.Customers);
-            _context.Staff.RemoveRange(tenant.Staff);
+            // TenantId üzerinden direkt sorgula (Include/navigation property bypass)
+            var appointments = await _context.Appointments
+                .IgnoreQueryFilters()
+                .Where(a => a.TenantId == id)
+                .ToListAsync();
 
+            var customers = await _context.Customers
+                .IgnoreQueryFilters()
+                .Where(c => c.TenantId == id)
+                .ToListAsync();
+
+            var staff = await _context.Staff
+                .IgnoreQueryFilters()
+                .Where(s => s.TenantId == id)
+                .ToListAsync();
+
+            // Önce randevular (FK bağımlılıkları için)
+            _context.Appointments.RemoveRange(appointments);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Tenant {TenantId} data reset (appointments, customers, staff deleted)", id);
-            return Ok(new { success = true, message = "Veriler sıfırlandı." });
+            // Sonra müşteri ve personel
+            _context.Customers.RemoveRange(customers);
+            _context.Staff.RemoveRange(staff);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Tenant {TenantId} reset: {A} appointments, {C} customers, {S} staff deleted",
+                id, appointments.Count, customers.Count, staff.Count);
+
+            return Ok(new { success = true, message = "Veriler sıfırlandı.", deleted = new { appointments = appointments.Count, customers = customers.Count, staff = staff.Count } });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error resetting tenant data");
+            _logger.LogError(ex, "Error resetting tenant data for {TenantId}", id);
             return StatusCode(500, new { success = false, message = $"Sıfırlama başarısız: {ex.Message}" });
         }
     }
