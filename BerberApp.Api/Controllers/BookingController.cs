@@ -76,6 +76,8 @@ public class BookingController : ControllerBase
             {
                 x.Id,
                 x.Name,
+                x.NameEn,
+                x.NameRu,
                 x.DurationMinutes,
                 x.Price,
                 x.Currency,
