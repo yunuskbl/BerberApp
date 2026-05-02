@@ -38,6 +38,12 @@ public class BookingController : ControllerBase
         if (tenant is null)
             return NotFound(new { success = false, message = "Salon bulunamadı." });
 
+        var photos = await _context.TenantPhotos
+            .Where(x => x.TenantId == tenant.Id)
+            .OrderBy(x => x.Order)
+            .Select(x => new { x.Id, x.Url })
+            .ToListAsync();
+
         return Ok(new
         {
             success = true,
@@ -47,7 +53,9 @@ public class BookingController : ControllerBase
                 tenant.Name,
                 tenant.Phone,
                 tenant.Address,
-                tenant.LogoUrl
+                tenant.LogoUrl,
+                tenant.ThemeColor,
+                photos
             }
         });
     }

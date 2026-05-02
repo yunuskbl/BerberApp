@@ -19,6 +19,7 @@ namespace BerberApp.Application.Common.Interfaces
         DbSet<WorkingHourEntity> WorkingHours { get; }
         DbSet<NotificationEntity> Notifications { get; }
         DbSet<Subscription> Subscriptions { get; }
+        DbSet<TenantPhotoEntity> TenantPhotos { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

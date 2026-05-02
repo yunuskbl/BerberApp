@@ -3,6 +3,18 @@
   --accent: #111111;
 }
 
+.booking-lang-bar {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 999;
+  display: flex;
+}
+
+app-language-switcher {
+  display: flex;
+}
+
 .loading-screen, .error-screen {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;

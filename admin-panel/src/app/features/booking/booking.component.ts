@@ -17,6 +17,7 @@ import {
 } from '../../core/services/booking.service';
 import { CustomCalendarComponent } from '../../shared/components/custom-calendar/custom-calendar.component';
 import { Title } from '@angular/platform-browser';
+import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
 
 @Component({
   selector: 'app-booking',
@@ -26,6 +27,7 @@ import { Title } from '@angular/platform-browser';
     ReactiveFormsModule,
     CustomCalendarComponent,
     FormsModule,
+    LanguageSwitcherComponent,
   ],
   templateUrl: './booking.component.html',
   styleUrl: './booking.component.scss',

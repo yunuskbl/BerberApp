@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../../environments/environment';
+import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
 
 interface Salon {
   id:         string;
@@ -18,7 +19,7 @@ interface Salon {
 @Component({
   selector: 'app-salons',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, LanguageSwitcherComponent],
   templateUrl: './salons.component.html',
   styleUrl: './salons.component.scss'
 })

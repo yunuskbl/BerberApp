@@ -16,4 +16,5 @@ public class UpdateTenantCommand : IRequest<TenantDto>
     public string? Phone { get; set; }
     public string? NotificationPhone { get; set; }
     public string? Address { get; set; }
+    public string? ThemeColor { get; set; }
 }

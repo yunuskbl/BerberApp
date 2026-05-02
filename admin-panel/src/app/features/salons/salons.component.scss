@@ -51,6 +51,11 @@
 
 .header-search { flex: 1; max-width: 420px; }
 
+app-language-switcher {
+  flex-shrink: 0;
+  display: flex;
+}
+
 .search-wrap {
   display: flex;
   align-items: center;

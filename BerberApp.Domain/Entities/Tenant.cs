@@ -17,6 +17,7 @@ namespace BerberApp.Domain.Entities
         public string? NotificationPhone { get; set; }
         public string? Address { get; set; }
         public bool IsActive { get; set; } = true;
+        public string? ThemeColor { get; set; }
 
         // Navigation
         public ICollection<User> Users { get; set; } = new List<User>();
@@ -24,5 +25,6 @@ namespace BerberApp.Domain.Entities
         public ICollection<Service> Services { get; set; } = new List<Service>();
         public ICollection<Customer> Customers { get; set; } = new List<Customer>();
         public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+        public ICollection<TenantPhoto> Photos { get; set; } = new List<TenantPhoto>();
     }
 }

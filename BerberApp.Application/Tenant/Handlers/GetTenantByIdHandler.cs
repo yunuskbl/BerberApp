@@ -34,8 +34,10 @@ public class GetTenantByIdHandler : IRequestHandler<GetTenantByIdQuery, TenantDt
             Subdomain = tenant.Subdomain,
             LogoUrl = tenant.LogoUrl,
             Phone = tenant.Phone,
+            NotificationPhone = tenant.NotificationPhone,
             Address = tenant.Address,
-            IsActive = tenant.IsActive
+            IsActive = tenant.IsActive,
+            ThemeColor = tenant.ThemeColor
         };
     }
 }
