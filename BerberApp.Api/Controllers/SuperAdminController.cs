@@ -38,7 +38,7 @@ public class SuperAdminController : ControllerBase
         {
             var tenants = await _context.Tenants
                 .IgnoreQueryFilters()
-                .Where(t => t.Id != SYSTEM_TENANT_ID) // Sistem tenant'ını hariç tut
+                .Where(t => t.Id != SYSTEM_TENANT_ID && !t.IsDeleted) // Sistem tenant'ı ve silinenleri hariç tut
                 .AsNoTracking()
                 .Select(t => new SuperAdminTenantDto
                 {
@@ -201,6 +201,40 @@ public class SuperAdminController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok(new { success = true, message = "İşletme silindi (geri alınabilir)." });
+    }
+
+    /// <summary>
+    /// Tenant verilerini sıfırla — randevu, müşteri ve personel verilerini siler
+    /// </summary>
+    [HttpPost("tenants/{id}/reset")]
+    public async Task<IActionResult> ResetTenantData(Guid id)
+    {
+        try
+        {
+            var tenant = await _context.Tenants
+                .IgnoreQueryFilters()
+                .Include(t => t.Appointments)
+                .Include(t => t.Customers)
+                .Include(t => t.Staff)
+                .FirstOrDefaultAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
+
+            if (tenant == null)
+                return NotFound(new { success = false, message = "İşletme bulunamadı." });
+
+            _context.Appointments.RemoveRange(tenant.Appointments);
+            _context.Customers.RemoveRange(tenant.Customers);
+            _context.Staff.RemoveRange(tenant.Staff);
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Tenant {TenantId} data reset (appointments, customers, staff deleted)", id);
+            return Ok(new { success = true, message = "Veriler sıfırlandı." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resetting tenant data");
+            return StatusCode(500, new { success = false, message = $"Sıfırlama başarısız: {ex.Message}" });
+        }
     }
 
     /// <summary>

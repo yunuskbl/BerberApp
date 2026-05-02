@@ -65,4 +65,8 @@ export class SuperAdminService {
   hardDeleteTenant(tenantId: string): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}/permanent`);
   }
+
+  resetTenantData(tenantId: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}/reset`, {});
+  }
 }

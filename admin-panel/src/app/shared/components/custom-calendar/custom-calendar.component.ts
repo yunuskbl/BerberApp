@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LanguageService } from '../../../core/services/language.service';
 
 @Component({
   selector: 'app-custom-calendar',
@@ -18,11 +19,28 @@ export class CustomCalendarComponent implements OnInit {
   currentMonth: number = 0;
   days:         (number | null)[] = [];
 
-  weekDays = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
-  months   = [
-    'Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
-    'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'
-  ];
+  private static readonly WEEK_DAYS: Record<string, string[]> = {
+    tr: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+    en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    ru: ['Пн',  'Вт',  'Ср',  'Чт',  'Пт',  'Сб',  'Вс' ],
+  };
+
+  constructor(public langService: LanguageService) {}
+
+  get weekDays(): string[] {
+    return CustomCalendarComponent.WEEK_DAYS[this.langService.lang()] ?? CustomCalendarComponent.WEEK_DAYS['tr'];
+  }
+
+  get months(): string[] {
+    const locale = this.langService.dateLocale;
+    return Array.from({ length: 12 }, (_, i) =>
+      new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(2000, i, 1))
+    );
+  }
+
+  get selectedLabel(): string {
+    return { tr: 'Seçilen', en: 'Selected', ru: 'Выбрано' }[this.langService.lang()] ?? 'Seçilen';
+  }
 
   ngOnInit(): void {
     const today      = new Date();
@@ -35,7 +53,6 @@ export class CustomCalendarComponent implements OnInit {
     const firstDay = new Date(this.currentYear, this.currentMonth, 1);
     const lastDay  = new Date(this.currentYear, this.currentMonth + 1, 0);
 
-    // Pazartesi başlangıç için ayarlama
     let startOffset = firstDay.getDay() - 1;
     if (startOffset < 0) startOffset = 6;
 
@@ -45,22 +62,14 @@ export class CustomCalendarComponent implements OnInit {
   }
 
   prevMonth(): void {
-    if (this.currentMonth === 0) {
-      this.currentMonth = 11;
-      this.currentYear--;
-    } else {
-      this.currentMonth--;
-    }
+    if (this.currentMonth === 0) { this.currentMonth = 11; this.currentYear--; }
+    else this.currentMonth--;
     this.buildCalendar();
   }
 
   nextMonth(): void {
-    if (this.currentMonth === 11) {
-      this.currentMonth = 0;
-      this.currentYear++;
-    } else {
-      this.currentMonth++;
-    }
+    if (this.currentMonth === 11) { this.currentMonth = 0; this.currentYear++; }
+    else this.currentMonth++;
     this.buildCalendar();
   }
 
@@ -114,8 +123,8 @@ export class CustomCalendarComponent implements OnInit {
 
   get selectedDisplayDate(): string {
     if (!this.value) return '';
-    const d = new Date(this.value);
-    return d.toLocaleDateString('tr-TR', {
+    const d = new Date(this.value + 'T12:00:00');
+    return d.toLocaleDateString(this.langService.dateLocale, {
       day: 'numeric', month: 'long', year: 'numeric'
     });
   }

@@ -107,6 +107,12 @@
                     title="Durumunu Değiştir">
                     {{ tenant.isActive ? '⊘' : '✓' }}
                   </button>
+                  <button
+                    class="btn-action reset"
+                    (click)="resetTenantData(tenant.id, tenant.name)"
+                    title="Verileri Sıfırla">
+                    🔄
+                  </button>
                 </td>
               </tr>
             }

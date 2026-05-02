@@ -94,6 +94,24 @@ export class SuperAdminTenantsComponent implements OnInit {
     });
   }
 
+  resetTenantData(tenantId: string, tenantName: string): void {
+    if (!confirm(`"${tenantName}" işletmesinin tüm randevu, müşteri ve personel verilerini sıfırlamak istediğinizden emin misiniz?\n\nBu işlem geri alınamaz!`)) return;
+
+    this.superAdminService.resetTenantData(tenantId).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.successMessage = `"${tenantName}" verileri sıfırlandı.`;
+          this.loadTenants();
+          setTimeout(() => this.successMessage = '', 3000);
+        }
+      },
+      error: () => {
+        this.errorMessage = 'Sıfırlama işlemi başarısız.';
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
+  }
+
   toggleTenantActive(tenantId: string, currentStatus: boolean): void {
     if (!confirm(`İşletmeyi ${currentStatus ? 'pasif' : 'aktif'} yapmak istediğinizden emin misiniz?`)) return;
 
