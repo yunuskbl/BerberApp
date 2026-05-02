@@ -1,19 +1,19 @@
 <div class="page">
   <div class="page-header">
     <div>
-      <h2>Raporlar</h2>
-      <p>Kazanç ve randevu analizi</p>
+      <h2>{{ 'reports.title' | translate }}</h2>
+      <p>{{ 'reports.subtitle' | translate }}</p>
     </div>
   </div>
 
   <!-- Tarih Filtresi -->
   <div class="filter-section">
     <div class="filter-group">
-      <label>Başlangıç Tarihi</label>
+      <label>{{ 'reports.startDate' | translate }}</label>
       <input type="date" [(ngModel)]="reportStartDate" (change)="loadEarnings()"/>
     </div>
     <div class="filter-group">
-      <label>Bitiş Tarihi</label>
+      <label>{{ 'reports.endDate' | translate }}</label>
       <input type="date" [(ngModel)]="reportEndDate" (change)="loadEarnings()"/>
     </div>
   </div>
@@ -26,38 +26,38 @@
     <!-- Özet Kartları -->
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Toplam Kazanç</div>
+        <div class="stat-label">{{ 'reports.totalEarnings' | translate }}</div>
         <div class="stat-value">{{ formatCurrency(earnings.totalEarnings) }}</div>
-        <div class="stat-sub">{{ earnings.totalAppointments }} randevu</div>
+        <div class="stat-sub">{{ earnings.totalAppointments }} {{ 'reports.appt' | translate }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Ort. Randevu Başına</div>
+        <div class="stat-label">{{ 'reports.avgPerAppt' | translate }}</div>
         <div class="stat-value">{{ formatCurrency(earnings.averagePerAppointment) }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Bu Ay</div>
+        <div class="stat-label">{{ 'reports.thisMonth' | translate }}</div>
         <div class="stat-value">{{ formatCurrency(earnings.monthEarnings) }}</div>
-        <div class="stat-sub">{{ earnings.monthAppointments }} randevu</div>
+        <div class="stat-sub">{{ earnings.monthAppointments }} {{ 'reports.appt' | translate }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Bu Hafta</div>
+        <div class="stat-label">{{ 'reports.thisWeek' | translate }}</div>
         <div class="stat-value">{{ formatCurrency(earnings.weekEarnings) }}</div>
-        <div class="stat-sub">{{ earnings.weekAppointments }} randevu</div>
+        <div class="stat-sub">{{ earnings.weekAppointments }} {{ 'reports.appt' | translate }}</div>
       </div>
     </div>
 
     <!-- Personele Göre Kazanç -->
     <div class="report-section">
-      <h3>Personele Göre Kazanç</h3>
+      <h3>{{ 'reports.byStaff' | translate }}</h3>
       <div class="table-card">
         @if (earnings.byStaff.length > 0) {
           <table class="table">
             <thead>
               <tr>
-                <th>Personel</th>
-                <th>Toplam Kazanç</th>
-                <th>Randevu</th>
-                <th>Ortalama</th>
+                <th>{{ 'reports.colStaff' | translate }}</th>
+                <th>{{ 'reports.colTotal' | translate }}</th>
+                <th>{{ 'reports.colAppts' | translate }}</th>
+                <th>{{ 'reports.colAvg' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -72,23 +72,23 @@
             </tbody>
           </table>
         } @else {
-          <p class="empty-text">Veri bulunmuyor</p>
+          <p class="empty-text">{{ 'reports.noData' | translate }}</p>
         }
       </div>
     </div>
 
     <!-- Hizmet Bazında Kazanç -->
     <div class="report-section">
-      <h3>Hizmet Bazında Kazanç</h3>
+      <h3>{{ 'reports.byService' | translate }}</h3>
       <div class="table-card">
         @if (earnings.byService.length > 0) {
           <table class="table">
             <thead>
               <tr>
-                <th>Hizmet</th>
-                <th>Fiyat</th>
-                <th>Toplam Kazanç</th>
-                <th>Satış Sayısı</th>
+                <th>{{ 'reports.colService' | translate }}</th>
+                <th>{{ 'reports.colPrice' | translate }}</th>
+                <th>{{ 'reports.colTotal' | translate }}</th>
+                <th>{{ 'reports.colSales' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -103,7 +103,7 @@
             </tbody>
           </table>
         } @else {
-          <p class="empty-text">Veri bulunmuyor</p>
+          <p class="empty-text">{{ 'reports.noData' | translate }}</p>
         }
       </div>
     </div>
