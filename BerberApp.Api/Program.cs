@@ -184,8 +184,9 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
     db.Database.Migrate();
-    await SeedData.SeedAsync(db);
+    await SeedData.SeedAsync(db, env);
     await SeedData.SeedSuperAdminAsync(db);
 }
 

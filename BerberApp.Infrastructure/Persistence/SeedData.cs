@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BerberApp.Domain.Entities;
 using BerberApp.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 
 namespace BerberApp.Infrastructure.Persistence;
 
@@ -14,9 +15,11 @@ public static class SeedData
     // SuperAdmin'in ait olacağı sistem tenant ID'si (sabit)
     private static readonly Guid SYSTEM_TENANT_ID = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
-    public static async Task SeedAsync(AppDbContext context)
+    public static async Task SeedAsync(AppDbContext context, IHostEnvironment env)
     {
-        if (await context.Tenants.AnyAsync()) return; // Zaten veri varsa çalıştırma
+        // Demo veri sadece development ortamında eklenir
+        if (!env.IsDevelopment()) return;
+        if (await context.Tenants.AnyAsync()) return;
 
         // Tenant
         var tenant = new Tenant
@@ -292,11 +295,14 @@ public static class SeedData
 
         if (!superAdminExists)
         {
+            var password = Environment.GetEnvironmentVariable("SUPERADMIN_PASSWORD")
+                ?? throw new InvalidOperationException("SUPERADMIN_PASSWORD environment variable is not set.");
+
             var superAdmin = new User
             {
                 TenantId = SYSTEM_TENANT_ID,
                 Email = "superadmin@berberapp.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("SuperAdmin123!"),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
                 FirstName = "Super",
                 LastName = "Admin",
                 Role = UserRole.SuperAdmin,
