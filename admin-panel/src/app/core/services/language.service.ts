@@ -58,7 +58,7 @@ const T: Record<Lang, Record<string, string>> = {
     // Settings — genel
     'settings.title':    'Ayarlar',
     'settings.subtitle': 'Salon ve hesap ayarlarınızı yönetin',
-    'settings.logout':   '🚪 Çıkış Yap',
+    'settings.logout':   'Çıkış Yap',
 
     // Settings — Salon Bilgileri
     'settings.salon.card':         'Salon Bilgileri',
@@ -239,7 +239,7 @@ const T: Record<Lang, Record<string, string>> = {
 
     'settings.title':    'Settings',
     'settings.subtitle': 'Manage your salon and account settings',
-    'settings.logout':   '🚪 Sign Out',
+    'settings.logout':   'Sign Out',
 
     'settings.salon.card':         'Salon Information',
     'settings.salon.cardSub':      'Information visible to your customers',
@@ -414,7 +414,7 @@ const T: Record<Lang, Record<string, string>> = {
 
     'settings.title':    'Настройки',
     'settings.subtitle': 'Управляйте настройками салона и аккаунта',
-    'settings.logout':   '🚪 Выйти',
+    'settings.logout':   'Выйти',
 
     'settings.salon.card':         'Информация о салоне',
     'settings.salon.cardSub':      'Информация, видимая вашим клиентам',
