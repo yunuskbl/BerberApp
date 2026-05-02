@@ -38,6 +38,7 @@ services:
     - IletiMerkezi__Hash=${ILETIMERKEZI_HASH}
     - IletiMerkezi__Sender=${ILETIMERKEZI_SENDER}
     - SUPERADMIN_PASSWORD=${SUPERADMIN_PASSWORD}
+    - AllowedHosts=*
     ports:
       - "8080:8080"
     volumes:
