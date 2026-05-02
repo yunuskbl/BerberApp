@@ -21,6 +21,8 @@ export interface SalonInfo {
 export interface BookingService {
   id: string;
   name: string;
+  nameEn?: string;
+  nameRu?: string;
   durationMinutes: number;
   price: number;
   currency: string;

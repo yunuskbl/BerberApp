@@ -25,7 +25,7 @@
       <div class="pending-note">{{ 'booking.pendingNote' | translate }}</div>
       <div class="booking-summary">
         <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.salon' | translate }}</span><span class="summary-value">{{ salon?.name }}</span></div>
-        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.service' | translate }}</span><span class="summary-value">{{ selectedService?.name }}</span></div>
+        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.service' | translate }}</span><span class="summary-value">{{ selectedService ? getServiceName(selectedService) : '' }}</span></div>
         <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.staff' | translate }}</span><span class="summary-value">{{ selectedStaff?.fullName }}</span></div>
         <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.date' | translate }}</span><span class="summary-value">{{ formatDate(selectedSlot) }}</span></div>
         <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.time' | translate }}</span><span class="summary-value">{{ formatTime(selectedSlot) }}</span></div>
@@ -164,7 +164,7 @@
         <div class="summary-rows">
           <div class="sum-row">
             <span class="k">{{ 'booking.lbl.service' | translate }}</span>
-            <span class="v">{{ selectedService?.name || '—' }}</span>
+            <span class="v">{{ selectedService ? getServiceName(selectedService) : '—' }}</span>
           </div>
           <div class="sum-row">
             <span class="k">{{ 'booking.barber' | translate }}</span>
@@ -200,7 +200,7 @@
                 <div class="service-left">
                   <div class="service-radio"></div>
                   <div>
-                    <div class="service-name">{{ service.name }}</div>
+                    <div class="service-name">{{ getServiceName(service) }}</div>
                     <div class="service-dur">⏱ {{ service.durationMinutes }} {{ 'booking.min' | translate }}</div>
                   </div>
                 </div>
@@ -295,7 +295,7 @@
 
               <div class="booking-preview">
                 <h3>{{ 'booking.previewTitle' | translate }}</h3>
-                <div class="preview-item"><span>{{ 'booking.lbl.service' | translate }}</span><span>{{ selectedService?.name }}</span></div>
+                <div class="preview-item"><span>{{ 'booking.lbl.service' | translate }}</span><span>{{ selectedService ? getServiceName(selectedService) : '' }}</span></div>
                 <div class="preview-item"><span>{{ 'booking.lbl.staff' | translate }}</span><span>{{ selectedStaff?.fullName }}</span></div>
                 <div class="preview-item"><span>{{ 'booking.dateAndTime' | translate }}</span><span>{{ formatDate(selectedSlot) }} - {{ formatTime(selectedSlot) }}</span></div>
                 <div class="preview-item total"><span>{{ 'booking.total' | translate }}</span><span>{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span></div>

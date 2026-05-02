@@ -9,10 +9,12 @@ namespace BerberApp.Application.Service.Handlers;
 public class UpdateServiceHandler : IRequestHandler<UpdateServiceCommand, ServiceDto>
 {
     private readonly IGenericRepository<ServiceEntity> _serviceRepo;
+    private readonly ITranslationService _translation;
 
-    public UpdateServiceHandler(IGenericRepository<ServiceEntity> serviceRepo)
+    public UpdateServiceHandler(IGenericRepository<ServiceEntity> serviceRepo, ITranslationService translation)
     {
         _serviceRepo = serviceRepo;
+        _translation = translation;
     }
 
     public async Task<ServiceDto> Handle(UpdateServiceCommand request, CancellationToken ct)
@@ -22,6 +24,16 @@ public class UpdateServiceHandler : IRequestHandler<UpdateServiceCommand, Servic
 
         if (service is null)
             throw new NotFoundException("Hizmet", request.Id);
+
+        // Ad değiştiyse yeniden çevir
+        if (service.Name != request.Name)
+        {
+            var enTask = _translation.TranslateAsync(request.Name, "en", ct);
+            var ruTask = _translation.TranslateAsync(request.Name, "ru", ct);
+            await Task.WhenAll(enTask, ruTask);
+            service.NameEn = enTask.Result;
+            service.NameRu = ruTask.Result;
+        }
 
         service.Name = request.Name;
         service.DurationMinutes = request.DurationMinutes;
@@ -36,6 +48,8 @@ public class UpdateServiceHandler : IRequestHandler<UpdateServiceCommand, Servic
         {
             Id = service.Id,
             Name = service.Name,
+            NameEn = service.NameEn,
+            NameRu = service.NameRu,
             DurationMinutes = service.DurationMinutes,
             Price = service.Price,
             Currency = service.Currency,

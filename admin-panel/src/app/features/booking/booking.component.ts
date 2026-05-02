@@ -277,11 +277,20 @@ export class BookingComponent implements OnInit {
   }
 
   formatPrice(price: number, currency: string): string {
-    if (!price || price <= 0) return 'Belirtilmemiş';
-    return new Intl.NumberFormat('tr-TR', {
+    const lang = this.langService.lang();
+    const unspecified = { tr: 'Belirtilmemiş', en: 'Unspecified', ru: 'Не указано' }[lang] ?? 'Belirtilmemiş';
+    if (!price || price <= 0) return unspecified;
+    return new Intl.NumberFormat(this.langService.dateLocale, {
       style: 'currency',
       currency: currency || 'TRY',
     }).format(price);
+  }
+
+  getServiceName(service: BookingService): string {
+    const lang = this.langService.lang();
+    if (lang === 'en' && service.nameEn) return service.nameEn;
+    if (lang === 'ru' && service.nameRu) return service.nameRu;
+    return service.name;
   }
 
   getInitials(name: string): string {

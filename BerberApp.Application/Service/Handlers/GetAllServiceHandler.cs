@@ -22,6 +22,8 @@ public class GetAllServicesHandler : IRequestHandler<GetAllServicesQuery, List<S
         {
             Id = s.Id,
             Name = s.Name,
+            NameEn = s.NameEn,
+            NameRu = s.NameRu,
             DurationMinutes = s.DurationMinutes,
             Price = s.Price,
             Currency = s.Currency,
