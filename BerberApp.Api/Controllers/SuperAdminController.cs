@@ -211,7 +211,6 @@ public class SuperAdminController : ControllerBase
     {
         try
         {
-            // Tenant var mı kontrol et
             var tenantExists = await _context.Tenants
                 .IgnoreQueryFilters()
                 .AnyAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
@@ -219,36 +218,27 @@ public class SuperAdminController : ControllerBase
             if (!tenantExists)
                 return NotFound(new { success = false, message = "İşletme bulunamadı." });
 
-            // TenantId üzerinden direkt sorgula (Include/navigation property bypass)
-            var appointments = await _context.Appointments
+            // ExecuteDeleteAsync → direkt SQL DELETE, change tracker bypass, FK sırası önemli
+            var deletedAppointments = await _context.Appointments
                 .IgnoreQueryFilters()
                 .Where(a => a.TenantId == id)
-                .ToListAsync();
+                .ExecuteDeleteAsync();
 
-            var customers = await _context.Customers
+            var deletedCustomers = await _context.Customers
                 .IgnoreQueryFilters()
                 .Where(c => c.TenantId == id)
-                .ToListAsync();
+                .ExecuteDeleteAsync();
 
-            var staff = await _context.Staff
+            var deletedStaff = await _context.Staff
                 .IgnoreQueryFilters()
                 .Where(s => s.TenantId == id)
-                .ToListAsync();
-
-            // Önce randevular (FK bağımlılıkları için)
-            _context.Appointments.RemoveRange(appointments);
-            await _context.SaveChangesAsync();
-
-            // Sonra müşteri ve personel
-            _context.Customers.RemoveRange(customers);
-            _context.Staff.RemoveRange(staff);
-            await _context.SaveChangesAsync();
+                .ExecuteDeleteAsync();
 
             _logger.LogInformation(
                 "Tenant {TenantId} reset: {A} appointments, {C} customers, {S} staff deleted",
-                id, appointments.Count, customers.Count, staff.Count);
+                id, deletedAppointments, deletedCustomers, deletedStaff);
 
-            return Ok(new { success = true, message = "Veriler sıfırlandı.", deleted = new { appointments = appointments.Count, customers = customers.Count, staff = staff.Count } });
+            return Ok(new { success = true, message = "Veriler sıfırlandı." });
         }
         catch (Exception ex)
         {
