@@ -52,7 +52,7 @@ export class PricingComponent {
   plans: Plan[] = [
     {
       name: 'Basic',
-      price: 0,
+      price: 899,
       description: 'Başlangıç için mükemmel',
       icon: '📱',
       featured: false,
@@ -69,7 +69,7 @@ export class PricingComponent {
     },
     {
       name: 'Standard',
-      price: 99,
+      price: 1799,
       description: 'En popüler seçim',
       icon: '⭐',
       featured: true,
@@ -87,7 +87,7 @@ export class PricingComponent {
     },
     {
       name: 'Full',
-      price: 299,
+      price: 2399,
       description: 'Profesyoneller için',
       icon: '👑',
       featured: false,

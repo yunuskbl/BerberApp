@@ -27,7 +27,7 @@
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">{{ 'reports.totalEarnings' | translate }}</div>
-        <div class="stat-value">{{ formatCurrency(earnings.totalEarnings) }}</div>
+        <div class="stat-value">{{ formatCurrency(earnings.totalInTry) }}</div>
         <div class="stat-sub">{{ earnings.totalAppointments }} {{ 'reports.appt' | translate }}</div>
       </div>
       <div class="stat-card">
@@ -45,6 +45,33 @@
         <div class="stat-sub">{{ earnings.weekAppointments }} {{ 'reports.appt' | translate }}</div>
       </div>
     </div>
+
+    <!-- Para Birimine Göre Kazanç -->
+    @if (earnings.byCurrency.length > 1) {
+      <div class="report-section">
+        <div class="currency-header">
+          <h3>{{ 'reports.byCurrency' | translate }}</h3>
+          <span class="rate-date">{{ 'reports.rateDate' | translate }}: {{ earnings.exchangeRateDate }}</span>
+        </div>
+        <div class="currency-cards">
+          @for (c of earnings.byCurrency; track c.currency) {
+            <div class="currency-card">
+              <div class="currency-badge">{{ c.currency }}</div>
+              <div class="currency-amount">{{ formatCurrency(c.totalEarnings, c.currency) }}</div>
+              <div class="currency-try">≈ {{ formatCurrency(c.totalInTry) }}</div>
+              <div class="currency-rate">{{ formatRate(c.currency, c.exchangeRate) }}</div>
+              <div class="currency-appts">{{ c.appointmentCount }} {{ 'reports.appt' | translate }}</div>
+            </div>
+          }
+          <div class="currency-card total-card">
+            <div class="currency-badge">∑</div>
+            <div class="currency-amount">{{ formatCurrency(earnings.totalInTry) }}</div>
+            <div class="currency-try">{{ 'reports.grandTotal' | translate }}</div>
+            <div class="currency-appts">{{ earnings.totalAppointments }} {{ 'reports.appt' | translate }}</div>
+          </div>
+        </div>
+      </div>
+    }
 
     <!-- Personele Göre Kazanç -->
     <div class="report-section">

@@ -12,7 +12,9 @@ public class GetEarningsQuery : IRequest<EarningsDto>
 
 public class EarningsDto
 {
-    public decimal TotalEarnings { get; set; }
+    public decimal TotalEarnings { get; set; }         // Ana para birimi toplamı
+    public decimal TotalInTry { get; set; }            // Tüm dövizler TRY'ye çevrilmiş toplam
+    public string ExchangeRateDate { get; set; } = ""; // Kur tarihi
     public int TotalAppointments { get; set; }
     public decimal AveragePerAppointment { get; set; }
 
@@ -25,10 +27,19 @@ public class EarningsDto
     public decimal MonthEarnings { get; set; }
     public int MonthAppointments { get; set; }
 
-
+    public List<CurrencyEarningDto> ByCurrency { get; set; } = new();
     public List<DailyEarningDto> Daily { get; set; } = new();
     public List<StaffEarningDto> ByStaff { get; set; } = new();
     public List<ServiceEarningDto> ByService { get; set; } = new();
+}
+
+public class CurrencyEarningDto
+{
+    public string Currency { get; set; } = string.Empty;
+    public decimal TotalEarnings { get; set; }
+    public decimal TotalInTry { get; set; }
+    public decimal ExchangeRate { get; set; }  // 1 X = ? TRY
+    public int AppointmentCount { get; set; }
 }
 
 public class DailyEarningDto

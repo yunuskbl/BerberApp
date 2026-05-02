@@ -104,6 +104,7 @@ builder.Services.AddScoped<ISmsService, SmsService>();
 builder.Services.AddScoped<INotificationService, LinkNotificationService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddHttpClient<ITranslationService, MyMemoryTranslationService>();
+builder.Services.AddHttpClient<IExchangeRateService, FrankfurterExchangeRateService>();
 
 // Hangfire
 builder.Services.AddHangfire(config =>

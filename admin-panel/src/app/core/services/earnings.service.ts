@@ -5,6 +5,8 @@ import { environment } from '../../../environments/environment';
 
 export interface EarningsDto {
   totalEarnings:        number;
+  totalInTry:           number;
+  exchangeRateDate:     string;
   totalAppointments:    number;
   averagePerAppointment: number;
   todayEarnings:        number;
@@ -13,9 +15,18 @@ export interface EarningsDto {
   weekAppointments:     number;
   monthEarnings:        number;
   monthAppointments:    number;
+  byCurrency:           CurrencyEarningDto[];
   daily:                DailyEarningDto[];
   byStaff:              StaffEarningDto[];
   byService:            ServiceEarningDto[];
+}
+
+export interface CurrencyEarningDto {
+  currency:        string;
+  totalEarnings:   number;
+  totalInTry:      number;
+  exchangeRate:    number;
+  appointmentCount: number;
 }
 
 export interface DailyEarningDto {

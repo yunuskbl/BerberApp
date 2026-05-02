@@ -46,11 +46,17 @@ export class ReportsListComponent implements OnInit {
     return date.toISOString().split('T')[0];
   }
 
-  formatCurrency(value: number): string {
+  formatCurrency(value: number, currency = 'TRY'): string {
     return new Intl.NumberFormat(this.langService.dateLocale, {
       style: 'currency',
-      currency: 'TRY',
+      currency,
       minimumFractionDigits: 0
     }).format(value);
+  }
+
+  formatRate(currency: string, rate: number): string {
+    return `1 ${currency} = ${new Intl.NumberFormat(this.langService.dateLocale, {
+      style: 'currency', currency: 'TRY', minimumFractionDigits: 2
+    }).format(rate)}`;
   }
 }

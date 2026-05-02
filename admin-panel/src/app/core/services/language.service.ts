@@ -135,6 +135,9 @@ const T: Record<Lang, Record<string, string>> = {
     'reports.colPrice':        'Fiyat',
     'reports.colSales':        'Satış Sayısı',
     'reports.noData':          'Veri bulunmuyor',
+    'reports.byCurrency':      'Para Birimine Göre Kazanç',
+    'reports.rateDate':        'Kur tarihi',
+    'reports.grandTotal':      'Genel Toplam (TRY)',
 
     // Common
     'common.loading': 'Yükleniyor...',
@@ -311,6 +314,9 @@ const T: Record<Lang, Record<string, string>> = {
     'reports.colPrice':        'Price',
     'reports.colSales':        'Sales Count',
     'reports.noData':          'No data available',
+    'reports.byCurrency':      'Earnings by Currency',
+    'reports.rateDate':        'Rate date',
+    'reports.grandTotal':      'Grand Total (TRY)',
 
     'common.loading': 'Loading...',
     'common.copy':    'Copy',
@@ -486,6 +492,9 @@ const T: Record<Lang, Record<string, string>> = {
     'reports.colPrice':        'Цена',
     'reports.colSales':        'Количество продаж',
     'reports.noData':          'Нет данных',
+    'reports.byCurrency':      'Доход по валютам',
+    'reports.rateDate':        'Дата курса',
+    'reports.grandTotal':      'Итого (TRY)',
 
     'common.loading': 'Загрузка...',
     'common.copy':    'Копировать',

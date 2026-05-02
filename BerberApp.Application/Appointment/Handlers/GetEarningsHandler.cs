@@ -10,15 +10,18 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
     private readonly IGenericRepository<AppointmentEntity> _appointmentRepo;
     private readonly IGenericRepository<ServiceEntity> _serviceRepo;
     private readonly IGenericRepository<StaffEntity> _staffRepo;
+    private readonly IExchangeRateService _exchangeRates;
 
     public GetEarningsHandler(
         IGenericRepository<AppointmentEntity> appointmentRepo,
         IGenericRepository<ServiceEntity> serviceRepo,
-        IGenericRepository<StaffEntity> staffRepo)
+        IGenericRepository<StaffEntity> staffRepo,
+        IExchangeRateService exchangeRates)
     {
         _appointmentRepo = appointmentRepo;
         _serviceRepo = serviceRepo;
         _staffRepo = staffRepo;
+        _exchangeRates = exchangeRates;
     }
 
     public async Task<EarningsDto> Handle(GetEarningsQuery request, CancellationToken ct)
@@ -71,10 +74,45 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
         var services = await _serviceRepo.GetAllAsync(x => x.TenantId == request.TenantId, ct);
         var staff = await _staffRepo.GetAllAsync(x => x.TenantId == request.TenantId, ct);
 
-        var totalEarnings = appointments.Sum(x => services.FirstOrDefault(s => s.Id == x.ServiceId)?.Price ?? 0);
-        var todayEarnings = today.Sum(x => services.FirstOrDefault(s => s.Id == x.ServiceId)?.Price ?? 0);
-        var weekEarnings = thisWeek.Sum(x => services.FirstOrDefault(s => s.Id == x.ServiceId)?.Price ?? 0);
-        var monthEarnings = thisMonth.Sum(x => services.FirstOrDefault(s => s.Id == x.ServiceId)?.Price ?? 0);
+        // Döviz kurları
+        var currencies = services.Select(s => s.Currency).Distinct();
+        var rates = await _exchangeRates.GetRatesToTryAsync(currencies, ct);
+        var rateDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
+
+        decimal GetPrice(Guid? serviceId) =>
+            services.FirstOrDefault(s => s.Id == serviceId)?.Price ?? 0;
+        decimal GetPriceInTry(Guid? serviceId)
+        {
+            var svc = services.FirstOrDefault(s => s.Id == serviceId);
+            if (svc is null) return 0;
+            return svc.Price * (rates.GetValueOrDefault(svc.Currency.ToUpper(), 1m));
+        }
+
+        var totalEarnings = appointments.Sum(x => GetPrice(x.ServiceId));
+        var todayEarnings = today.Sum(x => GetPrice(x.ServiceId));
+        var weekEarnings = thisWeek.Sum(x => GetPrice(x.ServiceId));
+        var monthEarnings = thisMonth.Sum(x => GetPrice(x.ServiceId));
+        var totalInTry = appointments.Sum(x => GetPriceInTry(x.ServiceId));
+
+        // Para birimine göre gruplama
+        var byCurrency = appointments
+            .GroupBy(x => services.FirstOrDefault(s => s.Id == x.ServiceId)?.Currency ?? "TRY")
+            .Select(g =>
+            {
+                var currency = g.Key.ToUpper();
+                var total = g.Sum(x => GetPrice(x.ServiceId));
+                var rate = rates.GetValueOrDefault(currency, 1m);
+                return new CurrencyEarningDto
+                {
+                    Currency = currency,
+                    TotalEarnings = total,
+                    TotalInTry = total * rate,
+                    ExchangeRate = rate,
+                    AppointmentCount = g.Count()
+                };
+            })
+            .OrderByDescending(x => x.TotalInTry)
+            .ToList();
 
         var daily = appointments
             .GroupBy(x => new DateTime(x.StartTime.Year, x.StartTime.Month, x.StartTime.Day))
@@ -115,14 +153,17 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
         return new EarningsDto
         {
             TotalEarnings = totalEarnings,
+            TotalInTry = totalInTry,
+            ExchangeRateDate = rateDate,
             TotalAppointments = appointments.Count,
-            AveragePerAppointment = appointments.Count > 0 ? totalEarnings / appointments.Count : 0,
+            AveragePerAppointment = appointments.Count > 0 ? totalInTry / appointments.Count : 0,
             TodayEarnings = todayEarnings,
             TodayAppointments = today.Count,
             WeekEarnings = weekEarnings,
             WeekAppointments = thisWeek.Count,
             MonthEarnings = monthEarnings,
             MonthAppointments = thisMonth.Count,
+            ByCurrency = byCurrency,
             Daily = daily,
             ByStaff = byStaff,
             ByService = byService
