@@ -209,20 +209,53 @@ public class SuperAdminController : ControllerBase
     [HttpDelete("tenants/{id}/permanent")]
     public async Task<IActionResult> HardDeleteTenant(Guid id)
     {
-        var tenant = await _context.Tenants
-            .IgnoreQueryFilters()
-            .Include(t => t.Appointments)
-            .Include(t => t.Customers)
-            .Include(t => t.Staff)
-            .FirstOrDefaultAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
+        try
+        {
+            var tenant = await _context.Tenants
+                .IgnoreQueryFilters()
+                .Include(t => t.Appointments)
+                .Include(t => t.Customers)
+                .Include(t => t.Staff)
+                .Include(t => t.Services)
+                .Include(t => t.Users)
+                .Include(t => t.Photos)
+                .FirstOrDefaultAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
 
-        if (tenant == null)
-            return NotFound(new { success = false, message = "İşletme bulunamadı." });
+            if (tenant == null)
+                return NotFound(new { success = false, message = "İşletme bulunamadı." });
 
-        _context.Tenants.Remove(tenant);
-        await _context.SaveChangesAsync();
+            // Delete related records in proper order (respecting foreign keys)
+            // Delete appointments first
+            _context.Appointments.RemoveRange(tenant.Appointments);
 
-        return Ok(new { success = true, message = "İşletme kalıcı olarak silindi." });
+            // Delete customers (may have appointments references)
+            _context.Customers.RemoveRange(tenant.Customers);
+
+            // Delete staff
+            _context.Staff.RemoveRange(tenant.Staff);
+
+            // Delete services
+            _context.Services.RemoveRange(tenant.Services);
+
+            // Delete photos
+            _context.TenantPhotos.RemoveRange(tenant.Photos);
+
+            // Delete users
+            _context.Users.RemoveRange(tenant.Users);
+
+            // Finally delete the tenant itself
+            _context.Tenants.Remove(tenant);
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Tenant {id} permanently deleted");
+            return Ok(new { success = true, message = "İşletme kalıcı olarak silindi." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting tenant permanently");
+            return StatusCode(500, new { success = false, message = $"Silme işlemi başarısız oldu: {ex.Message}" });
+        }
     }
 }
 

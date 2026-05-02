@@ -85,17 +85,23 @@ export class TenantDetailComponent implements OnInit {
 
   confirmDelete(): void {
     this.isProcessing = true;
+    this.errorMessage = '';
     const action = this.deleteType === 'soft'
       ? this.superAdminService.softDeleteTenant(this.tenant.id)
       : this.superAdminService.hardDeleteTenant(this.tenant.id);
 
     action.subscribe({
-      next: () => {
+      next: (res) => {
         this.showDeleteModal = false;
         this.isProcessing = false;
-        this.router.navigate(['/superadmin/tenants']);
+        this.showSuccess(res.message || 'İşletme silindi.');
+        setTimeout(() => this.router.navigate(['/superadmin/tenants']), 2000);
       },
-      error: () => { this.isProcessing = false; }
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'Silme işlemi başarısız oldu. Lütfen daha sonra tekrar deneyin.';
+        this.isProcessing = false;
+        this.showDeleteModal = false;
+      }
     });
   }
 
