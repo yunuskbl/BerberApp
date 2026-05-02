@@ -18,6 +18,8 @@ import {
 import { CustomCalendarComponent } from '../../shared/components/custom-calendar/custom-calendar.component';
 import { Title } from '@angular/platform-browser';
 import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
+import { LanguageService } from '../../core/services/language.service';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-booking',
@@ -28,6 +30,7 @@ import { LanguageSwitcherComponent } from '../../shared/components/language-swit
     CustomCalendarComponent,
     FormsModule,
     LanguageSwitcherComponent,
+    TranslatePipe,
   ],
   templateUrl: './booking.component.html',
   styleUrl: './booking.component.scss',
@@ -105,6 +108,7 @@ export class BookingComponent implements OnInit {
     private router: Router,
     private el: ElementRef,
     private renderer: Renderer2,
+    public langService: LanguageService,
   ) {
     this.customerForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.maxLength(30)]],

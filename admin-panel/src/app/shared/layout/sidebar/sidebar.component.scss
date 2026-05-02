@@ -157,6 +157,47 @@
   &:hover { background: rgba(248,113,113,0.08); color: #f87171; }
 }
 
+/* Language switcher in sidebar */
+.sidebar-lang {
+  display: flex;
+  gap: 4px;
+  padding: 8px 8px 4px;
+  overflow: hidden;
+}
+
+.sidebar-lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 7px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: rgba(255,255,255,0.35);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+
+  .lang-code {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+
+  &:hover {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.7);
+  }
+
+  &.active {
+    background: rgba(167,139,250,0.2);
+    color: #a78bfa;
+  }
+}
+
 .sidebar-user {
   display: flex;
   align-items: center;

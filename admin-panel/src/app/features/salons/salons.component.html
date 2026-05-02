@@ -21,10 +21,10 @@
           <input
             type="text"
             [(ngModel)]="searchQuery"
-            placeholder="Salon adı veya şehir ara..."
+            [placeholder]="'salons.searchPh' | translate"
             (keyup.enter)="onSearch()"
           />
-          <button (click)="onSearch()">Ara</button>
+          <button (click)="onSearch()">{{ 'salons.searchBtn' | translate }}</button>
         </div>
       </div>
 
@@ -39,7 +39,7 @@
     @if (isLoading) {
       <div class="state-center">
         <div class="spinner"></div>
-        <p>Salonlar yükleniyor...</p>
+        <p>{{ 'salons.loading' | translate }}</p>
       </div>
     } @else if (salons.length === 0) {
       <div class="state-center">
@@ -49,12 +49,12 @@
             <path d="M12 11V19M9 19H15" stroke="#ccc" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </div>
-        <h3>Salon bulunamadı</h3>
-        <p>Farklı bir arama terimi deneyin.</p>
+        <h3>{{ 'salons.notFound' | translate }}</h3>
+        <p>{{ 'salons.tryAnother' | translate }}</p>
       </div>
     } @else {
       <div class="results-bar">
-        <span class="results-count">{{ salons.length }} salon</span>
+        <span class="results-count">{{ salons.length }} {{ 'salons.count' | translate }}</span>
       </div>
 
       <div class="salons-grid">
@@ -115,7 +115,7 @@
               }
               <div class="card-footer">
                 <div class="card-cta" [style.background]="salon.themeColor || '#111111'">
-                  Randevu Al
+                  {{ 'salons.bookBtn' | translate }}
                 </div>
               </div>
             </div>
@@ -128,7 +128,7 @@
 
   <!-- Footer -->
   <div class="salons-footer">
-    <p>BerberApp © 2026</p>
+    <p>{{ 'salons.footer' | translate }}</p>
   </div>
 
 </div>

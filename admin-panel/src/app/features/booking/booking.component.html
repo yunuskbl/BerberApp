@@ -2,7 +2,7 @@
 @if (isLoading) {
   <div class="loading-screen">
     <div class="spinner"></div>
-    <p>Salon bilgileri yükleniyor...</p>
+    <p>{{ 'booking.loading' | translate }}</p>
   </div>
 }
 
@@ -10,7 +10,7 @@
 @else if (errorMessage && !salon) {
   <div class="error-screen">
     <span class="error-icon">✂</span>
-    <h2>Salon Bulunamadı</h2>
+    <h2>{{ 'booking.notFound' | translate }}</h2>
     <p>{{ errorMessage }}</p>
   </div>
 }
@@ -20,18 +20,18 @@
   <div class="success-screen">
     <div class="success-card">
       <div class="success-icon">✓</div>
-      <h2>Randevunuz Alındı!</h2>
-      <p>Randevu bilgileriniz aşağıda.</p>
-      <div class="pending-note">⏳ Randevunuz onay bekliyor. Salon onayladıktan sonra WhatsApp'a bildirim gelecektir.</div>
+      <h2>{{ 'booking.received' | translate }}</h2>
+      <p>{{ 'booking.receivedSub' | translate }}</p>
+      <div class="pending-note">{{ 'booking.pendingNote' | translate }}</div>
       <div class="booking-summary">
-        <div class="summary-item"><span class="summary-label">Salon</span><span class="summary-value">{{ salon?.name }}</span></div>
-        <div class="summary-item"><span class="summary-label">Hizmet</span><span class="summary-value">{{ selectedService?.name }}</span></div>
-        <div class="summary-item"><span class="summary-label">Personel</span><span class="summary-value">{{ selectedStaff?.fullName }}</span></div>
-        <div class="summary-item"><span class="summary-label">Tarih</span><span class="summary-value">{{ formatDate(selectedSlot) }}</span></div>
-        <div class="summary-item"><span class="summary-label">Saat</span><span class="summary-value">{{ formatTime(selectedSlot) }}</span></div>
-        <div class="summary-item"><span class="summary-label">Ücret</span><span class="summary-value">{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span></div>
+        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.salon' | translate }}</span><span class="summary-value">{{ salon?.name }}</span></div>
+        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.service' | translate }}</span><span class="summary-value">{{ selectedService?.name }}</span></div>
+        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.staff' | translate }}</span><span class="summary-value">{{ selectedStaff?.fullName }}</span></div>
+        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.date' | translate }}</span><span class="summary-value">{{ formatDate(selectedSlot) }}</span></div>
+        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.time' | translate }}</span><span class="summary-value">{{ formatTime(selectedSlot) }}</span></div>
+        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.price' | translate }}</span><span class="summary-value">{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span></div>
       </div>
-      <p class="success-note">Randevunuzu değiştirmek veya iptal etmek için salonumuzu arayabilirsiniz.</p>
+      <p class="success-note">{{ 'booking.successNote' | translate }}</p>
       @if (salon?.phone) {
         <a [href]="'tel:' + salon?.phone" class="btn-call">📞 {{ salon?.phone }}</a>
       }
@@ -66,12 +66,12 @@
         @if (salon?.address) {
           <div class="salon-location">📍 {{ salon?.address }}</div>
         }
-        <div class="salon-rating">⭐ <span>4.9</span> · Randevu Uygulaması</div>
+        <div class="salon-rating">⭐ <span>4.9</span> · {{ 'booking.ratingApp' | translate }}</div>
       </div>
 
       <!-- Fotoğraflar -->
       <div class="left-section">
-        <div class="left-label">Fotoğraflar</div>
+        <div class="left-label">{{ 'booking.photos' | translate }}</div>
         @if (salon?.photos?.length) {
           <!-- Gerçek fotoğraflar -->
           <div class="photos-grid">
@@ -125,7 +125,7 @@
       <!-- Konum -->
       @if (salon?.address) {
         <div class="left-section">
-          <div class="left-label">Konum</div>
+          <div class="left-label">{{ 'booking.location' | translate }}</div>
           <a class="map-card" [href]="'https://www.google.com/maps/search/?api=1&query=' + (salon?.address || '')" target="_blank" rel="noopener">
             <div class="map-thumb">
               <svg viewBox="0 0 272 90" xmlns="http://www.w3.org/2000/svg">
@@ -150,7 +150,7 @@
             </div>
             <div class="map-info">
               <div class="map-address">{{ salon?.address }}</div>
-              <button class="map-btn-small">Yol Tarifi</button>
+              <button class="map-btn-small">{{ 'booking.directions' | translate }}</button>
             </div>
           </a>
         </div>
@@ -160,24 +160,24 @@
 
       <!-- Özet -->
       <div class="left-summary">
-        <div class="left-label" style="margin-bottom:12px">Özet</div>
+        <div class="left-label" style="margin-bottom:12px">{{ 'booking.summary' | translate }}</div>
         <div class="summary-rows">
           <div class="sum-row">
-            <span class="k">Hizmet</span>
+            <span class="k">{{ 'booking.lbl.service' | translate }}</span>
             <span class="v">{{ selectedService?.name || '—' }}</span>
           </div>
           <div class="sum-row">
-            <span class="k">Berber</span>
+            <span class="k">{{ 'booking.barber' | translate }}</span>
             <span class="v">{{ selectedStaff?.fullName || '—' }}</span>
           </div>
           <div class="sum-row">
-            <span class="k">Tarih</span>
+            <span class="k">{{ 'booking.lbl.date' | translate }}</span>
             <span class="v">{{ selectedSlot ? formatDate(selectedSlot) : '—' }}</span>
           </div>
         </div>
         <div class="sum-divider"></div>
         <div class="sum-total">
-          <span class="k">Toplam</span>
+          <span class="k">{{ 'booking.total' | translate }}</span>
           <span class="v">{{ selectedService ? formatPrice(selectedService.price, selectedService.currency) : '—' }}</span>
         </div>
       </div>
@@ -191,7 +191,7 @@
         <div class="step-block">
           <div class="step-header">
             <div class="step-num active">1</div>
-            <div class="step-title">Hizmet Seçin</div>
+            <div class="step-title">{{ 'booking.step1' | translate }}</div>
             <div class="step-sep"></div>
           </div>
           <div class="service-list">
@@ -201,7 +201,7 @@
                   <div class="service-radio"></div>
                   <div>
                     <div class="service-name">{{ service.name }}</div>
-                    <div class="service-dur">⏱ {{ service.durationMinutes }} dk</div>
+                    <div class="service-dur">⏱ {{ service.durationMinutes }} {{ 'booking.min' | translate }}</div>
                   </div>
                 </div>
                 <div class="service-price">{{ formatPrice(service.price, service.currency) }}</div>
@@ -214,7 +214,7 @@
         <div class="step-block">
           <div class="step-header">
             <div class="step-num active">2</div>
-            <div class="step-title">Personel Seçin</div>
+            <div class="step-title">{{ 'booking.step2' | translate }}</div>
             <div class="step-sep"></div>
           </div>
           <div class="staff-list">
@@ -231,7 +231,7 @@
         <div class="step-block">
           <div class="step-header">
             <div class="step-num active">3</div>
-            <div class="step-title">Tarih Seçin</div>
+            <div class="step-title">{{ 'booking.step3' | translate }}</div>
             <div class="step-sep"></div>
           </div>
           <app-custom-calendar
@@ -247,7 +247,7 @@
           <div class="step-block">
             <div class="step-header">
               <div class="step-num active">4</div>
-              <div class="step-title">Saat Seçin</div>
+              <div class="step-title">{{ 'booking.step4' | translate }}</div>
               <div class="step-sep"></div>
             </div>
             <div class="slots-grid">
@@ -259,7 +259,7 @@
             </div>
           </div>
         } @else if (selectedService && selectedStaff && selectedDate) {
-          <div class="no-slots">Bu tarih için müsait saat bulunmuyor.</div>
+          <div class="no-slots">{{ 'booking.noSlots' | translate }}</div>
         }
 
         <!-- 5. Bilgiler -->
@@ -267,38 +267,38 @@
           <div class="step-block">
             <div class="step-header">
               <div class="step-num active">5</div>
-              <div class="step-title">Bilgilerinizi Girin</div>
+              <div class="step-title">{{ 'booking.step5' | translate }}</div>
               <div class="step-sep"></div>
             </div>
             <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
               <div class="form-group">
-                <input class="form-input" type="text" formControlName="fullName" placeholder="Ad Soyad" maxlength="30" />
+                <input class="form-input" type="text" formControlName="fullName" [placeholder]="'booking.fullNamePh' | translate" maxlength="30" />
                 @if (customerForm.get('fullName')?.errors?.['required'] && customerForm.get('fullName')?.touched) {
-                  <span class="field-error">Ad soyad zorunludur.</span>
+                  <span class="field-error">{{ 'booking.fullNameRequired' | translate }}</span>
                 }
               </div>
               <div class="form-group">
                 <input class="form-input" type="tel" formControlName="phone" placeholder="05XX XXX XX XX" maxlength="11" />
                 @if (customerForm.get('phone')?.errors?.['required'] && customerForm.get('phone')?.touched) {
-                  <span class="field-error">Telefon numarası zorunludur.</span>
+                  <span class="field-error">{{ 'booking.phoneRequired' | translate }}</span>
                 }
                 @if (customerForm.get('phone')?.errors?.['pattern'] && customerForm.get('phone')?.touched) {
-                  <span class="field-error">Geçerli bir telefon numarası girin.</span>
+                  <span class="field-error">{{ 'booking.phoneInvalid' | translate }}</span>
                 }
               </div>
               <div class="form-group">
-                <input class="form-input" type="email" formControlName="email" placeholder="Email (opsiyonel)" maxlength="80" />
+                <input class="form-input" type="email" formControlName="email" [placeholder]="'booking.emailPh' | translate" maxlength="80" />
               </div>
               <div class="form-group">
-                <textarea class="form-textarea" formControlName="notes" placeholder="Not ekleyin..." rows="3" maxlength="200"></textarea>
+                <textarea class="form-textarea" formControlName="notes" [placeholder]="'booking.notePh' | translate" rows="3" maxlength="200"></textarea>
               </div>
 
               <div class="booking-preview">
-                <h3>Randevu Özeti</h3>
-                <div class="preview-item"><span>Hizmet</span><span>{{ selectedService?.name }}</span></div>
-                <div class="preview-item"><span>Personel</span><span>{{ selectedStaff?.fullName }}</span></div>
-                <div class="preview-item"><span>Tarih & Saat</span><span>{{ formatDate(selectedSlot) }} - {{ formatTime(selectedSlot) }}</span></div>
-                <div class="preview-item total"><span>Toplam</span><span>{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span></div>
+                <h3>{{ 'booking.previewTitle' | translate }}</h3>
+                <div class="preview-item"><span>{{ 'booking.lbl.service' | translate }}</span><span>{{ selectedService?.name }}</span></div>
+                <div class="preview-item"><span>{{ 'booking.lbl.staff' | translate }}</span><span>{{ selectedStaff?.fullName }}</span></div>
+                <div class="preview-item"><span>{{ 'booking.dateAndTime' | translate }}</span><span>{{ formatDate(selectedSlot) }} - {{ formatTime(selectedSlot) }}</span></div>
+                <div class="preview-item total"><span>{{ 'booking.total' | translate }}</span><span>{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span></div>
               </div>
 
               @if (errorMessage) {
@@ -306,14 +306,14 @@
               }
 
               <button type="submit" class="btn-submit" [disabled]="isSubmitting || customerForm.invalid">
-                {{ isSubmitting ? 'Randevu Oluşturuluyor...' : 'Randevu Al →' }}
+                {{ isSubmitting ? ('booking.submitting' | translate) : ('booking.submit' | translate) }}
               </button>
             </form>
           </div>
         }
 
         <div class="booking-footer">
-          <p>BerberApp ile güçlendirildi</p>
+          <p>{{ 'booking.poweredBy' | translate }}</p>
         </div>
       </div>
     </div>
