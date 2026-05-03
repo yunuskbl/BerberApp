@@ -53,7 +53,7 @@ services:
   admin-panel:
     build:
       context: ./admin-panel
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     container_name: berberapp-admin
     ports:
       - "4200:80"
