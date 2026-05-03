@@ -1,6 +1,7 @@
-﻿using BerberApp.Application.Common.Exceptions;
+using BerberApp.Application.Common.Exceptions;
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Application.Appointment.Commands;
+using BerberApp.Application.Appointment.DTOs;
 using BerberApp.Domain.Enums;
 using MediatR;
 
@@ -10,16 +11,16 @@ public class CancelAppointmentHandler : IRequestHandler<CancelAppointmentCommand
 {
     private readonly IGenericRepository<AppointmentEntity> _appointmentRepo;
     private readonly IGenericRepository<CustomerEntity> _customerRepo;
-    private readonly IWhatsAppService _whatsAppService;
+    private readonly INotificationService _notificationService;
 
     public CancelAppointmentHandler(
         IGenericRepository<AppointmentEntity> appointmentRepo,
         IGenericRepository<CustomerEntity> customerRepo,
-        IWhatsAppService whatsAppService)
+        INotificationService notificationService)
     {
         _appointmentRepo = appointmentRepo;
         _customerRepo = customerRepo;
-        _whatsAppService = whatsAppService;
+        _notificationService = notificationService;
     }
 
     public async Task<bool> Handle(CancelAppointmentCommand request, CancellationToken ct)
@@ -39,6 +40,7 @@ public class CancelAppointmentHandler : IRequestHandler<CancelAppointmentCommand
         var wasPending = appointment.Status == AppointmentStatus.Pending;
         appointment.Status = AppointmentStatus.Cancelled;
         await _appointmentRepo.UpdateAsync(appointment, ct);
+
         if (wasPending)
         {
             var customerToUpdate = await _customerRepo.GetByIdAsync(appointment.CustomerId, ct);
@@ -48,20 +50,22 @@ public class CancelAppointmentHandler : IRequestHandler<CancelAppointmentCommand
                 await _customerRepo.UpdateAsync(customerToUpdate, ct);
             }
         }
-        // WhatsApp bildirimi
-        try
+
+        var customer = await _customerRepo.GetByIdAsync(appointment.CustomerId, ct);
+        if (customer is not null)
         {
-            var customer = await _customerRepo.GetByIdAsync(appointment.CustomerId, ct);
-            if (customer is not null)
-            {
-                await _whatsAppService.SendAppointmentCancelledAsync(
-                    customer.Phone,
-                    customer.FullName,
-                    appointment.StartTime
-                );
-            }
+            await _notificationService.SendAppointmentCancelledAsync(
+                customer.Phone,
+                new AppointmentStatusDto
+                {
+                    Id = appointment.Id,
+                    TenantId = appointment.TenantId,
+                    CustomerName = customer.FullName,
+                    StartTime = appointment.StartTime,
+                    EndTime = appointment.EndTime,
+                    Status = appointment.Status.ToString()
+                });
         }
-        catch { }
 
         return true;
     }

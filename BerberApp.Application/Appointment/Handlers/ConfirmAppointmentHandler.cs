@@ -1,4 +1,5 @@
-﻿using BerberApp.Application.Appointment.Commands;
+using BerberApp.Application.Appointment.Commands;
+using BerberApp.Application.Appointment.DTOs;
 using BerberApp.Application.Common.Exceptions;
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Enums;
@@ -12,20 +13,20 @@ public class ConfirmAppointmentHandler : IRequestHandler<ConfirmAppointmentComma
     private readonly IGenericRepository<CustomerEntity> _customerRepo;
     private readonly IGenericRepository<ServiceEntity> _serviceRepo;
     private readonly IGenericRepository<StaffEntity> _staffRepo;
-    private readonly IWhatsAppService _whatsAppService;
+    private readonly INotificationService _notificationService;
 
     public ConfirmAppointmentHandler(
         IGenericRepository<AppointmentEntity> appointmentRepo,
         IGenericRepository<CustomerEntity> customerRepo,
         IGenericRepository<ServiceEntity> serviceRepo,
         IGenericRepository<StaffEntity> staffRepo,
-        IWhatsAppService whatsAppService)
+        INotificationService notificationService)
     {
         _appointmentRepo = appointmentRepo;
         _customerRepo = customerRepo;
         _serviceRepo = serviceRepo;
         _staffRepo = staffRepo;
-        _whatsAppService = whatsAppService;
+        _notificationService = notificationService;
     }
 
     public async Task<bool> Handle(ConfirmAppointmentCommand request, CancellationToken ct)
@@ -42,27 +43,25 @@ public class ConfirmAppointmentHandler : IRequestHandler<ConfirmAppointmentComma
         appointment.Status = AppointmentStatus.Confirmed;
         await _appointmentRepo.UpdateAsync(appointment, ct);
 
-        // WhatsApp onay bildirimi
-        try
-        {
-            var customer = await _customerRepo.GetByIdAsync(appointment.CustomerId, ct);
-            var service = await _serviceRepo.GetByIdAsync(appointment.ServiceId, ct);
-            var staff = await _staffRepo.GetByIdAsync(appointment.StaffId, ct);
+        var customer = await _customerRepo.GetByIdAsync(appointment.CustomerId, ct);
+        var service = await _serviceRepo.GetByIdAsync(appointment.ServiceId, ct);
+        var staff = await _staffRepo.GetByIdAsync(appointment.StaffId, ct);
 
-            if (customer is not null && service is not null && staff is not null)
-            {
-                await _whatsAppService.SendAppointmentConfirmedAsync(
-                    customer.Phone,
-                    customer.FullName,
-                    service.Name,
-                    staff.FullName,
-                    appointment.StartTime
-                );
-            }
-        }
-        catch(Exception ex)
+        if (customer is not null && service is not null && staff is not null)
         {
-            Console.WriteLine($"WhatsApp hata: {ex.Message}");
+            await _notificationService.SendAppointmentConfirmedAsync(
+                customer.Phone,
+                new AppointmentStatusDto
+                {
+                    Id = appointment.Id,
+                    TenantId = appointment.TenantId,
+                    CustomerName = customer.FullName,
+                    ServiceName = service.Name,
+                    StaffName = staff.FullName,
+                    StartTime = appointment.StartTime,
+                    EndTime = appointment.EndTime,
+                    Status = appointment.Status.ToString()
+                });
         }
 
         return true;

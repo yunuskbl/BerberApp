@@ -4,7 +4,6 @@ using BerberApp.Application.Common.Exceptions;
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Enums;
 using MediatR;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace BerberApp.Application.Appointment.Handlers;
 
@@ -16,6 +15,7 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
     private readonly IGenericRepository<CustomerEntity> _customerRepo;
     private readonly IGenericRepository<WorkingHourEntity> _workingHourRepo;
     private readonly IWhatsAppService _whatsAppService;
+    private readonly INotificationService _notificationService;
 
     public CreateAppointmentHandler(
         IGenericRepository<AppointmentEntity> appointmentRepo,
@@ -23,7 +23,8 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
         IGenericRepository<StaffEntity> staffRepo,
         IGenericRepository<CustomerEntity> customerRepo,
         IGenericRepository<WorkingHourEntity> workingHourRepo,
-        IWhatsAppService whatsAppService)
+        IWhatsAppService whatsAppService,
+        INotificationService notificationService)
     {
         _appointmentRepo = appointmentRepo;
         _serviceRepo = serviceRepo;
@@ -31,6 +32,7 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
         _customerRepo = customerRepo;
         _workingHourRepo = workingHourRepo;
         _whatsAppService = whatsAppService;
+        _notificationService = notificationService;
     }
 
     public async Task<AppointmentDto> Handle(CreateAppointmentCommand request, CancellationToken ct)
@@ -167,7 +169,20 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
         }
         else
         {
-            Console.WriteLine("[WHATSAPP] Bildirim numarası boş, mesaj gönderilmedi.");
+            // İşletme sahibi randevu oluşturdu → müşteriye onay bildirimi gönder
+            await _notificationService.SendAppointmentConfirmedAsync(
+                customer.Phone,
+                new AppointmentStatusDto
+                {
+                    Id = appointment.Id,
+                    TenantId = request.TenantId,
+                    CustomerName = customer.FullName,
+                    ServiceName = service.Name,
+                    StaffName = staff.FullName,
+                    StartTime = appointment.StartTime,
+                    EndTime = appointment.EndTime,
+                    Status = appointment.Status.ToString()
+                });
         }
 
         return new AppointmentDto

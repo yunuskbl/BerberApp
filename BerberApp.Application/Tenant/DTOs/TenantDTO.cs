@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BerberApp.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,4 +18,5 @@ public class TenantDto
     public string? Address { get; set; }
     public bool IsActive { get; set; }
     public string? ThemeColor { get; set; }
+    public NotificationChannel PreferredNotificationChannel { get; set; }
 }

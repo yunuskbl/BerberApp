@@ -1,4 +1,5 @@
 ﻿using BerberApp.Domain.Common;
+using BerberApp.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,7 @@ namespace BerberApp.Domain.Entities
         public string? Address { get; set; }
         public bool IsActive { get; set; } = true;
         public string? ThemeColor { get; set; }
+        public NotificationChannel PreferredNotificationChannel { get; set; } = NotificationChannel.WhatsApp;
 
         // Navigation
         public ICollection<User> Users { get; set; } = new List<User>();

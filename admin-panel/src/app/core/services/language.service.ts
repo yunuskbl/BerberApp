@@ -110,6 +110,15 @@ const T: Record<Lang, Record<string, string>> = {
     'settings.password.noMatch':     'Şifreler eşleşmiyor.',
     'settings.password.tooShort':    'Şifre en az 8 karakter olmalı.',
 
+    // Settings — Bildirim kanalı
+    'settings.notif.card':      'Bildirim Kanalı',
+    'settings.notif.cardSub':   'Müşterilere hangi kanaldan bildirim gönderileceğini seçin',
+    'settings.notif.whatsapp':  'WhatsApp (Twilio)',
+    'settings.notif.sms':       'SMS (IletiMerkezi)',
+    'settings.notif.save':      'Kanalı Kaydet',
+    'settings.notif.saving':    'Kaydediliyor...',
+    'settings.notif.saved':     'Bildirim kanalı güncellendi!',
+
     // Settings — Booking linki
     'settings.booking.card':    'Müşteri Randevu Linki',
     'settings.booking.cardSub': 'Bu linki müşterilerinizle paylaşın',
@@ -407,6 +416,14 @@ const T: Record<Lang, Record<string, string>> = {
     'settings.password.noMatch':     'Passwords do not match.',
     'settings.password.tooShort':    'Password must be at least 8 characters.',
 
+    'settings.notif.card':      'Notification Channel',
+    'settings.notif.cardSub':   'Choose how to notify customers about their appointments',
+    'settings.notif.whatsapp':  'WhatsApp (Twilio)',
+    'settings.notif.sms':       'SMS (IletiMerkezi)',
+    'settings.notif.save':      'Save Channel',
+    'settings.notif.saving':    'Saving...',
+    'settings.notif.saved':     'Notification channel updated!',
+
     'settings.booking.card':    'Customer Booking Link',
     'settings.booking.cardSub': 'Share this link with your customers',
     'settings.booking.preview': 'Preview',
@@ -702,6 +719,14 @@ const T: Record<Lang, Record<string, string>> = {
     'settings.password.rule.number': 'Не менее 1 цифры (0-9)',
     'settings.password.noMatch':     'Пароли не совпадают.',
     'settings.password.tooShort':    'Пароль должен содержать не менее 8 символов.',
+
+    'settings.notif.card':      'Канал уведомлений',
+    'settings.notif.cardSub':   'Выберите способ отправки уведомлений клиентам',
+    'settings.notif.whatsapp':  'WhatsApp (Twilio)',
+    'settings.notif.sms':       'SMS (IletiMerkezi)',
+    'settings.notif.save':      'Сохранить канал',
+    'settings.notif.saving':    'Сохранение...',
+    'settings.notif.saved':     'Канал уведомлений обновлён!',
 
     'settings.booking.card':    'Ссылка для записи клиентов',
     'settings.booking.cardSub': 'Поделитесь этой ссылкой с клиентами',

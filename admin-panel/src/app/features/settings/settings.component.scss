@@ -540,6 +540,67 @@
   }
 }
 
+/* Notification Channel */
+.notif-channel-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notif-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  user-select: none;
+
+  &:hover { border-color: var(--theme-color-light); background: #faf5ff; }
+
+  &.active {
+    border-color: var(--theme-color);
+    background: #f5f3ff;
+  }
+}
+
+.notif-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.2s;
+
+  .notif-option.active & { border-color: var(--theme-color); }
+}
+
+.notif-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.2s;
+
+  &.checked { background: var(--theme-color); }
+}
+
+.notif-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+
+  .notif-option.active & { color: var(--theme-color); }
+}
+
 /* Photo Grid */
 .photo-grid {
   display: grid;

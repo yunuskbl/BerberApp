@@ -26,11 +26,12 @@ public class SmsService : ISmsService
         await SendSmsAsync(phone, message);
     }
 
-    public async Task SendAppointmentConfirmedAsync(string phone, string customerName, string serviceName, string staffName, DateTime startTime)
+    public async Task SendAppointmentConfirmedAsync(string phone, string customerName, string serviceName, string staffName, DateTime startTime, string salonName = "")
     {
         var turkeyTime = ToTurkeyTime(startTime);
         var culture = new System.Globalization.CultureInfo("tr-TR");
-        var message = $"BerberApp: Randevunuz onaylandi! Tarih: {turkeyTime.ToString("dd MMMM yyyy", culture)} {turkeyTime:HH:mm}, Hizmet: {serviceName}, Personel: {staffName}";
+        var salonPart = string.IsNullOrWhiteSpace(salonName) ? "" : $" Salon: {salonName}.";
+        var message = $"BerberApp: Randevunuz onaylandi! Tarih: {turkeyTime.ToString("dd MMMM yyyy", culture)} {turkeyTime:HH:mm}, Hizmet: {serviceName}, Personel: {staffName}.{salonPart}";
         await SendSmsAsync(phone, message);
     }
 
@@ -42,11 +43,12 @@ public class SmsService : ISmsService
         await SendSmsAsync(phone, message);
     }
 
-    public async Task SendAppointmentCancelledAsync(string phone, string customerName, DateTime startTime)
+    public async Task SendAppointmentCancelledAsync(string phone, string customerName, DateTime startTime, string salonName = "")
     {
         var turkeyTime = ToTurkeyTime(startTime);
         var culture = new System.Globalization.CultureInfo("tr-TR");
-        var message = $"BerberApp: {turkeyTime.ToString("dd MMMM yyyy", culture)} {turkeyTime:HH:mm} tarihli randevunuz iptal edildi.";
+        var salonPart = string.IsNullOrWhiteSpace(salonName) ? "" : $" ({salonName})";
+        var message = $"BerberApp{salonPart}: {turkeyTime.ToString("dd MMMM yyyy", culture)} {turkeyTime:HH:mm} tarihli randevunuz iptal edildi.";
         await SendSmsAsync(phone, message);
     }
 

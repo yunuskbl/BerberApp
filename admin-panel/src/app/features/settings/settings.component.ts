@@ -55,6 +55,12 @@ export class SettingsComponent implements OnInit {
   isUploadingPhoto = false;
   photoUploadError = '';
 
+  // Bildirim kanalı: 0 = WhatsApp, 1 = Sms
+  notificationChannel: 0 | 1 = 0;
+  isSavingChannel = false;
+  channelSuccess = '';
+  channelError = '';
+
   presetColors = [
     { value: '#111111', label: 'Siyah'   },
     { value: '#1a1a2e', label: 'Lacivert' },
@@ -155,10 +161,31 @@ export class SettingsComponent implements OnInit {
             themeColor:        res.data.themeColor ?? '#7c3aed',
           });
           if (res.data.logoUrl) this.logoPreview = res.data.logoUrl;
+          this.notificationChannel = res.data.preferredNotificationChannel ?? 0;
         }
         this.isLoading = false;
       },
       error: () => { this.isLoading = false; },
+    });
+  }
+
+  /* ─── Bildirim Kanalı ─── */
+  onSaveNotificationChannel(): void {
+    this.isSavingChannel = true;
+    this.channelSuccess = '';
+    this.channelError = '';
+    this.http.put<any>(`${environment.apiUrl}/settings/notification-channel`, { channel: this.notificationChannel }).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.channelSuccess = this.langService.t('settings.notif.saved');
+          setTimeout(() => (this.channelSuccess = ''), 3000);
+        }
+        this.isSavingChannel = false;
+      },
+      error: (err) => {
+        this.channelError = err.error?.message || 'Hata oluştu.';
+        this.isSavingChannel = false;
+      },
     });
   }
 

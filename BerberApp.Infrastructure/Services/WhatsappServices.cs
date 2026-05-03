@@ -25,23 +25,24 @@ public class WhatsAppService : IWhatsAppService
 
     public async Task SendAppointmentConfirmedAsync(
     string phone, string customerName, string serviceName,
-    string staffName, DateTime startTime)
+    string staffName, DateTime startTime, string salonName = "")
     {
         var turkeyTime = ToTurkeyTime(startTime);
         var culture = new System.Globalization.CultureInfo("tr-TR");
+        var salonLine = string.IsNullOrWhiteSpace(salonName) ? "" : $"\n🏪 Salon: {salonName}";
 
         var message = $"""
         ✂ *BerberApp - Randevu Onayı*
-        
+
         Merhaba {customerName}! 👋
-        
+
         Randevunuz başarıyla oluşturuldu.
-        
+
         📅 Tarih: {turkeyTime.ToString("dd MMMM yyyy", culture)}
         ⏰ Saat: {turkeyTime:HH:mm}
         💈 Hizmet: {serviceName}
-        👤 Personel: {staffName}
-        
+        👤 Personel: {staffName}{salonLine}
+
         Randevunuzu iptal etmek için salonumuzu arayabilirsiniz.
         """;
 
@@ -73,18 +74,19 @@ public class WhatsAppService : IWhatsAppService
     }
 
     public async Task SendAppointmentCancelledAsync(
-        string phone, string customerName, DateTime startTime)
+        string phone, string customerName, DateTime startTime, string salonName = "")
     {
         var turkeyTime = ToTurkeyTime(startTime);
         var culture = new System.Globalization.CultureInfo("tr-TR");
+        var salonLine = string.IsNullOrWhiteSpace(salonName) ? "" : $"\n🏪 Salon: {salonName}";
 
         var message = $"""
         ✂ *BerberApp - Randevu İptali*
-        
-        Merhaba {customerName},
-        
+
+        Merhaba {customerName},{salonLine}
+
         {turkeyTime.ToString("dd MMMM yyyy", culture)} tarihli {turkeyTime:HH:mm} saatindeki randevunuz iptal edilmiştir.
-        
+
         Yeni randevu almak için salonumuzu arayabilirsiniz.
         """;
 

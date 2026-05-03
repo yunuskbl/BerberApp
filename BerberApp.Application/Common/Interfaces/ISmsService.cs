@@ -9,8 +9,8 @@ namespace BerberApp.Application.Common.Interfaces
     public interface ISmsService
     {
         Task SendOtpAsync(string phone, string otp);
-        Task SendAppointmentConfirmedAsync(string phone, string customerName, string serviceName, string staffName, DateTime startTime);
+        Task SendAppointmentConfirmedAsync(string phone, string customerName, string serviceName, string staffName, DateTime startTime, string salonName = "");
         Task SendAppointmentReminderAsync(string phone, string customerName, string serviceName, DateTime startTime);
-        Task SendAppointmentCancelledAsync(string phone, string customerName, DateTime startTime);
+        Task SendAppointmentCancelledAsync(string phone, string customerName, DateTime startTime, string salonName = "");
     }
 }

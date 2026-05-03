@@ -1,43 +1,95 @@
-﻿using BerberApp.Application.Appointment.DTOs;
+using BerberApp.Application.Appointment.DTOs;
 using BerberApp.Application.Common.Interfaces;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using BerberApp.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
-namespace BerberApp.Infrastructure.Services
+namespace BerberApp.Infrastructure.Services;
+
+public class LinkNotificationService : INotificationService
 {
-    public class LinkNotificationService : INotificationService
+    private readonly IAppDbContext _context;
+    private readonly IWhatsAppService _whatsAppService;
+    private readonly ISmsService _smsService;
+    private readonly ILogger<LinkNotificationService> _logger;
+
+    public LinkNotificationService(
+        IAppDbContext context,
+        IWhatsAppService whatsAppService,
+        ISmsService smsService,
+        ILogger<LinkNotificationService> logger)
     {
-        private readonly string _baseUrl;
+        _context = context;
+        _whatsAppService = whatsAppService;
+        _smsService = smsService;
+        _logger = logger;
+    }
 
-        public LinkNotificationService(IConfiguration config)
-        {
-            _baseUrl = config["AppSettings:BaseUrl"] ?? "https://berberapp.com.tr";
-        }
+    public async Task SendAppointmentReceivedAsync(string recipient, AppointmentStatusDto dto)
+    {
+        _logger.LogInformation("[BİLDİRİM] Randevu alındı: TenantId={TenantId}, Alıcı={Recipient}", dto.TenantId, recipient);
+        await Task.CompletedTask;
+    }
 
-        public Task SendAppointmentReceivedAsync(string recipient, AppointmentStatusDto dto)
+    public async Task SendAppointmentConfirmedAsync(string recipient, AppointmentStatusDto dto)
+    {
+        try
         {
-            // Şimdilik sadece log — ileride WhatsApp mesajı buraya gelir
-            var link = $"{_baseUrl}/randevu/{dto.Id}";
-            Console.WriteLine($"[NOTIFICATION] Randevu alındı linki: {link} → {recipient}");
-            return Task.CompletedTask;
-        }
+            var (channel, salonName) = await GetTenantInfoAsync(dto.TenantId);
 
-        public Task SendAppointmentConfirmedAsync(string recipient, AppointmentStatusDto dto)
-        {
-            var link = $"{_baseUrl}/randevu/{dto.Id}";
-            Console.WriteLine($"[NOTIFICATION] Randevu onaylandı linki: {link} → {recipient}");
-            return Task.CompletedTask;
+            if (channel == NotificationChannel.Sms)
+            {
+                await _smsService.SendAppointmentConfirmedAsync(
+                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName);
+                _logger.LogInformation("[SMS] Onay bildirimi gönderildi: {Recipient}", recipient);
+            }
+            else
+            {
+                await _whatsAppService.SendAppointmentConfirmedAsync(
+                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName);
+                _logger.LogInformation("[WHATSAPP] Onay bildirimi gönderildi: {Recipient}", recipient);
+            }
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[BİLDİRİM HATA] Onay bildirimi gönderilemedi: {Recipient}", recipient);
+        }
+    }
 
-        public Task SendAppointmentCancelledAsync(string recipient, AppointmentStatusDto dto)
+    public async Task SendAppointmentCancelledAsync(string recipient, AppointmentStatusDto dto)
+    {
+        try
         {
-            var link = $"{_baseUrl}/randevu/{dto.Id}";
-            Console.WriteLine($"[NOTIFICATION] Randevu iptal linki: {link} → {recipient}");
-            return Task.CompletedTask;
+            var (channel, salonName) = await GetTenantInfoAsync(dto.TenantId);
+
+            if (channel == NotificationChannel.Sms)
+            {
+                await _smsService.SendAppointmentCancelledAsync(
+                    recipient, dto.CustomerName, dto.StartTime, salonName);
+                _logger.LogInformation("[SMS] İptal bildirimi gönderildi: {Recipient}", recipient);
+            }
+            else
+            {
+                await _whatsAppService.SendAppointmentCancelledAsync(
+                    recipient, dto.CustomerName, dto.StartTime, salonName);
+                _logger.LogInformation("[WHATSAPP] İptal bildirimi gönderildi: {Recipient}", recipient);
+            }
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[BİLDİRİM HATA] İptal bildirimi gönderilemedi: {Recipient}", recipient);
+        }
+    }
+
+    private async Task<(NotificationChannel channel, string salonName)> GetTenantInfoAsync(Guid tenantId)
+    {
+        var tenant = await _context.Tenants
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == tenantId);
+
+        return (
+            tenant?.PreferredNotificationChannel ?? NotificationChannel.WhatsApp,
+            tenant?.Name ?? string.Empty
+        );
     }
 }

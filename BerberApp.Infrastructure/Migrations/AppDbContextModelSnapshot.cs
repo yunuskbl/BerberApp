@@ -347,6 +347,9 @@ namespace BerberApp.Infrastructure.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("text");
 
+                    b.Property<int>("PreferredNotificationChannel")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Subdomain")
                         .IsRequired()
                         .HasMaxLength(50)

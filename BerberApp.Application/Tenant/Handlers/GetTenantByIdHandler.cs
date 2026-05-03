@@ -37,7 +37,8 @@ public class GetTenantByIdHandler : IRequestHandler<GetTenantByIdQuery, TenantDt
             NotificationPhone = tenant.NotificationPhone,
             Address = tenant.Address,
             IsActive = tenant.IsActive,
-            ThemeColor = tenant.ThemeColor
+            ThemeColor = tenant.ThemeColor,
+            PreferredNotificationChannel = tenant.PreferredNotificationChannel
         };
     }
 }
