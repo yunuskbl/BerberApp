@@ -88,11 +88,11 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             return svc.Price * (rates.GetValueOrDefault(svc.Currency.ToUpper(), 1m));
         }
 
-        var totalEarnings = appointments.Sum(x => GetPrice(x.ServiceId));
-        var todayEarnings = today.Sum(x => GetPrice(x.ServiceId));
-        var weekEarnings = thisWeek.Sum(x => GetPrice(x.ServiceId));
-        var monthEarnings = thisMonth.Sum(x => GetPrice(x.ServiceId));
-        var totalInTry = appointments.Sum(x => GetPriceInTry(x.ServiceId));
+        var totalEarnings  = appointments.Sum(x => GetPrice(x.ServiceId));
+        var todayEarnings  = today.Sum(x => GetPriceInTry(x.ServiceId));
+        var weekEarnings   = thisWeek.Sum(x => GetPriceInTry(x.ServiceId));
+        var monthEarnings  = thisMonth.Sum(x => GetPriceInTry(x.ServiceId));
+        var totalInTry     = appointments.Sum(x => GetPriceInTry(x.ServiceId));
 
         // Para birimine göre gruplama
         var byCurrency = appointments
@@ -144,6 +144,7 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             {
                 ServiceId = g.Key.ToString(),
                 ServiceName = services.FirstOrDefault(s => s.Id == g.Key)?.Name ?? "Unknown",
+                Currency = services.FirstOrDefault(s => s.Id == g.Key)?.Currency ?? "TRY",
                 Price = services.FirstOrDefault(s => s.Id == g.Key)?.Price ?? 0,
                 TotalEarnings = g.Sum(x => services.FirstOrDefault(s => s.Id == x.ServiceId)?.Price ?? 0),
                 AppointmentCount = g.Count()

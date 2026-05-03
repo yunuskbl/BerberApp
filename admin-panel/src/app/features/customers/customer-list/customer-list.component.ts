@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CustomerService } from '../../../core/services/customer.service';
 import { Customer } from '../../../core/models/customer.model';
+import { LanguageService } from '../../../core/services/language.service';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-customer-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: './customer-list.component.html',
   styleUrl: './customer-list.component.scss'
 })
@@ -25,7 +27,8 @@ export class CustomerListComponent implements OnInit {
 
   constructor(
     private customerService: CustomerService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    public langService: LanguageService,
   ) {
     this.customerForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.maxLength(100)]],
@@ -43,10 +46,7 @@ export class CustomerListComponent implements OnInit {
     this.isLoading = true;
     this.customerService.getAll().subscribe({
       next: (res) => {
-        if (res.success) {
-          this.customerList = res.data;
-          this.filteredList = res.data;
-        }
+        if (res.success) { this.customerList = res.data; this.filteredList = res.data; }
         this.isLoading = false;
       },
       error: () => { this.isLoading = false; }
@@ -66,13 +66,11 @@ export class CustomerListComponent implements OnInit {
   openDrawer(customer?: Customer): void {
     this.editingCustomer = customer || null;
     this.errorMessage    = '';
-
     if (customer) {
       this.customerForm.patchValue(customer);
     } else {
       this.customerForm.reset();
     }
-
     this.isDrawerOpen = true;
   }
 
@@ -84,7 +82,6 @@ export class CustomerListComponent implements OnInit {
 
   onSubmit(): void {
     if (this.customerForm.invalid) return;
-
     this.isSubmitting = true;
     this.errorMessage = '';
     const value = this.customerForm.value;
@@ -95,10 +92,7 @@ export class CustomerListComponent implements OnInit {
           if (res.success) { this.loadCustomers(); this.closeDrawer(); }
           this.isSubmitting = false;
         },
-        error: (err) => {
-          this.errorMessage = err.error?.message || 'Hata oluştu.';
-          this.isSubmitting = false;
-        }
+        error: (err) => { this.errorMessage = err.error?.message || 'Hata oluştu.'; this.isSubmitting = false; }
       });
     } else {
       this.customerService.create(value).subscribe({
@@ -106,19 +100,14 @@ export class CustomerListComponent implements OnInit {
           if (res.success) { this.loadCustomers(); this.closeDrawer(); }
           this.isSubmitting = false;
         },
-        error: (err) => {
-          this.errorMessage = err.error?.message || 'Hata oluştu.';
-          this.isSubmitting = false;
-        }
+        error: (err) => { this.errorMessage = err.error?.message || 'Hata oluştu.'; this.isSubmitting = false; }
       });
     }
   }
 
   deleteCustomer(id: string): void {
-    if (!confirm('Bu müşteriyi silmek istediğinizden emin misiniz?')) return;
-    this.customerService.delete(id).subscribe({
-      next: () => this.loadCustomers()
-    });
+    if (!confirm('?')) return;
+    this.customerService.delete(id).subscribe({ next: () => this.loadCustomers() });
   }
 
   getInitials(name: string): string {

@@ -1,38 +1,34 @@
 <div class="page">
 
-  <!-- Page Header -->
   <div class="page-header">
     <div>
-      <h2>Personel</h2>
-      <p>{{ staffList.length }} personel kayıtlı</p>
+      <h2>{{ 'page.staff' | translate }}</h2>
+      <p>{{ staffList.length }} {{ 'staff.registered' | translate }}</p>
     </div>
     <button class="btn btn-primary" (click)="openDrawer()">
-      + Personel Ekle
+      {{ 'staff.add' | translate }}
     </button>
   </div>
 
-  <!-- Table Card -->
   <div class="card">
     @if (isLoading) {
-      <div class="loading-state">
-        <div class="spinner"></div>
-      </div>
+      <div class="loading-state"><div class="spinner"></div></div>
     } @else if (staffList.length === 0) {
       <div class="empty-state">
         <span class="empty-icon">👤</span>
-        <h3>Henüz personel eklenmedi</h3>
-        <p>İlk personeli eklemek için butona tıklayın.</p>
-        <button class="btn btn-primary" (click)="openDrawer()">+ Personel Ekle</button>
+        <h3>{{ 'staff.empty' | translate }}</h3>
+        <p>{{ 'staff.emptyHint' | translate }}</p>
+        <button class="btn btn-primary" (click)="openDrawer()">{{ 'staff.add' | translate }}</button>
       </div>
     } @else {
       <table class="table">
         <thead>
           <tr>
-            <th>Personel</th>
-            <th>Telefon</th>
-            <th>Bio</th>
-            <th>Durum</th>
-            <th>İşlemler</th>
+            <th>{{ 'page.staff' | translate }}</th>
+            <th>{{ 'common.phone' | translate }}</th>
+            <th>{{ 'staff.colBio' | translate }}</th>
+            <th>{{ 'common.status' | translate }}</th>
+            <th>{{ 'common.actions' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -48,16 +44,16 @@
               <td class="text-muted bio-cell">{{ staff.bio || '—' }}</td>
               <td>
                 @if (staff.isActive) {
-                  <span class="badge badge-success">Aktif</span>
+                  <span class="badge badge-success">{{ 'common.active' | translate }}</span>
                 } @else {
-                  <span class="badge badge-danger">Pasif</span>
+                  <span class="badge badge-danger">{{ 'common.inactive' | translate }}</span>
                 }
               </td>
               <td>
                 <div class="actions">
-                  <button class="action-btn schedule" (click)="openWorkingHours(staff)" title="Çalışma Saatleri">⏰</button>
-                  <button class="action-btn edit" (click)="openDrawer(staff)" title="Düzenle">✏</button>
-                  <button class="action-btn delete" (click)="deleteStaff(staff.id)" title="Sil">🗑</button>
+                  <button class="action-btn schedule" (click)="openWorkingHours(staff)" [title]="'staff.workingHours' | translate">⏰</button>
+                  <button class="action-btn edit" (click)="openDrawer(staff)" [title]="'common.edit' | translate">✏</button>
+                  <button class="action-btn delete" (click)="deleteStaff(staff.id)" [title]="'common.edit' | translate">🗑</button>
                 </div>
               </td>
             </tr>
@@ -69,47 +65,42 @@
 
 </div>
 
-<!-- Drawer Overlay -->
 @if (isDrawerOpen) {
   <div class="drawer-overlay" (click)="closeDrawer()"></div>
 }
 
-<!-- Drawer -->
 <div class="drawer" [class.open]="isDrawerOpen">
   <div class="drawer-header">
-    <h3>{{ editingStaff ? 'Personel Düzenle' : 'Yeni Personel' }}</h3>
+    <h3>{{ (editingStaff ? 'staff.edit' : 'staff.new') | translate }}</h3>
     <button class="drawer-close" (click)="closeDrawer()">✕</button>
   </div>
 
   <form [formGroup]="staffForm" (ngSubmit)="onSubmit()" class="drawer-body">
 
     <div class="form-group">
-      <label>Ad Soyad *</label>
-      <input
-        type="text"
-        formControlName="fullName"
-        placeholder="Ahmet Yılmaz"
+      <label>{{ 'common.fullName' | translate }}</label>
+      <input type="text" formControlName="fullName" placeholder="Ahmet Yılmaz"
         [class.error]="staffForm.get('fullName')?.invalid && staffForm.get('fullName')?.touched"/>
       @if (staffForm.get('fullName')?.invalid && staffForm.get('fullName')?.touched) {
-        <span class="error-text">Ad soyad zorunludur.</span>
+        <span class="error-text">{{ 'common.fullNameRequired' | translate }}</span>
       }
     </div>
 
     <div class="form-group">
-      <label>Telefon</label>
+      <label>{{ 'common.phone' | translate }}</label>
       <input type="text" formControlName="phone" placeholder="0555 123 45 67"/>
     </div>
 
     <div class="form-group">
-      <label>Biyografi</label>
-      <textarea formControlName="bio" placeholder="Personel hakkında kısa bilgi..." rows="3"></textarea>
+      <label>{{ 'staff.bio' | translate }}</label>
+      <textarea formControlName="bio" placeholder="..." rows="3"></textarea>
     </div>
 
     @if (editingStaff) {
       <div class="form-group">
         <label class="toggle-label">
           <input type="checkbox" formControlName="isActive"/>
-          <span class="toggle-text">Aktif</span>
+          <span class="toggle-text">{{ 'common.active' | translate }}</span>
         </label>
       </div>
     }
@@ -119,23 +110,22 @@
     }
 
     <div class="drawer-footer">
-      <button type="button" class="btn btn-outline" (click)="closeDrawer()">İptal</button>
+      <button type="button" class="btn btn-outline" (click)="closeDrawer()">{{ 'common.cancel' | translate }}</button>
       <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
-        {{ isSubmitting ? 'Kaydediliyor...' : (editingStaff ? 'Güncelle' : 'Kaydet') }}
+        {{ isSubmitting ? ('common.saving' | translate) : ((editingStaff ? 'common.update' : 'common.save') | translate) }}
       </button>
     </div>
 
   </form>
 </div>
-<!-- Working Hours Overlay -->
+
 @if (isWorkingHoursOpen) {
   <div class="drawer-overlay" (click)="closeWorkingHours()"></div>
 }
 
-<!-- Working Hours Drawer -->
 <div class="drawer" [class.open]="isWorkingHoursOpen">
   <div class="drawer-header">
-    <h3>{{ selectedStaffForWH?.fullName }} — Çalışma Saatleri</h3>
+    <h3>{{ selectedStaffForWH?.fullName }} — {{ 'staff.workingHours' | translate }}</h3>
     <button class="drawer-close" (click)="closeWorkingHours()">✕</button>
   </div>
 
@@ -144,11 +134,11 @@
       <div formArrayName="hours">
         @for (day of days; track day.value; let i = $index) {
           <div class="wh-row" [formGroupName]="i">
-            <div class="wh-day">{{ day.label }}</div>
+            <div class="wh-day">{{ getDayName(day.value) }}</div>
 
             <label class="wh-toggle">
               <input type="checkbox" formControlName="isOff"/>
-              <span class="toggle-label">Kapalı</span>
+              <span class="toggle-label">{{ 'common.closed' | translate }}</span>
             </label>
 
             @if (!hoursArray.at(i).get('isOff')?.value) {
@@ -158,18 +148,17 @@
                 <input type="time" formControlName="endTime"/>
               </div>
             } @else {
-              <div class="wh-closed">Kapalı</div>
+              <div class="wh-closed">{{ 'common.closed' | translate }}</div>
             }
           </div>
         }
       </div>
 
       <div class="drawer-footer">
-        <button type="button" class="btn btn-outline" (click)="closeWorkingHours()">İptal</button>
+        <button type="button" class="btn btn-outline" (click)="closeWorkingHours()">{{ 'common.cancel' | translate }}</button>
         <button type="submit" class="btn btn-primary" [disabled]="isSavingWH">
-          {{ isSavingWH ? 'Kaydediliyor...' : 'Kaydet' }}
+          {{ isSavingWH ? ('common.saving' | translate) : ('common.save' | translate) }}
         </button>
       </div>
     </form>
   }
-</div>

@@ -3,14 +3,14 @@
   @if (isLoading) {
     <div class="loading-screen">
       <div class="spinner"></div>
-      <p>Yükleniyor...</p>
+      <p>{{ 'common.loading' | translate }}</p>
     </div>
   }
 
   @else if (errorMessage) {
     <div class="error-screen">
       <span class="error-icon">✂️</span>
-      <h2>Randevu Bulunamadı</h2>
+      <h2>{{ 'apptStatus.notFound' | translate }}</h2>
       <p>{{ errorMessage }}</p>
     </div>
   }
@@ -47,14 +47,14 @@
         <!-- Save link banner (only for Pending) -->
         @if (appointment.status === 'Pending') {
           <div class="save-link-banner">
-            <p class="save-link-title">📎 Bu linki kaydedin</p>
-            <p class="save-link-desc">Randevu onay durumunuzu buradan takip edebilirsiniz.</p>
+            <p class="save-link-title">{{ 'apptStatus.saveLink' | translate }}</p>
+            <p class="save-link-desc">{{ 'apptStatus.saveLinkDesc' | translate }}</p>
             <div class="link-box">
               <span class="link-text">{{ statusUrl }}</span>
             </div>
             <div class="link-actions">
               <button class="btn-copy" (click)="copyLink()">
-                {{ copied ? '✓ Kopyalandı' : '📋 Linki Kopyala' }}
+                {{ copied ? ('common.copied' | translate) : ('apptStatus.copyLink' | translate) }}
               </button>
               <button class="btn-whatsapp" (click)="shareOnWhatsApp()">
                 💬 WhatsApp
@@ -68,43 +68,41 @@
           <div class="detail-item">
             <span class="label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="currentColor"/></svg>
-              Hizmet
+              {{ 'booking.lbl.service' | translate }}
             </span>
             <span class="value">{{ appointment.serviceName }}</span>
           </div>
           <div class="detail-item">
             <span class="label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M4 21v-1a8 8 0 0116 0v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              Personel
+              {{ 'booking.lbl.staff' | translate }}
             </span>
             <span class="value">{{ appointment.staffName }}</span>
           </div>
           <div class="detail-item">
             <span class="label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 9h18M8 2v4M16 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              Tarih
+              {{ 'booking.lbl.date' | translate }}
             </span>
             <span class="value">{{ formatDate(appointment.startTime) }}</span>
           </div>
           <div class="detail-item">
             <span class="label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              Saat
+              {{ 'booking.lbl.time' | translate }}
             </span>
             <span class="value">{{ formatTime(appointment.startTime) }}</span>
           </div>
           <div class="detail-item price-row">
             <span class="label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 7v10M9.5 9.5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5c0 1.38-2.5 3-2.5 3s-2.5 1.62-2.5 3c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              Ücret
+              {{ 'booking.lbl.price' | translate }}
             </span>
             <span class="value">{{ formatPrice(appointment.price, appointment.currency) }}</span>
           </div>
         </div>
 
-        <p class="footer-note">
-          Randevunuzu değiştirmek veya iptal etmek için salonumuzu arayabilirsiniz.
-        </p>
+        <p class="footer-note">{{ 'booking.successNote' | translate }}</p>
       </div>
 
     </div>

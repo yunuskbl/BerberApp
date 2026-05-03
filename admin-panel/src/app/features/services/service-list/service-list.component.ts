@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ServiceService } from '../../../core/services/service.service';
 import { Service } from '../../../core/models/service.model';
+import { LanguageService } from '../../../core/services/language.service';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-service-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: './service-list.component.html',
   styleUrl: './service-list.component.scss'
 })
@@ -23,7 +25,8 @@ export class ServiceListComponent implements OnInit {
 
   constructor(
     private serviceService: ServiceService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    public langService: LanguageService,
   ) {
     this.serviceForm = this.fb.group({
       name:            ['', [Validators.required, Validators.maxLength(100)]],
@@ -53,22 +56,11 @@ export class ServiceListComponent implements OnInit {
   openDrawer(service?: Service): void {
     this.editingService = service || null;
     this.errorMessage   = '';
-
     if (service) {
-      this.serviceForm.patchValue({
-        ...service,
-        price: service.price > 0 ? service.price : null,
-      });
+      this.serviceForm.patchValue({ ...service, price: service.price > 0 ? service.price : null });
     } else {
-      this.serviceForm.reset({
-        durationMinutes: 30,
-        price:           null,
-        currency:        'TRY',
-        color:           '#7c3aed',
-        isActive:        true
-      });
+      this.serviceForm.reset({ durationMinutes: 30, price: null, currency: 'TRY', color: '#7c3aed', isActive: true });
     }
-
     this.isDrawerOpen = true;
   }
 
@@ -79,13 +71,9 @@ export class ServiceListComponent implements OnInit {
 
   onSubmit(): void {
     if (this.serviceForm.invalid) return;
-
     this.isSubmitting = true;
     this.errorMessage = '';
-    const value = {
-      ...this.serviceForm.value,
-      price: this.serviceForm.value.price ?? 0,
-    };
+    const value = { ...this.serviceForm.value, price: this.serviceForm.value.price ?? 0 };
 
     if (this.editingService) {
       this.serviceService.update(this.editingService.id, value).subscribe({
@@ -93,10 +81,7 @@ export class ServiceListComponent implements OnInit {
           if (res.success) { this.loadServices(); this.closeDrawer(); }
           this.isSubmitting = false;
         },
-        error: (err) => {
-          this.errorMessage = err.error?.message || 'Hata oluştu.';
-          this.isSubmitting = false;
-        }
+        error: (err) => { this.errorMessage = err.error?.message || 'Hata oluştu.'; this.isSubmitting = false; }
       });
     } else {
       this.serviceService.create(value).subscribe({
@@ -104,33 +89,30 @@ export class ServiceListComponent implements OnInit {
           if (res.success) { this.loadServices(); this.closeDrawer(); }
           this.isSubmitting = false;
         },
-        error: (err) => {
-          this.errorMessage = err.error?.message || 'Hata oluştu.';
-          this.isSubmitting = false;
-        }
+        error: (err) => { this.errorMessage = err.error?.message || 'Hata oluştu.'; this.isSubmitting = false; }
       });
     }
   }
 
   deleteService(id: string): void {
-    if (!confirm('Bu hizmeti silmek istediğinizden emin misiniz?')) return;
-    this.serviceService.delete(id).subscribe({
-      next: () => this.loadServices()
-    });
+    if (!confirm('?')) return;
+    this.serviceService.delete(id).subscribe({ next: () => this.loadServices() });
   }
 
   formatPrice(price: number, currency: string): string {
     if (!price || price <= 0) return '—';
-    return new Intl.NumberFormat('tr-TR', {
+    return new Intl.NumberFormat(this.langService.dateLocale, {
       style: 'currency',
       currency: currency || 'TRY'
     }).format(price);
   }
 
   formatDuration(minutes: number): string {
-    if (minutes < 60) return `${minutes} dk`;
+    const min = this.langService.t('common.min');
+    const hr  = this.langService.t('common.hr');
+    if (minutes < 60) return `${minutes} ${min}`;
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
-    return m > 0 ? `${h} sa ${m} dk` : `${h} sa`;
+    return m > 0 ? `${h} ${hr} ${m} ${min}` : `${h} ${hr}`;
   }
 }

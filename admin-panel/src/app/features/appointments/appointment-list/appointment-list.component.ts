@@ -23,6 +23,8 @@ import {
   SelectOption,
 } from '../../../shared/components/custom-select/custom-select.component';
 import { CustomCalendarComponent } from '../../../shared/components/custom-calendar/custom-calendar.component';
+import { LanguageService } from '../../../core/services/language.service';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-appointment-list',
@@ -32,6 +34,7 @@ import { CustomCalendarComponent } from '../../../shared/components/custom-calen
     ReactiveFormsModule,
     CustomSelectComponent,
     CustomCalendarComponent,
+    TranslatePipe,
   ],
   templateUrl: './appointment-list.component.html',
   styleUrl: './appointment-list.component.scss',
@@ -52,15 +55,11 @@ export class AppointmentListComponent implements OnInit {
   selectedDate = new Date().toISOString().split('T')[0];
   selectedStaffId = '';
 
-  // Takvim görünümü
   viewMode: 'list' | 'calendar' = 'list';
-  readonly hourHeight = 64; // px per hour
-  readonly calendarStart = 8; // 08:00
-  readonly calendarEnd = 21;  // 21:00
-  readonly calendarHours = Array.from(
-    { length: 21 - 8 },
-    (_, i) => i + 8
-  );
+  readonly hourHeight = 64;
+  readonly calendarStart = 8;
+  readonly calendarEnd = 21;
+  readonly calendarHours = Array.from({ length: 21 - 8 }, (_, i) => i + 8);
 
   AppointmentStatus = AppointmentStatus;
 
@@ -72,6 +71,7 @@ export class AppointmentListComponent implements OnInit {
     private customerService: CustomerService,
     private serviceService: ServiceService,
     private fb: FormBuilder,
+    public langService: LanguageService,
   ) {
     this.appointmentForm = this.fb.group({
       customerId: ['', Validators.required],
@@ -89,26 +89,19 @@ export class AppointmentListComponent implements OnInit {
 
   loadAll(): void {
     this.loadAppointments();
-    this.staffService.getAll().subscribe((r) => {
-      if (r.success) this.staffList = r.data;
-    });
-    this.customerService.getAll().subscribe((r) => {
-      if (r.success) this.customerList = r.data;
-    });
-    this.serviceService.getAll().subscribe((r) => {
-      if (r.success) this.serviceList = r.data;
-    });
+    this.staffService.getAll().subscribe(r => { if (r.success) this.staffList = r.data; });
+    this.customerService.getAll().subscribe(r => { if (r.success) this.customerList = r.data; });
+    this.serviceService.getAll().subscribe(r => { if (r.success) this.serviceList = r.data; });
   }
+
   isDatePickerOpen = false;
 
   get filterDateDisplay(): string {
-    if (!this.selectedDate) return 'Tarih Seç';
+    if (!this.selectedDate) return this.langService.t('appt.chooseDate');
     const d = new Date(this.selectedDate);
-    return d.toLocaleDateString('tr-TR', {
-      day: 'numeric',
-      month: 'long',
-    });
+    return d.toLocaleDateString(this.langService.dateLocale, { day: 'numeric', month: 'long' });
   }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
@@ -116,44 +109,40 @@ export class AppointmentListComponent implements OnInit {
       this.isDatePickerOpen = false;
     }
   }
+
   onFilterDateChange(value: string): void {
     this.selectedDate = value;
     this.isDatePickerOpen = false;
     this.loadAppointments();
   }
+
   get allStaffOptions(): SelectOption[] {
-    return [{ value: '', label: 'Tüm Personel' }, ...this.staffOptions];
+    return [{ value: '', label: this.langService.t('appt.allStaff') }, ...this.staffOptions];
   }
-  get minDate(): string {
-    return new Date().toISOString().split('T')[0];
-  }
+
+  get minDate(): string { return new Date().toISOString().split('T')[0]; }
 
   get maxDate(): string {
     const date = new Date();
     date.setDate(date.getDate() + 15);
     return date.toISOString().split('T')[0];
   }
+
   loadAppointments(): void {
-  this.isLoading = true;
-
-  let dateStr: string | undefined;
-  if (this.selectedDate) {
-    const [year, month, day] = this.selectedDate.split('-').map(Number);
-    const d = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
-    dateStr = d.toISOString(); // → 2026-04-22T00:00:00.000Z
+    this.isLoading = true;
+    let dateStr: string | undefined;
+    if (this.selectedDate) {
+      const [year, month, day] = this.selectedDate.split('-').map(Number);
+      dateStr = new Date(Date.UTC(year, month - 1, day, 0, 0, 0)).toISOString();
+    }
+    this.appointmentService.getAll(this.selectedStaffId || undefined, dateStr).subscribe({
+      next: (res) => {
+        if (res.success) this.appointments = res.data;
+        this.isLoading = false;
+      },
+      error: () => { this.isLoading = false; }
+    });
   }
-
-  this.appointmentService.getAll(
-    this.selectedStaffId || undefined,
-    dateStr
-  ).subscribe({
-    next: (res) => {
-      if (res.success) this.appointments = res.data;
-      this.isLoading = false;
-    },
-    error: () => { this.isLoading = false; }
-  });
-}
 
   onDateChange(event: Event): void {
     this.selectedDate = (event.target as HTMLInputElement).value;
@@ -168,9 +157,7 @@ export class AppointmentListComponent implements OnInit {
   openDrawer(): void {
     this.errorMessage = '';
     this.availableSlots = [];
-    this.appointmentForm.reset({
-      date: this.selectedDate,
-    });
+    this.appointmentForm.reset({ date: this.selectedDate });
     this.isDrawerOpen = true;
   }
 
@@ -182,112 +169,83 @@ export class AppointmentListComponent implements OnInit {
 
   onFormFieldChange(): void {
     const { staffId, serviceId, date } = this.appointmentForm.value;
-    if (staffId && serviceId && date) {
-      this.loadAvailableSlots(staffId, serviceId, date);
-    }
+    if (staffId && serviceId && date) this.loadAvailableSlots(staffId, serviceId, date);
   }
 
   loadAvailableSlots(staffId: string, serviceId: string, date: string): void {
     this.isLoadingSlots = true;
     this.availableSlots = [];
     this.appointmentForm.patchValue({ startTime: '' });
-
-    const dateStr = new Date(date).toISOString();
-
-    this.appointmentService
-      .getAvailableSlots(staffId, serviceId, dateStr)
-      .subscribe({
-        next: (res) => {
-          if (res.success) {
-            this.availableSlots = res.data.filter((s) => s.isAvailable);
-          }
-          this.isLoadingSlots = false;
-        },
-        error: () => {
-          this.isLoadingSlots = false;
-        },
-      });
+    this.appointmentService.getAvailableSlots(staffId, serviceId, new Date(date).toISOString()).subscribe({
+      next: (res) => {
+        if (res.success) this.availableSlots = res.data.filter((s: any) => s.isAvailable);
+        this.isLoadingSlots = false;
+      },
+      error: () => { this.isLoadingSlots = false; }
+    });
   }
 
   onSubmit(): void {
     if (this.appointmentForm.invalid) return;
-
     this.isSubmitting = true;
     this.errorMessage = '';
-
-    const { customerId, staffId, serviceId, date, startTime, notes } =
-      this.appointmentForm.value;
-    const startDateTime = `${date}T${startTime}`;
-
-    this.appointmentService
-      .create({
-        customerId,
-        staffId,
-        serviceId,
-        startTime: startDateTime,
-        notes,
-      })
-      .subscribe({
-        next: (res) => {
-          if (res.success) {
-            this.loadAppointments();
-            this.closeDrawer();
-          }
-          this.isSubmitting = false;
-        },
-        error: (err) => {
-          this.errorMessage = err.error?.message || 'Hata oluştu.';
-          this.isSubmitting = false;
-        },
-      });
-  }
-
-  cancelAppointment(id: string): void {
-    if (!confirm('Randevuyu iptal etmek istediğinizden emin misiniz?')) return;
-    this.appointmentService.cancel(id).subscribe({
-      next: () => this.loadAppointments(),
+    const { customerId, staffId, serviceId, date, startTime, notes } = this.appointmentForm.value;
+    this.appointmentService.create({ customerId, staffId, serviceId, startTime: `${date}T${startTime}`, notes }).subscribe({
+      next: (res) => {
+        if (res.success) { this.loadAppointments(); this.closeDrawer(); }
+        this.isSubmitting = false;
+      },
+      error: (err) => { this.errorMessage = err.error?.message || 'Hata oluştu.'; this.isSubmitting = false; }
     });
   }
 
+  cancelAppointment(id: string): void {
+    if (!confirm('?')) return;
+    this.appointmentService.cancel(id).subscribe({ next: () => this.loadAppointments() });
+  }
+
   completeAppointment(id: string): void {
-    this.appointmentService.complete(id).subscribe({
+    this.appointmentService.complete(id).subscribe({ next: () => this.loadAppointments() });
+  }
+
+  confirmAppointment(id: string): void {
+    this.appointmentService.confirm(id).subscribe({
       next: () => this.loadAppointments(),
+      error: (err) => console.error('Confirm error:', err)
     });
   }
 
   getStatusLabel(status: AppointmentStatus): string {
     const map: Record<AppointmentStatus, string> = {
-      [AppointmentStatus.Pending]: 'Bekliyor',
-      [AppointmentStatus.Confirmed]: 'Onaylandı',
-      [AppointmentStatus.Completed]: 'Tamamlandı',
-      [AppointmentStatus.Cancelled]: 'İptal',
-      [AppointmentStatus.NoShow]: 'Gelmedi',
+      [AppointmentStatus.Pending]:   this.langService.t('status.pending'),
+      [AppointmentStatus.Confirmed]: this.langService.t('status.confirmed'),
+      [AppointmentStatus.Completed]: this.langService.t('status.completed'),
+      [AppointmentStatus.Cancelled]: this.langService.t('status.cancelled'),
+      [AppointmentStatus.NoShow]:    this.langService.t('status.noShow'),
     };
     return map[status] ?? '—';
   }
 
   getStatusClass(status: AppointmentStatus): string {
     const map: Record<AppointmentStatus, string> = {
-      [AppointmentStatus.Pending]: 'badge-warning',
+      [AppointmentStatus.Pending]:   'badge-warning',
       [AppointmentStatus.Confirmed]: 'badge-info',
       [AppointmentStatus.Completed]: 'badge-success',
       [AppointmentStatus.Cancelled]: 'badge-danger',
-      [AppointmentStatus.NoShow]: 'badge-gray',
+      [AppointmentStatus.NoShow]:    'badge-gray',
     };
     return map[status] ?? 'badge-gray';
   }
 
   formatTime(dateStr: string): string {
-    return new Date(dateStr).toLocaleTimeString('tr-TR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Europe/Istanbul'
+    return new Date(dateStr).toLocaleTimeString(this.langService.dateLocale, {
+      hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul'
     });
   }
+
   formatSlotTime(dateStr: string): string {
-    return new Date(dateStr).toLocaleTimeString('tr-TR', {
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateStr).toLocaleTimeString(this.langService.dateLocale, {
+      hour: '2-digit', minute: '2-digit',
     });
   }
 
@@ -295,14 +253,9 @@ export class AppointmentListComponent implements OnInit {
     return new Date(dateStr).toTimeString().slice(0, 5);
   }
 
-  // Takvim: UTC zamanını Türkiye saatine çevir
   private getTurkeyHM(dateStr: string): { h: number; m: number } {
-    const d = new Date(dateStr);
-    const timeStr = d.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-      timeZone: 'Europe/Istanbul',
+    const timeStr = new Date(dateStr).toLocaleTimeString('en-US', {
+      hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Istanbul',
     });
     const [h, m] = timeStr.split(':').map(Number);
     return { h, m };
@@ -311,14 +264,9 @@ export class AppointmentListComponent implements OnInit {
   getAptBlockStyle(apt: Appointment): { [key: string]: string } {
     const { h, m } = this.getTurkeyHM(apt.startTime);
     const minutesFromStart = (h - this.calendarStart) * 60 + m;
-    const topPx = (minutesFromStart / 60) * this.hourHeight;
-    const heightPx = Math.max(
-      (apt.durationMinutes / 60) * this.hourHeight,
-      28
-    );
     return {
-      top: `${topPx}px`,
-      height: `${heightPx}px`,
+      top: `${(minutesFromStart / 60) * this.hourHeight}px`,
+      height: `${Math.max((apt.durationMinutes / 60) * this.hourHeight, 28)}px`,
     };
   }
 
@@ -327,40 +275,24 @@ export class AppointmentListComponent implements OnInit {
   }
 
   getInitials(name: string): string {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   }
+
   get staffOptions(): SelectOption[] {
-    return this.staffList.map((s) => ({ value: s.id, label: s.fullName }));
+    return this.staffList.map(s => ({ value: s.id, label: s.fullName }));
   }
 
   get customerOptions(): SelectOption[] {
-    return this.customerList.map((c) => ({
-      value: c.id,
-      label: `${c.fullName} — ${c.phone}`,
-    }));
+    return this.customerList.map(c => ({ value: c.id, label: `${c.fullName} — ${c.phone}` }));
   }
 
   get serviceOptions(): SelectOption[] {
-    return this.serviceList.map((s) => ({
-      value: s.id,
-      label: `${s.name} — ${s.durationMinutes} dk`,
-    }));
+    const min = this.langService.t('common.min');
+    return this.serviceList.map(s => ({ value: s.id, label: `${s.name} — ${s.durationMinutes} ${min}` }));
   }
-  confirmAppointment(id: string): void {
-  this.appointmentService.confirm(id).subscribe({
-    next: () => this.loadAppointments(),
-    error: () => { /* handled by GlobalErrorHandler */ }
-  });
-}
+
   onSelectChange(field: string, value: string): void {
     this.appointmentForm.patchValue({ [field]: value });
-    if (field === 'staffId' || field === 'serviceId') {
-      this.onFormFieldChange();
-    }
+    if (field === 'staffId' || field === 'serviceId') this.onFormFieldChange();
   }
 }

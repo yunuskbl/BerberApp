@@ -2,11 +2,13 @@ import { Component, ElementRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { BookingApiService } from '../../../core/services/booking.service';
+import { LanguageService } from '../../../core/services/language.service';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-appointment-status',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './appointment-status.component.html',
   styleUrl: './appointment-status.component.scss',
 })
@@ -22,6 +24,7 @@ export class AppointmentStatusComponent implements OnInit {
     private route: ActivatedRoute,
     private bookingService: BookingApiService,
     private el: ElementRef,
+    public langService: LanguageService,
   ) {}
 
   ngOnInit(): void {
@@ -77,7 +80,7 @@ export class AppointmentStatusComponent implements OnInit {
         this.isLoading = false;
       },
       error: () => {
-        this.errorMessage = 'Randevu bulunamadı.';
+        this.errorMessage = this.langService.t('apptStatus.notFoundMsg');
         this.isLoading = false;
       },
     });
@@ -95,7 +98,7 @@ export class AppointmentStatusComponent implements OnInit {
   }
 
   shareOnWhatsApp(): void {
-    const text = `Randevu takip linkim: ${this.statusUrl}`;
+    const text = `${this.langService.t('apptStatus.whatsappShare')}${this.statusUrl}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   }
 
@@ -111,20 +114,20 @@ export class AppointmentStatusComponent implements OnInit {
 
   getStatusText(): string {
     switch (this.appointment?.status) {
-      case 'Pending':   return 'Onay Bekleniyor';
-      case 'Confirmed': return 'Randevunuz Onaylandı';
-      case 'Cancelled': return 'Randevu İptal Edildi';
-      case 'Completed': return 'Randevu Tamamlandı';
-      default:          return 'Bilinmiyor';
+      case 'Pending':   return this.langService.t('apptStatus.pending.text');
+      case 'Confirmed': return this.langService.t('apptStatus.confirmed.text');
+      case 'Cancelled': return this.langService.t('apptStatus.cancelled.text');
+      case 'Completed': return this.langService.t('apptStatus.completed.text');
+      default:          return this.langService.t('apptStatus.unknown');
     }
   }
 
   getStatusSubtext(): string {
     switch (this.appointment?.status) {
-      case 'Pending':   return 'Salon onayı bekleniyor, kısa süre içinde bilgilendirileceksiniz.';
-      case 'Confirmed': return 'Randevunuz salon tarafından onaylandı. Görüşmek üzere!';
-      case 'Cancelled': return 'Randevunuz iptal edildi. Yeni randevu almak için salonu arayabilirsiniz.';
-      case 'Completed': return 'Randevunuzu tamamladınız. Bizi tercih ettiğiniz için teşekkürler!';
+      case 'Pending':   return this.langService.t('apptStatus.pending.sub');
+      case 'Confirmed': return this.langService.t('apptStatus.confirmed.sub');
+      case 'Cancelled': return this.langService.t('apptStatus.cancelled.sub');
+      case 'Completed': return this.langService.t('apptStatus.completed.sub');
       default:          return '';
     }
   }
@@ -140,19 +143,19 @@ export class AppointmentStatusComponent implements OnInit {
   }
 
   formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('tr-TR', {
+    return new Date(dateStr).toLocaleDateString(this.langService.dateLocale, {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     });
   }
 
   formatTime(dateStr: string): string {
-    return new Date(dateStr).toLocaleTimeString('tr-TR', {
+    return new Date(dateStr).toLocaleTimeString(this.langService.dateLocale, {
       hour: '2-digit', minute: '2-digit',
     });
   }
 
   formatPrice(price: number, currency: string): string {
-    return new Intl.NumberFormat('tr-TR', {
+    return new Intl.NumberFormat(this.langService.dateLocale, {
       style: 'currency', currency: currency || 'TRY',
     }).format(price);
   }

@@ -62,6 +62,7 @@ public class ServiceEarningDto
 {
     public string? ServiceId { get; set; }
     public string? ServiceName { get; set; }
+    public string Currency { get; set; } = "TRY";
     public decimal TotalEarnings { get; set; }
     public int AppointmentCount { get; set; }
     public decimal Price { get; set; }

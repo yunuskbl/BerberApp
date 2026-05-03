@@ -122,8 +122,8 @@
               @for (service of earnings.byService; track service.serviceId) {
                 <tr>
                   <td class="service-name">{{ service.serviceName }}</td>
-                  <td>{{ formatCurrency(service.price) }}</td>
-                  <td>{{ formatCurrency(service.totalEarnings) }}</td>
+                  <td>{{ formatCurrency(service.price, service.currency) }}</td>
+                  <td>{{ formatCurrency(service.totalEarnings, service.currency) }}</td>
                   <td>{{ service.appointmentCount }}</td>
                 </tr>
               }

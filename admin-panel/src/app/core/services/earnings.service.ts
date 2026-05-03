@@ -46,6 +46,7 @@ export interface StaffEarningDto {
 export interface ServiceEarningDto {
   serviceId:          string;
   serviceName:        string;
+  currency:           string;
   totalEarnings:      number;
   appointmentCount:   number;
   price:              number;

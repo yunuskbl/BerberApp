@@ -2,10 +2,10 @@
 
   <div class="page-header">
     <div>
-      <h2>Hizmetler</h2>
-      <p>{{ serviceList.length }} hizmet tanımlı</p>
+      <h2>{{ 'page.services' | translate }}</h2>
+      <p>{{ serviceList.length }} {{ 'services.registered' | translate }}</p>
     </div>
-    <button class="btn btn-primary" (click)="openDrawer()">+ Hizmet Ekle</button>
+    <button class="btn btn-primary" (click)="openDrawer()">{{ 'services.add' | translate }}</button>
   </div>
 
   @if (isLoading) {
@@ -14,9 +14,9 @@
     <div class="card">
       <div class="empty-state">
         <span class="empty-icon">✂</span>
-        <h3>Henüz hizmet eklenmedi</h3>
-        <p>İlk hizmeti eklemek için butona tıklayın.</p>
-        <button class="btn btn-primary" (click)="openDrawer()">+ Hizmet Ekle</button>
+        <h3>{{ 'services.empty' | translate }}</h3>
+        <p>{{ 'services.emptyHint' | translate }}</p>
+        <button class="btn btn-primary" (click)="openDrawer()">{{ 'services.add' | translate }}</button>
       </div>
     </div>
   } @else {
@@ -30,9 +30,9 @@
                 <span [style.color]="service.color || '#7c3aed'">✂</span>
               </div>
               @if (service.isActive) {
-                <span class="badge badge-success">Aktif</span>
+                <span class="badge badge-success">{{ 'common.active' | translate }}</span>
               } @else {
-                <span class="badge badge-danger">Pasif</span>
+                <span class="badge badge-danger">{{ 'common.inactive' | translate }}</span>
               }
             </div>
             <h4 class="service-name">{{ service.name }}</h4>
@@ -47,7 +47,7 @@
               </div>
             </div>
             <div class="service-actions">
-              <button class="action-btn edit" (click)="openDrawer(service)">✏ Düzenle</button>
+              <button class="action-btn edit" (click)="openDrawer(service)">✏ {{ 'common.edit' | translate }}</button>
               <button class="action-btn delete" (click)="deleteService(service.id)">🗑</button>
             </div>
           </div>
@@ -64,35 +64,35 @@
 
 <div class="drawer" [class.open]="isDrawerOpen">
   <div class="drawer-header">
-    <h3>{{ editingService ? 'Hizmet Düzenle' : 'Yeni Hizmet' }}</h3>
+    <h3>{{ (editingService ? 'services.edit' : 'services.new') | translate }}</h3>
     <button class="drawer-close" (click)="closeDrawer()">✕</button>
   </div>
 
   <form [formGroup]="serviceForm" (ngSubmit)="onSubmit()" class="drawer-body">
 
     <div class="form-group">
-      <label>Hizmet Adı *</label>
+      <label>{{ 'services.nameLbl' | translate }}</label>
       <input type="text" formControlName="name" placeholder="Saç Kesimi"
         [class.error]="serviceForm.get('name')?.invalid && serviceForm.get('name')?.touched"/>
       @if (serviceForm.get('name')?.invalid && serviceForm.get('name')?.touched) {
-        <span class="error-text">Hizmet adı zorunludur.</span>
+        <span class="error-text">{{ 'services.nameRequired' | translate }}</span>
       }
     </div>
 
     <div class="form-row">
       <div class="form-group">
-        <label>Süre (Dakika) *</label>
+        <label>{{ 'services.duration' | translate }}</label>
         <input type="number" formControlName="durationMinutes" placeholder="30" min="1" max="480"/>
       </div>
       <div class="form-group">
-        <label>Fiyat <span class="optional">(opsiyonel)</span></label>
-        <input type="number" formControlName="price" placeholder="Belirtilmemiş" min="0"/>
+        <label>{{ 'services.price' | translate }} <span class="optional">{{ 'services.priceOpt' | translate }}</span></label>
+        <input type="number" formControlName="price" placeholder="—" min="0"/>
       </div>
     </div>
 
     <div class="form-row">
       <div class="form-group">
-        <label>Para Birimi</label>
+        <label>{{ 'services.currency' | translate }}</label>
         <select formControlName="currency">
           <option value="TRY">TRY — Türk Lirası</option>
           <option value="USD">USD — Dolar</option>
@@ -100,7 +100,7 @@
         </select>
       </div>
       <div class="form-group">
-        <label>Renk</label>
+        <label>{{ 'services.color' | translate }}</label>
         <div class="color-input">
           <input type="color" formControlName="color"/>
           <span>{{ serviceForm.get('color')?.value }}</span>
@@ -112,7 +112,7 @@
       <div class="form-group">
         <label class="toggle-label">
           <input type="checkbox" formControlName="isActive"/>
-          <span class="toggle-text">Aktif</span>
+          <span class="toggle-text">{{ 'common.active' | translate }}</span>
         </label>
       </div>
     }
@@ -122,9 +122,9 @@
     }
 
     <div class="drawer-footer">
-      <button type="button" class="btn btn-outline" (click)="closeDrawer()">İptal</button>
+      <button type="button" class="btn btn-outline" (click)="closeDrawer()">{{ 'common.cancel' | translate }}</button>
       <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
-        {{ isSubmitting ? 'Kaydediliyor...' : (editingService ? 'Güncelle' : 'Kaydet') }}
+        {{ isSubmitting ? ('common.saving' | translate) : ((editingService ? 'common.update' : 'common.save') | translate) }}
       </button>
     </div>
 
