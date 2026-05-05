@@ -45,7 +45,7 @@ app-language-switcher {
 .success-screen {
   display: flex; align-items: center; justify-content: center;
   min-height: 100vh; padding: 24px;
-  background: #f5f4f2; font-family: 'Inter', sans-serif;
+  background: transparent; font-family: 'Inter', sans-serif;
 }
 .success-card {
   background: white; border-radius: 20px; border: 1px solid #ebebeb;
@@ -188,7 +188,7 @@ app-language-switcher {
   .v { font-size: 24px; font-weight: 700; color: #111; letter-spacing: -0.5px; }
 }
 
-.booking-right { flex: 1; background: #f5f4f2; overflow-y: auto; }
+.booking-right { flex: 1; background: transparent; overflow-y: auto; }
 .booking-right-inner { max-width: 540px; margin: 0 auto; padding: 36px 36px 80px; }
 
 .step-block  { margin-bottom: 32px; }
