@@ -1,23 +1,21 @@
-﻿using BerberApp.Application.Common.Interfaces;
+using BerberApp.Application.Common.Interfaces;
 using Microsoft.Extensions.Configuration;
-using System.Text;
-using System.Text.Json;
+using Twilio;
+using Twilio.Rest.Api.V2010.Account;
 
 namespace BerberApp.Infrastructure.Services;
 
 public class SmsService : ISmsService
 {
-    private readonly string _apiKey;
-    private readonly string _hash;
-    private readonly string _sender;
-    private readonly HttpClient _httpClient;
+    private readonly string _fromNumber;
 
-    public SmsService(IConfiguration config, HttpClient httpClient)
+    public SmsService(IConfiguration config)
     {
-        _apiKey = config["IletiMerkezi:ApiKey"]!;
-        _hash = config["IletiMerkezi:Hash"]!;
-        _sender = config["IletiMerkezi:Sender"]!;
-        _httpClient = httpClient;
+        var accountSid = config["Twilio:AccountSid"]!;
+        var authToken  = config["Twilio:AuthToken"]!;
+        _fromNumber    = config["Twilio:SmsFromNumber"]!;
+
+        TwilioClient.Init(accountSid, authToken);
     }
 
     public async Task SendOtpAsync(string phone, string otp)
@@ -26,78 +24,58 @@ public class SmsService : ISmsService
         await SendSmsAsync(phone, message);
     }
 
-    public async Task SendAppointmentConfirmedAsync(string phone, string customerName, string serviceName, string staffName, DateTime startTime, string salonName = "")
+    public async Task SendAppointmentConfirmedAsync(
+        string phone, string customerName, string serviceName,
+        string staffName, DateTime startTime, string salonName = "")
     {
         var turkeyTime = ToTurkeyTime(startTime);
-        var culture = new System.Globalization.CultureInfo("tr-TR");
-        var salonPart = string.IsNullOrWhiteSpace(salonName) ? "" : $" Salon: {salonName}.";
-        var message = $"BerberApp: Randevunuz onaylandi! Tarih: {turkeyTime.ToString("dd MMMM yyyy", culture)} {turkeyTime:HH:mm}, Hizmet: {serviceName}, Personel: {staffName}.{salonPart}";
+        var culture    = new System.Globalization.CultureInfo("tr-TR");
+        var salonPart  = string.IsNullOrWhiteSpace(salonName) ? "" : $" Salon: {salonName}.";
+        var message    = $"BerberApp: Randevunuz onaylandi! " +
+                         $"Tarih: {turkeyTime.ToString("dd MMMM yyyy", culture)} {turkeyTime:HH:mm}, " +
+                         $"Hizmet: {serviceName}, Personel: {staffName}.{salonPart}";
         await SendSmsAsync(phone, message);
     }
 
-    public async Task SendAppointmentReminderAsync(string phone, string customerName, string serviceName, DateTime startTime)
+    public async Task SendAppointmentReminderAsync(
+        string phone, string customerName, string serviceName, DateTime startTime)
     {
         var turkeyTime = ToTurkeyTime(startTime);
-        var culture = new System.Globalization.CultureInfo("tr-TR");
-        var message = $"BerberApp: Yarin randevunuz var! {turkeyTime.ToString("dd MMMM yyyy", culture)} {turkeyTime:HH:mm} - {serviceName}";
+        var culture    = new System.Globalization.CultureInfo("tr-TR");
+        var message    = $"BerberApp: Yarin randevunuz var! " +
+                         $"{turkeyTime.ToString("dd MMMM yyyy", culture)} {turkeyTime:HH:mm} - {serviceName}";
         await SendSmsAsync(phone, message);
     }
 
-    public async Task SendAppointmentCancelledAsync(string phone, string customerName, DateTime startTime, string salonName = "")
+    public async Task SendAppointmentCancelledAsync(
+        string phone, string customerName, DateTime startTime, string salonName = "")
     {
         var turkeyTime = ToTurkeyTime(startTime);
-        var culture = new System.Globalization.CultureInfo("tr-TR");
-        var salonPart = string.IsNullOrWhiteSpace(salonName) ? "" : $" ({salonName})";
-        var message = $"BerberApp{salonPart}: {turkeyTime.ToString("dd MMMM yyyy", culture)} {turkeyTime:HH:mm} tarihli randevunuz iptal edildi.";
+        var culture    = new System.Globalization.CultureInfo("tr-TR");
+        var salonPart  = string.IsNullOrWhiteSpace(salonName) ? "" : $" ({salonName})";
+        var message    = $"BerberApp{salonPart}: " +
+                         $"{turkeyTime.ToString("dd MMMM yyyy", culture)} {turkeyTime:HH:mm} " +
+                         $"tarihli randevunuz iptal edildi.";
         await SendSmsAsync(phone, message);
     }
 
     private async Task SendSmsAsync(string phone, string message)
     {
-        phone = FormatPhone(phone);
-
-        var payload = new
-        {
-            request = new
-            {
-                authentication = new
-                {
-                    key = _apiKey,
-                    hash = _hash
-                },
-                order = new
-                {
-                    sender = _sender,
-                    iys = "1",
-                    iysList = "BIREYSEL",
-                    message = new
-                    {
-                        text = message,
-                        receipents = new
-                        {
-                            number = new[] { phone }
-                        }
-                    }
-                }
-            }
-        };
-
-        var json = JsonSerializer.Serialize(payload);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-        var response = await _httpClient.PostAsync("https://api.iletimerkezi.com/v1/send-sms/json", content);
-        response.EnsureSuccessStatusCode();
+        await MessageResource.CreateAsync(
+            body: message,
+            from: new Twilio.Types.PhoneNumber(_fromNumber),
+            to:   new Twilio.Types.PhoneNumber(FormatPhone(phone))
+        );
     }
 
     private static string FormatPhone(string phone)
     {
+        // Twilio E.164 formatı: +905551234567
         phone = phone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
         if (phone.StartsWith("0"))
-            phone = "90" + phone[1..];
-        else if (phone.StartsWith("+"))
-            phone = phone[1..];
-        else if (!phone.StartsWith("90"))
-            phone = "90" + phone;
+            phone = "+90" + phone[1..];
+        else if (!phone.StartsWith("+"))
+            phone = "+90" + phone;
         return phone;
     }
 
@@ -105,15 +83,7 @@ public class SmsService : ISmsService
     {
         if (utcTime.Kind != DateTimeKind.Utc)
             utcTime = DateTime.SpecifyKind(utcTime, DateTimeKind.Utc);
-        try
-        {
-            var tz = TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time");
-            return TimeZoneInfo.ConvertTimeFromUtc(utcTime, tz);
-        }
-        catch
-        {
-            var tz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul");
-            return TimeZoneInfo.ConvertTimeFromUtc(utcTime, tz);
-        }
+        try   { return TimeZoneInfo.ConvertTimeFromUtc(utcTime, TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time")); }
+        catch { return TimeZoneInfo.ConvertTimeFromUtc(utcTime, TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul")); }
     }
 }
