@@ -74,8 +74,13 @@ public class RateLimitingMiddleware
 
     private static string GetClientIp(HttpContext context)
     {
-        return context.Request.Headers["X-Forwarded-For"].FirstOrDefault()
-            ?? context.Connection.RemoteIpAddress?.ToString()
-            ?? "unknown";
+        // X-Real-IP: nginx tarafından $remote_addr ile set edilir, client tarafından manipüle edilemez.
+        // X-Forwarded-For kullanılmıyor — client header injection saldırısına açık olduğu için.
+        var realIp = context.Request.Headers["X-Real-IP"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(realIp))
+            return realIp;
+
+        // Geliştirme ortamı veya doğrudan bağlantı
+        return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
     }
 }

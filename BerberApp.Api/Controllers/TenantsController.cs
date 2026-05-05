@@ -36,10 +36,10 @@ public class TenantsController : BaseApiController
         return Success(await Mediator.Send(command));
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    [HttpDelete]
+    public async Task<IActionResult> Delete()
     {
-        await Mediator.Send(new DeleteTenantCommand { Id = id });
+        await Mediator.Send(new DeleteTenantCommand { Id = TenantId });
         return NoContent();
     }
 
