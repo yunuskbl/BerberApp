@@ -3,6 +3,16 @@
   --accent: #111111;
 }
 
+/* Tüm içerik katmanları SVG arka planının üstünde kalır */
+.loading-screen,
+.error-screen,
+.success-screen,
+.booking-page,
+.booking-lang-bar {
+  position: relative;
+  z-index: 1;
+}
+
 .booking-lang-bar {
   position: fixed;
   top: 16px;

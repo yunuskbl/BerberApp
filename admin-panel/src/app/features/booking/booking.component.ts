@@ -20,6 +20,7 @@ import { Title } from '@angular/platform-browser';
 import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
 import { LanguageService } from '../../core/services/language.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { DecorativeBgComponent } from '../../shared/components/decorative-bg/decorative-bg.component';
 
 @Component({
   selector: 'app-booking',
@@ -31,6 +32,7 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
     FormsModule,
     LanguageSwitcherComponent,
     TranslatePipe,
+    DecorativeBgComponent,
   ],
   templateUrl: './booking.component.html',
   styleUrl: './booking.component.scss',

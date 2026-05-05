@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { environment } from '../../../environments/environment';
 import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { DecorativeBgComponent } from '../../shared/components/decorative-bg/decorative-bg.component';
 
 interface Salon {
   id:         string;
@@ -20,7 +21,7 @@ interface Salon {
 @Component({
   selector: 'app-salons',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, LanguageSwitcherComponent, TranslatePipe],
+  imports: [CommonModule, RouterModule, FormsModule, LanguageSwitcherComponent, TranslatePipe, DecorativeBgComponent],
   templateUrl: './salons.component.html',
   styleUrl: './salons.component.scss'
 })
