@@ -95,16 +95,28 @@ export class BookingApiService {
       request,
     );
   }
-  getAppointmentStatus(subdomain: string, appointmentId: string): Observable<any> {
-  return this.http.get(
-    `${this.apiUrl}/booking/${subdomain}/appointments/${appointmentId}`
-  );
-}
-  // sendOtp(phone: string): Observable<any> {
-  //   return this.http.post(`${this.apiUrl}/otp/send`, { phone });
-  // }
+  getAppointmentStatus(subdomain: string, appointmentId: string, phone: string): Observable<any> {
+    const params = new HttpParams().set('phone', phone);
+    return this.http.get(
+      `${this.apiUrl}/booking/${subdomain}/appointments/${appointmentId}`,
+      { params }
+    );
+  }
 
-  // verifyOtp(phone: string, code: string): Observable<any> {
-  //   return this.http.post(`${this.apiUrl}/otp/verify`, { phone, code });
-  // }
+  cancelAppointment(subdomain: string, appointmentId: string, phone: string): Observable<any> {
+    const params = new HttpParams().set('phone', phone);
+    return this.http.post(
+      `${this.apiUrl}/booking/${subdomain}/appointments/${appointmentId}/cancel`,
+      {},
+      { params }
+    );
+  }
+
+  sendOtp(phone: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/otp/send`, { phone });
+  }
+
+  verifyOtp(phone: string, code: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/otp/verify`, { phone, code });
+  }
 }
