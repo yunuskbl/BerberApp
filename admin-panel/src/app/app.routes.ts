@@ -56,7 +56,7 @@ export const routes: Routes = [
           import('./features/pricing/pricing.component').then(
             (m) => m.PricingComponent,
           ),
-      },
+  },
 
   // SuperAdmin routes — separate layout
   {
@@ -160,6 +160,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'login',
+    redirectTo: 'salons',
   },
 ];
