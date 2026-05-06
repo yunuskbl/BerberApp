@@ -282,18 +282,6 @@
               <div class="form-group">
                 <div class="phone-row">
                   <input class="form-input" type="tel" formControlName="phone" placeholder="05XX XXX XX XX" maxlength="11" />
-                  @if (!otpVerified) {
-                    <button
-                      type="button"
-                      class="btn-otp-inline"
-                      [disabled]="isSendingOtp || !customerForm.get('phone')?.valid || otpSent"
-                      (click)="sendOtp()">
-                      @if (isSendingOtp) { <span class="btn-spinner"></span> }
-                      {{ isSendingOtp ? '' : (otpSent ? '✓ Gönderildi' : 'Kod Gönder') }}
-                    </button>
-                  } @else {
-                    <span class="phone-verified-icon">✓</span>
-                  }
                 </div>
                 @if (customerForm.get('phone')?.errors?.['required'] && customerForm.get('phone')?.touched) {
                   <span class="field-error">{{ 'booking.phoneRequired' | translate }}</span>
@@ -309,8 +297,8 @@
                 <textarea class="form-textarea" formControlName="notes" [placeholder]="'booking.notePh' | translate" rows="3" maxlength="200"></textarea>
               </div>
 
-              <!-- Telefon Doğrulama (OTP) — kod girişi -->
-              @if (!otpVerified && otpSent) {
+              <!-- Telefon Doğrulama (OTP) — geçici devre dışı, WhatsApp Business onayı bekliyor -->
+              @if (false && !otpVerified && otpSent) {
                 <div class="otp-section">
                   <div class="otp-input-row">
                     <input

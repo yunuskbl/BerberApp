@@ -81,7 +81,7 @@ export class BookingComponent implements OnInit {
   }
 
   otpSent = false;
-  otpVerified = false;
+  otpVerified = true; // OTP geçici olarak devre dışı (WhatsApp Business onayı bekliyor)
   otpCode = '';
   isSendingOtp = false;
   isVerifyingOtp = false;
