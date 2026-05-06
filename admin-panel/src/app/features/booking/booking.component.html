@@ -280,7 +280,21 @@
                 }
               </div>
               <div class="form-group">
-                <input class="form-input" type="tel" formControlName="phone" placeholder="05XX XXX XX XX" maxlength="11" />
+                <div class="phone-row">
+                  <input class="form-input" type="tel" formControlName="phone" placeholder="05XX XXX XX XX" maxlength="11" />
+                  @if (!otpVerified) {
+                    <button
+                      type="button"
+                      class="btn-otp-inline"
+                      [disabled]="isSendingOtp || !customerForm.get('phone')?.valid || otpSent"
+                      (click)="sendOtp()">
+                      @if (isSendingOtp) { <span class="btn-spinner"></span> }
+                      {{ isSendingOtp ? '' : (otpSent ? '✓ Gönderildi' : 'Kod Gönder') }}
+                    </button>
+                  } @else {
+                    <span class="phone-verified-icon">✓</span>
+                  }
+                </div>
                 @if (customerForm.get('phone')?.errors?.['required'] && customerForm.get('phone')?.touched) {
                   <span class="field-error">{{ 'booking.phoneRequired' | translate }}</span>
                 }
@@ -295,36 +309,27 @@
                 <textarea class="form-textarea" formControlName="notes" [placeholder]="'booking.notePh' | translate" rows="3" maxlength="200"></textarea>
               </div>
 
-              <!-- Telefon Doğrulama (OTP) -->
-              @if (!otpVerified) {
+              <!-- Telefon Doğrulama (OTP) — kod girişi -->
+              @if (!otpVerified && otpSent) {
                 <div class="otp-section">
-                  <p class="otp-label">Randevu oluşturmak için telefon numaranızı doğrulayın.</p>
-                  @if (!otpSent) {
+                  <div class="otp-input-row">
+                    <input
+                      class="form-input otp-input"
+                      type="text"
+                      [(ngModel)]="otpCode"
+                      [ngModelOptions]="{standalone: true}"
+                      placeholder="6 haneli kod"
+                      maxlength="6"
+                      inputmode="numeric" />
                     <button
                       type="button"
-                      class="btn-otp-send"
-                      [disabled]="isSendingOtp || !customerForm.get('phone')?.valid"
-                      (click)="sendOtp()">
-                      {{ isSendingOtp ? 'Gönderiliyor...' : 'Doğrulama Kodu Gönder' }}
+                      class="btn-otp-verify"
+                      [disabled]="isVerifyingOtp || otpCode.length < 6"
+                      (click)="verifyOtp()">
+                      {{ isVerifyingOtp ? 'Doğrulanıyor...' : 'Doğrula' }}
                     </button>
-                  } @else {
-                    <div class="otp-input-row">
-                      <input
-                        class="form-input otp-input"
-                        type="text"
-                        [(ngModel)]="otpCode"
-                        [ngModelOptions]="{standalone: true}"
-                        placeholder="6 haneli kod"
-                        maxlength="6"
-                        inputmode="numeric" />
-                      <button
-                        type="button"
-                        class="btn-otp-verify"
-                        [disabled]="isVerifyingOtp || otpCode.length < 6"
-                        (click)="verifyOtp()">
-                        {{ isVerifyingOtp ? 'Doğrulanıyor...' : 'Doğrula' }}
-                      </button>
-                    </div>
+                  </div>
+                  <div class="otp-footer-row">
                     @if (otpTimer > 0) {
                       <p class="otp-timer">Kod {{ timerDisplay }} içinde geçerli.</p>
                     }
@@ -335,17 +340,14 @@
                       (click)="sendOtp()">
                       Tekrar Gönder
                     </button>
-                  }
+                  </div>
                   @if (otpError) {
                     <p class="otp-error">{{ otpError }}</p>
                   }
-                  @if (otpSuccess && !otpVerified) {
+                  @if (otpSuccess) {
                     <p class="otp-success">{{ otpSuccess }}</p>
                   }
                 </div>
-              }
-              @if (otpVerified) {
-                <p class="otp-verified-badge">✓ Telefon doğrulandı</p>
               }
 
               <div class="booking-preview">

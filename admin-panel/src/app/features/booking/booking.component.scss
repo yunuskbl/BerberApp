@@ -267,6 +267,71 @@ app-language-switcher {
 .form-textarea { resize: vertical; min-height: 80px; }
 .field-error { font-size: 11px; color: #ef4444; margin-top: 4px; display: block; }
 
+/* Phone + OTP inline */
+.phone-row {
+  display: flex; gap: 8px; align-items: stretch;
+  .form-input { flex: 1; min-width: 0; }
+}
+.btn-otp-inline {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 0 16px; height: 48px;
+  background: var(--accent); color: white;
+  border: none; border-radius: 10px;
+  font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif;
+  cursor: pointer; white-space: nowrap;
+  transition: opacity 0.15s;
+  &:hover:not(:disabled) { opacity: 0.85; }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+.btn-spinner {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+.phone-verified-icon {
+  flex-shrink: 0;
+  width: 48px; height: 48px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #dcfce7; color: #16a34a;
+  border-radius: 10px; font-size: 18px; font-weight: 700;
+}
+
+/* OTP code entry */
+.otp-section { margin: 8px 0 12px; }
+.otp-input-row {
+  display: flex; gap: 8px; align-items: stretch;
+  .otp-input { flex: 1; letter-spacing: 6px; font-size: 16px; font-weight: 600; text-align: center; }
+}
+.btn-otp-verify {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0 18px; height: 48px;
+  background: #111; color: white;
+  border: none; border-radius: 10px;
+  font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif;
+  cursor: pointer; white-space: nowrap;
+  transition: opacity 0.15s;
+  &:hover:not(:disabled) { opacity: 0.8; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+.otp-footer-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 8px;
+}
+.otp-timer { font-size: 12px; color: #999; }
+.btn-otp-resend {
+  background: none; border: none; padding: 0;
+  font-size: 12px; font-weight: 600; color: #aaa; cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  &:not(:disabled):hover { color: #555; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+.otp-error   { font-size: 12px; color: #ef4444; margin-top: 6px; }
+.otp-success { font-size: 12px; color: #16a34a; margin-top: 6px; }
+
 .booking-preview {
   background: #f5f4f2; border-radius: 10px; padding: 14px 16px; margin: 12px 0;
   h3 { font-size: 11px; font-weight: 600; color: #bbb; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
