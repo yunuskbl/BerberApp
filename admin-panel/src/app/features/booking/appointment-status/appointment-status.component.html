@@ -103,6 +103,45 @@
         </div>
 
         <p class="footer-note">{{ 'booking.successNote' | translate }}</p>
+
+        <!-- Müşteri İptal Bölümü -->
+        @if (canCustomerCancel) {
+          <div class="cancel-section">
+            @if (!showCancelConfirm) {
+              <button class="btn-cancel-request" (click)="confirmCancel()">
+                Randevuyu İptal Et
+              </button>
+            }
+
+            @if (showCancelConfirm) {
+              <div class="cancel-confirm-box">
+                <p class="cancel-confirm-text">
+                  Randevunuzu iptal etmek istediğinizden emin misiniz?
+                  Bu işlem geri alınamaz.
+                </p>
+                <div class="cancel-confirm-actions">
+                  <button class="btn-cancel-confirm" [disabled]="isCancelling" (click)="cancelAppointment()">
+                    {{ isCancelling ? 'İptal ediliyor...' : 'Evet, İptal Et' }}
+                  </button>
+                  <button class="btn-cancel-dismiss" [disabled]="isCancelling" (click)="dismissCancel()">
+                    Vazgeç
+                  </button>
+                </div>
+              </div>
+            }
+
+            @if (cancelError) {
+              <p class="cancel-error">{{ cancelError }}</p>
+            }
+          </div>
+        }
+
+        @if (cancelSuccess) {
+          <div class="cancel-success-banner">
+            ✓ Randevunuz başarıyla iptal edildi.
+          </div>
+        }
+
       </div>
 
     </div>

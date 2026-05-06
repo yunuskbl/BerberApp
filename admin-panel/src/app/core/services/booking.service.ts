@@ -103,6 +103,15 @@ export class BookingApiService {
     );
   }
 
+  cancelAppointment(subdomain: string, appointmentId: string, phone: string): Observable<any> {
+    const params = new HttpParams().set('phone', phone);
+    return this.http.post(
+      `${this.apiUrl}/booking/${subdomain}/appointments/${appointmentId}/cancel`,
+      {},
+      { params }
+    );
+  }
+
   sendOtp(phone: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/otp/send`, { phone });
   }

@@ -20,6 +20,13 @@ export class AppointmentStatusComponent implements OnInit {
   subdomain = '';
   copied = false;
 
+  isCancelling = false;
+  cancelError = '';
+  cancelSuccess = false;
+  showCancelConfirm = false;
+  private phone = '';
+  private appointmentId = '';
+
   constructor(
     private route: ActivatedRoute,
     private bookingService: BookingApiService,
@@ -32,6 +39,8 @@ export class AppointmentStatusComponent implements OnInit {
     const appointmentId = this.route.snapshot.paramMap.get('appointmentId') || '';
     const phone = this.route.snapshot.queryParamMap.get('phone') || '';
     this.subdomain = subdomain;
+    this.appointmentId = appointmentId;
+    this.phone = phone;
     this.loadSalon(subdomain);
     this.loadStatus(subdomain, appointmentId, phone);
   }
@@ -103,6 +112,39 @@ export class AppointmentStatusComponent implements OnInit {
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   }
 
+  confirmCancel(): void {
+    this.showCancelConfirm = true;
+    this.cancelError = '';
+  }
+
+  dismissCancel(): void {
+    this.showCancelConfirm = false;
+  }
+
+  cancelAppointment(): void {
+    this.isCancelling = true;
+    this.cancelError = '';
+    this.showCancelConfirm = false;
+
+    this.bookingService.cancelAppointment(this.subdomain, this.appointmentId, this.phone).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.cancelSuccess = true;
+          this.appointment = { ...this.appointment, status: 'Cancelled' };
+        }
+        this.isCancelling = false;
+      },
+      error: (err) => {
+        this.cancelError = err.error?.message || 'Randevu iptal edilemedi.';
+        this.isCancelling = false;
+      },
+    });
+  }
+
+  get canCustomerCancel(): boolean {
+    return this.appointment?.status === 'Confirmed' && !!this.phone;
+  }
+
   getStatusIcon(): string {
     switch (this.appointment?.status) {
       case 'Pending':   return '⏳';
@@ -146,12 +188,14 @@ export class AppointmentStatusComponent implements OnInit {
   formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString(this.langService.dateLocale, {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+      timeZone: 'Europe/Istanbul',
     });
   }
 
   formatTime(dateStr: string): string {
     return new Date(dateStr).toLocaleTimeString(this.langService.dateLocale, {
       hour: '2-digit', minute: '2-digit',
+      timeZone: 'Europe/Istanbul',
     });
   }
 
