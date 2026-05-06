@@ -149,8 +149,9 @@ public class BookingController : ControllerBase
             return NotFound(new { success = false, message = "Salon bulunamadı." });
 
         // Telefon doğrulanmış mı kontrol et
-        //if (!_cache.TryGetValue($"verified:{request.Phone}", out bool isVerified) || !isVerified)
-        //    return BadRequest(new { success = false, message = "Telefon numarası doğrulanmamış." });
+        if (!_cache.TryGetValue($"verified:{request.Phone}", out bool isVerified) || !isVerified)
+            return BadRequest(new { success = false, message = "Telefon numarası doğrulanmamış." });
+
         // Telefon başına günlük limit kontrolü
         var turkeyTz = GetTurkeyTimeZone();
         var nowTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, turkeyTz);
@@ -214,13 +215,38 @@ public class BookingController : ControllerBase
     }
 
     [HttpGet("{subdomain}/appointments/{appointmentId}")]
-    public async Task<IActionResult> GetAppointmentStatus(string subdomain, Guid appointmentId)
+    public async Task<IActionResult> GetAppointmentStatus(
+        string subdomain,
+        Guid appointmentId,
+        [FromQuery] string phone)
     {
+        if (string.IsNullOrWhiteSpace(phone))
+            return BadRequest(new { success = false, message = "Telefon numarası gerekli." });
+
         var tenant = await _context.Tenants
             .FirstOrDefaultAsync(x => x.Subdomain == subdomain && x.IsActive);
 
         if (tenant is null)
             return NotFound(new { success = false, message = "Salon bulunamadı." });
+
+        var appt = await _context.Appointments
+            .Where(x => x.Id == appointmentId && x.TenantId == tenant.Id)
+            .Select(x => new { x.CustomerId })
+            .FirstOrDefaultAsync();
+
+        if (appt is null)
+            return NotFound(new { success = false, message = "Randevu bulunamadı." });
+
+        var customerPhone = await _context.Customers
+            .Where(x => x.Id == appt.CustomerId)
+            .Select(x => x.Phone)
+            .FirstOrDefaultAsync();
+
+        static string Normalize(string? p) =>
+            (p ?? "").Replace(" ", "").Replace("-", "").TrimStart('0');
+
+        if (Normalize(customerPhone) != Normalize(phone))
+            return Unauthorized(new { success = false, message = "Bu randevuya erişim yetkiniz yok." });
 
         var result = await _mediator.Send(new GetAppointmentStatusQuery
         {

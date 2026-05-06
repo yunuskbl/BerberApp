@@ -35,7 +35,6 @@ public class SalonsController : ControllerBase
                 x.Id,
                 x.Name,
                 x.Subdomain,
-                x.Phone,
                 x.Address,
                 x.LogoUrl
             })
