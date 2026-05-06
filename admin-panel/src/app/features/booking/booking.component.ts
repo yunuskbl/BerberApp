@@ -79,7 +79,7 @@ export class BookingComponent implements OnInit {
   }
 
   otpSent = false;
-  otpVerified = true;
+  otpVerified = false;
   otpCode = '';
   isSendingOtp = false;
   isVerifyingOtp = false;
@@ -244,11 +244,10 @@ export class BookingComponent implements OnInit {
       .subscribe({
         next: (res) => {
           if (res.success) {
-            this.router.navigate([
-              '/randevu',
-              this.subdomain,
-              res.appointmentId,
-            ]);
+            this.router.navigate(
+              ['/randevu', this.subdomain, res.appointmentId],
+              { queryParams: { phone } }
+            );
           } else {
             this.errorMessage = res.message;
           }
@@ -293,50 +292,51 @@ export class BookingComponent implements OnInit {
       .slice(0, 2);
   }
 
-  // sendOtp(): void {
-  //   const phone = this.customerForm.get('phone')?.value;
-  //   if (!phone) return;
+  sendOtp(): void {
+    const phone = this.customerForm.get('phone')?.value;
+    if (!phone) return;
 
-  //   this.isSendingOtp = true;
-  //   this.otpError = '';
+    this.isSendingOtp = true;
+    this.otpError = '';
+    this.otpSuccess = '';
 
-  //   this.bookingService.sendOtp(phone).subscribe({
-  //     next: (res) => {
-  //       if (res.success) {
-  //         this.otpSent = true;
-  //         this.otpSuccess = 'Doğrulama kodu Sms gönderildi!';
-  //         this.startTimer();
-  //       }
-  //       this.isSendingOtp = false;
-  //     },
-  //     error: (err) => {
-  //       this.otpError = err.error?.message || 'Kod gönderilemedi.';
-  //       this.isSendingOtp = false;
-  //     },
-  //   });
-  // }
+    this.bookingService.sendOtp(phone).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.otpSent = true;
+          this.otpSuccess = 'Doğrulama kodu SMS ile gönderildi.';
+          this.startTimer();
+        }
+        this.isSendingOtp = false;
+      },
+      error: (err) => {
+        this.otpError = err.error?.message || 'Kod gönderilemedi.';
+        this.isSendingOtp = false;
+      },
+    });
+  }
 
-  // verifyOtp(): void {
-  //   const phone = this.customerForm.get('phone')?.value;
-  //   if (!phone || !this.otpCode) return;
+  verifyOtp(): void {
+    const phone = this.customerForm.get('phone')?.value;
+    if (!phone || !this.otpCode) return;
 
-  //   this.isVerifyingOtp = true;
-  //   this.otpError = '';
+    this.isVerifyingOtp = true;
+    this.otpError = '';
 
-  //   this.bookingService.verifyOtp(phone, this.otpCode).subscribe({
-  //     next: (res) => {
-  //       if (res.success) {
-  //         this.otpVerified = true;
-  //         this.otpSuccess = 'Telefon doğrulandı! ✓';
-  //       }
-  //       this.isVerifyingOtp = false;
-  //     },
-  //     error: (err) => {
-  //       this.otpError = err.error?.message || 'Hatalı kod.';
-  //       this.isVerifyingOtp = false;
-  //     },
-  //   });
-  // }
+    this.bookingService.verifyOtp(phone, this.otpCode).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.otpVerified = true;
+          this.otpSuccess = 'Telefon doğrulandı! ✓';
+        }
+        this.isVerifyingOtp = false;
+      },
+      error: (err) => {
+        this.otpError = err.error?.message || 'Hatalı kod.';
+        this.isVerifyingOtp = false;
+      },
+    });
+  }
 
   startTimer(): void {
     this.otpTimer = 120; // 2 dakika

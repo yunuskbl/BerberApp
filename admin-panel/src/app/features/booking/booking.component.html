@@ -293,6 +293,59 @@
                 <textarea class="form-textarea" formControlName="notes" [placeholder]="'booking.notePh' | translate" rows="3" maxlength="200"></textarea>
               </div>
 
+              <!-- Telefon Doğrulama (OTP) -->
+              @if (!otpVerified) {
+                <div class="otp-section">
+                  <p class="otp-label">Randevu oluşturmak için telefon numaranızı doğrulayın.</p>
+                  @if (!otpSent) {
+                    <button
+                      type="button"
+                      class="btn-otp-send"
+                      [disabled]="isSendingOtp || !customerForm.get('phone')?.valid"
+                      (click)="sendOtp()">
+                      {{ isSendingOtp ? 'Gönderiliyor...' : 'Doğrulama Kodu Gönder' }}
+                    </button>
+                  } @else {
+                    <div class="otp-input-row">
+                      <input
+                        class="form-input otp-input"
+                        type="text"
+                        [(ngModel)]="otpCode"
+                        [ngModelOptions]="{standalone: true}"
+                        placeholder="6 haneli kod"
+                        maxlength="6"
+                        inputmode="numeric" />
+                      <button
+                        type="button"
+                        class="btn-otp-verify"
+                        [disabled]="isVerifyingOtp || otpCode.length < 6"
+                        (click)="verifyOtp()">
+                        {{ isVerifyingOtp ? 'Doğrulanıyor...' : 'Doğrula' }}
+                      </button>
+                    </div>
+                    @if (otpTimer > 0) {
+                      <p class="otp-timer">Kod {{ timerDisplay }} içinde geçerli.</p>
+                    }
+                    <button
+                      type="button"
+                      class="btn-otp-resend"
+                      [disabled]="otpTimer > 0 || isSendingOtp"
+                      (click)="sendOtp()">
+                      Tekrar Gönder
+                    </button>
+                  }
+                  @if (otpError) {
+                    <p class="otp-error">{{ otpError }}</p>
+                  }
+                  @if (otpSuccess && !otpVerified) {
+                    <p class="otp-success">{{ otpSuccess }}</p>
+                  }
+                </div>
+              }
+              @if (otpVerified) {
+                <p class="otp-verified-badge">✓ Telefon doğrulandı</p>
+              }
+
               <div class="booking-preview">
                 <h3>{{ 'booking.previewTitle' | translate }}</h3>
                 <div class="preview-item"><span>{{ 'booking.lbl.service' | translate }}</span><span>{{ selectedService?.name }}</span></div>
@@ -305,7 +358,7 @@
                 <div class="error-message">{{ errorMessage }}</div>
               }
 
-              <button type="submit" class="btn-submit" [disabled]="isSubmitting || customerForm.invalid">
+              <button type="submit" class="btn-submit" [disabled]="isSubmitting || customerForm.invalid || !otpVerified">
                 {{ isSubmitting ? ('booking.submitting' | translate) : ('booking.submit' | translate) }}
               </button>
             </form>

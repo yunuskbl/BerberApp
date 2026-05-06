@@ -27,9 +27,10 @@ export class AppointmentStatusComponent implements OnInit {
   ngOnInit(): void {
     const subdomain = this.route.snapshot.paramMap.get('subdomain') || '';
     const appointmentId = this.route.snapshot.paramMap.get('appointmentId') || '';
+    const phone = this.route.snapshot.queryParamMap.get('phone') || '';
     this.subdomain = subdomain;
     this.loadSalon(subdomain);
-    this.loadStatus(subdomain, appointmentId);
+    this.loadStatus(subdomain, appointmentId, phone);
   }
 
   loadSalon(subdomain: string): void {
@@ -70,8 +71,8 @@ export class AppointmentStatusComponent implements OnInit {
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   }
 
-  loadStatus(subdomain: string, appointmentId: string): void {
-    this.bookingService.getAppointmentStatus(subdomain, appointmentId).subscribe({
+  loadStatus(subdomain: string, appointmentId: string, phone: string): void {
+    this.bookingService.getAppointmentStatus(subdomain, appointmentId, phone).subscribe({
       next: (res) => {
         if (res.success) this.appointment = res.data;
         this.isLoading = false;
