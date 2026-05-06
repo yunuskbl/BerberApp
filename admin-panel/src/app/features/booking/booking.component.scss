@@ -266,6 +266,20 @@ app-language-switcher {
 }
 .form-textarea { resize: vertical; min-height: 80px; }
 .field-error { font-size: 11px; color: #ef4444; margin-top: 4px; display: block; }
+.customer-found-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 6px; padding: 4px 10px;
+  background: #dcfce7; color: #16a34a;
+  border-radius: 20px; font-size: 12px; font-weight: 600;
+  &::before { content: '✓ '; }
+}
+.lookup-spinner {
+  flex-shrink: 0;
+  width: 18px; height: 18px; margin: auto 4px;
+  border: 2px solid #e5e5e5; border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
 
 /* Phone + OTP inline */
 .phone-row {

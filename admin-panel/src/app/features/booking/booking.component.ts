@@ -1,4 +1,6 @@
-import { Component, OnInit, ElementRef, Renderer2 } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, Renderer2 } from '@angular/core';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, takeUntil } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -37,7 +39,7 @@ import { DecorativeBgComponent } from '../../shared/components/decorative-bg/dec
   templateUrl: './booking.component.html',
   styleUrl: './booking.component.scss',
 })
-export class BookingComponent implements OnInit {
+export class BookingComponent implements OnInit, OnDestroy {
   subdomain = '';
   salon: SalonInfo | null = null;
   services: BookingService[] = [];
@@ -79,6 +81,11 @@ export class BookingComponent implements OnInit {
     this.lightboxIndex = (this.lightboxIndex - 1 + photos.length) % photos.length;
     this.lightboxPhoto = photos[this.lightboxIndex].url;
   }
+
+  customerFound = false;
+  isLookingUp = false;
+  private phoneSubject$ = new Subject<string>();
+  private destroy$ = new Subject<void>();
 
   otpSent = false;
   otpVerified = true; // OTP geçici olarak devre dışı (WhatsApp Business onayı bekliyor)
@@ -130,6 +137,54 @@ export class BookingComponent implements OnInit {
   ngOnInit(): void {
     this.subdomain = this.route.snapshot.paramMap.get('subdomain') || '';
     this.loadSalon();
+    this.initPhoneLookup();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private initPhoneLookup(): void {
+    this.phoneSubject$.pipe(
+      debounceTime(600),
+      distinctUntilChanged(),
+      switchMap(phone => {
+        const cleaned = phone.replace(/[\s\-\(\)\+]/g, '');
+        if (cleaned.length < 10) {
+          this.isLookingUp = false;
+          this.customerFound = false;
+          return [];
+        }
+        this.isLookingUp = true;
+        return this.bookingService.lookupCustomer(this.subdomain, phone);
+      }),
+      takeUntil(this.destroy$),
+    ).subscribe({
+      next: (res: any) => {
+        this.isLookingUp = false;
+        if (res?.success && res.data) {
+          this.customerFound = true;
+          this.customerForm.patchValue({
+            fullName: res.data.fullName || this.customerForm.get('fullName')?.value,
+            email: res.data.email || this.customerForm.get('email')?.value,
+            notes: res.data.notes || this.customerForm.get('notes')?.value,
+          });
+        } else {
+          this.customerFound = false;
+        }
+      },
+      error: () => {
+        this.isLookingUp = false;
+        this.customerFound = false;
+      },
+    });
+  }
+
+  onPhoneInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.customerFound = false;
+    this.phoneSubject$.next(value);
   }
 
   loadSalon(): void {

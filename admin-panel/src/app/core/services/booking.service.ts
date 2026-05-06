@@ -112,6 +112,11 @@ export class BookingApiService {
     );
   }
 
+  lookupCustomer(subdomain: string, phone: string): Observable<any> {
+    const params = new HttpParams().set('phone', phone);
+    return this.http.get(`${this.apiUrl}/booking/${subdomain}/customer-lookup`, { params });
+  }
+
   sendOtp(phone: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/otp/send`, { phone });
   }

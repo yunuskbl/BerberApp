@@ -320,6 +320,38 @@ public class BookingController : ControllerBase
         return Ok(new { success = true, message = "Randevunuz iptal edildi." });
     }
 
+    [HttpGet("{subdomain}/customer-lookup")]
+    public async Task<IActionResult> CustomerLookup(string subdomain, [FromQuery] string phone)
+    {
+        if (string.IsNullOrWhiteSpace(phone))
+            return Ok(new { success = false });
+
+        var normalized = NormalizePhone(phone);
+        if (normalized.Length < 10)
+            return Ok(new { success = false });
+
+        var tenant = await _context.Tenants
+            .FirstOrDefaultAsync(x => x.Subdomain == subdomain && x.IsActive);
+
+        if (tenant is null)
+            return Ok(new { success = false });
+
+        var customers = await _context.Customers
+            .Where(x => x.TenantId == tenant.Id)
+            .Select(x => new { x.FullName, x.Email, x.Notes, x.Phone })
+            .ToListAsync();
+
+        var customer = customers.FirstOrDefault(x => NormalizePhone(x.Phone) == normalized);
+
+        if (customer is null)
+            return Ok(new { success = false });
+
+        return Ok(new { success = true, data = new { customer.FullName, customer.Email, customer.Notes } });
+    }
+
+    private static string NormalizePhone(string? p) =>
+        (p ?? "").Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Replace("+", "");
+
     private static TimeZoneInfo GetTurkeyTimeZone()
     {
         try { return TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time"); }

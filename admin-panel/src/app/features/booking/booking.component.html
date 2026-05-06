@@ -274,20 +274,26 @@
             </div>
             <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
               <div class="form-group">
-                <input class="form-input" type="text" formControlName="fullName" [placeholder]="'booking.fullNamePh' | translate" maxlength="30" />
-                @if (customerForm.get('fullName')?.errors?.['required'] && customerForm.get('fullName')?.touched) {
-                  <span class="field-error">{{ 'booking.fullNameRequired' | translate }}</span>
-                }
-              </div>
-              <div class="form-group">
                 <div class="phone-row">
-                  <input class="form-input" type="tel" formControlName="phone" placeholder="05XX XXX XX XX" maxlength="11" />
+                  <input class="form-input" type="tel" formControlName="phone" placeholder="05XX XXX XX XX" maxlength="11" (input)="onPhoneInput($event)" />
+                  @if (isLookingUp) {
+                    <span class="lookup-spinner"></span>
+                  }
                 </div>
+                @if (customerFound) {
+                  <div class="customer-found-badge">{{ 'booking.customerFound' | translate }}</div>
+                }
                 @if (customerForm.get('phone')?.errors?.['required'] && customerForm.get('phone')?.touched) {
                   <span class="field-error">{{ 'booking.phoneRequired' | translate }}</span>
                 }
                 @if (customerForm.get('phone')?.errors?.['pattern'] && customerForm.get('phone')?.touched) {
                   <span class="field-error">{{ 'booking.phoneInvalid' | translate }}</span>
+                }
+              </div>
+              <div class="form-group">
+                <input class="form-input" type="text" formControlName="fullName" [placeholder]="'booking.fullNamePh' | translate" maxlength="30" />
+                @if (customerForm.get('fullName')?.errors?.['required'] && customerForm.get('fullName')?.touched) {
+                  <span class="field-error">{{ 'booking.fullNameRequired' | translate }}</span>
                 }
               </div>
               <div class="form-group">
