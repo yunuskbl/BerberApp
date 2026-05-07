@@ -1,0 +1,42 @@
+.logo-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  --text-color: #1a1a1a;
+  --dot-color: #1a1a1a;
+
+  &.dark {
+    --text-color: #ffffff;
+    --dot-color: #ffffff;
+  }
+}
+
+.wordmark {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--text-color);
+  line-height: 1;
+  letter-spacing: -0.01em;
+
+  &::after {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: var(--dot-color);
+    border-radius: 50%;
+    margin-left: 2px;
+    vertical-align: super;
+  }
+}
+
+.tagline {
+  font-family: 'Syne', sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #888;
+  line-height: 1;
+}
