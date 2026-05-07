@@ -30,4 +30,12 @@ export class StaffService {
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  getServices(staffId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${staffId}/services`);
+  }
+
+  setServices(staffId: string, serviceIds: string[]): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${staffId}/services`, { serviceIds });
+  }
 }

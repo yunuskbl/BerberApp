@@ -1,13 +1,20 @@
-﻿using BerberApp.Application.Staff.Commands;
+using BerberApp.Application.Common.Interfaces;
+using BerberApp.Application.Staff.Commands;
 using BerberApp.Application.Staff.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BerberApp.Api.Controllers;
 
 public class StaffController : BaseApiController
 {
-    public StaffController(IMediator mediator) : base(mediator) { }
+    private readonly IAppDbContext _context;
+
+    public StaffController(IMediator mediator, IAppDbContext context) : base(mediator)
+    {
+        _context = context;
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
@@ -38,4 +45,42 @@ public class StaffController : BaseApiController
         await Mediator.Send(new DeleteStaffCommand { Id = id, TenantId = TenantId });
         return NoContent();
     }
+
+    [HttpGet("{id}/services")]
+    public async Task<IActionResult> GetServices(Guid id)
+    {
+        var staff = await _context.Staff
+            .Include(s => s.Services)
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == TenantId);
+
+        if (staff is null)
+            return NotFound(new { success = false, message = "Personel bulunamadı." });
+
+        var serviceIds = staff.Services.Select(s => s.Id).ToList();
+        return Success(serviceIds);
+    }
+
+    [HttpPut("{id}/services")]
+    public async Task<IActionResult> SetServices(Guid id, [FromBody] SetStaffServicesRequest request)
+    {
+        var staff = await _context.Staff
+            .Include(s => s.Services)
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == TenantId);
+
+        if (staff is null)
+            return NotFound(new { success = false, message = "Personel bulunamadı." });
+
+        var services = await _context.Services
+            .Where(s => request.ServiceIds.Contains(s.Id) && s.TenantId == TenantId)
+            .ToListAsync();
+
+        staff.Services.Clear();
+        foreach (var svc in services)
+            staff.Services.Add(svc);
+
+        await _context.SaveChangesAsync();
+        return Success("Hizmet atamaları güncellendi.");
+    }
+
+    public record SetStaffServicesRequest(List<Guid> ServiceIds);
 }

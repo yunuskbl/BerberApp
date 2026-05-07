@@ -66,8 +66,9 @@ export class BookingApiService {
     return this.http.get(`${this.apiUrl}/booking/${subdomain}/services`);
   }
 
-  getStaff(subdomain: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/booking/${subdomain}/staff`);
+  getStaff(subdomain: string, serviceId?: string): Observable<any> {
+    const params = serviceId ? new HttpParams().set('serviceId', serviceId) : undefined;
+    return this.http.get(`${this.apiUrl}/booking/${subdomain}/staff`, { params });
   }
 
   getAvailableSlots(

@@ -224,9 +224,16 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   selectService(service: BookingService): void {
     this.selectedService = service;
+    this.selectedStaff = null;
     this.selectedSlot = '';
     this.slots = [];
-    this.loadSlotsIfReady();
+    this.loadStaffForService(service.id);
+  }
+
+  loadStaffForService(serviceId: string): void {
+    this.bookingService.getStaff(this.subdomain, serviceId).subscribe({
+      next: (res) => { if (res.success) this.staffList = res.data; },
+    });
   }
 
   selectStaff(staff: BookingStaff): void {

@@ -51,6 +51,7 @@
               </td>
               <td>
                 <div class="actions">
+                  <button class="action-btn services" (click)="openServices(staff)" [title]="'staff.services' | translate">✂</button>
                   <button class="action-btn schedule" (click)="openWorkingHours(staff)" [title]="'staff.workingHours' | translate">⏰</button>
                   <button class="action-btn edit" (click)="openDrawer(staff)" [title]="'common.edit' | translate">✏</button>
                   <button class="action-btn delete" (click)="deleteStaff(staff.id)" [title]="'common.edit' | translate">🗑</button>
@@ -162,3 +163,46 @@
       </div>
     </form>
   }
+</div>
+
+<!-- Hizmet Atama Drawer -->
+@if (isServicesOpen) {
+  <div class="drawer-overlay" (click)="closeServices()"></div>
+}
+
+<div class="drawer" [class.open]="isServicesOpen">
+  <div class="drawer-header">
+    <h3>{{ selectedStaffForSvc?.fullName }} — {{ 'staff.services' | translate }}</h3>
+    <button class="drawer-close" (click)="closeServices()">✕</button>
+  </div>
+
+  <div class="drawer-body">
+    <p class="services-hint">{{ 'staff.servicesHint' | translate }}</p>
+    <div class="services-list">
+      @for (svc of allServices; track svc.id) {
+        <label class="service-toggle-row" (click)="toggleService(svc.id)">
+          <div class="service-toggle-info">
+            @if (svc.color) {
+              <span class="svc-dot" [style.background]="svc.color"></span>
+            }
+            <span class="svc-name">{{ svc.name }}</span>
+            <span class="svc-dur">{{ svc.durationMinutes }} {{ 'common.min' | translate }}</span>
+          </div>
+          <div class="toggle-switch" [class.on]="assignedServiceIds.has(svc.id)">
+            <div class="toggle-knob"></div>
+          </div>
+        </label>
+      }
+      @if (allServices.length === 0) {
+        <p class="empty-hint">{{ 'services.empty' | translate }}</p>
+      }
+    </div>
+
+    <div class="drawer-footer">
+      <button type="button" class="btn btn-outline" (click)="closeServices()">{{ 'common.cancel' | translate }}</button>
+      <button type="button" class="btn btn-primary" [disabled]="isSavingSvc" (click)="saveServices()">
+        {{ isSavingSvc ? ('common.saving' | translate) : ('common.save' | translate) }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -147,6 +147,7 @@ const T: Record<Lang, Record<string, string>> = {
     'reports.byCurrency':      'Para Birimine Göre Kazanç',
     'reports.rateDate':        'Kur tarihi',
     'reports.grandTotal':      'Genel Toplam (TRY)',
+    'reports.print':           'PDF / Yazdır',
 
     // Nav sections
     'nav.section.main':  'ANA MENÜ',
@@ -198,6 +199,8 @@ const T: Record<Lang, Record<string, string>> = {
     'staff.bio':          'Biyografi',
     'staff.colBio':       'Bio',
     'staff.workingHours': 'Çalışma Saatleri',
+    'staff.services':     'Hizmetler',
+    'staff.servicesHint': 'Bu personelin yapabileceği hizmetleri seçin.',
 
     // Services
     'services.add':          '+ Hizmet Ekle',
@@ -452,6 +455,7 @@ const T: Record<Lang, Record<string, string>> = {
     'reports.byCurrency':      'Earnings by Currency',
     'reports.rateDate':        'Rate date',
     'reports.grandTotal':      'Grand Total (TRY)',
+    'reports.print':           'Print / PDF',
 
     // Nav sections
     'nav.section.main':  'MAIN MENU',
@@ -503,6 +507,8 @@ const T: Record<Lang, Record<string, string>> = {
     'staff.bio':          'Biography',
     'staff.colBio':       'Bio',
     'staff.workingHours': 'Working Hours',
+    'staff.services':     'Services',
+    'staff.servicesHint': 'Select the services this staff member can perform.',
 
     // Services
     'services.add':          '+ Add Service',
@@ -757,6 +763,7 @@ const T: Record<Lang, Record<string, string>> = {
     'reports.byCurrency':      'Доход по валютам',
     'reports.rateDate':        'Дата курса',
     'reports.grandTotal':      'Итого (TRY)',
+    'reports.print':           'Печать / PDF',
 
     // Nav sections
     'nav.section.main':  'ГЛАВНОЕ МЕНЮ',
@@ -808,6 +815,8 @@ const T: Record<Lang, Record<string, string>> = {
     'staff.bio':          'Биография',
     'staff.colBio':       'Биография',
     'staff.workingHours': 'Рабочие часы',
+    'staff.services':     'Услуги',
+    'staff.servicesHint': 'Выберите услуги, которые может выполнять этот сотрудник.',
 
     // Services
     'services.add':          '+ Добавить услугу',

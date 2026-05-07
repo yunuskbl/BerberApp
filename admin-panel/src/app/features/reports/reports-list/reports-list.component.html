@@ -4,6 +4,9 @@
       <h2>{{ 'reports.title' | translate }}</h2>
       <p>{{ 'reports.subtitle' | translate }}</p>
     </div>
+    @if (earnings && !isLoading) {
+      <button class="btn-print no-print" (click)="printReport()">🖨 {{ 'reports.print' | translate }}</button>
+    }
   </div>
 
   <!-- Tarih Filtresi -->

@@ -8,7 +8,9 @@ import {
   FormArray,
 } from '@angular/forms';
 import { StaffService } from '../../../core/services/staff.service';
+import { ServiceService } from '../../../core/services/service.service';
 import { Staff } from '../../../core/models/staff.model';
+import { Service } from '../../../core/models/service.model';
 import {
   WorkingHoursService,
   WorkingHour,
@@ -31,25 +33,29 @@ export class StaffListComponent implements OnInit {
   isSubmitting = false;
   editingStaff: Staff | null = null;
   errorMessage = '';
+
   isWorkingHoursOpen = false;
   selectedStaffForWH: Staff | null = null;
   workingHoursForm!: FormGroup;
   isSavingWH = false;
+
+  isServicesOpen = false;
+  selectedStaffForSvc: Staff | null = null;
+  allServices: Service[] = [];
+  assignedServiceIds: Set<string> = new Set();
+  isSavingSvc = false;
+
   staffForm: FormGroup;
 
   readonly days = [
-    { value: 1 },
-    { value: 2 },
-    { value: 3 },
-    { value: 4 },
-    { value: 5 },
-    { value: 6 },
-    { value: 0 },
+    { value: 1 }, { value: 2 }, { value: 3 }, { value: 4 },
+    { value: 5 }, { value: 6 }, { value: 0 },
   ];
 
   constructor(
     private workingHoursService: WorkingHoursService,
     private staffService: StaffService,
+    private serviceService: ServiceService,
     private fb: FormBuilder,
     public langService: LanguageService,
   ) {
@@ -65,8 +71,9 @@ export class StaffListComponent implements OnInit {
     this.loadStaff();
   }
 
+  // ── Çalışma Saatleri ───────────────────────────────────────────────────────
+
   getDayName(dayOfWeek: number): string {
-    // 2024-01-07 = Sunday (0), 2024-01-08 = Monday (1), etc.
     const date = new Date(2024, 0, 7 + dayOfWeek);
     return new Intl.DateTimeFormat(this.langService.dateLocale, { weekday: 'long' }).format(date);
   }
@@ -145,6 +152,51 @@ export class StaffListComponent implements OnInit {
       }
     });
   }
+
+  // ── Hizmet Ataması ─────────────────────────────────────────────────────────
+
+  openServices(staff: Staff): void {
+    this.selectedStaffForSvc = staff;
+    this.assignedServiceIds = new Set();
+    this.isServicesOpen = true;
+
+    this.serviceService.getAll().subscribe({
+      next: (res) => { if (res.success) this.allServices = res.data; }
+    });
+
+    this.staffService.getServices(staff.id).subscribe({
+      next: (res) => {
+        if (res.success) this.assignedServiceIds = new Set(res.data);
+      }
+    });
+  }
+
+  closeServices(): void {
+    this.isServicesOpen = false;
+    this.selectedStaffForSvc = null;
+  }
+
+  toggleService(serviceId: string): void {
+    if (this.assignedServiceIds.has(serviceId))
+      this.assignedServiceIds.delete(serviceId);
+    else
+      this.assignedServiceIds.add(serviceId);
+  }
+
+  saveServices(): void {
+    if (!this.selectedStaffForSvc) return;
+    this.isSavingSvc = true;
+
+    this.staffService.setServices(
+      this.selectedStaffForSvc.id,
+      Array.from(this.assignedServiceIds)
+    ).subscribe({
+      next: () => { this.isSavingSvc = false; this.closeServices(); },
+      error: () => { this.isSavingSvc = false; }
+    });
+  }
+
+  // ── CRUD ───────────────────────────────────────────────────────────────────
 
   loadStaff(): void {
     this.isLoading = true;

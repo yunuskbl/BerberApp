@@ -88,9 +88,9 @@ public class BookingController : ControllerBase
         return Ok(new { success = true, data = services });
     }
 
-    // Salona ait personeli getir
+    // Salona ait personeli getir (opsiyonel: serviceId ile filtrele)
     [HttpGet("{subdomain}/staff")]
-    public async Task<IActionResult> GetStaff(string subdomain)
+    public async Task<IActionResult> GetStaff(string subdomain, [FromQuery] Guid? serviceId)
     {
         var tenant = await _context.Tenants
             .FirstOrDefaultAsync(x => x.Subdomain == subdomain && x.IsActive);
@@ -98,15 +98,14 @@ public class BookingController : ControllerBase
         if (tenant is null)
             return NotFound(new { success = false, message = "Salon bulunamadı." });
 
-        var staff = await _context.Staff
-            .Where(x => x.TenantId == tenant.Id && x.IsActive)
-            .Select(x => new
-            {
-                x.Id,
-                x.FullName,
-                x.AvatarUrl,
-                x.Bio
-            })
+        var query = _context.Staff
+            .Where(x => x.TenantId == tenant.Id && x.IsActive);
+
+        if (serviceId.HasValue)
+            query = query.Where(x => x.Services.Any(s => s.Id == serviceId.Value));
+
+        var staff = await query
+            .Select(x => new { x.Id, x.FullName, x.AvatarUrl, x.Bio })
             .ToListAsync();
 
         return Ok(new { success = true, data = staff });

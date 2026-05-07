@@ -59,4 +59,8 @@ export class ReportsListComponent implements OnInit {
       style: 'currency', currency: 'TRY', minimumFractionDigits: 2
     }).format(rate)}`;
   }
+
+  printReport(): void {
+    window.print();
+  }
 }
