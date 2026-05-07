@@ -9,8 +9,9 @@ public class RateLimitingMiddleware
     private readonly IMemoryCache _cache;
 
     // Limitler
-    private const int MaxBookingRequestsPerHour = 10;  // IP başına saatte max booking isteği
-    private const int MaxLoginAttemptsPerWindow = 5;   // IP başına 15 dakikada max login denemesi
+    private const int MaxBookingRequestsPerHour = 10;   // IP başına saatte max booking isteği
+    private const int MaxLoginAttemptsPerWindow = 5;    // IP başına 15 dakikada max login denemesi
+    private const int MaxLookupRequestsPerMinute = 5;   // IP başına dakikada max customer-lookup isteği
 
     public RateLimitingMiddleware(RequestDelegate next, IMemoryCache cache)
     {
@@ -44,6 +45,30 @@ public class RateLimitingMiddleware
             }
 
             _cache.Set(loginKey, loginCount + 1, DateTimeOffset.UtcNow.AddMinutes(15));
+        }
+
+        // Customer lookup rate limit — dakikada 5 GET isteği (telefon numarası tarama koruması)
+        if (context.Request.Path.Value?.Contains("/customer-lookup") == true &&
+            context.Request.Method == "GET")
+        {
+            var minute = DateTime.UtcNow.ToString("yyyyMMddHHmm");
+            var lookupKey = $"ratelimit:lookup:{ip}:{minute}";
+            var lookupCount = _cache.GetOrCreate(lookupKey, entry =>
+            {
+                entry.AbsoluteExpiration = DateTime.UtcNow.AddMinutes(1);
+                return 0;
+            });
+
+            if (lookupCount >= MaxLookupRequestsPerMinute)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(
+                    "{\"success\":false,\"message\":\"Çok fazla istek. Lütfen bekleyin.\"}");
+                return;
+            }
+
+            _cache.Set(lookupKey, lookupCount + 1, DateTimeOffset.UtcNow.AddMinutes(1));
         }
 
         // Booking rate limit — saatte 10 istek

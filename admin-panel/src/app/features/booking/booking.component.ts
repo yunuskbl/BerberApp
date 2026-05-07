@@ -168,7 +168,6 @@ export class BookingComponent implements OnInit, OnDestroy {
           this.customerForm.patchValue({
             fullName: res.data.fullName || this.customerForm.get('fullName')?.value,
             email: res.data.email || this.customerForm.get('email')?.value,
-            notes: res.data.notes || this.customerForm.get('notes')?.value,
           });
         } else {
           this.customerFound = false;

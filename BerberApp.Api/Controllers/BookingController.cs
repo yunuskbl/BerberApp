@@ -346,7 +346,7 @@ public class BookingController : ControllerBase
         if (customer is null)
             return Ok(new { success = false });
 
-        return Ok(new { success = true, data = new { customer.FullName, customer.Email, customer.Notes } });
+        return Ok(new { success = true, data = new { customer.FullName, customer.Email } });
     }
 
     private static string NormalizePhone(string? p) =>
