@@ -12,6 +12,7 @@ public class RateLimitingMiddleware
     private const int MaxBookingRequestsPerHour = 10;   // IP başına saatte max booking isteği
     private const int MaxLoginAttemptsPerWindow = 5;    // IP başına 15 dakikada max login denemesi
     private const int MaxLookupRequestsPerMinute = 5;   // IP başına dakikada max customer-lookup isteği
+    private const int MaxOtpSendPerHour = 5;            // IP başına saatte max OTP gönderme
 
     public RateLimitingMiddleware(RequestDelegate next, IMemoryCache cache)
     {
@@ -45,6 +46,29 @@ public class RateLimitingMiddleware
             }
 
             _cache.Set(loginKey, loginCount + 1, DateTimeOffset.UtcNow.AddMinutes(15));
+        }
+
+        // OTP send rate limit — saatte 5 istek
+        if (context.Request.Path.StartsWithSegments("/api/otp/send") &&
+            context.Request.Method == "POST")
+        {
+            var otpKey = $"ratelimit:otp:{ip}:{DateTime.UtcNow:yyyyMMddHH}";
+            var otpCount = _cache.GetOrCreate(otpKey, entry =>
+            {
+                entry.AbsoluteExpiration = DateTime.UtcNow.AddHours(1);
+                return 0;
+            });
+
+            if (otpCount >= MaxOtpSendPerHour)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(
+                    "{\"success\":false,\"message\":\"Çok fazla doğrulama kodu isteği. 1 saat bekleyin.\"}");
+                return;
+            }
+
+            _cache.Set(otpKey, otpCount + 1, DateTimeOffset.UtcNow.AddHours(1));
         }
 
         // Customer lookup rate limit — dakikada 5 GET isteği (telefon numarası tarama koruması)

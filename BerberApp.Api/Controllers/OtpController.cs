@@ -30,8 +30,8 @@ public class OtpController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Phone))
             return BadRequest(new { success = false, message = "Telefon numarası gerekli." });
 
-        // 6 haneli OTP oluştur
-        var otp = new Random().Next(100000, 999999).ToString();
+        // 6 haneli OTP oluştur (kriptografik güvenli)
+        var otp = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
         var cacheKey = $"otp:{request.Phone}";
 
         // 5 dakika geçerli

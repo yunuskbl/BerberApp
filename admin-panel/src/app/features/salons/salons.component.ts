@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
 import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
@@ -31,9 +32,10 @@ export class SalonsComponent implements OnInit {
   searchQuery  = '';
   errorMessage = '';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private titleService: Title) {}
 
   ngOnInit(): void {
+    this.titleService.setTitle('Salonlar - BerberApp');
     this.loadSalons();
   }
 
