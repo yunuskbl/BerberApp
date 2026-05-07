@@ -1,0 +1,25 @@
+.favicon-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+  color: #ffffff;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  line-height: 1;
+  flex-shrink: 0;
+
+  &.size-32 {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  &.size-16 {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    font-size: 7px;
+  }
+}

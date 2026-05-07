@@ -5,11 +5,12 @@ import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { LanguageService, Lang } from '../../../core/services/language.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
+import { LogoComponent } from '../../components/logo/logo.component';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslatePipe],
+  imports: [CommonModule, RouterModule, TranslatePipe, LogoComponent],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss'
 })
