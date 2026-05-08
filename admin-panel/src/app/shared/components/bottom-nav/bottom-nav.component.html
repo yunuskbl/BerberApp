@@ -1,1 +1,12 @@
-<p>bottom-nav works!</p>
+<nav class="bottom-nav">
+  @for (item of navItems; track item.route) {
+    <a
+      [routerLink]="item.route"
+      routerLinkActive="active"
+      class="bottom-nav-item"
+      [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }">
+      <span class="nav-icon" [innerHTML]="getIcon(item.icon)"></span>
+      <span class="nav-label">{{ item.key | translate }}</span>
+    </a>
+  }
+</nav>
