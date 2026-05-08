@@ -9,13 +9,30 @@
   p  { font-size: 13px; color: #9ca3af; }
 }
 
-.btn-print {
+.action-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-print, .btn-export {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 16px; background: #f3f4f6; color: #334155;
-  border: 1px solid #f0f0f0; border-radius: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
   font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap;
   transition: background 0.15s;
+  border: 1px solid #f0f0f0;
+}
+
+.btn-print {
+  background: #f3f4f6; color: #334155;
   &:hover { background: #e2e8f0; }
+}
+
+.btn-export {
+  background: #111827; color: #ffffff;
+  border-color: #111827;
+  &:hover { background: #374151; border-color: #374151; }
 }
 
 @media print {

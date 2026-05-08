@@ -151,6 +151,7 @@ const T: Record<Lang, Record<string, string>> = {
     'reports.rateDate':        'Kur tarihi',
     'reports.grandTotal':      'Genel Toplam (TRY)',
     'reports.print':           'PDF / Yazdır',
+    'reports.exportCsv':       'CSV İndir',
 
     // Nav sections
     'nav.section.main':  'ANA MENÜ',
@@ -461,6 +462,7 @@ const T: Record<Lang, Record<string, string>> = {
     'reports.rateDate':        'Rate date',
     'reports.grandTotal':      'Grand Total (TRY)',
     'reports.print':           'Print / PDF',
+    'reports.exportCsv':       'Export CSV',
 
     // Nav sections
     'nav.section.main':  'MAIN MENU',
@@ -771,6 +773,7 @@ const T: Record<Lang, Record<string, string>> = {
     'reports.rateDate':        'Дата курса',
     'reports.grandTotal':      'Итого (TRY)',
     'reports.print':           'Печать / PDF',
+    'reports.exportCsv':       'Скачать CSV',
 
     // Nav sections
     'nav.section.main':  'ГЛАВНОЕ МЕНЮ',
