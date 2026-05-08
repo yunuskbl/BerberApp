@@ -8,6 +8,7 @@ import { environment } from '../../../environments/environment';
 import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { DecorativeBgComponent } from '../../shared/components/decorative-bg/decorative-bg.component';
+import { LogoComponent } from '../../shared/components/logo/logo.component';
 
 interface Salon {
   id:         string;
@@ -22,7 +23,7 @@ interface Salon {
 @Component({
   selector: 'app-salons',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, LanguageSwitcherComponent, TranslatePipe, DecorativeBgComponent],
+  imports: [CommonModule, RouterModule, FormsModule, LanguageSwitcherComponent, TranslatePipe, DecorativeBgComponent, LogoComponent],
   templateUrl: './salons.component.html',
   styleUrl: './salons.component.scss'
 })
@@ -35,7 +36,7 @@ export class SalonsComponent implements OnInit {
   constructor(private http: HttpClient, private titleService: Title) {}
 
   ngOnInit(): void {
-    this.titleService.setTitle('Salonlar - BerberApp');
+    this.titleService.setTitle('Salonlar - ayarlıyo');
     this.loadSalons();
   }
 

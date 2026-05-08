@@ -29,7 +29,7 @@ const T: Record<Lang, Record<string, string>> = {
 
     // Dashboard
     'dashboard.subtitle':       'Hoş geldiniz! İşte bugünün özeti.',
-    'dashboard.newAppointment': '+ Yeni Randevu',
+    'dashboard.newAppointment': 'Yeni Randevu',
     'dashboard.todayAppts':     'Bugünkü Randevular',
     'dashboard.viewAll':        'Tümünü Gör →',
     'dashboard.quickActions':   'Hızlı İşlemler',
@@ -42,11 +42,14 @@ const T: Record<Lang, Record<string, string>> = {
     'dashboard.q3sub':          'Yeni personel kaydı',
     'dashboard.q4':             'Hizmet Ekle',
     'dashboard.q4sub':          'Yeni hizmet tanımla',
+    'dashboard.q5':             'Raporlar',
+    'dashboard.q5sub':          'Raporları ve analizleri görüntüle',
     'stat.todayAppts':          'Bugünkü Randevular',
     'stat.totalCustomers':      'Toplam Müşteri',
     'stat.totalStaff':          'Toplam Personel',
     'stat.totalServices':       'Toplam Hizmet',
     'stat.todayRevenue':        'Bugünkü Gelir',
+
 
     // Appointment statuses
     'status.pending':   'Bekliyor',
@@ -281,7 +284,7 @@ const T: Record<Lang, Record<string, string>> = {
     'salons.tryAnother':  'Farklı bir arama terimi deneyin.',
     'salons.count':       'salon',
     'salons.bookBtn':     'Randevu Al',
-    'salons.footer':      'BerberApp © 2026',
+    'salons.footer':      'ayarlıyo © 2026',
 
     // Booking (public)
     'booking.loading':          'Salon bilgileri yükleniyor...',
@@ -358,6 +361,8 @@ const T: Record<Lang, Record<string, string>> = {
     'dashboard.q3sub':          'New staff record',
     'dashboard.q4':             'Add Service',
     'dashboard.q4sub':          'Define new service',
+    'dashboard.q5':             'Reports',
+    'dashboard.q5sub':          'View reports and analytics',
     'stat.todayAppts':          "Today's Appointments",
     'stat.totalCustomers':      'Total Customers',
     'stat.totalStaff':          'Total Staff',
@@ -589,7 +594,7 @@ const T: Record<Lang, Record<string, string>> = {
     'salons.tryAnother':  'Try a different search term.',
     'salons.count':       'salons',
     'salons.bookBtn':     'Book Appointment',
-    'salons.footer':      'BerberApp © 2026',
+    'salons.footer':      'ayarlıyo © 2026',
 
     // Booking (public)
     'booking.loading':          'Loading salon info...',
@@ -666,6 +671,8 @@ const T: Record<Lang, Record<string, string>> = {
     'dashboard.q3sub':          'Новая запись сотрудника',
     'dashboard.q4':             'Добавить услугу',
     'dashboard.q4sub':          'Создать новую услугу',
+    'dashboard.q5':             'Отчеты',
+    'dashboard.q5sub':          'Просмотреть отчеты и аналитику',
     'stat.todayAppts':          'Записи на сегодня',
     'stat.totalCustomers':      'Всего клиентов',
     'stat.totalStaff':          'Всего сотрудников',
@@ -897,7 +904,7 @@ const T: Record<Lang, Record<string, string>> = {
     'salons.tryAnother':  'Попробуйте другой поисковый запрос.',
     'salons.count':       'салон(ов)',
     'salons.bookBtn':     'Записаться',
-    'salons.footer':      'BerberApp © 2026',
+    'salons.footer':      'ayarlıyo © 2026',
 
     // Booking (public)
     'booking.loading':          'Загрузка информации о салоне...',
