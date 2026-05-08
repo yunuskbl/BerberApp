@@ -131,10 +131,12 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             {
                 StaffId = g.Key.ToString(),
                 StaffName = staff.FirstOrDefault(s => s.Id == g.Key)?.FullName ?? "Unknown",
-                TotalEarnings = g.Sum(x => services.FirstOrDefault(s => s.Id == x.ServiceId)?.Price ?? 0),
+                // TotalEarnings and Average are always in TRY so mixed-currency salons display correctly
+                TotalEarnings = g.Sum(x => GetPriceInTry(x.ServiceId)),
                 AppointmentCount = g.Count(),
-                Average = g.Count() > 0 ?
-                    g.Sum(x => services.FirstOrDefault(s => s.Id == x.ServiceId)?.Price ?? 0) / g.Count() : 0
+                Average = g.Count() > 0
+                    ? g.Sum(x => GetPriceInTry(x.ServiceId)) / g.Count()
+                    : 0
             })
             .ToList();
 

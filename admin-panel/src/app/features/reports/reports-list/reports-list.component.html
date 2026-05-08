@@ -113,16 +113,23 @@
 
     <!-- Personele Göre Kazanç -->
     <div class="report-section">
-      <h3>{{ 'reports.byStaff' | translate }}</h3>
+      <div class="section-title-row">
+        <h3>{{ 'reports.byStaff' | translate }}</h3>
+        @if (earnings.byCurrency.length > 1) {
+          <span class="try-badge" title="{{ 'reports.tryNote' | translate }}">
+            {{ 'reports.tryConverted' | translate }}
+          </span>
+        }
+      </div>
       <div class="table-card">
         @if (earnings.byStaff.length > 0) {
           <table class="table">
             <thead>
               <tr>
                 <th>{{ 'reports.colStaff' | translate }}</th>
-                <th>{{ 'reports.colTotal' | translate }}</th>
+                <th>{{ 'reports.colTotalTry' | translate }}</th>
                 <th>{{ 'reports.colAppts' | translate }}</th>
-                <th>{{ 'reports.colAvg' | translate }}</th>
+                <th>{{ 'reports.colAvgTry' | translate }}</th>
               </tr>
             </thead>
             <tbody>

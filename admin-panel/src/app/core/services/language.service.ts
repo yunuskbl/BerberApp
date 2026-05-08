@@ -152,6 +152,10 @@ const T: Record<Lang, Record<string, string>> = {
     'reports.grandTotal':      'Genel Toplam (TRY)',
     'reports.print':           'PDF / Yazdır',
     'reports.exportCsv':       'CSV İndir',
+    'reports.colTotalTry':     'Toplam Kazanç (TRY)',
+    'reports.colAvgTry':       'Ortalama (TRY)',
+    'reports.tryConverted':    'Kurdan TRY\'ye çevrildi',
+    'reports.tryNote':         'Farklı para birimleri güncel kur ile TRY\'ye çevrilmiştir',
 
     // Nav sections
     'nav.section.main':  'ANA MENÜ',
@@ -463,6 +467,10 @@ const T: Record<Lang, Record<string, string>> = {
     'reports.grandTotal':      'Grand Total (TRY)',
     'reports.print':           'Print / PDF',
     'reports.exportCsv':       'Export CSV',
+    'reports.colTotalTry':     'Total Earnings (TRY)',
+    'reports.colAvgTry':       'Average (TRY)',
+    'reports.tryConverted':    'Converted to TRY',
+    'reports.tryNote':         'Different currencies are converted to TRY at current exchange rates',
 
     // Nav sections
     'nav.section.main':  'MAIN MENU',
@@ -774,6 +782,10 @@ const T: Record<Lang, Record<string, string>> = {
     'reports.grandTotal':      'Итого (TRY)',
     'reports.print':           'Печать / PDF',
     'reports.exportCsv':       'Скачать CSV',
+    'reports.colTotalTry':     'Общий доход (TRY)',
+    'reports.colAvgTry':       'Среднее (TRY)',
+    'reports.tryConverted':    'Конвертировано в TRY',
+    'reports.tryNote':         'Разные валюты конвертированы в TRY по текущему курсу',
 
     // Nav sections
     'nav.section.main':  'ГЛАВНОЕ МЕНЮ',
