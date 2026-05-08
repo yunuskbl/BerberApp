@@ -60,6 +60,12 @@ export class ReportsListComponent implements OnInit {
     }).format(rate)}`;
   }
 
+  get todayStr(): string {
+    return new Intl.DateTimeFormat(this.langService.dateLocale, {
+      year: 'numeric', month: 'long', day: 'numeric'
+    }).format(new Date());
+  }
+
   printReport(): void {
     window.print();
   }
@@ -137,9 +143,11 @@ export class ReportsListComponent implements OnInit {
       }
     }
 
-    // ── Build CSV string (UTF-8 BOM for Excel) ──
+    // ── Build CSV string ──
+    // UTF-8 BOM + sep=, directive → forces Excel to use comma regardless of locale
     const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
-    const csv = '﻿' + rows.map(r => r.map(escape).join(',')).join('\r\n');
+    const csvBody = rows.map(r => r.map(escape).join(',')).join('\r\n');
+    const csv = '﻿' + 'sep=,\r\n' + csvBody;
 
     // ── Download ──
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

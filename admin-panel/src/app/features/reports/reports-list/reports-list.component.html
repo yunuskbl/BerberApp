@@ -1,4 +1,22 @@
 <div class="page">
+
+  <!-- Print-only professional header (hidden in browser) -->
+  <div class="print-header">
+    <div class="ph-brand">
+      <div class="ph-logo-mark">a<span class="ph-dot">•</span></div>
+      <div class="ph-brand-text">
+        <span class="ph-name">ayarlıyo</span>
+        <span class="ph-sub">RANDEVU SİSTEMİ</span>
+      </div>
+    </div>
+    <div class="ph-meta">
+      <div class="ph-report-name">{{ 'reports.title' | translate }}</div>
+      <div class="ph-period">{{ reportStartDate }} — {{ reportEndDate }}</div>
+      <div class="ph-generated">{{ todayStr }}</div>
+    </div>
+  </div>
+  <div class="print-divider"></div>
+
   <div class="page-header">
     <div>
       <h2>{{ 'reports.title' | translate }}</h2>

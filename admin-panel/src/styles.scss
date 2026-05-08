@@ -271,3 +271,27 @@ input[type="date"] {
 @media (max-width: 768px) {
   .drawer { width: 100% !important; }
 }
+
+// ── Global Print ─────────────────────────────────────────────
+// These selectors need to be in global styles to bypass Angular ViewEncapsulation
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm 18mm;
+  }
+
+  // Hide all layout chrome
+  app-sidebar,
+  app-header,
+  app-bottom-nav { display: none !important; }
+
+  // Reset layout so report fills full page
+  .layout          { display: block !important; }
+  .layout-content  { margin-left: 0 !important; }
+  .main-content    { padding: 0 !important; overflow: visible !important; }
+
+  body             { background: white !important; font-size: 12px; }
+
+  // Remove box-shadow on print
+  * { box-shadow: none !important; }
+}
