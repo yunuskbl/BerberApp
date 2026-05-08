@@ -64,6 +64,29 @@ services:
       - berberapp-network
     restart: always
 
+  # ── Otomatik veritabanı yedekleme servisi ──────────────────────────────
+  # Günlük saat 03:00'de pg_dump çalıştırır, 7 gün saklar.
+  db-backup:
+    image: postgres:16
+    container_name: berberapp-db-backup
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./backups:/backups
+      - ./scripts:/scripts
+    entrypoint: >
+      /bin/sh -c "
+        apk add --no-cache dcron > /dev/null 2>&1 || true;
+        echo '0 3 * * * PGPASSWORD=$$PGPASSWORD pg_dump -h db -U postgres BerberAppDb --clean --if-exists | gzip > /backups/berberapp_$$(date +%%Y%%m%%d_%%H%%M%%S).sql.gz && find /backups -name \"berberapp_*.sql.gz\" -mtime +7 -delete' | crontab -;
+        crond -f -l 8
+      "
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - berberapp-network
+    restart: always
+
 volumes:
   postgres_data:
   uploads_data:

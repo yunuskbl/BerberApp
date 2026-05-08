@@ -15,6 +15,10 @@ admin-panel/.angular/
 # Docker
 postgres_data/
 
+# Yedekler (veritabanı dump dosyaları — asla commit'leme)
+backups/
+*.sql.gz
+
 # Environment
 *.env
 .env

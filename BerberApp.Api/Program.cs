@@ -164,6 +164,7 @@ var staticFileOptions = new StaticFileOptions
 app.UseStaticFiles(staticFileOptions);
 
 // Middleware
+app.UseMiddleware<SecurityAuditMiddleware>();    // En dışta — 401/403/429 yanıtlarını loglar
 app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<RateLimitingMiddleware>();

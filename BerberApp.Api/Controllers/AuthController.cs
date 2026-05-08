@@ -86,4 +86,28 @@ public class AuthController : ControllerBase
         return Ok(new { success = true, message = "Çıkış yapıldı." });
     }
 
+    /// <summary>
+    /// KVKK/GDPR — Hesabı kalıcı olarak sil ve kişisel verileri anonimleştir.
+    /// Bu işlem geri alınamaz. Şifre ile doğrulama zorunludur.
+    /// </summary>
+    [HttpDelete("delete-account")]
+    [Authorize]
+    public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountCommand command)
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                      ?? User.FindFirst("sub");
+
+        if (userIdClaim is null)
+            return Unauthorized();
+
+        command.UserId = Guid.Parse(userIdClaim.Value);
+        await _mediator.Send(command);
+
+        return Ok(new
+        {
+            success = true,
+            message = "Hesabınız ve kişisel verileriniz başarıyla silindi. (KVKK Madde 7)"
+        });
+    }
+
 }

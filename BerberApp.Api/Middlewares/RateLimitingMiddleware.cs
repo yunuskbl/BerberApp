@@ -9,10 +9,11 @@ public class RateLimitingMiddleware
     private readonly IMemoryCache _cache;
 
     // Limitler
-    private const int MaxBookingRequestsPerHour = 10;   // IP başına saatte max booking isteği
-    private const int MaxLoginAttemptsPerWindow = 5;    // IP başına 15 dakikada max login denemesi
+    private const int MaxBookingRequestsPerHour  = 10;  // IP başına saatte max booking isteği
+    private const int MaxLoginAttemptsPerWindow  = 5;   // IP başına 15 dakikada max login denemesi
     private const int MaxLookupRequestsPerMinute = 5;   // IP başına dakikada max customer-lookup isteği
-    private const int MaxOtpSendPerHour = 5;            // IP başına saatte max OTP gönderme
+    private const int MaxOtpSendPerHour          = 5;   // IP başına saatte max OTP gönderme
+    private const int MaxGeneralRequestsPerMinute = 150; // Genel API: IP başına dakikada max istek
 
     public RateLimitingMiddleware(RequestDelegate next, IMemoryCache cache)
     {
@@ -116,6 +117,40 @@ public class RateLimitingMiddleware
             }
 
             _cache.Set(ipKey, ipCount + 1, DateTimeOffset.UtcNow.AddHours(1));
+        }
+
+        // ── Genel API rate limit ─────────────────────────────────────────
+        // Daha spesifik limiti olan endpoint'ler yukarıda zaten kontrol edildi.
+        // Burada kalan tüm /api/ yollarına genel dakikalık limit uygulanır.
+        if (context.Request.Path.StartsWithSegments("/api"))
+        {
+            var isSpecificLimitApplied =
+                (context.Request.Path.StartsWithSegments("/api/auth/login") && context.Request.Method == "POST") ||
+                (context.Request.Path.StartsWithSegments("/api/otp/send")   && context.Request.Method == "POST") ||
+                (context.Request.Path.Value?.Contains("/customer-lookup") == true && context.Request.Method == "GET") ||
+                (context.Request.Path.StartsWithSegments("/api/booking")    && context.Request.Method == "POST");
+
+            if (!isSpecificLimitApplied)
+            {
+                var minute     = DateTime.UtcNow.ToString("yyyyMMddHHmm");
+                var globalKey  = $"ratelimit:global:{ip}:{minute}";
+                var globalCount = _cache.GetOrCreate(globalKey, entry =>
+                {
+                    entry.AbsoluteExpiration = DateTime.UtcNow.AddMinutes(1);
+                    return 0;
+                });
+
+                if (globalCount >= MaxGeneralRequestsPerMinute)
+                {
+                    context.Response.StatusCode  = (int)HttpStatusCode.TooManyRequests;
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsync(
+                        "{\"success\":false,\"message\":\"İstek limiti aşıldı. Lütfen bir dakika bekleyin.\"}");
+                    return;
+                }
+
+                _cache.Set(globalKey, globalCount + 1, DateTimeOffset.UtcNow.AddMinutes(1));
+            }
         }
 
         await _next(context);
