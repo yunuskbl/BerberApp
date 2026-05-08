@@ -14,7 +14,7 @@
         class="nav-item"
         [title]="item.key | translate"
         (click)="navigateTo(item.route)">
-        <span class="nav-icon">{{ item.icon }}</span>
+        <span class="nav-icon" [innerHTML]="getIcon(item.icon)"></span>
         <span class="nav-label">{{ item.key | translate }}</span>
         <span class="nav-indicator"></span>
       </a>
@@ -30,13 +30,13 @@
         routerLinkActive="active"
         class="nav-item"
         [title]="item.key | translate">
-        <span class="nav-icon">{{ item.icon }}</span>
+        <span class="nav-icon" [innerHTML]="getIcon(item.icon)"></span>
         <span class="nav-label">{{ item.key | translate }}</span>
       </a>
     }
 
     <button class="nav-item logout-btn" (click)="logout()" [title]="'settings.logout' | translate">
-      <span class="nav-icon">🚪</span>
+      <span class="nav-icon" [innerHTML]="getIcon('logout')"></span>
       <span class="nav-label">{{ 'settings.logout' | translate }}</span>
     </button>
 
