@@ -35,12 +35,20 @@ public class GetAllAppointmentsHandler : IRequestHandler<GetAllAppointmentsQuery
 
         if (request.Date.HasValue)
         {
-            var startOfDay = request.Date.Value.Date;
-            var endOfDay = startOfDay.AddDays(1);
+            // Tarih filtresi Türkiye saatine göre yapılmalı (UTC+3).
+            // DateTime.SpecifyKind → UTC değil, yerel Turkey zamanı olarak işaret ediyoruz.
+            var turkeyTz   = TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time");
+            var dayStart   = new DateTime(
+                request.Date.Value.Year, request.Date.Value.Month, request.Date.Value.Day,
+                0, 0, 0, DateTimeKind.Unspecified);
+            var dayEnd     = dayStart.AddDays(1);
+
+            var startUtc   = TimeZoneInfo.ConvertTimeToUtc(dayStart, turkeyTz);
+            var endUtc     = TimeZoneInfo.ConvertTimeToUtc(dayEnd,   turkeyTz);
 
             query = query.Where(x =>
-                x.StartTime >= startOfDay &&
-                x.StartTime < endOfDay);
+                x.StartTime >= startUtc &&
+                x.StartTime < endUtc);
         }
 
 

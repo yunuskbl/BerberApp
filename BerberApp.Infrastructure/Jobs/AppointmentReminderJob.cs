@@ -21,8 +21,14 @@ public class AppointmentReminderJob
     [AutomaticRetry(Attempts = 2)]
     public async Task SendRemindersAsync()
     {
-        var tomorrow = DateTime.UtcNow.Date.AddDays(1);
-        var dayAfter = tomorrow.AddDays(1);
+        // Yarın sınırlarını Türkiye saatine göre hesapla (UTC+3).
+        // UTC gece yarısı kullanmak 00:00-03:00 arası Türkiye randevularını kaçırırdı.
+        var turkeyTz    = TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time");
+        var nowTurkey   = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, turkeyTz);
+        var tomorrowStart = new DateTime(nowTurkey.Year, nowTurkey.Month, nowTurkey.Day, 0, 0, 0).AddDays(1);
+        var tomorrowEnd   = tomorrowStart.AddDays(1);
+        var tomorrow    = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(tomorrowStart, DateTimeKind.Unspecified), turkeyTz);
+        var dayAfter    = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(tomorrowEnd,   DateTimeKind.Unspecified), turkeyTz);
 
         var appointments = await _context.Appointments
             .Include(x => x.Customer)
