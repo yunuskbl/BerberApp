@@ -26,7 +26,7 @@ public class SmsService : ISmsService
 
     public async Task SendAppointmentConfirmedAsync(
         string phone, string customerName, string serviceName,
-        string staffName, DateTime startTime, string salonName = "")
+        string staffName, DateTime startTime, string salonName = "", string address = "")
     {
         var turkeyTime = ToTurkeyTime(startTime);
         var culture    = new System.Globalization.CultureInfo("tr-TR");
@@ -38,7 +38,7 @@ public class SmsService : ISmsService
     }
 
     public async Task SendAppointmentReminderAsync(
-        string phone, string customerName, string serviceName, DateTime startTime)
+        string phone, string customerName, string serviceName, DateTime startTime, string salonName = "", string address = "")
     {
         var turkeyTime = ToTurkeyTime(startTime);
         var culture    = new System.Globalization.CultureInfo("tr-TR");

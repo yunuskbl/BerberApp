@@ -37,13 +37,18 @@ public class AppointmentReminderJob
         {
             try
             {
-                if (apt.Tenant.PreferredNotificationChannel == NotificationChannel.Sms)
+                var salonName = apt.Tenant?.Name    ?? string.Empty;
+                var address   = apt.Tenant?.Address ?? string.Empty;
+
+                if (apt.Tenant?.PreferredNotificationChannel == NotificationChannel.Sms)
                 {
                     await _smsService.SendAppointmentReminderAsync(
                         apt.Customer.Phone,
                         apt.Customer.FullName,
                         apt.Service.Name,
-                        apt.StartTime
+                        apt.StartTime,
+                        salonName,
+                        address
                     );
                 }
                 else
@@ -52,7 +57,9 @@ public class AppointmentReminderJob
                         apt.Customer.Phone,
                         apt.Customer.FullName,
                         apt.Service.Name,
-                        apt.StartTime
+                        apt.StartTime,
+                        salonName,
+                        address
                     );
                 }
             }

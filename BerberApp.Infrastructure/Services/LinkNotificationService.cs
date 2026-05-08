@@ -35,18 +35,18 @@ public class LinkNotificationService : INotificationService
     {
         try
         {
-            var (channel, salonName) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, address) = await GetTenantInfoAsync(dto.TenantId);
 
             if (channel == NotificationChannel.Sms)
             {
                 await _smsService.SendAppointmentConfirmedAsync(
-                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName);
+                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, address);
                 _logger.LogInformation("[SMS] Onay bildirimi gönderildi: {Recipient}", recipient);
             }
             else
             {
                 await _whatsAppService.SendAppointmentConfirmedAsync(
-                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName);
+                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, address);
                 _logger.LogInformation("[WHATSAPP] Onay bildirimi gönderildi: {Recipient}", recipient);
             }
         }
@@ -60,7 +60,7 @@ public class LinkNotificationService : INotificationService
     {
         try
         {
-            var (channel, salonName) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, _) = await GetTenantInfoAsync(dto.TenantId);
 
             if (channel == NotificationChannel.Sms)
             {
@@ -81,7 +81,7 @@ public class LinkNotificationService : INotificationService
         }
     }
 
-    private async Task<(NotificationChannel channel, string salonName)> GetTenantInfoAsync(Guid tenantId)
+    private async Task<(NotificationChannel channel, string salonName, string address)> GetTenantInfoAsync(Guid tenantId)
     {
         var tenant = await _context.Tenants
             .AsNoTracking()
@@ -89,7 +89,8 @@ public class LinkNotificationService : INotificationService
 
         return (
             tenant?.PreferredNotificationChannel ?? NotificationChannel.WhatsApp,
-            tenant?.Name ?? string.Empty
+            tenant?.Name    ?? string.Empty,
+            tenant?.Address ?? string.Empty
         );
     }
 }
