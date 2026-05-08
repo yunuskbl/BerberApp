@@ -26,9 +26,7 @@
           <div class="service-color-bar" [style.background]="service.color || '#7c3aed'"></div>
           <div class="service-body">
             <div class="service-top">
-              <div class="service-icon" [style.background]="(service.color || '#7c3aed') + '20'">
-                <span [style.color]="service.color || '#7c3aed'">✂</span>
-              </div>
+              <div class="service-icon">✂</div>
               @if (service.isActive) {
                 <span class="badge badge-success">{{ 'common.active' | translate }}</span>
               } @else {
