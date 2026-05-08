@@ -1,4 +1,4 @@
-.detail-page {
+﻿.detail-page {
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -32,14 +32,14 @@
   gap: 16px;
 
   h1 { font-size: 24px; font-weight: 700; color: #f1f5f9; margin: 0 0 4px; }
-  .subdomain { font-size: 13px; color: #64748b; margin: 0; }
+  .subdomain { font-size: 13px; color: #6b7280; margin: 0; }
 }
 
 .back-btn {
   display: inline-flex;
   align-items: center;
   font-size: 13px;
-  color: #94a3b8;
+  color: #9ca3af;
   text-decoration: none;
   padding: 6px 12px;
   background: #1e293b;
@@ -78,7 +78,7 @@
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
-.btn-secondary { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+.btn-secondary { background: #1e293b; color: #9ca3af; border: 1px solid #334155; }
 .btn-plan { background: #7c3aed; color: white; }
 .btn-soft-delete { background: #f59e0b; color: white; }
 .btn-hard-delete { background: #ef4444; color: white; }
@@ -111,7 +111,7 @@
 
   .stat-icon { font-size: 28px; }
   .stat-value { font-size: 22px; font-weight: 700; color: #f1f5f9; margin: 0 0 2px; }
-  .stat-label { font-size: 11px; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-label { font-size: 11px; color: #6b7280; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
 }
 
 .info-card, .appointments-card {
@@ -134,11 +134,11 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  span:first-child { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+  span:first-child { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
   span:last-child { font-size: 14px; color: #e2e8f0; font-weight: 500; }
 }
 
-.empty { color: #64748b; font-size: 14px; text-align: center; padding: 24px 0; }
+.empty { color: #6b7280; font-size: 14px; text-align: center; padding: 24px 0; }
 
 table {
   width: 100%;
@@ -147,7 +147,7 @@ table {
     text-align: left;
     font-size: 11px;
     font-weight: 700;
-    color: #64748b;
+    color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding: 8px 12px;
@@ -156,7 +156,7 @@ table {
   td {
     padding: 12px;
     font-size: 13px;
-    color: #94a3b8;
+    color: #9ca3af;
     border-bottom: 1px solid #1e293b;
   }
   tr:last-child td { border-bottom: none; }
@@ -193,7 +193,7 @@ table {
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
 
   h3 { font-size: 18px; font-weight: 700; color: #f1f5f9; margin: 0 0 8px; }
-  p { font-size: 14px; color: #94a3b8; margin: 0 0 20px; }
+  p { font-size: 14px; color: #9ca3af; margin: 0 0 20px; }
 }
 
 .plan-options {
@@ -214,13 +214,13 @@ table {
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  color: #94a3b8;
+  color: #9ca3af;
   transition: all 0.2s;
 
   input { display: none; }
 
   &.selected {
-    border-color: #7c3aed;
+    border-color: #374151;
     background: rgba(124,58,237,0.15);
     color: #a78bfa;
   }

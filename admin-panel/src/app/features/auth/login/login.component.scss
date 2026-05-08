@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+  background: #111827;
   position: relative;
   overflow: hidden;
 }
@@ -19,25 +19,25 @@
   }
 
   .circle-1 {
-    width: 400px;
-    height: 400px;
-    background: rgba(167, 139, 250, 0.12);
-    top: -100px;
-    right: -100px;
+    width: 500px;
+    height: 500px;
+    background: rgba(255,255,255,0.02);
+    top: -150px;
+    right: -150px;
   }
 
   .circle-2 {
-    width: 300px;
-    height: 300px;
-    background: rgba(139, 92, 246, 0.15);
-    bottom: -80px;
-    left: -80px;
+    width: 350px;
+    height: 350px;
+    background: rgba(255,255,255,0.015);
+    bottom: -100px;
+    left: -100px;
   }
 
   .circle-3 {
     width: 200px;
     height: 200px;
-    background: rgba(196, 181, 253, 0.08);
+    background: rgba(255,255,255,0.01);
     top: 50%;
     left: 30%;
   }
@@ -47,41 +47,49 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 420px;
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 24px;
+  max-width: 400px;
+  background: #ffffff;
+  border-radius: 20px;
   padding: 48px 40px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 32px 64px rgba(0,0,0,0.4);
 }
 
-.login-icon {
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, #a78bfa, #7c3aed);
-  border-radius: 16px;
+.login-logo {
   display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 26px;
-  margin: 0 auto 20px;
-  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+  margin-bottom: 8px;
+
+  ::ng-deep .wordmark {
+    font-size: 32px !important;
+    color: #111827 !important;
+  }
+
+  ::ng-deep .wordmark::after {
+    width: 9px !important;
+    height: 9px !important;
+    background: #111827 !important;
+  }
+
+  ::ng-deep .tagline {
+    text-align: center;
+    color: #9ca3af !important;
+    font-size: 9px !important;
+  }
 }
 
 h1 {
-  font-family: 'Poppins', sans-serif;
-  font-size: 26px;
+  font-family: 'Syne', sans-serif;
+  font-size: 24px;
   font-weight: 700;
-  color: #ffffff;
+  color: #111827;
   text-align: center;
   margin-bottom: 6px;
+  letter-spacing: -0.5px;
 }
 
 .subtitle {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.45);
+  color: #9ca3af;
   text-align: center;
   margin-bottom: 32px;
 }
@@ -91,54 +99,51 @@ h1 {
 
   label {
     display: block;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.45);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: #9ca3af;
     margin-bottom: 8px;
+    text-transform: uppercase;
   }
 
   input {
     width: 100%;
-    padding: 13px 16px;
-    background: rgba(255, 255, 255, 0.07);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 9px;
     font-family: 'Inter', sans-serif;
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.9);
-    transition: all 0.2s;
+    color: #111827;
+    transition: all 0.18s;
     outline: none;
 
-    &::placeholder {
-      color: rgba(255, 255, 255, 0.2);
-    }
+    &::placeholder { color: #d1d5db; }
 
     &:focus {
-      border-color: rgba(167, 139, 250, 0.6);
-      background: rgba(255, 255, 255, 0.1);
-      box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+      border-color: #111827;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(17,24,39,0.08);
     }
 
-    &.error {
-      border-color: rgba(248, 113, 113, 0.6);
-    }
+    &.error { border-color: #dc2626; }
   }
 }
 
 .error-text {
   display: block;
   font-size: 11px;
-  color: #f87171;
+  color: #dc2626;
   margin-top: 5px;
 }
 
 .error-message {
-  background: rgba(248, 113, 113, 0.15);
-  border: 1px solid rgba(248, 113, 113, 0.3);
-  color: #fca5a5;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
   padding: 12px 16px;
-  border-radius: 10px;
+  border-radius: 9px;
   font-size: 13px;
   margin-bottom: 16px;
   text-align: center;
@@ -146,32 +151,27 @@ h1 {
 
 .btn-login {
   width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  padding: 13px;
+  background: #111827;
   color: white;
   border: none;
-  border-radius: 10px;
-  font-family: 'Inter', sans-serif;
+  border-radius: 9px;
+  font-family: 'Syne', sans-serif;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.18s;
   margin-top: 8px;
-  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+  letter-spacing: -0.2px;
 
   &:hover:not(:disabled) {
+    background: #1f2937;
     transform: translateY(-1px);
-    box-shadow: 0 8px 25px rgba(124, 58, 237, 0.5);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
   }
 
-  &:active:not(:disabled) {
-    transform: translateY(0);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+  &:active:not(:disabled) { transform: translateY(0); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
 .loading {
@@ -181,8 +181,8 @@ h1 {
   gap: 6px;
 
   .dot {
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
     background: white;
     border-radius: 50%;
     animation: bounce 0.6s infinite alternate;
@@ -194,7 +194,7 @@ h1 {
 
 @keyframes bounce {
   from { transform: translateY(0); opacity: 0.6; }
-  to   { transform: translateY(-6px); opacity: 1; }
+  to   { transform: translateY(-5px); opacity: 1; }
 }
 
 .forgot-link {
@@ -203,16 +203,16 @@ h1 {
 
   a {
     font-size: 12px;
-    color: rgba(167, 139, 250, 0.8);
+    color: #9ca3af;
     text-decoration: none;
 
-    &:hover { color: #a78bfa; text-decoration: underline; }
+    &:hover { color: #111827; }
   }
 }
 
 .footer-text {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.2);
+  color: #d1d5db;
   text-align: center;
-  margin-top: 28px;
+  margin-top: 24px;
 }

@@ -1,38 +1,51 @@
 <div class="dashboard">
 
-  <!-- Page Header -->
+  <!-- ── Hero Card ── -->
+  <div class="hero-card">
+    <div class="hero-eyebrow">{{ 'dashboard.subtitle' | translate }}</div>
+    <div class="hero-title">{{ stats[0].value }} {{ 'dashboard.todayAppts' | translate }}</div>
+    <div class="hero-sub">{{ 'dashboard.heroSub' | translate }}</div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hs-val">{{ stats[4].value }}</div>
+        <div class="hs-lbl">{{ 'stat.todayRevenue' | translate }}</div>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat">
+        <div class="hs-val">{{ stats[1].value }}</div>
+        <div class="hs-lbl">{{ 'stat.totalCustomers' | translate }}</div>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat">
+        <div class="hs-val">{{ stats[2].value }}</div>
+        <div class="hs-lbl">{{ 'stat.totalStaff' | translate }}</div>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat">
+        <div class="hs-val">{{ stats[3].value }}</div>
+        <div class="hs-lbl">{{ 'stat.totalServices' | translate }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Page Header ── -->
   <div class="page-header">
     <div>
       <h2>{{ 'page.dashboard' | translate }}</h2>
-      <p>{{ 'dashboard.subtitle' | translate }}</p>
     </div>
     <a routerLink="/appointments" class="btn btn-primary">
-      {{ 'dashboard.newAppointment' | translate }}
+      + {{ 'dashboard.newAppointment' | translate }}
     </a>
   </div>
 
-  <!-- Stats Cards -->
-  <div class="stats-grid">
-    @for (stat of stats; track stat.key) {
-      <a [routerLink]="stat.route" class="stat-card stat-{{ stat.color }}">
-        <div class="stat-icon">{{ stat.icon }}</div>
-        <div class="stat-info">
-          <span class="stat-value">{{ stat.value }}</span>
-          <span class="stat-label">{{ stat.key | translate }}</span>
-        </div>
-        <div class="stat-arrow">→</div>
-      </a>
-    }
-  </div>
-
-  <!-- Content Grid -->
+  <!-- ── Content Grid ── -->
   <div class="content-grid">
 
     <!-- Bugünkü Randevular -->
     <div class="card">
       <div class="card-header">
         <h3>{{ 'dashboard.todayAppts' | translate }}</h3>
-        <a routerLink="/appointments" class="card-link">{{ 'dashboard.viewAll' | translate }}</a>
+        <a routerLink="/appointments" class="card-link">{{ 'dashboard.viewAll' | translate }} →</a>
       </div>
 
       @if (isLoading) {
@@ -52,7 +65,7 @@
               </div>
               <div class="apt-info">
                 <span class="apt-customer">{{ apt.customerName }}</span>
-                <span class="apt-service">{{ apt.serviceName }} — {{ apt.staffName }}</span>
+                <span class="apt-service">{{ apt.serviceName }} · {{ apt.staffName }}</span>
               </div>
               <span class="badge {{ getStatusClass(apt.status) }}">
                 {{ getStatusKey(apt.status) | translate }}
@@ -102,6 +115,15 @@
           <div class="qa-info">
             <span class="qa-title">{{ 'dashboard.q4' | translate }}</span>
             <span class="qa-desc">{{ 'dashboard.q4sub' | translate }}</span>
+          </div>
+          <span class="qa-arrow">→</span>
+        </a>
+
+        <a routerLink="/reports" class="quick-action-item">
+          <div class="qa-icon qa-gold">📊</div>
+          <div class="qa-info">
+            <span class="qa-title">{{ 'dashboard.q5' | translate }}</span>
+            <span class="qa-desc">{{ 'dashboard.q5sub' | translate }}</span>
           </div>
           <span class="qa-arrow">→</span>
         </a>

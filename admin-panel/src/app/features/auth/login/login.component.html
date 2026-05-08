@@ -1,17 +1,13 @@
 <div class="login-wrapper">
 
-  <div class="bg-circles">
-    <div class="circle circle-1"></div>
-    <div class="circle circle-2"></div>
-    <div class="circle circle-3"></div>
-  </div>
-
   <div class="login-card">
 
-    <div class="login-icon">✂</div>
+    <!-- Logo -->
+    <div class="login-logo">
+      <app-logo variant="light"></app-logo>
+    </div>
 
-    <h1>BerberApp</h1>
-    <p class="subtitle">Admin Paneli — Giriş Yapın</p>
+    <p class="subtitle">Admin Paneline Giriş Yapın</p>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
@@ -20,7 +16,7 @@
         <input
           type="email"
           formControlName="email"
-          placeholder="admin@berber.com"
+          placeholder="admin@ayarliyo.com"
           [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"/>
         <span class="error-text"
           *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
@@ -60,7 +56,7 @@
 
     </form>
 
-    <p class="footer-text">BerberApp © 2026 — Tüm hakları saklıdır.</p>
+    <p class="footer-text">ayarlıyo © 2026 — Tüm hakları saklıdır.</p>
 
   </div>
 </div>

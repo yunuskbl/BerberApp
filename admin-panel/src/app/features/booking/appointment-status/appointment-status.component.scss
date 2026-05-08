@@ -1,4 +1,4 @@
-:host {
+﻿:host {
   --theme:       #7c3aed;
   --theme-dark:  #4a1aaa;
   --theme-light: #f3eeff;
@@ -163,14 +163,14 @@
 
   .save-link-desc {
     font-size: 12px;
-    color: #64748b;
+    color: #6b7280;
     margin: 0 0 12px;
     line-height: 1.5;
   }
 
   .link-box {
     background: white;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #f0f0f0;
     border-radius: 8px;
     padding: 8px 12px;
     margin-bottom: 10px;
@@ -225,7 +225,7 @@
 
 /* Appointment detail rows */
 .appointment-details {
-  background: #f8fafc;
+  background: #f9fafb;
   border-radius: 14px;
   overflow: hidden;
   margin-bottom: 20px;
@@ -236,13 +236,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #fafafa;
 
   &:last-child { border-bottom: none; }
 
   .label {
     font-size: 13px;
-    color: #94a3b8;
+    color: #9ca3af;
     display: flex;
     align-items: center;
     gap: 7px;
@@ -253,7 +253,7 @@
   .value {
     font-size: 13px;
     font-weight: 600;
-    color: #0f172a;
+    color: #111827;
     text-align: right;
     max-width: 58%;
   }
@@ -267,7 +267,7 @@
 /* Footer */
 .footer-note {
   font-size: 12px;
-  color: #94a3b8;
+  color: #9ca3af;
   text-align: center;
   line-height: 1.6;
 }
@@ -326,8 +326,8 @@
 
 .btn-cancel-dismiss {
   background: white;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
+  color: #6b7280;
+  border: 1px solid #f0f0f0;
   padding: 9px 18px;
   border-radius: 7px;
   font-size: 13px;
