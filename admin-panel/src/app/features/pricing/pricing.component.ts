@@ -61,7 +61,11 @@ export class PricingComponent {
         { name: 'Müşteri Yönetimi', included: true, icon: '👥' },
         { name: 'Personel Yönetimi', included: true, icon: '👔' },
         { name: 'Hizmet Yönetimi', included: true, icon: '✂️' },
+        { name: 'WhatsApp Bildirimleri', included: false, icon: '💬' },
+        { name: 'Değerlendirme Sistemi', included: false, icon: '⭐' },
+        { name: 'Google Maps Entegrasyonu', included: false, icon: '🗺️' },
         { name: 'Rapor & Analytics', included: false, icon: '📊' },
+        { name: 'Tekrarlayan Müşteri Analizi', included: false, icon: '🔄' },
         { name: 'Gelişmiş Raporlar', included: false, icon: '📈' },
         { name: '24/7 Destek', included: false, icon: '🆘' }
       ],
@@ -79,7 +83,11 @@ export class PricingComponent {
         { name: 'Müşteri Yönetimi', included: true, icon: '👥' },
         { name: 'Personel Yönetimi', included: true, icon: '👔' },
         { name: 'Hizmet Yönetimi', included: true, icon: '✂️' },
+        { name: 'WhatsApp Bildirimleri', included: true, icon: '💬' },
+        { name: 'Değerlendirme Sistemi', included: true, icon: '⭐' },
+        { name: 'Google Maps Entegrasyonu', included: true, icon: '🗺️' },
         { name: 'Rapor & Analytics', included: true, icon: '📊' },
+        { name: 'Tekrarlayan Müşteri Analizi', included: false, icon: '🔄' },
         { name: 'Gelişmiş Raporlar', included: false, icon: '📈' },
         { name: '24/7 Destek', included: false, icon: '🆘' }
       ],
@@ -97,7 +105,11 @@ export class PricingComponent {
         { name: 'Müşteri Yönetimi', included: true, icon: '👥' },
         { name: 'Personel Yönetimi', included: true, icon: '👔' },
         { name: 'Hizmet Yönetimi', included: true, icon: '✂️' },
+        { name: 'WhatsApp Bildirimleri', included: true, icon: '💬' },
+        { name: 'Değerlendirme Sistemi', included: true, icon: '⭐' },
+        { name: 'Google Maps Entegrasyonu', included: true, icon: '🗺️' },
         { name: 'Rapor & Analytics', included: true, icon: '📊' },
+        { name: 'Tekrarlayan Müşteri Analizi', included: true, icon: '🔄' },
         { name: 'Gelişmiş Raporlar', included: true, icon: '📈' },
         { name: '24/7 Destek', included: true, icon: '🆘' }
       ],
@@ -110,21 +122,21 @@ export class PricingComponent {
       name: 'Ayşe Yılmaz',
       company: 'Beauty Salon Istanbul',
       avatar: '👩‍🦰',
-      text: 'BerberApp sayesinde randevu yönetimi çok daha kolay hale geldi. Müşteri memnuniyeti %40 arttı!',
+      text: 'WhatsApp bildirimleri sayesinde müşterilerim randevularını asla unutmuyor. Memnuniyet %40 arttı!',
       rating: 5
     },
     {
       name: 'Mehmet Kaya',
       company: 'Elite Barber Shop',
       avatar: '👨‍💼',
-      text: 'Standard paketindeki raporlar benim işletmemi analiz etmeme çok yardımcı oldu.',
+      text: 'Değerlendirme sistemi ve tekrarlayan müşteri analizi sayesinde hangi müşterilerimi daha iyi tanıyorum. Harika özellik!',
       rating: 5
     },
     {
       name: 'Zeynep Demir',
       company: 'Hair Design Studio',
       avatar: '👩‍🎨',
-      text: 'Full paketini kullanmaya başladığımdan beri verim %60 arttı. Harika yazılım!',
+      text: 'Google Maps entegrasyonu müşterilerimin salonu bulmasını çok kolaylaştırdı. Full paketi kesinlikle değer!',
       rating: 5
     }
   ];
@@ -136,18 +148,28 @@ export class PricingComponent {
       open: false
     },
     {
-      question: 'Kredi kartı gerekli midir?',
-      answer: 'Hayır! Basic plan tamamen ücretsizdir. Premium planlara geçerken ödeme yapmanız gerekir.',
+      question: 'WhatsApp bildirimleri nasıl çalışıyor?',
+      answer: 'Randevu tamamlandığında müşterinize otomatik olarak WhatsApp mesajı gönderilir. Mesajda değerlendirme linki ve salonunuza Google Maps yönlendirmesi yer alır. Standard ve Full paketlerinde mevcuttur.',
+      open: false
+    },
+    {
+      question: 'Değerlendirme sistemi nasıl çalışıyor?',
+      answer: 'Randevu tamamlandıktan sonra müşterileriniz 1-5 yıldız arası puan ve yorum bırakabilir. Yönetici panelinden tüm değerlendirmeleri görebilir, filtreleyebilirsiniz. Standard ve Full paketlerinde mevcuttur.',
+      open: false
+    },
+    {
+      question: 'Tekrarlayan müşteri analizi ne işe yarar?',
+      answer: 'Full pakette sunulan bu özellik sayesinde hangi müşterilerin daha önce de yorum bıraktığını görebilirsiniz. Sadık müşterilerinizi tanıyarak onlara özel kampanyalar oluşturabilirsiniz.',
+      open: false
+    },
+    {
+      question: 'Google Maps entegrasyonu nasıl çalışıyor?',
+      answer: 'Standard ve Full paketlerinde, gönderilen WhatsApp mesajlarına otomatik olarak salonunuzun Google Maps yönlendirme linki eklenir. Müşterileriniz tek tıkla yol tarifi alabilir.',
       open: false
     },
     {
       question: 'Kişi sayısının bir sınırı var mı?',
       answer: 'Hayır! Tüm planlarda sınırsız müşteri ve personel ekleyebilirsiniz.',
-      open: false
-    },
-    {
-      question: 'Verileri yedekleyebilir miyim?',
-      answer: 'Evet! Verileriniz güvenli sunucularda saklanır ve istediğiniz zaman indirebilirsiniz.',
       open: false
     }
   ];
