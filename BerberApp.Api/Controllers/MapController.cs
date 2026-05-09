@@ -10,7 +10,7 @@ namespace BerberApp.Api.Controllers;
 /// Bu endpoint tenant adresine göre Google Maps'e yönlendirir.
 /// </summary>
 [ApiController]
-[Route("map")]
+[Route("api/map")]
 [AllowAnonymous]
 public class MapController : ControllerBase
 {

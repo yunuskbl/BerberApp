@@ -121,7 +121,7 @@ public class LinkNotificationService : INotificationService
             .FirstOrDefaultAsync(t => t.Id == tenantId);
 
         var mapsUrl = !string.IsNullOrWhiteSpace(tenant?.Subdomain)
-            ? $"{_frontendBase}/map/{tenant.Subdomain}"
+            ? $"{_frontendBase}/api/map/{tenant.Subdomain}"
             : string.Empty;
 
         return (
