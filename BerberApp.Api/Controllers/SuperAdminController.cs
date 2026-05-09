@@ -38,7 +38,7 @@ public class SuperAdminController : ControllerBase
         {
             var tenants = await _context.Tenants
                 .IgnoreQueryFilters()
-                .Where(t => t.Id != SYSTEM_TENANT_ID && !t.IsDeleted) // Sistem tenant'ı ve silinenleri hariç tut
+                .Where(t => t.Id != SYSTEM_TENANT_ID && !t.IsDeleted)
                 .AsNoTracking()
                 .Select(t => new SuperAdminTenantDto
                 {
@@ -55,7 +55,13 @@ public class SuperAdminController : ControllerBase
                     TotalAppointments = t.Appointments.Count(),
                     PendingAppointments = t.Appointments.Count(a => a.Status == AppointmentStatus.Pending),
                     CompletedAppointments = t.Appointments.Count(a => a.Status == AppointmentStatus.Completed),
-                    Plan = "Basic" // TODO: Subscription model'den al
+                    Plan = _context.Subscriptions
+                        .Where(s => s.TenantId == t.Id
+                                 && s.Status == SubscriptionStatus.Active
+                                 && s.ExpiryDate > DateTime.UtcNow)
+                        .OrderByDescending(s => s.StartDate)
+                        .Select(s => s.Plan.ToString())
+                        .FirstOrDefault() ?? "Baslangic"
                 })
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
@@ -113,7 +119,14 @@ public class SuperAdminController : ControllerBase
                         a.Id, a.StartTime, a.Status,
                         CustomerName = a.Customer != null ? a.Customer.FullName : "—",
                         ServiceName = a.Service != null ? a.Service.Name : "—"
-                    }).ToList()
+                    }).ToList(),
+                Plan = _context.Subscriptions
+                    .Where(s => s.TenantId == t.Id
+                             && s.Status == SubscriptionStatus.Active
+                             && s.ExpiryDate > DateTime.UtcNow)
+                    .OrderByDescending(s => s.StartDate)
+                    .Select(s => s.Plan.ToString())
+                    .FirstOrDefault() ?? "Baslangic"
             })
             .FirstOrDefaultAsync();
 

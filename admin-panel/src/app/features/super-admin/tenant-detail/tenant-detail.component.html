@@ -125,10 +125,10 @@
       <h3>Plan Değiştir</h3>
       <p>{{ tenant.name }} için yeni planı seçin.</p>
       <div class="plan-options">
-        @for (p of plans; track p) {
-          <label class="plan-option" [class.selected]="selectedPlan === p">
-            <input type="radio" [(ngModel)]="selectedPlan" [value]="p" />
-            {{ p }}
+        @for (p of plans; track p.value) {
+          <label class="plan-option" [class.selected]="selectedPlan === p.value">
+            <input type="radio" [(ngModel)]="selectedPlan" [value]="p.value" />
+            {{ p.label }}
           </label>
         }
       </div>

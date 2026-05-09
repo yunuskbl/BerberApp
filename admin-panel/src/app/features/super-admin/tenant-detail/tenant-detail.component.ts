@@ -23,7 +23,11 @@ export class TenantDetailComponent implements OnInit {
   selectedPlan = '';
   isProcessing = false;
 
-  plans = ['Basic', 'Standard', 'Full'];
+  plans = [
+    { value: 'Baslangic',   label: '🌱 Başlangıç'   },
+    { value: 'Profesyonel', label: '⚡ Profesyonel' },
+    { value: 'Premium',     label: '👑 Premium'      },
+  ];
 
   constructor(
     private route: ActivatedRoute,
@@ -41,7 +45,7 @@ export class TenantDetailComponent implements OnInit {
     this.superAdminService.getTenantDetail(id).subscribe({
       next: (res) => {
         if (res.success) this.tenant = res.data;
-        this.selectedPlan = this.tenant?.plan || 'Basic';
+        this.selectedPlan = this.tenant?.plan || 'Baslangic';
         this.isLoading = false;
       },
       error: () => {
@@ -61,7 +65,7 @@ export class TenantDetailComponent implements OnInit {
   }
 
   openPlanModal(): void {
-    this.selectedPlan = this.tenant?.plan || 'Basic';
+    this.selectedPlan = this.tenant?.plan || 'Baslangic';
     this.showPlanModal = true;
   }
 
