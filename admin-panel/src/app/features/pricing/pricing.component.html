@@ -1,66 +1,248 @@
-<div class="pricing-page">
+<div class="landing">
 
-  <!-- Hero -->
+  <!-- ══ NAVBAR ══════════════════════════════════════════════════════════════ -->
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <span class="logo-dot"></span>
+        <span class="logo-text">ayarlıyo<span class="logo-suffix">°</span></span>
+        <span class="logo-tagline">Randevu Sistemi</span>
+      </div>
+      <nav class="nav-links">
+        <button class="nav-link" (click)="scrollTo('features')">Özellikler</button>
+        <button class="nav-link" (click)="scrollTo('pricing')">Fiyatlar</button>
+        <button class="nav-link" (click)="scrollTo('faq')">SSS</button>
+      </nav>
+      <div class="nav-actions">
+        <button class="btn-nav-login" (click)="goToApp()">
+          {{ isLoggedIn ? 'Panele Git' : 'Giriş Yap' }}
+        </button>
+        <button class="btn-nav-cta" (click)="scrollTo('pricing')">
+          Hemen Başla
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ HERO ════════════════════════════════════════════════════════════════ -->
   <section class="hero">
     <div class="hero-inner">
-      <p class="hero-eyebrow">Fiyatlandırma</p>
-      <h1>İşletmenize uygun<br><span class="gradient-text">planı seçin</span></h1>
-      <p class="hero-sub">Tüm planlarda kurulum ücreti yok. İstediğiniz zaman plan değiştirebilirsiniz.</p>
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Türkiye'nin Randevu Sistemi
+        </div>
+        <h1 class="hero-title">
+          İşletmenizi<br>
+          <span class="gradient-text">dijitalleştirin,</span><br>
+          müşteriniz artsın.
+        </h1>
+        <p class="hero-desc">
+          Berber, kuaför ve güzellik salonları için tasarlanmış akıllı randevu yönetim sistemi.
+          WhatsApp bildirimleri, değerlendirme sistemi ve gelir raporlarıyla işletmenizi bir üst seviyeye taşıyın.
+        </p>
+        <div class="hero-actions">
+          <button class="btn-hero-primary" (click)="scrollTo('pricing')">
+            Ücretsiz Dene
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="btn-hero-secondary" (click)="scrollTo('features')">
+            Özellikleri Gör
+          </button>
+        </div>
+        <div class="hero-trust">
+          <div class="trust-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Kurulum ücreti yok
+          </div>
+          <div class="trust-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            3 dakikada kurulum
+          </div>
+          <div class="trust-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            İstediğin zaman iptal
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Mockup -->
+      <div class="hero-mockup">
+        <div class="mockup-card">
+          <div class="mockup-header">
+            <div class="mockup-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="mockup-title-bar">Admin Panel — Randevular</div>
+          </div>
+          <div class="mockup-body">
+            <div class="mockup-stat-row">
+              <div class="mockup-stat">
+                <span class="ms-value">24</span>
+                <span class="ms-label">Bugünkü Randevu</span>
+              </div>
+              <div class="mockup-stat">
+                <span class="ms-value">⭐ 4.9</span>
+                <span class="ms-label">Ortalama Puan</span>
+              </div>
+              <div class="mockup-stat">
+                <span class="ms-value">₺12.4K</span>
+                <span class="ms-label">Aylık Gelir</span>
+              </div>
+            </div>
+            <div class="mockup-list">
+              <div class="mockup-appt">
+                <div class="appt-avatar" style="background:#7c3aed20;color:#7c3aed">A</div>
+                <div class="appt-info">
+                  <span class="appt-name">Ahmet Yılmaz</span>
+                  <span class="appt-time">10:00 — Saç Kesimi</span>
+                </div>
+                <span class="appt-status confirmed">Onaylı</span>
+              </div>
+              <div class="mockup-appt">
+                <div class="appt-avatar" style="background:#059669/10;color:#059669">M</div>
+                <div class="appt-info">
+                  <span class="appt-name">Mehmet Demir</span>
+                  <span class="appt-time">11:30 — Sakal Tıraşı</span>
+                </div>
+                <span class="appt-status confirmed">Onaylı</span>
+              </div>
+              <div class="mockup-appt">
+                <div class="appt-avatar" style="background:#d97706/10;color:#d97706">E</div>
+                <div class="appt-info">
+                  <span class="appt-name">Emre Kaya</span>
+                  <span class="appt-time">13:00 — Komple Bakım</span>
+                </div>
+                <span class="appt-status pending">Bekliyor</span>
+              </div>
+            </div>
+            <div class="mockup-whatsapp">
+              <span class="wa-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#25d366"><path d="M20.52 3.48A11.94 11.94 0 0012 0C5.37 0 0 5.37 0 12c0 2.12.55 4.1 1.52 5.82L0 24l6.35-1.66A11.94 11.94 0 0024 12c0-3.2-1.25-6.21-3.48-8.52z"/></svg>
+              </span>
+              WhatsApp hatırlatması gönderildi → Ahmet Yılmaz
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- Plan Cards -->
-  <section class="plans-section">
-    <div class="plans-grid">
-      @for (plan of plans; track plan.name) {
-        <div class="plan-card" [class.featured]="plan.featured">
-
-          @if (plan.featured) {
-            <div class="popular-badge">En Popüler</div>
-          }
-
-          <div class="plan-top">
-            <span class="plan-icon">{{ plan.icon }}</span>
-            <h2 class="plan-name">{{ plan.label }}</h2>
-            <p class="plan-desc">{{ plan.description }}</p>
-          </div>
-
-          <div class="plan-price">
-            <span class="price-amount">₺{{ plan.price }}</span>
-            <span class="price-period">/ay</span>
-          </div>
-
-          <button
-            class="plan-btn"
-            [class.btn-primary]="plan.featured"
-            [class.btn-outline]="!plan.featured"
-            [class.btn-disabled]="plan.ctaDisabled"
-            [disabled]="plan.ctaDisabled"
-            (click)="selectPlan(plan.name)">
-            {{ plan.cta }}
-          </button>
-
-          <ul class="feature-list">
-            @for (feature of plan.features; track feature.name) {
-              <li [class.off]="!feature.included">
-                <span class="feat-icon">{{ feature.included ? '✓' : '✗' }}</span>
-                {{ feature.name }}
-              </li>
-            }
-          </ul>
-
+  <!-- ══ STATS ═══════════════════════════════════════════════════════════════ -->
+  <section class="stats-section">
+    <div class="stats-inner">
+      @for (stat of stats; track stat.label) {
+        <div class="stat-item">
+          <span class="stat-value">{{ stat.value }}</span>
+          <span class="stat-label">{{ stat.label }}</span>
         </div>
       }
     </div>
   </section>
 
-  <!-- Comparison Table -->
-  <section class="compare-section">
-    <div class="compare-inner">
-      <h2>Detaylı Karşılaştırma</h2>
+  <!-- ══ FEATURES ═══════════════════════════════════════════════════════════ -->
+  <section class="features-section" id="features">
+    <div class="section-inner">
+      <div class="section-header">
+        <p class="section-eyebrow">Özellikler</p>
+        <h2 class="section-title">İşletmenizin ihtiyacı olan<br>her şey tek yerde</h2>
+        <p class="section-sub">Randevu almaktan gelir raporlamaya kadar tüm süreçlerinizi tek platformdan yönetin.</p>
+      </div>
+      <div class="features-grid">
+        @for (feat of appFeatures; track feat.title) {
+          <div class="feat-card">
+            <div class="feat-icon-wrap" [innerHTML]="feat.icon"></div>
+            <h3 class="feat-title">{{ feat.title }}</h3>
+            <p class="feat-desc">{{ feat.desc }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
 
+  <!-- ══ HOW IT WORKS ═══════════════════════════════════════════════════════ -->
+  <section class="how-section">
+    <div class="section-inner">
+      <div class="section-header">
+        <p class="section-eyebrow">Nasıl Çalışır?</p>
+        <h2 class="section-title">3 adımda aktif olun</h2>
+      </div>
+      <div class="steps-row">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>Kayıt Olun</h3>
+          <p>E-posta ve telefon numaranızla 3 dakikada kaydınızı tamamlayın.</p>
+        </div>
+        <div class="step-arrow">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>Profilinizi Kurun</h3>
+          <p>Hizmetlerinizi, personellerinizi ve çalışma saatlerinizi girin.</p>
+        </div>
+        <div class="step-arrow">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>Linki Paylaşın</h3>
+          <p>Randevu sayfanızın linkini müşterilerinizle paylaşın. Randevular gelmeye başlasın.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ PRICING ═════════════════════════════════════════════════════════════ -->
+  <section class="plans-section" id="pricing">
+    <div class="section-inner">
+      <div class="section-header">
+        <p class="section-eyebrow">Fiyatlandırma</p>
+        <h2 class="section-title">İşletmenize uygun planı seçin</h2>
+        <p class="section-sub">Tüm planlarda kurulum ücreti yok. İstediğiniz zaman plan değiştirebilirsiniz.</p>
+      </div>
+
+      <div class="plans-grid">
+        @for (plan of plans; track plan.name) {
+          <div class="plan-card" [class.featured]="plan.featured">
+            @if (plan.featured) {
+              <div class="popular-badge">En Popüler</div>
+            }
+            <div class="plan-top">
+              <span class="plan-icon">{{ plan.icon }}</span>
+              <h2 class="plan-name">{{ plan.label }}</h2>
+              <p class="plan-desc">{{ plan.description }}</p>
+            </div>
+            <div class="plan-price">
+              <span class="price-amount">₺{{ plan.price }}</span>
+              <span class="price-period">/ay</span>
+            </div>
+            <button
+              class="plan-btn"
+              [class.btn-primary]="plan.featured"
+              [class.btn-outline]="!plan.featured"
+              (click)="selectPlan(plan.name)">
+              {{ plan.cta }}
+            </button>
+            <ul class="feature-list">
+              @for (feature of plan.features; track feature.name) {
+                <li [class.off]="!feature.included">
+                  <span class="feat-check">{{ feature.included ? '✓' : '—' }}</span>
+                  {{ feature.name }}
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ COMPARE ═════════════════════════════════════════════════════════════ -->
+  <section class="compare-section">
+    <div class="section-inner">
+      <h2 class="compare-title">Detaylı Karşılaştırma</h2>
       <div class="compare-table">
-        <!-- Header -->
         <div class="compare-row compare-head">
           <div class="compare-feat-col">Özellik</div>
           @for (plan of plans; track plan.name) {
@@ -69,8 +251,6 @@
             </div>
           }
         </div>
-
-        <!-- Rows -->
         @for (feat of allFeatureNames; track feat) {
           <div class="compare-row">
             <div class="compare-feat-col">{{ feat }}</div>
@@ -89,10 +269,13 @@
     </div>
   </section>
 
-  <!-- FAQ -->
-  <section class="faq-section">
+  <!-- ══ FAQ ═════════════════════════════════════════════════════════════════ -->
+  <section class="faq-section" id="faq">
     <div class="faq-inner">
-      <h2>Sıkça Sorulan Sorular</h2>
+      <div class="section-header">
+        <p class="section-eyebrow">SSS</p>
+        <h2 class="section-title">Sıkça Sorulan Sorular</h2>
+      </div>
       <div class="faq-list">
         @for (item of faqItems; let i = $index; track i) {
           <div class="faq-item" [class.open]="item.open">
@@ -109,15 +292,39 @@
     </div>
   </section>
 
-  <!-- CTA -->
+  <!-- ══ CTA ═════════════════════════════════════════════════════════════════ -->
   <section class="cta-section">
     <div class="cta-inner">
-      <h2>Hemen başlayın</h2>
-      <p>Sorularınız için <strong>destek&#64;ayarliyo.com</strong> adresinden bize ulaşabilirsiniz.</p>
-      <button class="cta-btn" (click)="selectPlan('profesyonel')">
-        Profesyonel Planı Dene →
-      </button>
+      <div class="cta-badge">Hemen Başlayın</div>
+      <h2>İşletmenizi dijitale taşıyın</h2>
+      <p>Kurulum ücretsiz. Dakikalar içinde aktif olun.</p>
+      <div class="cta-actions">
+        <button class="cta-btn-primary" (click)="scrollTo('pricing')">
+          Planları İncele
+        </button>
+        <a class="cta-btn-contact" href="mailto:destek@ayarliyo.com">
+          Bize Yazın →
+        </a>
+      </div>
+      <p class="cta-email">Sorularınız için: <strong>destek&#64;ayarliyo.com</strong></p>
     </div>
   </section>
+
+  <!-- ══ FOOTER ══════════════════════════════════════════════════════════════ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo-dot"></span>
+        <span class="footer-logo-text">ayarlıyo°</span>
+        <p>Türkiye'nin akıllı randevu sistemi</p>
+      </div>
+      <div class="footer-links">
+        <a routerLink="/gizlilik-politikasi">Gizlilik Politikası</a>
+        <a href="mailto:destek@ayarliyo.com">destek&#64;ayarliyo.com</a>
+        <button (click)="goToApp()">{{ isLoggedIn ? 'Panele Git' : 'Giriş Yap' }}</button>
+      </div>
+      <p class="footer-copy">© 2026 ayarlıyo. Tüm hakları saklıdır.</p>
+    </div>
+  </footer>
 
 </div>

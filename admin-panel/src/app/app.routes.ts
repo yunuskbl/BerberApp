@@ -7,10 +7,10 @@ import { PlanGuard } from './core/guards/plan.guard';
 import { SuperAdminGuard } from './core/guards/superadmin.guard';
 
 export const routes: Routes = [
-  // Root redirect — giriş yapılmamış ziyaretçi salons sayfasına gider
+  // Root redirect — giriş yapılmamış ziyaretçi landing sayfasına gider
   {
     path: '',
-    redirectTo: 'salons',
+    redirectTo: 'pricing',
     pathMatch: 'full',
   },
 
