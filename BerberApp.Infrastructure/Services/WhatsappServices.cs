@@ -25,13 +25,13 @@ public class WhatsAppService : IWhatsAppService
 
     public async Task SendAppointmentConfirmedAsync(
         string phone, string customerName, string serviceName,
-        string staffName, DateTime startTime, string salonName = "", string address = "")
+        string staffName, DateTime startTime, string salonName = "", string mapsUrl = "")
     {
         var turkeyTime = ToTurkeyTime(startTime);
         var culture    = new System.Globalization.CultureInfo("tr-TR");
         var salonLine  = string.IsNullOrWhiteSpace(salonName) ? "" : $"\n🏪 Salon: {salonName}";
-        var mapsLine   = string.IsNullOrWhiteSpace(address)   ? "" :
-            $"\n\n📍 *Yol Tarifi:*\nhttps://maps.google.com/?q={Uri.EscapeDataString(address)}";
+        var mapsLine   = string.IsNullOrWhiteSpace(mapsUrl)   ? "" :
+            $"\n\n📍 *Yol Tarifi için tıklayın:*\n{mapsUrl}";
 
         var message = $"""
         ✂ *ayarlıyo - Randevu Onayı*
@@ -53,13 +53,13 @@ public class WhatsAppService : IWhatsAppService
 
     public async Task SendAppointmentReminderAsync(
         string phone, string customerName,
-        string serviceName, DateTime startTime, string salonName = "", string address = "")
+        string serviceName, DateTime startTime, string salonName = "", string mapsUrl = "")
     {
         var turkeyTime = ToTurkeyTime(startTime);
         var culture    = new System.Globalization.CultureInfo("tr-TR");
         var salonLine  = string.IsNullOrWhiteSpace(salonName) ? "" : $"\n🏪 Salon: {salonName}";
-        var mapsLine   = string.IsNullOrWhiteSpace(address)   ? "" :
-            $"\n\n📍 *Yol Tarifi:*\nhttps://maps.google.com/?q={Uri.EscapeDataString(address)}";
+        var mapsLine   = string.IsNullOrWhiteSpace(mapsUrl)   ? "" :
+            $"\n\n📍 *Yol Tarifi için tıklayın:*\n{mapsUrl}";
 
         var message = $"""
         ✂ *ayarlıyo - Randevu Hatırlatması*

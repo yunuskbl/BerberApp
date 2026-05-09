@@ -2,6 +2,7 @@ using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Enums;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace BerberApp.Infrastructure.Jobs;
 
@@ -10,25 +11,30 @@ public class AppointmentReminderJob
     private readonly IAppDbContext _context;
     private readonly IWhatsAppService _whatsAppService;
     private readonly ISmsService _smsService;
+    private readonly string _frontendBase;
 
-    public AppointmentReminderJob(IAppDbContext context, IWhatsAppService whatsAppService, ISmsService smsService)
+    public AppointmentReminderJob(
+        IAppDbContext context,
+        IWhatsAppService whatsAppService,
+        ISmsService smsService,
+        IConfiguration config)
     {
-        _context = context;
+        _context      = context;
         _whatsAppService = whatsAppService;
-        _smsService = smsService;
+        _smsService   = smsService;
+        _frontendBase = config["AppSettings:FrontendBaseUrl"] ?? "https://berberapp.com.tr";
     }
 
     [AutomaticRetry(Attempts = 2)]
     public async Task SendRemindersAsync()
     {
         // Yarın sınırlarını Türkiye saatine göre hesapla (UTC+3).
-        // UTC gece yarısı kullanmak 00:00-03:00 arası Türkiye randevularını kaçırırdı.
-        var turkeyTz    = TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time");
-        var nowTurkey   = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, turkeyTz);
+        var turkeyTz      = TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time");
+        var nowTurkey     = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, turkeyTz);
         var tomorrowStart = new DateTime(nowTurkey.Year, nowTurkey.Month, nowTurkey.Day, 0, 0, 0).AddDays(1);
         var tomorrowEnd   = tomorrowStart.AddDays(1);
-        var tomorrow    = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(tomorrowStart, DateTimeKind.Unspecified), turkeyTz);
-        var dayAfter    = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(tomorrowEnd,   DateTimeKind.Unspecified), turkeyTz);
+        var tomorrow      = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(tomorrowStart, DateTimeKind.Unspecified), turkeyTz);
+        var dayAfter      = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(tomorrowEnd,   DateTimeKind.Unspecified), turkeyTz);
 
         var appointments = await _context.Appointments
             .Include(x => x.Customer)
@@ -43,30 +49,22 @@ public class AppointmentReminderJob
         {
             try
             {
-                var salonName = apt.Tenant?.Name    ?? string.Empty;
-                var address   = apt.Tenant?.Address ?? string.Empty;
+                var salonName = apt.Tenant?.Name ?? string.Empty;
+                var mapsUrl   = string.IsNullOrWhiteSpace(apt.Tenant?.Address) || string.IsNullOrWhiteSpace(apt.Tenant?.Subdomain)
+                    ? string.Empty
+                    : $"{_frontendBase}/map/{apt.Tenant.Subdomain}";
 
                 if (apt.Tenant?.PreferredNotificationChannel == NotificationChannel.Sms)
                 {
                     await _smsService.SendAppointmentReminderAsync(
-                        apt.Customer.Phone,
-                        apt.Customer.FullName,
-                        apt.Service.Name,
-                        apt.StartTime,
-                        salonName,
-                        address
-                    );
+                        apt.Customer.Phone, apt.Customer.FullName,
+                        apt.Service.Name, apt.StartTime, salonName, mapsUrl);
                 }
                 else
                 {
                     await _whatsAppService.SendAppointmentReminderAsync(
-                        apt.Customer.Phone,
-                        apt.Customer.FullName,
-                        apt.Service.Name,
-                        apt.StartTime,
-                        salonName,
-                        address
-                    );
+                        apt.Customer.Phone, apt.Customer.FullName,
+                        apt.Service.Name, apt.StartTime, salonName, mapsUrl);
                 }
             }
             catch { }

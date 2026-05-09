@@ -166,6 +166,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'reviews',
+        loadComponent: () =>
+          import('./features/reviews/reviews.component').then(
+            (m) => m.ReviewsComponent,
+          ),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',

@@ -14,6 +14,13 @@ const T: Record<Lang, Record<string, string>> = {
     'nav.customers':    'Müşteriler',
     'nav.settings':     'Ayarlar',
     'nav.reports':      'Raporlar',
+    'nav.reviews':      'Değerlendirmeler',
+
+    'reviews.title':    'Müşteri Değerlendirmeleri',
+    'reviews.subtitle': 'Müşterilerinizin bıraktığı puan ve yorumlar',
+    'reviews.empty':    'Henüz değerlendirme yok',
+    'reviews.emptySub': 'Randevular tamamlandığında müşteriler değerlendirme yapabilir.',
+    'reviews.count':    'değerlendirme',
 
     // Page titles (header)
     'page.dashboard':    'Dashboard',
@@ -341,6 +348,13 @@ const T: Record<Lang, Record<string, string>> = {
     'nav.customers':    'Customers',
     'nav.settings':     'Settings',
     'nav.reports':      'Reports',
+    'nav.reviews':      'Reviews',
+
+    'reviews.title':    'Customer Reviews',
+    'reviews.subtitle': 'Ratings and comments left by your customers',
+    'reviews.empty':    'No reviews yet',
+    'reviews.emptySub': 'Customers can leave reviews after appointments are completed.',
+    'reviews.count':    'reviews',
 
     'page.dashboard':    'Dashboard',
     'page.appointments': 'Appointments',
@@ -656,6 +670,13 @@ const T: Record<Lang, Record<string, string>> = {
     'nav.customers':    'Клиенты',
     'nav.settings':     'Настройки',
     'nav.reports':      'Отчёты',
+    'nav.reviews':      'Отзывы',
+
+    'reviews.title':    'Отзывы клиентов',
+    'reviews.subtitle': 'Оценки и комментарии ваших клиентов',
+    'reviews.empty':    'Отзывов пока нет',
+    'reviews.emptySub': 'После завершения записей клиенты смогут оставлять отзывы.',
+    'reviews.count':    'отзывов',
 
     'page.dashboard':    'Панель управления',
     'page.appointments': 'Записи',

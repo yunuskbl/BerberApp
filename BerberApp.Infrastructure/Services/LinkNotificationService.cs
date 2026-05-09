@@ -2,6 +2,7 @@ using BerberApp.Application.Appointment.DTOs;
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace BerberApp.Infrastructure.Services;
@@ -12,17 +13,20 @@ public class LinkNotificationService : INotificationService
     private readonly IWhatsAppService _whatsAppService;
     private readonly ISmsService _smsService;
     private readonly ILogger<LinkNotificationService> _logger;
+    private readonly string _frontendBase;
 
     public LinkNotificationService(
         IAppDbContext context,
         IWhatsAppService whatsAppService,
         ISmsService smsService,
-        ILogger<LinkNotificationService> logger)
+        ILogger<LinkNotificationService> logger,
+        IConfiguration config)
     {
-        _context = context;
+        _context        = context;
         _whatsAppService = whatsAppService;
-        _smsService = smsService;
-        _logger = logger;
+        _smsService     = smsService;
+        _logger         = logger;
+        _frontendBase   = config["AppSettings:FrontendBaseUrl"] ?? "https://berberapp.com.tr";
     }
 
     public async Task SendAppointmentReceivedAsync(string recipient, AppointmentStatusDto dto)
@@ -35,18 +39,18 @@ public class LinkNotificationService : INotificationService
     {
         try
         {
-            var (channel, salonName, address) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, mapsUrl) = await GetTenantInfoAsync(dto.TenantId);
 
             if (channel == NotificationChannel.Sms)
             {
                 await _smsService.SendAppointmentConfirmedAsync(
-                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, address);
+                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, mapsUrl);
                 _logger.LogInformation("[SMS] Onay bildirimi gönderildi: {Recipient}", recipient);
             }
             else
             {
                 await _whatsAppService.SendAppointmentConfirmedAsync(
-                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, address);
+                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, mapsUrl);
                 _logger.LogInformation("[WHATSAPP] Onay bildirimi gönderildi: {Recipient}", recipient);
             }
         }
@@ -106,16 +110,24 @@ public class LinkNotificationService : INotificationService
         }
     }
 
-    private async Task<(NotificationChannel channel, string salonName, string address)> GetTenantInfoAsync(Guid tenantId)
+    /// <summary>
+    /// Tenant bilgilerini çeker.
+    /// mapsUrl: adres varsa "/map/{subdomain}" kısa redirect linki döner, WhatsApp'ta temiz görünür.
+    /// </summary>
+    private async Task<(NotificationChannel channel, string salonName, string mapsUrl)> GetTenantInfoAsync(Guid tenantId)
     {
         var tenant = await _context.Tenants
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == tenantId);
 
+        var mapsUrl = string.IsNullOrWhiteSpace(tenant?.Address) || string.IsNullOrWhiteSpace(tenant?.Subdomain)
+            ? string.Empty
+            : $"{_frontendBase}/map/{tenant.Subdomain}";
+
         return (
             tenant?.PreferredNotificationChannel ?? NotificationChannel.WhatsApp,
-            tenant?.Name    ?? string.Empty,
-            tenant?.Address ?? string.Empty
+            tenant?.Name ?? string.Empty,
+            mapsUrl
         );
     }
 }

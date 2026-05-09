@@ -1,0 +1,70 @@
+<div class="reviews-page">
+
+  <div class="page-header">
+    <h1>{{ 'reviews.title' | translate }}</h1>
+    <p class="page-subtitle">{{ 'reviews.subtitle' | translate }}</p>
+  </div>
+
+  @if (isLoading) {
+    <div class="state-center"><div class="spinner"></div></div>
+  } @else if (data.total === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">⭐</div>
+      <h3>{{ 'reviews.empty' | translate }}</h3>
+      <p>{{ 'reviews.emptySub' | translate }}</p>
+    </div>
+  } @else {
+
+    <!-- Özet kartı -->
+    <div class="summary-card">
+
+      <!-- Ortalama puan -->
+      <div class="avg-block">
+        <div class="avg-score">{{ data.average }}</div>
+        <div class="avg-stars">
+          @for (s of starArray(filledStars); track $index)    { <span class="star filled">★</span> }
+          @for (s of emptyStarArray(filledStars); track $index){ <span class="star empty">★</span> }
+        </div>
+        <div class="avg-count">{{ data.total }} {{ 'reviews.count' | translate }}</div>
+      </div>
+
+      <div class="divider-v"></div>
+
+      <!-- Dağılım çubukları -->
+      <div class="dist-block">
+        @for (s of stars; track s) {
+          <div class="dist-row">
+            <span class="dist-label">{{ s }} ★</span>
+            <div class="dist-bar-bg">
+              <div class="dist-bar-fill" [style.width]="barWidth(s)"></div>
+            </div>
+            <span class="dist-count">{{ barCount(s) }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Yorum listesi -->
+    <div class="reviews-list">
+      @for (r of data.reviews; track r.id) {
+        <div class="review-card">
+          <div class="review-head">
+            <div class="reviewer-avatar">{{ r.customerName[0]?.toUpperCase() }}</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name">{{ r.customerName }}</div>
+              <div class="reviewer-date">{{ formatDate(r.createdAt) }}</div>
+            </div>
+            <div class="review-stars">
+              @for (s of starArray(r.rating); track $index)    { <span class="star filled">★</span> }
+              @for (s of emptyStarArray(r.rating); track $index){ <span class="star empty">★</span> }
+            </div>
+          </div>
+          @if (r.comment) {
+            <p class="review-comment">{{ r.comment }}</p>
+          }
+        </div>
+      }
+    </div>
+  }
+
+</div>
