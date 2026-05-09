@@ -353,7 +353,7 @@ const T: Record<Lang, Record<string, string>> = {
     'header.system': 'System Active',
 
     'dashboard.subtitle':       "Welcome! Here's today's summary.",
-    'dashboard.newAppointment': '+ New Appointment',
+    'dashboard.newAppointment': 'New Appointment',
     'dashboard.todayAppts':     "Today's Appointments",
     'dashboard.viewAll':        'View All →',
     'dashboard.quickActions':   'Quick Actions',
@@ -668,7 +668,7 @@ const T: Record<Lang, Record<string, string>> = {
     'header.system': 'Система активна',
 
     'dashboard.subtitle':       'Добро пожаловать! Сводка за сегодня.',
-    'dashboard.newAppointment': '+ Новая запись',
+    'dashboard.newAppointment': 'Новая запись',
     'dashboard.todayAppts':     'Записи на сегодня',
     'dashboard.viewAll':        'Смотреть все →',
     'dashboard.quickActions':   'Быстрые действия',

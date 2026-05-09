@@ -190,7 +190,10 @@ export class AppointmentListComponent implements OnInit {
     this.isSubmitting = true;
     this.errorMessage = '';
     const { customerId, staffId, serviceId, date, startTime, notes } = this.appointmentForm.value;
-    this.appointmentService.create({ customerId, staffId, serviceId, startTime: `${date}T${startTime}`, notes }).subscribe({
+    // startTime form değeri Türkiye yerel saatinde ("HH:mm"). UTC'ye çevirerek gönder.
+    // Örn: "12:00" → "2026-05-09T12:00:00+03:00" → "2026-05-09T09:00:00.000Z"
+    const utcStartTime = new Date(`${date}T${startTime}:00+03:00`).toISOString();
+    this.appointmentService.create({ customerId, staffId, serviceId, startTime: utcStartTime, notes }).subscribe({
       next: (res) => {
         if (res.success) { this.loadAppointments(); this.closeDrawer(); }
         this.isSubmitting = false;
@@ -245,12 +248,15 @@ export class AppointmentListComponent implements OnInit {
 
   formatSlotTime(dateStr: string): string {
     return new Date(dateStr).toLocaleTimeString(this.langService.dateLocale, {
-      hour: '2-digit', minute: '2-digit',
+      hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul',
     });
   }
 
   formatSlotValue(dateStr: string): string {
-    return new Date(dateStr).toTimeString().slice(0, 5);
+    // Form değeri olarak Türkiye saatini döndür (HH:mm) — makine timezone'undan bağımsız
+    return new Date(dateStr).toLocaleTimeString('tr-TR', {
+      hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Istanbul',
+    }).slice(0, 5);
   }
 
   private getTurkeyHM(dateStr: string): { h: number; m: number } {

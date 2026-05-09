@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BerberApp — Yeni Tasarım Konseptleri</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: white; min-height: 100vh; }
+
+/* ── Page Header ── */
+.page-intro { text-align: center; padding: 48px 32px 40px; }
+.page-intro h1 { font-family: 'Poppins', sans-serif; font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+.page-intro p  { color: #555; font-size: 14px; margin-top: 8px; }
+
+/* ── Grid ── */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; padding: 0 40px 60px; }
+
+/* ── Option Card ── */
+.option { border-radius: 20px; overflow: hidden; border: 1px solid #1e1e1e; transition: all 0.3s; cursor: pointer; background: #111; }
+.option:hover { border-color: #333; transform: translateY(-3px); box-shadow: 0 24px 64px rgba(0,0,0,0.6); }
+
+.opt-label {
+  padding: 16px 22px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid #1a1a1a;
+}
+.opt-num { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #333; text-transform: uppercase; }
+.opt-name { font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 700; color: #fff; }
+.opt-tag  { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 600; letter-spacing: 0.5px; }
+
+.mockup { height: 380px; overflow: hidden; position: relative; }
+
+
+/* ══════════════════════════════════════════════════════════
+   KONSEPT 1 — TOP NAV + HERo DASHBOARD (SaaS Hissi)
+   Geniş top bar, sayfa ortasında büyük metrik kartları
+   ══════════════════════════════════════════════════════════ */
+.c1 { background: #f0f4ff; }
+
+.c1-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 52px;
+  background: white; border-bottom: 1px solid #e8edf5;
+}
+.c1-logo { display: flex; align-items: center; gap: 8px; }
+.c1-logo-icon { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #6366f1, #4f46e5); display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.c1-logo-text { font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; color: #0f172a; }
+
+.c1-nav { display: flex; gap: 2px; }
+.c1-nav-item { padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; color: #64748b; cursor: pointer; transition: all 0.15s; }
+.c1-nav-item:hover { background: #f1f5f9; color: #0f172a; }
+.c1-nav-item.active { background: #eef2ff; color: #4f46e5; font-weight: 600; }
+
+.c1-actions { display: flex; align-items: center; gap: 8px; }
+.c1-date { font-size: 11px; color: #94a3b8; }
+.c1-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #4f46e5); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+
+.c1-body { padding: 20px 24px; }
+.c1-hello { font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+.c1-sub   { font-size: 11px; color: #94a3b8; margin-bottom: 14px; }
+
+.c1-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+.c1-stat {
+  background: white; border-radius: 12px; padding: 14px;
+  border: 1px solid #e8edf5; position: relative; overflow: hidden;
+}
+.c1-stat-accent { position: absolute; top: 0; left: 0; right: 0; height: 2.5px; border-radius: 2px 2px 0 0; }
+.c1-stat-val { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 800; color: #0f172a; line-height: 1; }
+.c1-stat-lbl { font-size: 10px; color: #94a3b8; margin-top: 3px; font-weight: 500; }
+.c1-stat-chg { position: absolute; top: 12px; right: 12px; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 20px; }
+.up   { background: #dcfce7; color: #16a34a; }
+.down { background: #fee2e2; color: #dc2626; }
+
+.c1-grid2 { display: grid; grid-template-columns: 1fr 140px; gap: 10px; }
+.c1-card { background: white; border-radius: 12px; border: 1px solid #e8edf5; padding: 14px; }
+.c1-card-title { font-size: 11px; font-weight: 700; color: #0f172a; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.c1-apt-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f8fafc; }
+.c1-apt-time { font-size: 11px; font-weight: 700; color: #0f172a; min-width: 36px; }
+.c1-apt-dot  { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.c1-apt-name { font-size: 11px; color: #374151; flex: 1; }
+.c1-apt-svc  { font-size: 10px; color: #94a3b8; }
+
+.c1-quick { display: flex; flex-direction: column; gap: 6px; }
+.c1-q { background: white; border-radius: 10px; padding: 10px 12px; border: 1px solid #e8edf5; cursor: pointer; transition: all 0.15s; }
+.c1-q:hover { border-color: #6366f1; background: #f5f3ff; }
+.c1-q-icon { font-size: 16px; margin-bottom: 2px; }
+.c1-q-txt  { font-size: 10px; font-weight: 600; color: #374151; }
+
+
+/* ══════════════════════════════════════════════════════════
+   KONSEPT 2 — KARANLIK, SINEMA HİSSİ (Tailwind/Vercel Tarzı)
+   Siyah zemin, geniş sidebar her zaman açık, çarpıcı başlık
+   ══════════════════════════════════════════════════════════ */
+.c2 { background: #09090b; display: flex; }
+
+.c2-sidebar {
+  width: 200px; flex-shrink: 0;
+  background: #09090b;
+  border-right: 1px solid #1a1a1a;
+  display: flex; flex-direction: column;
+  padding: 0;
+}
+.c2-logo-wrap { padding: 18px 16px 14px; border-bottom: 1px solid #1a1a1a; }
+.c2-logo { display: flex; align-items: center; gap: 9px; }
+.c2-logo-icon { width: 30px; height: 30px; border-radius: 8px; background: white; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.c2-logo-name { font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; color: #fff; }
+.c2-logo-sub  { font-size: 9px; color: #3f3f46; margin-top: 1px; letter-spacing: 1px; }
+.c2-nav { flex: 1; padding: 12px 8px; }
+.c2-sec { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; color: #27272a; padding: 8px 8px 4px; text-transform: uppercase; }
+.c2-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 7px; font-size: 12px; color: #52525b; margin-bottom: 1px; cursor: pointer; transition: all 0.15s; }
+.c2-item:hover { background: #18181b; color: #a1a1aa; }
+.c2-item.act   { background: #18181b; color: #fff; }
+.c2-item-dot   { width: 4px; height: 4px; border-radius: 50%; background: #fff; margin-left: auto; }
+.c2-icon       { font-size: 13px; width: 18px; text-align: center; flex-shrink: 0; }
+.c2-user { padding: 12px; border-top: 1px solid #1a1a1a; display: flex; align-items: center; gap: 8px; }
+.c2-av   { width: 28px; height: 28px; border-radius: 50%; background: #27272a; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #71717a; flex-shrink: 0; }
+.c2-uname { font-size: 11px; font-weight: 600; color: #a1a1aa; }
+.c2-urole { font-size: 10px; color: #3f3f46; }
+
+.c2-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.c2-header { padding: 14px 20px; border-bottom: 1px solid #1a1a1a; display: flex; align-items: center; justify-content: space-between; }
+.c2-title  { font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 700; color: #fff; }
+.c2-btn    { padding: 5px 12px; background: #fff; color: #09090b; border-radius: 7px; font-size: 11px; font-weight: 700; border: none; cursor: pointer; }
+
+.c2-content { flex: 1; padding: 16px 20px; overflow: hidden; }
+.c2-stats  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+.c2-stat   { background: #18181b; border: 1px solid #27272a; border-radius: 10px; padding: 12px 14px; }
+.c2-sval   { font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 800; color: #fff; line-height: 1; }
+.c2-slbl   { font-size: 10px; color: #52525b; margin-top: 3px; }
+.c2-schg   { font-size: 10px; font-weight: 600; margin-top: 6px; }
+.c2-schg.up   { color: #4ade80; }
+.c2-schg.dn   { color: #f87171; }
+
+.c2-row { display: grid; grid-template-columns: 1fr 110px; gap: 10px; }
+.c2-card { background: #18181b; border: 1px solid #27272a; border-radius: 10px; padding: 12px 14px; }
+.c2-ctitle { font-size: 10px; font-weight: 700; color: #71717a; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+.c2-arow { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #27272a; }
+.c2-arow:last-child { border-bottom: none; }
+.c2-atime { font-size: 11px; font-weight: 700; color: #fff; min-width: 32px; }
+.c2-adot  { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.c2-aname { font-size: 11px; color: #a1a1aa; flex: 1; }
+.c2-tag   { font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+
+.c2-actions { display: flex; flex-direction: column; gap: 6px; }
+.c2-act  { background: #18181b; border: 1px solid #27272a; border-radius: 8px; padding: 9px 10px; cursor: pointer; transition: all 0.15s; }
+.c2-act:hover { border-color: #3f3f46; }
+.c2-act-icon { font-size: 15px; margin-bottom: 3px; }
+.c2-act-txt  { font-size: 10px; font-weight: 600; color: #71717a; }
+
+
+/* ══════════════════════════════════════════════════════════
+   KONSEPT 3 — MODERN BEYAZ + GÜÇLÜ TİPOGRAFİ (Linear/Figma Tarzı)
+   Tam beyaz, büyük bold başlıklar, sade ama baskın görsel hiyerarşi
+   ══════════════════════════════════════════════════════════ */
+.c3 { background: #fff; display: flex; }
+
+.c3-sidebar {
+  width: 52px; flex-shrink: 0;
+  background: #fff;
+  border-right: 1px solid #f0f0f0;
+  display: flex; flex-direction: column;
+  align-items: center; padding: 14px 0;
+  gap: 4px;
+}
+.c3-logo-icon { width: 30px; height: 30px; border-radius: 9px; background: #0f172a; display: flex; align-items: center; justify-content: center; font-size: 14px; margin-bottom: 10px; }
+.c3-ico { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer; transition: all 0.15s; color: #94a3b8; }
+.c3-ico:hover { background: #f8fafc; color: #0f172a; }
+.c3-ico.act { background: #f1f5f9; color: #0f172a; }
+
+.c3-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.c3-top  { padding: 14px 20px 0; border-bottom: 1px solid #f0f0f0; }
+.c3-breadcrumb { font-size: 11px; color: #94a3b8; margin-bottom: 6px; }
+.c3-pagetitle { font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 0; letter-spacing: -0.5px; }
+.c3-tabs { display: flex; gap: 0; margin-top: 12px; }
+.c3-tab  { padding: 7px 14px; font-size: 12px; font-weight: 500; color: #94a3b8; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+.c3-tab:hover { color: #0f172a; }
+.c3-tab.act { color: #0f172a; border-bottom-color: #0f172a; font-weight: 600; }
+
+.c3-content { flex: 1; padding: 16px 20px; overflow: hidden; }
+.c3-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+.c3-kpi  { padding: 12px; border-radius: 10px; border: 1px solid #f0f0f0; background: white; }
+.c3-kval { font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 800; color: #0f172a; line-height: 1; }
+.c3-klbl { font-size: 10px; color: #94a3b8; margin-top: 3px; }
+.c3-kchg { font-size: 10px; font-weight: 600; margin-top: 5px; }
+.c3-kchg.pos { color: #16a34a; }
+.c3-kchg.neg { color: #dc2626; }
+
+.c3-table-wrap { background: white; border: 1px solid #f0f0f0; border-radius: 10px; overflow: hidden; }
+.c3-th-row { display: grid; grid-template-columns: 80px 1fr 80px 90px 70px; padding: 8px 14px; background: #fafafa; border-bottom: 1px solid #f0f0f0; }
+.c3-th     { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; }
+.c3-tr     { display: grid; grid-template-columns: 80px 1fr 80px 90px 70px; padding: 10px 14px; border-bottom: 1px solid #fafafa; align-items: center; cursor: pointer; transition: background 0.15s; }
+.c3-tr:hover { background: #fafafa; }
+.c3-td     { font-size: 11px; color: #374151; }
+.c3-td.bold { font-weight: 600; color: #0f172a; }
+.c3-tdmuted { font-size: 10px; color: #94a3b8; }
+.c3-badge { display: inline-flex; padding: 2px 7px; border-radius: 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.3px; }
+.c3-b-ok  { background: #dcfce7; color: #16a34a; }
+.c3-b-pend{ background: #fef3c7; color: #d97706; }
+.c3-b-canc{ background: #fee2e2; color: #dc2626; }
+
+
+/* ══════════════════════════════════════════════════════════
+   KONSEPT 4 — BOLD CARD LAYOUT (Notion / Stripe Hissi)
+   İki sütunlu layout, sol taraf navigation + kısa stats
+   sağ taraf büyük içerik kartı
+   ══════════════════════════════════════════════════════════ */
+.c4 { background: #fafafa; display: flex; }
+
+.c4-left {
+  width: 220px; flex-shrink: 0;
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.c4-profile { display: flex; align-items: center; gap: 9px; padding: 0 0 12px; border-bottom: 1px solid #e5e7eb; }
+.c4-av { width: 36px; height: 36px; border-radius: 10px; background: #111827; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.c4-pname { font-size: 13px; font-weight: 700; color: #111827; line-height: 1.2; }
+.c4-prole { font-size: 10px; color: #9ca3af; }
+
+.c4-nav-group { display: flex; flex-direction: column; gap: 2px; }
+.c4-nav-title { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; color: #d1d5db; text-transform: uppercase; padding: 6px 8px 4px; }
+.c4-nav-item  { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 8px; font-size: 12px; color: #6b7280; cursor: pointer; transition: all 0.15s; }
+.c4-nav-item:hover { background: #f3f4f6; color: #111827; }
+.c4-nav-item.act  { background: #111827; color: white; }
+.c4-nav-cnt  { margin-left: auto; font-size: 10px; font-weight: 700; background: rgba(255,255,255,0.1); padding: 1px 5px; border-radius: 4px; }
+.c4-nav-cnt.light { background: #e5e7eb; color: #374151; }
+
+.c4-mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.c4-ms { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px; }
+.c4-ms-val { font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 800; color: #111827; }
+.c4-ms-lbl { font-size: 9px; color: #9ca3af; margin-top: 2px; }
+
+.c4-right { flex: 1; padding: 16px 16px 16px 0; overflow: hidden; }
+.c4-hero  { background: #111827; border-radius: 14px; padding: 18px 20px; margin-bottom: 10px; color: white; position: relative; overflow: hidden; }
+.c4-hero::before { content: ''; position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.03); }
+.c4-hero::after  { content: ''; position: absolute; bottom: -30px; right: 30px; width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.03); }
+.c4-hero-small { font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.c4-hero-big   { font-family: 'Poppins', sans-serif; font-size: 26px; font-weight: 900; line-height: 1; letter-spacing: -1px; }
+.c4-hero-sub   { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+.c4-hero-row   { display: flex; gap: 12px; margin-top: 14px; }
+.c4-hero-stat  { }
+.c4-hs-val { font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 800; }
+.c4-hs-lbl { font-size: 9px; color: rgba(255,255,255,0.35); }
+
+.c4-apts { background: white; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+.c4-apts-hdr { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; }
+.c4-apts-title { font-size: 12px; font-weight: 700; color: #111827; }
+.c4-apts-link  { font-size: 10px; color: #6b7280; }
+.c4-apt { display: flex; align-items: center; gap: 10px; padding: 9px 16px; border-bottom: 1px solid #f9fafb; }
+.c4-apt:last-child { border-bottom: none; }
+.c4-apt-t { font-size: 11px; font-weight: 700; color: #374151; min-width: 34px; }
+.c4-apt-av { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: white; flex-shrink: 0; }
+.c4-apt-name { font-size: 11px; font-weight: 600; color: #111827; flex: 1; }
+.c4-apt-svc  { font-size: 10px; color: #9ca3af; }
+.c4-apt-badge{ font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+
+
+/* ── Navigation ── */
+.nav-btns { display: flex; justify-content: center; gap: 12px; padding: 20px 0 40px; }
+.nav-btn { padding: 10px 28px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+.nav-btn.primary { background: white; color: #0a0a0a; }
+.nav-btn.primary:hover { background: #f0f0f0; }
+.nav-btn.outline { background: transparent; color: #555; border: 1px solid #222; }
+.nav-btn.outline:hover { border-color: #444; color: #888; }
+</style>
+</head>
+<body>
+
+<div class="page-intro">
+  <h1>Yeni Tasarım Konseptleri</h1>
+  <p>4 farklı layout yaklaşımı — renk değişikliği değil, tamamen farklı UI konseptleri</p>
+</div>
+
+<div class="grid">
+
+  <!-- ── KONSEPT 1: Top Nav SaaS ── -->
+  <div class="option">
+    <div class="opt-label">
+      <span class="opt-num">01</span>
+      <span class="opt-name">Top Nav · SaaS Dashboard</span>
+      <span class="opt-tag" style="background:#eef2ff;color:#4f46e5">Açık Tema</span>
+    </div>
+    <div class="mockup">
+      <div class="c1">
+        <div class="c1-topbar">
+          <div class="c1-logo">
+            <div class="c1-logo-icon">✂️</div>
+            <span class="c1-logo-text">BerberApp</span>
+          </div>
+          <div class="c1-nav">
+            <div class="c1-nav-item active">Dashboard</div>
+            <div class="c1-nav-item">Randevular</div>
+            <div class="c1-nav-item">Personel</div>
+            <div class="c1-nav-item">Müşteriler</div>
+            <div class="c1-nav-item">Raporlar</div>
+          </div>
+          <div class="c1-actions">
+            <span class="c1-date">Prş, 8 May 2026</span>
+            <div class="c1-avatar">A</div>
+          </div>
+        </div>
+        <div class="c1-body">
+          <div class="c1-hello">İyi günler, Admin 👋</div>
+          <div class="c1-sub">Bugün 12 randevu var · 3 beklemede</div>
+          <div class="c1-stats">
+            <div class="c1-stat">
+              <div class="c1-stat-accent" style="background:linear-gradient(90deg,#6366f1,#4f46e5)"></div>
+              <span class="c1-stat-chg up">+8%</span>
+              <div class="c1-stat-val">24</div>
+              <div class="c1-stat-lbl">Bugün Randevu</div>
+            </div>
+            <div class="c1-stat">
+              <div class="c1-stat-accent" style="background:linear-gradient(90deg,#22c55e,#16a34a)"></div>
+              <span class="c1-stat-chg up">+12%</span>
+              <div class="c1-stat-val">₺3.2K</div>
+              <div class="c1-stat-lbl">Günlük Gelir</div>
+            </div>
+            <div class="c1-stat">
+              <div class="c1-stat-accent" style="background:linear-gradient(90deg,#f59e0b,#d97706)"></div>
+              <span class="c1-stat-chg down">-2</span>
+              <div class="c1-stat-val">156</div>
+              <div class="c1-stat-lbl">Toplam Müşteri</div>
+            </div>
+            <div class="c1-stat">
+              <div class="c1-stat-accent" style="background:linear-gradient(90deg,#ec4899,#db2777)"></div>
+              <span class="c1-stat-chg up">+5%</span>
+              <div class="c1-stat-val">4.8★</div>
+              <div class="c1-stat-lbl">Ortalama Puan</div>
+            </div>
+          </div>
+          <div class="c1-grid2">
+            <div class="c1-card">
+              <div class="c1-card-title">Bugünün Randevuları</div>
+              <div class="c1-apt-item"><span class="c1-apt-time">09:00</span><span class="c1-apt-dot" style="background:#22c55e"></span><span class="c1-apt-name">Ahmet Y.</span><span class="c1-apt-svc">Saç+Sakal</span></div>
+              <div class="c1-apt-item"><span class="c1-apt-time">10:30</span><span class="c1-apt-dot" style="background:#f59e0b"></span><span class="c1-apt-name">Mehmet K.</span><span class="c1-apt-svc">Saç Kesimi</span></div>
+              <div class="c1-apt-item"><span class="c1-apt-time">11:00</span><span class="c1-apt-dot" style="background:#6366f1"></span><span class="c1-apt-name">Can D.</span><span class="c1-apt-svc">Sakal</span></div>
+              <div class="c1-apt-item"><span class="c1-apt-time">13:30</span><span class="c1-apt-dot" style="background:#22c55e"></span><span class="c1-apt-name">Ali S.</span><span class="c1-apt-svc">Saç+Sakal</span></div>
+            </div>
+            <div class="c1-quick">
+              <div class="c1-q"><div class="c1-q-icon">📅</div><div class="c1-q-txt">Randevu Ekle</div></div>
+              <div class="c1-q"><div class="c1-q-icon">👤</div><div class="c1-q-txt">Müşteri Ekle</div></div>
+              <div class="c1-q"><div class="c1-q-icon">📊</div><div class="c1-q-txt">Rapor Al</div></div>
+              <div class="c1-q"><div class="c1-q-icon">⚙️</div><div class="c1-q-txt">Ayarlar</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── KONSEPT 2: Koyu Vercel/Linear Tarzı ── -->
+  <div class="option">
+    <div class="opt-label">
+      <span class="opt-num">02</span>
+      <span class="opt-name">Koyu · Vercel / Linear Tarzı</span>
+      <span class="opt-tag" style="background:#18181b;color:#71717a;border:1px solid #27272a">Siyah Tema</span>
+    </div>
+    <div class="mockup">
+      <div class="c2">
+        <div class="c2-sidebar">
+          <div class="c2-logo-wrap">
+            <div class="c2-logo">
+              <div class="c2-logo-icon">✂️</div>
+              <div>
+                <div class="c2-logo-name">BerberApp</div>
+                <div class="c2-logo-sub">ADMIN</div>
+              </div>
+            </div>
+          </div>
+          <div class="c2-nav">
+            <div class="c2-sec">Genel</div>
+            <div class="c2-item act"><span class="c2-icon">⚡</span>Dashboard<span class="c2-item-dot"></span></div>
+            <div class="c2-item"><span class="c2-icon">📅</span>Randevular</div>
+            <div class="c2-item"><span class="c2-icon">👥</span>Müşteriler</div>
+            <div class="c2-sec">Yönetim</div>
+            <div class="c2-item"><span class="c2-icon">💈</span>Personel</div>
+            <div class="c2-item"><span class="c2-icon">✂️</span>Hizmetler</div>
+            <div class="c2-item"><span class="c2-icon">📈</span>Raporlar</div>
+            <div class="c2-item"><span class="c2-icon">⚙️</span>Ayarlar</div>
+          </div>
+          <div class="c2-user">
+            <div class="c2-av">A</div>
+            <div><div class="c2-uname">Admin</div><div class="c2-urole">Süper Admin</div></div>
+          </div>
+        </div>
+        <div class="c2-main">
+          <div class="c2-header">
+            <span class="c2-title">Dashboard</span>
+            <button class="c2-btn">+ Randevu</button>
+          </div>
+          <div class="c2-content">
+            <div class="c2-stats">
+              <div class="c2-stat">
+                <div class="c2-sval">24</div>
+                <div class="c2-slbl">Bugün Randevu</div>
+                <div class="c2-schg up">↑ %8 artış</div>
+              </div>
+              <div class="c2-stat">
+                <div class="c2-sval">₺3.2K</div>
+                <div class="c2-slbl">Günlük Gelir</div>
+                <div class="c2-schg up">↑ %12 artış</div>
+              </div>
+              <div class="c2-stat">
+                <div class="c2-sval">156</div>
+                <div class="c2-slbl">Toplam Müşteri</div>
+                <div class="c2-schg dn">↓ 2 azalış</div>
+              </div>
+            </div>
+            <div class="c2-row">
+              <div class="c2-card">
+                <div class="c2-ctitle">Bugünün Randevuları</div>
+                <div class="c2-arow"><span class="c2-atime">09:00</span><span class="c2-adot" style="background:#4ade80"></span><span class="c2-aname">Ahmet Y.</span><span class="c2-tag" style="background:rgba(74,222,128,.15);color:#4ade80">Tamamlandı</span></div>
+                <div class="c2-arow"><span class="c2-atime">10:30</span><span class="c2-adot" style="background:#fbbf24"></span><span class="c2-aname">Mehmet K.</span><span class="c2-tag" style="background:rgba(251,191,36,.15);color:#fbbf24">Bekliyor</span></div>
+                <div class="c2-arow"><span class="c2-atime">11:00</span><span class="c2-adot" style="background:#60a5fa"></span><span class="c2-aname">Can D.</span><span class="c2-tag" style="background:rgba(96,165,250,.15);color:#60a5fa">Onaylandı</span></div>
+              </div>
+              <div class="c2-actions">
+                <div class="c2-act"><div class="c2-act-icon">📅</div><div class="c2-act-txt">Randevu</div></div>
+                <div class="c2-act"><div class="c2-act-icon">👤</div><div class="c2-act-txt">Müşteri</div></div>
+                <div class="c2-act"><div class="c2-act-icon">📊</div><div class="c2-act-txt">Rapor</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── KONSEPT 3: Beyaz + Güçlü Tipografi ── -->
+  <div class="option">
+    <div class="opt-label">
+      <span class="opt-num">03</span>
+      <span class="opt-name">Minimal Beyaz · Linear Tarzı</span>
+      <span class="opt-tag" style="background:#f8fafc;color:#0f172a;border:1px solid #e2e8f0">Ultra Minimal</span>
+    </div>
+    <div class="mockup">
+      <div class="c3">
+        <div class="c3-sidebar">
+          <div class="c3-logo-icon">✂️</div>
+          <div class="c3-ico act" title="Dashboard">⚡</div>
+          <div class="c3-ico" title="Randevular">📅</div>
+          <div class="c3-ico" title="Müşteriler">👥</div>
+          <div class="c3-ico" title="Personel">💈</div>
+          <div class="c3-ico" title="Hizmetler">✂️</div>
+          <div class="c3-ico" title="Raporlar">📈</div>
+          <div style="flex:1"></div>
+          <div class="c3-ico" title="Ayarlar">⚙️</div>
+          <div class="c3-ico" title="Hesap">👤</div>
+        </div>
+        <div class="c3-main">
+          <div class="c3-top">
+            <div class="c3-breadcrumb">BerberApp / Dashboard</div>
+            <div class="c3-pagetitle">Randevular</div>
+            <div class="c3-tabs">
+              <div class="c3-tab act">Bugün</div>
+              <div class="c3-tab">Bu Hafta</div>
+              <div class="c3-tab">Bu Ay</div>
+              <div class="c3-tab">Personele Göre</div>
+            </div>
+          </div>
+          <div class="c3-content">
+            <div class="c3-kpis">
+              <div class="c3-kpi"><div class="c3-kval">24</div><div class="c3-klbl">Randevu</div><div class="c3-kchg pos">↑ 8%</div></div>
+              <div class="c3-kpi"><div class="c3-kval">₺3.2K</div><div class="c3-klbl">Gelir</div><div class="c3-kchg pos">↑ 12%</div></div>
+              <div class="c3-kpi"><div class="c3-kval">4.8★</div><div class="c3-klbl">Puan</div><div class="c3-kchg pos">↑ 0.2</div></div>
+              <div class="c3-kpi"><div class="c3-kval">3</div><div class="c3-klbl">Bekleyen</div><div class="c3-kchg neg">↓ 1</div></div>
+            </div>
+            <div class="c3-table-wrap">
+              <div class="c3-th-row">
+                <div class="c3-th">Saat</div>
+                <div class="c3-th">Müşteri</div>
+                <div class="c3-th">Hizmet</div>
+                <div class="c3-th">Personel</div>
+                <div class="c3-th">Durum</div>
+              </div>
+              <div class="c3-tr">
+                <div class="c3-td bold">09:00</div>
+                <div class="c3-td bold">Ahmet Y.<div class="c3-tdmuted">+90 555 111</div></div>
+                <div class="c3-td">Saç + Sakal</div>
+                <div class="c3-td">Murat B.</div>
+                <div class="c3-td"><span class="c3-badge c3-b-ok">Tamam</span></div>
+              </div>
+              <div class="c3-tr">
+                <div class="c3-td bold">10:30</div>
+                <div class="c3-td bold">Mehmet K.<div class="c3-tdmuted">+90 555 222</div></div>
+                <div class="c3-td">Saç Kesimi</div>
+                <div class="c3-td">Yusuf A.</div>
+                <div class="c3-td"><span class="c3-badge c3-b-pend">Bekliyor</span></div>
+              </div>
+              <div class="c3-tr">
+                <div class="c3-td bold">11:00</div>
+                <div class="c3-td bold">Can D.<div class="c3-tdmuted">+90 555 333</div></div>
+                <div class="c3-td">Sakal</div>
+                <div class="c3-td">Murat B.</div>
+                <div class="c3-td"><span class="c3-badge c3-b-ok">Tamam</span></div>
+              </div>
+              <div class="c3-tr">
+                <div class="c3-td bold">13:30</div>
+                <div class="c3-td bold">Ali S.<div class="c3-tdmuted">+90 555 444</div></div>
+                <div class="c3-td">Saç + Sakal</div>
+                <div class="c3-td">Yusuf A.</div>
+                <div class="c3-td"><span class="c3-badge c3-b-canc">İptal</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── KONSEPT 4: Bold Card / Notion Tarzı ── -->
+  <div class="option">
+    <div class="opt-label">
+      <span class="opt-num">04</span>
+      <span class="opt-name">Bold Card · Notion / Stripe Tarzı</span>
+      <span class="opt-tag" style="background:#f3f4f6;color:#374151;border:1px solid #e5e7eb">Pastel Tema</span>
+    </div>
+    <div class="mockup">
+      <div class="c4">
+        <div class="c4-left">
+          <div class="c4-profile">
+            <div class="c4-av">✂️</div>
+            <div>
+              <div class="c4-pname">BerberApp</div>
+              <div class="c4-prole">Admin Paneli</div>
+            </div>
+          </div>
+          <div class="c4-nav-group">
+            <div class="c4-nav-title">Ana Menü</div>
+            <div class="c4-nav-item act">⚡ Dashboard <span class="c4-nav-cnt">3</span></div>
+            <div class="c4-nav-item">📅 Randevular <span class="c4-nav-cnt light">12</span></div>
+            <div class="c4-nav-item">👥 Müşteriler</div>
+          </div>
+          <div class="c4-nav-group">
+            <div class="c4-nav-title">Yönetim</div>
+            <div class="c4-nav-item">💈 Personel</div>
+            <div class="c4-nav-item">✂️ Hizmetler</div>
+            <div class="c4-nav-item">📈 Raporlar</div>
+            <div class="c4-nav-item">⚙️ Ayarlar</div>
+          </div>
+          <div class="c4-mini-stats">
+            <div class="c4-ms"><div class="c4-ms-val">24</div><div class="c4-ms-lbl">Bugün</div></div>
+            <div class="c4-ms"><div class="c4-ms-val">156</div><div class="c4-ms-lbl">Müşteri</div></div>
+            <div class="c4-ms"><div class="c4-ms-val">₺3.2K</div><div class="c4-ms-lbl">Gelir</div></div>
+            <div class="c4-ms"><div class="c4-ms-val">4.8★</div><div class="c4-ms-lbl">Puan</div></div>
+          </div>
+        </div>
+        <div class="c4-right">
+          <div class="c4-hero">
+            <div class="c4-hero-small">Bugünün Özeti · Perşembe, 8 Mayıs</div>
+            <div class="c4-hero-big">24 Randevu</div>
+            <div class="c4-hero-sub">Geçen haftaya göre %8 artış</div>
+            <div class="c4-hero-row">
+              <div class="c4-hero-stat"><div class="c4-hs-val">3</div><div class="c4-hs-lbl">Bekleyen</div></div>
+              <div class="c4-hero-stat"><div class="c4-hs-val">18</div><div class="c4-hs-lbl">Onaylı</div></div>
+              <div class="c4-hero-stat"><div class="c4-hs-val">3</div><div class="c4-hs-lbl">Tamamlanan</div></div>
+            </div>
+          </div>
+          <div class="c4-apts">
+            <div class="c4-apts-hdr">
+              <span class="c4-apts-title">Günün Randevuları</span>
+              <span class="c4-apts-link">Tümünü gör →</span>
+            </div>
+            <div class="c4-apt"><span class="c4-apt-t">09:00</span><div class="c4-apt-av" style="background:#6366f1">A</div><span class="c4-apt-name">Ahmet Y.</span><span class="c4-apt-svc">Saç + Sakal</span><span class="c4-apt-badge" style="background:#dcfce7;color:#16a34a">✓</span></div>
+            <div class="c4-apt"><span class="c4-apt-t">10:30</span><div class="c4-apt-av" style="background:#f59e0b">M</div><span class="c4-apt-name">Mehmet K.</span><span class="c4-apt-svc">Saç Kesimi</span><span class="c4-apt-badge" style="background:#fef3c7;color:#d97706">○</span></div>
+            <div class="c4-apt"><span class="c4-apt-t">11:00</span><div class="c4-apt-av" style="background:#22c55e">C</div><span class="c4-apt-name">Can D.</span><span class="c4-apt-svc">Sakal</span><span class="c4-apt-badge" style="background:#dcfce7;color:#16a34a">✓</span></div>
+            <div class="c4-apt"><span class="c4-apt-t">13:30</span><div class="c4-apt-av" style="background:#ec4899">A</div><span class="c4-apt-name">Ali S.</span><span class="c4-apt-svc">Saç + Sakal</span><span class="c4-apt-badge" style="background:#dbeafe;color:#2563eb">→</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav-btns">
+  <button class="nav-btn outline" onclick="history.back()">← Geri</button>
+</div>
+
+</body>
+</html>
