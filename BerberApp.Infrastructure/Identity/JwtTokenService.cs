@@ -19,7 +19,7 @@ public class JwtTokenService : IJwtTokenService
         _config = config;
     }
 
-    public string GenerateAccessToken(User user, PlanType userPlan = PlanType.Basic)
+    public string GenerateAccessToken(User user, PlanType userPlan = PlanType.Baslangic)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

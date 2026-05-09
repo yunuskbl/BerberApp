@@ -70,7 +70,7 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
         await _context.SaveChangesAsync(ct);
 
         // Yeni user'a default plan ver (Basic)
-        var userPlan = BerberApp.Domain.Enums.PlanType.Basic;
+        var userPlan = BerberApp.Domain.Enums.PlanType.Baslangic;
 
         // Token üret
         var accessToken = _jwtService.GenerateAccessToken(user, userPlan);

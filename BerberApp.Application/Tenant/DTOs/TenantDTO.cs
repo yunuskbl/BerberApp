@@ -19,4 +19,5 @@ public class TenantDto
     public bool IsActive { get; set; }
     public string? ThemeColor { get; set; }
     public NotificationChannel PreferredNotificationChannel { get; set; }
+    public string PlanType { get; set; } = "Baslangic";
 }

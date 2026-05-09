@@ -40,7 +40,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResponse>
         var tenant = await _context.Tenants
             .FirstOrDefaultAsync(x => x.Id == user.TenantId, ct);
 
-        var userPlan = PlanType.Basic;
+        var userPlan = PlanType.Baslangic;
         Subscription subscription = null;
         // Aktif aboneliği al
         try
@@ -52,12 +52,12 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResponse>
        .OrderByDescending(x => x.StartDate)
        .FirstOrDefaultAsync(ct);
 
-            userPlan = subscription?.Plan ?? PlanType.Basic;  // ← Default: Basic
+            userPlan = subscription?.Plan ?? PlanType.Baslangic;  // ← Default: Basic
         }
         catch (Exception)
         {
 
-            userPlan = subscription?.Plan ?? PlanType.Basic;
+            userPlan = subscription?.Plan ?? PlanType.Baslangic;
         }
         
 

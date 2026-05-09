@@ -23,9 +23,9 @@ export class AuthService {
 
           try {
             const decoded: any = jwtDecode(response.data.accessToken);
-            localStorage.setItem('userPlan', decoded.plan_type || 'Basic');
+            localStorage.setItem('userPlan', decoded.plan_type || 'Baslangic');
           } catch {
-            localStorage.setItem('userPlan', 'Basic');
+            localStorage.setItem('userPlan', 'Baslangic');
           }
         }
       })
@@ -48,6 +48,13 @@ export class AuthService {
         if (response.success) {
           localStorage.setItem('accessToken', response.data.accessToken);
           localStorage.setItem('refreshToken', response.data.refreshToken);
+          // Yeni token'dan planı decode edip güncelle
+          try {
+            const decoded: any = jwtDecode(response.data.accessToken);
+            if (decoded.plan_type) {
+              localStorage.setItem('userPlan', decoded.plan_type);
+            }
+          } catch { /* ignore */ }
         }
       })
     );
@@ -75,7 +82,10 @@ export class AuthService {
   }
 
   getUserPlan(): string {
-    return localStorage.getItem('userPlan') || 'Basic';
+    const plan = localStorage.getItem('userPlan') || 'Baslangic';
+    // Eski token'lar için geriye dönük uyumluluk
+    const compat: Record<string, string> = { Basic: 'Baslangic', Standard: 'Profesyonel', Full: 'Premium' };
+    return compat[plan] ?? plan;
   }
 
   isLoggedIn(): boolean {

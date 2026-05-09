@@ -2,34 +2,31 @@ import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class PlanGuard implements CanActivate {
-  private planLevels: { [key: string]: number } = {
-    Basic: 1,
+
+  private planLevels: Record<string, number> = {
+    // Yeni isimler
+    Baslangic:   1,
+    Profesyonel: 2,
+    Premium:     3,
+    // Eski token'lar için geriye dönük uyumluluk
+    Basic:    1,
     Standard: 2,
-    Full: 3,
+    Full:     3,
   };
 
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-  ) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
-  // plan.guard.ts
   canActivate(route: ActivatedRouteSnapshot): boolean {
     const requiredPlan = route.data['requiredPlan'] as string;
-    const userPlan = this.authService.getUserPlan();
+    const userPlan     = this.authService.getUserPlan();
 
-    const userLevel = this.planLevels[userPlan] || 1;
-    const requiredLevel = this.planLevels[requiredPlan] || 1;
+    const userLevel     = this.planLevels[userPlan]     ?? 1;
+    const requiredLevel = this.planLevels[requiredPlan] ?? 1;
 
-    if (userLevel >= requiredLevel) {
-      return true;
-    }
+    if (userLevel >= requiredLevel) return true;
 
-    // Login yerine /upgrade'e yönlendir!
     this.router.navigate(['/upgrade'], {
       queryParams: { current: userPlan, required: requiredPlan },
     });

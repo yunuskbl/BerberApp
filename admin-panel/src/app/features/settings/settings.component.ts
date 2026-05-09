@@ -162,6 +162,10 @@ export class SettingsComponent implements OnInit {
           });
           if (res.data.logoUrl) this.logoPreview = res.data.logoUrl;
           this.notificationChannel = res.data.preferredNotificationChannel ?? 0;
+          // DB'den gelen planı localStorage ile senkronize et (stale JWT sorunu çözümü)
+          if (res.data.planType) {
+            localStorage.setItem('userPlan', res.data.planType);
+          }
         }
         this.isLoading = false;
       },
@@ -272,6 +276,18 @@ export class SettingsComponent implements OnInit {
       },
     });
     input.value = '';
+  }
+
+  /* ─── Plan ─── */
+  get userPlan(): string { return this.authService.getUserPlan(); }
+
+  get planDisplayInfo(): { name: string; icon: string; color: string } {
+    const map: Record<string, { name: string; icon: string; color: string }> = {
+      Baslangic:   { name: 'Başlangıç',   icon: '🌱', color: '#6b7280' },
+      Profesyonel: { name: 'Profesyonel', icon: '⚡', color: '#7c3aed' },
+      Premium:     { name: 'Premium',     icon: '👑', color: '#d97706' },
+    };
+    return map[this.userPlan] ?? { name: this.userPlan, icon: '📦', color: '#6b7280' };
   }
 
   /* ─── Links ─── */

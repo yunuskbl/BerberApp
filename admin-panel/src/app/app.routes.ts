@@ -135,7 +135,7 @@ export const routes: Routes = [
             (m) => m.ReportsListComponent,
           ),
         canActivate: [PlanGuard],
-        data: { requiredPlan: 'Standard' },
+        data: { requiredPlan: 'Premium' },
       },
       {
         path: 'settings',
@@ -171,6 +171,8 @@ export const routes: Routes = [
           import('./features/reviews/reviews.component').then(
             (m) => m.ReviewsComponent,
           ),
+        canActivate: [PlanGuard],
+        data: { requiredPlan: 'Profesyonel' },
       },
       {
         path: '',

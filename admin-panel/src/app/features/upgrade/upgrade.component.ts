@@ -57,15 +57,15 @@ import { CommonModule } from '@angular/common';
   `]
 })
 export class UpgradeComponent implements OnInit {
-  currentPlan = 'Basic';
-  requiredPlan = 'Standard';
+  currentPlan = 'Baslangic';
+  requiredPlan = 'Profesyonel';
 
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
-      this.currentPlan = params['current'] || 'Basic';
-      this.requiredPlan = params['required'] || 'Standard';
+      this.currentPlan = params['current'] || 'Baslangic';
+      this.requiredPlan = params['required'] || 'Profesyonel';
     });
   }
 

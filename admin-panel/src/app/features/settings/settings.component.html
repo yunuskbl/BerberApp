@@ -277,6 +277,18 @@
             <span class="profile-role">{{ user?.role }}</span>
           </div>
         </div>
+
+        <div class="plan-row">
+          <span class="plan-badge-sm"
+                [style.background]="planDisplayInfo.color + '18'"
+                [style.color]="planDisplayInfo.color"
+                [style.border-color]="planDisplayInfo.color + '40'">
+            {{ planDisplayInfo.icon }} {{ planDisplayInfo.name }} Paketi
+          </span>
+          @if (userPlan !== 'Premium') {
+            <a routerLink="/pricing" class="btn-plan-upgrade">⬆ Paketi Yükselt</a>
+          }
+        </div>
       </div>
 
       <!-- ── Şifre Değiştir ── -->

@@ -38,7 +38,7 @@ public class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, RefreshT
             .OrderByDescending(x => x.StartDate)
             .FirstOrDefaultAsync(ct);
 
-        var plan = subscription?.Plan ?? PlanType.Basic;
+        var plan = subscription?.Plan ?? PlanType.Baslangic;
 
         var newAccessToken = _jwtService.GenerateAccessToken(user, plan);
         var newRefreshToken = _jwtService.GenerateRefreshToken();

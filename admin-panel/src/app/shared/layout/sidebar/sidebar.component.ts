@@ -19,14 +19,25 @@ export class SidebarComponent {
   isCollapsed = false;
 
   menuItems = [
-    { key: 'nav.home',         icon: 'home',      route: '/dashboard'    },
-    { key: 'nav.appointments', icon: 'calendar',  route: '/appointments' },
-    { key: 'nav.staff',        icon: 'user',      route: '/staff'        },
-    { key: 'nav.services',     icon: 'scissors',  route: '/services'     },
-    { key: 'nav.customers',    icon: 'users',     route: '/customers'    },
-    { key: 'nav.reports',      icon: 'chart-bar', route: '/reports'      },
-    { key: 'nav.reviews',      icon: 'star',      route: '/reviews'      },
+    { key: 'nav.home',         icon: 'home',      route: '/dashboard',    minPlan: null           },
+    { key: 'nav.appointments', icon: 'calendar',  route: '/appointments', minPlan: null           },
+    { key: 'nav.staff',        icon: 'user',      route: '/staff',        minPlan: null           },
+    { key: 'nav.services',     icon: 'scissors',  route: '/services',     minPlan: null           },
+    { key: 'nav.customers',    icon: 'users',     route: '/customers',    minPlan: null           },
+    { key: 'nav.reviews',      icon: 'star',      route: '/reviews',      minPlan: 'Profesyonel'  },
+    { key: 'nav.reports',      icon: 'chart-bar', route: '/reports',      minPlan: 'Premium'      },
   ];
+
+  private readonly planLevels: Record<string, number> = {
+    Baslangic: 1, Profesyonel: 2, Premium: 3,
+    Basic: 1, Standard: 2, Full: 3,
+  };
+
+  isLocked(minPlan: string | null): boolean {
+    if (!minPlan) return false;
+    const userLevel = this.planLevels[this.authService.getUserPlan()] ?? 1;
+    return userLevel < (this.planLevels[minPlan] ?? 1);
+  }
 
   bottomItems = [
     { key: 'nav.settings', icon: 'settings', route: '/settings' },

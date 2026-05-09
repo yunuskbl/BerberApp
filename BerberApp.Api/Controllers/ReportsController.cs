@@ -8,7 +8,7 @@ namespace BerberApp.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-[RequirePlan(PlanType.Full)]  // Sadece Full plan
+[RequirePlan(PlanType.Premium)]
 public class ReportsController : ControllerBase
 {
     [HttpGet("advanced")]

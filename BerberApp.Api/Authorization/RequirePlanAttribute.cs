@@ -38,10 +38,18 @@ public class RequirePlanAttribute : Attribute, IAsyncAuthorizationFilter
             return;
         }
 
-        if (!Enum.TryParse<PlanType>(planClaim.Value, out var userPlan))
+        // Yeni isimlerle parse et; eski token'lar için geriye dönük uyumluluk
+        PlanType userPlan;
+        if (!Enum.TryParse<PlanType>(planClaim.Value, out userPlan))
         {
-            context.Result = new ForbidResult();
-            return;
+            userPlan = planClaim.Value switch
+            {
+                "Basic"    => PlanType.Baslangic,
+                "Standard" => PlanType.Profesyonel,
+                "Full"     => PlanType.Premium,
+                _          => (PlanType)0
+            };
+            if (userPlan == 0) { context.Result = new ForbidResult(); return; }
         }
 
         // Check if user's plan is in required plans

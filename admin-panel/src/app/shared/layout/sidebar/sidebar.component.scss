@@ -103,6 +103,22 @@
     .nav-indicator { background: #ffffff; }
     .nav-icon { filter: none; }
   }
+
+  &--locked {
+    opacity: 0.55;
+
+    &:hover {
+      background: #f9fafb;
+      color: #6b7280;
+    }
+  }
+
+  .nav-lock {
+    font-size: 11px;
+    flex-shrink: 0;
+    margin-left: auto;
+    opacity: 0.7;
+  }
 }
 
 .logout-btn {
