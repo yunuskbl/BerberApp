@@ -26,7 +26,7 @@ public class LinkNotificationService : INotificationService
         _whatsAppService = whatsAppService;
         _smsService     = smsService;
         _logger         = logger;
-        _frontendBase   = config["AppSettings:FrontendBaseUrl"] ?? "https://berberapp.com.tr";
+        _frontendBase   = config["AppSettings:FrontendBaseUrl"] ?? "https://ayarliyo.com";
     }
 
     public async Task SendAppointmentReceivedAsync(string recipient, AppointmentStatusDto dto)

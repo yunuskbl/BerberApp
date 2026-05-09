@@ -118,8 +118,10 @@ builder.Services.AddCors(options =>
     {
         var allowedOrigins = new List<string>
         {
-            "https://berberapp.com.tr",
-            "http://berberapp.com.tr"
+            "https://ayarliyo.com",
+            "http://ayarliyo.com",
+            "https://www.ayarliyo.com",
+            "http://www.ayarliyo.com"
         };
 
         if (!builder.Environment.IsProduction())

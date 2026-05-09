@@ -86,7 +86,7 @@ public class AppointmentsController : BaseApiController
             .Select(t => t.Subdomain)
             .FirstOrDefaultAsync();
 
-        var frontendBase = _config["AppSettings:FrontendBaseUrl"] ?? "https://berberapp.com.tr";
+        var frontendBase = _config["AppSettings:FrontendBaseUrl"] ?? "https://ayarliyo.com";
         var reviewUrl    = subdomain is not null
             ? $"{frontendBase}/rate/{subdomain}/{id}"
             : null;

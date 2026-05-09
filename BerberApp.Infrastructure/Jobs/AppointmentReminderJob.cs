@@ -22,7 +22,7 @@ public class AppointmentReminderJob
         _context      = context;
         _whatsAppService = whatsAppService;
         _smsService   = smsService;
-        _frontendBase = config["AppSettings:FrontendBaseUrl"] ?? "https://berberapp.com.tr";
+        _frontendBase = config["AppSettings:FrontendBaseUrl"] ?? "https://ayarliyo.com";
     }
 
     [AutomaticRetry(Attempts = 2)]
