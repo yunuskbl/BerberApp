@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing Preview - Ayarlıyo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #f5f7ff 0%, #faf5ff 100%); }
+
+  .hero { padding: 80px 20px; text-align: center; background: linear-gradient(135deg, rgba(99,102,241,.1) 0%, rgba(139,92,246,.1) 100%); border-bottom: 2px solid #e5e7eb; }
+  .hero-content { max-width: 800px; margin: 0 auto; }
+  .hero-content h1 { font-size: 48px; font-weight: 800; background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 20px; }
+  .hero-content > p { font-size: 20px; color: #6b7280; margin-bottom: 40px; }
+  .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 60px; }
+  .stat { display: flex; flex-direction: column; gap: 8px; }
+  .stat .number { font-size: 32px; font-weight: 800; color: #6366f1; }
+  .stat .label { font-size: 14px; color: #6b7280; }
+
+  .pricing-section { padding: 80px 20px; }
+  .pricing-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+  .pricing-card { background: #fff; border-radius: 16px; border: 2px solid #e5e7eb; padding: 40px 30px; position: relative; overflow: hidden; }
+  .pricing-card.featured { border-color: #6366f1; box-shadow: 0 25px 50px -12px rgba(99,102,241,.25); transform: scale(1.02); }
+  .badge { position: absolute; top: -12px; right: 20px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 6px rgba(0,0,0,.1); }
+  .savings-badge { position: absolute; top: 20px; right: 20px; background: #10b981; color: white; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+  .plan-header { text-align: center; margin-bottom: 30px; padding-top: 20px; }
+  .plan-header .plan-icon { font-size: 48px; display: block; margin-bottom: 15px; }
+  .plan-header h3 { font-size: 28px; color: #1f2937; margin-bottom: 8px; }
+  .plan-header .plan-description { color: #6b7280; font-size: 14px; }
+  .price-section { text-align: center; margin-bottom: 30px; padding: 25px 0; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
+  .price { display: flex; align-items: baseline; justify-content: center; gap: 6px; margin-bottom: 10px; }
+  .price .amount { font-size: 42px; font-weight: 800; color: #6366f1; }
+  .price .period { font-size: 16px; color: #6b7280; }
+  .price-note { font-size: 12px; color: #10b981; }
+  .features-list { list-style: none; padding: 20px 0; }
+  .features-list li { display: flex; align-items: center; gap: 12px; padding: 10px 0; font-size: 14px; color: #1f2937; border-bottom: 1px solid #f3f4f6; }
+  .features-list li.disabled { color: #6b7280; opacity: 0.6; }
+  .feature-icon { font-size: 18px; width: 24px; text-align: center; }
+  .feature-name { flex: 1; }
+  .feature-check { font-size: 16px; font-weight: 700; color: #10b981; }
+  .feature-check.disabled { color: #ef4444; }
+  .cta-button { width: 100%; padding: 14px 20px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; }
+  .cta-button.primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; box-shadow: 0 10px 20px rgba(99,102,241,.3); }
+  .cta-button.secondary { background: #f9fafb; color: #6366f1; border: 2px solid #6366f1; }
+  .cta-button.disabled { background: #e5e7eb; color: #6b7280; opacity: 0.6; cursor: not-allowed; }
+
+  .comparison-section { padding: 80px 20px; background: #fff; }
+  .comparison-section h2 { text-align: center; font-size: 36px; color: #1f2937; margin-bottom: 60px; }
+  .comparison-table { max-width: 1000px; margin: 0 auto; overflow-x: auto; }
+  .comparison-header { display: grid; grid-template-columns: 220px repeat(3, 1fr); gap: 10px; padding: 20px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border-radius: 12px 12px 0 0; font-weight: 600; }
+  .comparison-header .plan-col { text-align: center; }
+  .comparison-row { display: grid; grid-template-columns: 220px repeat(3, 1fr); gap: 10px; padding: 14px 20px; border-bottom: 1px solid #e5e7eb; align-items: center; }
+  .comparison-row:last-child { background: #f9fafb; border-radius: 0 0 12px 12px; border-bottom: none; }
+  .comparison-row .feature-col { font-weight: 500; color: #1f2937; font-size: 14px; }
+  .comparison-row .plan-col { text-align: center; font-size: 18px; }
+  .check { color: #10b981; font-weight: 700; }
+  .cross { color: #ef4444; }
+
+  .testimonials-section { padding: 80px 20px; background: linear-gradient(135deg, rgba(99,102,241,.05), rgba(139,92,246,.05)); }
+  .testimonials-section h2 { text-align: center; font-size: 36px; color: #1f2937; margin-bottom: 16px; }
+  .section-subtitle { text-align: center; color: #6b7280; font-size: 16px; margin-bottom: 60px; }
+  .testimonials-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+  .testimonial-card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,.1); }
+  .testimonial-header { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; }
+  .avatar { font-size: 36px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: #f9fafb; border-radius: 50%; }
+  .user-info h4 { color: #1f2937; font-size: 16px; margin-bottom: 4px; }
+  .user-info p { color: #6b7280; font-size: 12px; }
+  .rating { margin-bottom: 12px; font-size: 14px; }
+  .testimonial-text { color: #6b7280; line-height: 1.6; font-style: italic; }
+
+  .faq-section { padding: 80px 20px; }
+  .faq-section h2 { text-align: center; font-size: 36px; color: #1f2937; margin-bottom: 16px; }
+  .faq-container { max-width: 700px; margin: 0 auto; }
+  .faq-item { margin-bottom: 12px; border: 2px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+  .faq-question { width: 100%; padding: 18px 20px; background: #f9fafb; border: none; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 600; color: #1f2937; text-align: left; cursor: pointer; }
+  .faq-icon { font-size: 20px; color: #6366f1; transition: transform .3s; }
+  .faq-answer { padding: 20px; color: #6b7280; line-height: 1.6; background: #fff; border-top: 2px solid #e5e7eb; display: none; }
+  .faq-item.open .faq-answer { display: block; }
+  .faq-item.open .faq-question { background: linear-gradient(135deg, rgba(99,102,241,.1), rgba(139,92,246,.1)); color: #6366f1; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  .cta-section { padding: 80px 20px; text-align: center; background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+  .cta-content { max-width: 600px; margin: 0 auto; }
+  .cta-content h2 { font-size: 42px; color: white; margin-bottom: 16px; }
+  .cta-content p { font-size: 18px; color: rgba(255,255,255,.9); margin-bottom: 40px; }
+  .cta-button-large { padding: 16px 40px; background: white; color: #6366f1; border: none; border-radius: 10px; font-size: 18px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.2); }
+
+  .new-badge { font-size: 10px; background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-left: 6px; vertical-align: middle; }
+
+  @media (max-width: 768px) {
+    .hero-content h1 { font-size: 32px; }
+    .pricing-container { grid-template-columns: 1fr; gap: 20px; }
+    .pricing-card.featured { transform: scale(1); }
+    .testimonials-container { grid-template-columns: 1fr; }
+    .hero-stats { grid-template-columns: 1fr; }
+    .comparison-header, .comparison-row { grid-template-columns: 140px repeat(3, 1fr); gap: 6px; padding: 12px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-content">
+    <h1>Paket Seçenekleri</h1>
+    <p>İşletmenizin büyümesine uygun planı seçin</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="number">5000+</span><span class="label">Mutlu Müşteri</span></div>
+      <div class="stat"><span class="number">99.9%</span><span class="label">Uptime</span></div>
+      <div class="stat"><span class="number">24/7</span><span class="label">Destek</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing-section">
+  <div class="pricing-container">
+    <div class="pricing-card">
+      <div class="plan-header">
+        <span class="plan-icon">📱</span>
+        <h3>Basic</h3>
+        <p class="plan-description">Başlangıç için mükemmel</p>
+      </div>
+      <div class="price-section">
+        <div class="price"><span class="amount">₺899</span><span class="period">/ay</span></div>
+        <p class="price-note">İlk ay yarı fiyatla</p>
+      </div>
+      <ul class="features-list">
+        <li><span class="feature-icon">📅</span><span class="feature-name">Randevu Yönetimi</span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">👥</span><span class="feature-name">Müşteri Yönetimi</span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">👔</span><span class="feature-name">Personel Yönetimi</span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">✂️</span><span class="feature-name">Hizmet Yönetimi</span><span class="feature-check">✓</span></li>
+        <li class="disabled"><span class="feature-icon">💬</span><span class="feature-name">WhatsApp Bildirimleri</span><span class="feature-check disabled">✗</span></li>
+        <li class="disabled"><span class="feature-icon">⭐</span><span class="feature-name">Değerlendirme Sistemi</span><span class="feature-check disabled">✗</span></li>
+        <li class="disabled"><span class="feature-icon">🗺️</span><span class="feature-name">Google Maps Entegrasyonu</span><span class="feature-check disabled">✗</span></li>
+        <li class="disabled"><span class="feature-icon">📊</span><span class="feature-name">Rapor &amp; Analytics</span><span class="feature-check disabled">✗</span></li>
+        <li class="disabled"><span class="feature-icon">🔄</span><span class="feature-name">Tekrarlayan Müşteri Analizi</span><span class="feature-check disabled">✗</span></li>
+        <li class="disabled"><span class="feature-icon">📈</span><span class="feature-name">Gelişmiş Raporlar</span><span class="feature-check disabled">✗</span></li>
+        <li class="disabled"><span class="feature-icon">🆘</span><span class="feature-name">24/7 Destek</span><span class="feature-check disabled">✗</span></li>
+      </ul>
+      <button class="cta-button disabled" disabled>Mevcut Plan</button>
+    </div>
+
+    <div class="pricing-card featured">
+      <div class="badge"><span>✨</span> En Popüler</div>
+      <div class="savings-badge">%17 tasarruf</div>
+      <div class="plan-header">
+        <span class="plan-icon">⭐</span>
+        <h3>Standard</h3>
+        <p class="plan-description">En popüler seçim</p>
+      </div>
+      <div class="price-section">
+        <div class="price"><span class="amount">₺1799</span><span class="period">/ay</span></div>
+        <p class="price-note">İlk ay yarı fiyatla</p>
+      </div>
+      <ul class="features-list">
+        <li><span class="feature-icon">📅</span><span class="feature-name">Randevu Yönetimi</span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">👥</span><span class="feature-name">Müşteri Yönetimi</span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">👔</span><span class="feature-name">Personel Yönetimi</span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">✂️</span><span class="feature-name">Hizmet Yönetimi</span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">💬</span><span class="feature-name">WhatsApp Bildirimleri <span class="new-badge">YENİ</span></span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">⭐</span><span class="feature-name">Değerlendirme Sistemi <span class="new-badge">YENİ</span></span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">🗺️</span><span class="feature-name">Google Maps Entegrasyonu <span class="new-badge">YENİ</span></span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">📊</span><span class="feature-name">Rapor &amp; Analytics</span><span class="feature-check">✓</span></li>
+        <li class="disabled"><span class="feature-icon">🔄</span><span class="feature-name">Tekrarlayan Müşteri Analizi</span><span class="feature-check disabled">✗</span></li>
+        <li class="disabled"><span class="feature-icon">📈</span><span class="feature-name">Gelişmiş Raporlar</span><span class="feature-check disabled">✗</span></li>
+        <li class="disabled"><span class="feature-icon">🆘</span><span class="feature-name">24/7 Destek</span><span class="feature-check disabled">✗</span></li>
+      </ul>
+      <button class="cta-button primary">Standard'e Yükselt →</button>
+    </div>
+
+    <div class="pricing-card">
+      <div class="plan-header">
+        <span class="plan-icon">👑</span>
+        <h3>Full</h3>
+        <p class="plan-description">Profesyoneller için</p>
+      </div>
+      <div class="price-section">
+        <div class="price"><span class="amount">₺2399</span><span class="period">/ay</span></div>
+        <p class="price-note">İlk ay yarı fiyatla</p>
+      </div>
+      <ul class="features-list">
+        <li><span class="feature-icon">📅</span><span class="feature-name">Randevu Yönetimi</span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">👥</span><span class="feature-name">Müşteri Yönetimi</span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">👔</span><span class="feature-name">Personel Yönetimi</span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">✂️</span><span class="feature-name">Hizmet Yönetimi</span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">💬</span><span class="feature-name">WhatsApp Bildirimleri <span class="new-badge">YENİ</span></span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">⭐</span><span class="feature-name">Değerlendirme Sistemi <span class="new-badge">YENİ</span></span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">🗺️</span><span class="feature-name">Google Maps Entegrasyonu <span class="new-badge">YENİ</span></span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">📊</span><span class="feature-name">Rapor &amp; Analytics</span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">🔄</span><span class="feature-name">Tekrarlayan Müşteri Analizi <span class="new-badge">YENİ</span></span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">📈</span><span class="feature-name">Gelişmiş Raporlar</span><span class="feature-check">✓</span></li>
+        <li><span class="feature-icon">🆘</span><span class="feature-name">24/7 Destek</span><span class="feature-check">✓</span></li>
+      </ul>
+      <button class="cta-button secondary">Full'a Yükselt →</button>
+    </div>
+  </div>
+</section>
+
+<section class="comparison-section">
+  <h2>Detaylı Karşılaştırma</h2>
+  <div class="comparison-table">
+    <div class="comparison-header">
+      <div>Özellikler</div>
+      <div class="plan-col">Basic</div>
+      <div class="plan-col">Standard</div>
+      <div class="plan-col">Full</div>
+    </div>
+    <div class="comparison-row"><div class="feature-col">📅 Randevu Yönetimi</div><div class="plan-col"><span class="check">✓</span></div><div class="plan-col"><span class="check">✓</span></div><div class="plan-col"><span class="check">✓</span></div></div>
+    <div class="comparison-row"><div class="feature-col">👥 Müşteri Yönetimi</div><div class="plan-col"><span class="check">✓</span></div><div class="plan-col"><span class="check">✓</span></div><div class="plan-col"><span class="check">✓</span></div></div>
+    <div class="comparison-row"><div class="feature-col">👔 Personel Yönetimi</div><div class="plan-col"><span class="check">✓</span></div><div class="plan-col"><span class="check">✓</span></div><div class="plan-col"><span class="check">✓</span></div></div>
+    <div class="comparison-row"><div class="feature-col">✂️ Hizmet Yönetimi</div><div class="plan-col"><span class="check">✓</span></div><div class="plan-col"><span class="check">✓</span></div><div class="plan-col"><span class="check">✓</span></div></div>
+    <div class="comparison-row"><div class="feature-col">💬 WhatsApp Bildirimleri 🆕</div><div class="plan-col"><span class="cross">✗</span></div><div class="plan-col"><span class="check">✓</span></div><div class="plan-col"><span class="check">✓</span></div></div>
+    <div class="comparison-row"><div class="feature-col">⭐ Değerlendirme Sistemi 🆕</div><div class="plan-col"><span class="cross">✗</span></div><div class="plan-col"><span class="check">✓</span></div><div class="plan-col"><span class="check">✓</span></div></div>
+    <div class="comparison-row"><div class="feature-col">🗺️ Google Maps Entegrasyonu 🆕</div><div class="plan-col"><span class="cross">✗</span></div><div class="plan-col"><span class="check">✓</span></div><div class="plan-col"><span class="check">✓</span></div></div>
+    <div class="comparison-row"><div class="feature-col">📊 Rapor &amp; Analytics</div><div class="plan-col"><span class="cross">✗</span></div><div class="plan-col"><span class="check">✓</span></div><div class="plan-col"><span class="check">✓</span></div></div>
+    <div class="comparison-row"><div class="feature-col">🔄 Tekrarlayan Müşteri Analizi 🆕</div><div class="plan-col"><span class="cross">✗</span></div><div class="plan-col"><span class="cross">✗</span></div><div class="plan-col"><span class="check">✓</span></div></div>
+    <div class="comparison-row"><div class="feature-col">📈 Gelişmiş Raporlar</div><div class="plan-col"><span class="cross">✗</span></div><div class="plan-col"><span class="cross">✗</span></div><div class="plan-col"><span class="check">✓</span></div></div>
+    <div class="comparison-row"><div class="feature-col">🆘 24/7 Destek</div><div class="plan-col"><span class="cross">✗</span></div><div class="plan-col"><span class="cross">✗</span></div><div class="plan-col"><span class="check">✓</span></div></div>
+  </div>
+</section>
+
+<section class="testimonials-section">
+  <h2>Müşteri Yorumları</h2>
+  <p class="section-subtitle">Binlerce işletme Ayarlıyo'yu tercih ediyor</p>
+  <div class="testimonials-container">
+    <div class="testimonial-card">
+      <div class="testimonial-header">
+        <span class="avatar">👩‍🦰</span>
+        <div class="user-info"><h4>Ayşe Yılmaz</h4><p>Beauty Salon Istanbul</p></div>
+      </div>
+      <div class="rating">⭐⭐⭐⭐⭐</div>
+      <p class="testimonial-text">"WhatsApp bildirimleri sayesinde müşterilerim randevularını asla unutmuyor. Memnuniyet %40 arttı!"</p>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-header">
+        <span class="avatar">👨‍💼</span>
+        <div class="user-info"><h4>Mehmet Kaya</h4><p>Elite Barber Shop</p></div>
+      </div>
+      <div class="rating">⭐⭐⭐⭐⭐</div>
+      <p class="testimonial-text">"Değerlendirme sistemi ve tekrarlayan müşteri analizi sayesinde müşterilerimi daha iyi tanıyorum. Harika özellik!"</p>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-header">
+        <span class="avatar">👩‍🎨</span>
+        <div class="user-info"><h4>Zeynep Demir</h4><p>Hair Design Studio</p></div>
+      </div>
+      <div class="rating">⭐⭐⭐⭐⭐</div>
+      <p class="testimonial-text">"Google Maps entegrasyonu müşterilerimin salonu bulmasını çok kolaylaştırdı. Full paketi kesinlikle değer!"</p>
+    </div>
+  </div>
+</section>
+
+<section class="faq-section">
+  <h2>Sıkça Sorulan Sorular</h2>
+  <p class="section-subtitle">Yanıtlara sahip olmadığınız sorular mı var? Bize yazın!</p>
+  <div class="faq-container">
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)"><span>İstediğim zaman plan değiştirebilir miyim?</span><span class="faq-icon">+</span></button>
+      <div class="faq-answer">Evet! Herhangi bir zamanda plan değiştirebilir veya iptal edebilirsiniz. Ödemeniz günlere göre hesaplanacaktır.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)"><span>WhatsApp bildirimleri nasıl çalışıyor?</span><span class="faq-icon">+</span></button>
+      <div class="faq-answer">Randevu tamamlandığında müşterinize otomatik olarak WhatsApp mesajı gönderilir. Mesajda değerlendirme linki ve Google Maps yönlendirmesi yer alır.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)"><span>Değerlendirme sistemi nasıl çalışıyor?</span><span class="faq-icon">+</span></button>
+      <div class="faq-answer">Randevu tamamlandıktan sonra müşterileriniz 1-5 yıldız arası puan ve yorum bırakabilir. Yönetici panelinden tüm değerlendirmeleri görebilirsiniz.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)"><span>Tekrarlayan müşteri analizi ne işe yarar?</span><span class="faq-icon">+</span></button>
+      <div class="faq-answer">Full pakette sunulan bu özellik sayesinde hangi müşterilerin daha önce de yorum bıraktığını görebilir, sadık müşterilerinizi tanıyabilirsiniz.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)"><span>Google Maps entegrasyonu nasıl çalışıyor?</span><span class="faq-icon">+</span></button>
+      <div class="faq-answer">Standard ve Full paketlerinde, WhatsApp mesajlarına otomatik olarak salonunuzun Google Maps yönlendirme linki eklenir.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)"><span>Kişi sayısının bir sınırı var mı?</span><span class="faq-icon">+</span></button>
+      <div class="faq-answer">Hayır! Tüm planlarda sınırsız müşteri ve personel ekleyebilirsiniz.</div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="cta-content">
+    <h2>Hazır mısınız?</h2>
+    <p>Ayarlıyo'ya hemen başlayın ve işletmenizi büyütün</p>
+    <button class="cta-button-large">Standard Planı Seçin →</button>
+  </div>
+</section>
+
+<script>
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  item.classList.toggle('open');
+}
+</script>
+</body>
+</html>
