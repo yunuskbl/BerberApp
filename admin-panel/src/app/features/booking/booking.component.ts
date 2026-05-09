@@ -88,7 +88,7 @@ export class BookingComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   otpSent = false;
-  otpVerified = true;   // OTP devre dışı — doğrulama zorunlu değil
+  otpVerified = false;   // OTP devre dışı — doğrulama zorunlu değil
   otpCode = '';
   isSendingOtp = false;
   isVerifyingOtp = false;

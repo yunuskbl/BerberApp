@@ -1,10 +1,12 @@
-<app-decorative-bg [accent]="salon?.themeColor || '#c9a96e'"></app-decorative-bg>
+<app-decorative-bg
+  [accent]="salon?.themeColor || '#c9a96e'"
+></app-decorative-bg>
 
 <!-- Loading -->
 @if (isLoading) {
   <div class="loading-screen">
     <div class="spinner"></div>
-    <p>{{ 'booking.loading' | translate }}</p>
+    <p>{{ "booking.loading" | translate }}</p>
   </div>
 }
 
@@ -12,7 +14,7 @@
 @else if (errorMessage && !salon) {
   <div class="error-screen">
     <span class="error-icon">✂</span>
-    <h2>{{ 'booking.notFound' | translate }}</h2>
+    <h2>{{ "booking.notFound" | translate }}</h2>
     <p>{{ errorMessage }}</p>
   </div>
 }
@@ -22,20 +24,55 @@
   <div class="success-screen">
     <div class="success-card">
       <div class="success-icon">✓</div>
-      <h2>{{ 'booking.received' | translate }}</h2>
-      <p>{{ 'booking.receivedSub' | translate }}</p>
-      <div class="pending-note">{{ 'booking.pendingNote' | translate }}</div>
+      <h2>{{ "booking.received" | translate }}</h2>
+      <p>{{ "booking.receivedSub" | translate }}</p>
+      <div class="pending-note">{{ "booking.pendingNote" | translate }}</div>
       <div class="booking-summary">
-        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.salon' | translate }}</span><span class="summary-value">{{ salon?.name }}</span></div>
-        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.service' | translate }}</span><span class="summary-value">{{ selectedService ? getServiceName(selectedService) : '' }}</span></div>
-        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.staff' | translate }}</span><span class="summary-value">{{ selectedStaff?.fullName }}</span></div>
-        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.date' | translate }}</span><span class="summary-value">{{ formatDate(selectedSlot) }}</span></div>
-        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.time' | translate }}</span><span class="summary-value">{{ formatTime(selectedSlot) }}</span></div>
-        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.price' | translate }}</span><span class="summary-value">{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span></div>
+        <div class="summary-item">
+          <span class="summary-label">{{
+            "booking.lbl.salon" | translate
+          }}</span
+          ><span class="summary-value">{{ salon?.name }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">{{
+            "booking.lbl.service" | translate
+          }}</span
+          ><span class="summary-value">{{
+            selectedService ? getServiceName(selectedService) : ""
+          }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">{{
+            "booking.lbl.staff" | translate
+          }}</span
+          ><span class="summary-value">{{ selectedStaff?.fullName }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">{{ "booking.lbl.date" | translate }}</span
+          ><span class="summary-value">{{ formatDate(selectedSlot) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">{{ "booking.lbl.time" | translate }}</span
+          ><span class="summary-value">{{ formatTime(selectedSlot) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">{{
+            "booking.lbl.price" | translate
+          }}</span
+          ><span class="summary-value">{{
+            formatPrice(
+              selectedService?.price || 0,
+              selectedService?.currency || "TRY"
+            )
+          }}</span>
+        </div>
       </div>
-      <p class="success-note">{{ 'booking.successNote' | translate }}</p>
+      <p class="success-note">{{ "booking.successNote" | translate }}</p>
       @if (salon?.phone) {
-        <a [href]="'tel:' + salon?.phone" class="btn-call">📞 {{ salon?.phone }}</a>
+        <a [href]="'tel:' + salon?.phone" class="btn-call"
+          >📞 {{ salon?.phone }}</a
+        >
       }
     </div>
   </div>
@@ -49,140 +86,340 @@
   </div>
 
   <div class="booking-page">
-
     <!-- LEFT PANEL -->
     <div class="booking-left">
-
       <div class="left-scroll-area">
-
-      <!-- Salon kimliği -->
-      <div class="salon-identity">
-        <div class="salon-logo-wrap">
-          @if (salon?.logoUrl) {
-            <img [src]="salon!.logoUrl" [alt]="salon?.name" />
-          } @else {
-            {{ getInitials(salon?.name || '') }}
-          }
-        </div>
-        <div class="salon-name">{{ salon?.name }}</div>
-        @if (salon?.address) {
-          <div class="salon-location">📍 {{ salon?.address }}</div>
-        }
-        @if ((salon?.totalReviews ?? 0) > 0) {
-          <div class="salon-rating">⭐ <span>{{ salon?.averageRating }}</span> · {{ salon?.totalReviews }} {{ 'booking.ratingApp' | translate }}</div>
-        }
-      </div>
-
-      <!-- Fotoğraflar -->
-      <div class="left-section">
-        <div class="left-label">{{ 'booking.photos' | translate }}</div>
-        @if (salon?.photos?.length) {
-          <!-- Gerçek fotoğraflar -->
-          <div class="photos-grid">
-            @for (photo of salon!.photos!.slice(0,3); track photo.id; let i = $index) {
-              <div class="photo-slot photo-real" (click)="openLightbox(i)">
-                <img [src]="photo.url" alt="Salon fotoğrafı" />
-                <div class="photo-zoom-icon">🔍</div>
-              </div>
+        <!-- Salon kimliği -->
+        <div class="salon-identity">
+          <div class="salon-logo-wrap">
+            @if (salon?.logoUrl) {
+              <img [src]="salon!.logoUrl" [alt]="salon?.name" />
+            } @else {
+              {{ getInitials(salon?.name || "") }}
             }
           </div>
-        } @else {
-          <!-- Illustrasyon placeholder -->
-          <div class="photos-grid">
-            <div class="photo-slot">
-              <svg viewBox="0 0 272 100" xmlns="http://www.w3.org/2000/svg">
-                <defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f0ede8"/><stop offset="100%" stop-color="#e8e3db"/></linearGradient></defs>
-                <rect width="272" height="100" fill="url(#wg)"/>
-                <rect y="72" width="272" height="28" fill="#e0dbd2"/>
-                <rect x="94" y="46" width="84" height="20" rx="5" fill="#cdc6bc"/>
-                <rect x="104" y="30" width="64" height="18" rx="6" fill="#c4bdb3"/>
-                <rect x="112" y="20" width="48" height="12" rx="5" fill="#cdc6bc"/>
-              </svg>
+          <div class="salon-name">{{ salon?.name }}</div>
+          @if (salon?.address) {
+            <div class="salon-location">📍 {{ salon?.address }}</div>
+          }
+          @if ((salon?.totalReviews ?? 0) > 0) {
+            <div class="salon-rating">
+              ⭐ <span>{{ salon?.averageRating }}</span> ·
+              {{ salon?.totalReviews }} {{ "booking.ratingApp" | translate }}
             </div>
-            <div class="photo-slot">
-              <svg viewBox="0 0 130 98" xmlns="http://www.w3.org/2000/svg">
-                <defs><linearGradient id="scBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f5f2f0"/><stop offset="100%" stop-color="#ebe6e0"/></linearGradient></defs>
-                <rect width="130" height="98" fill="url(#scBg)"/>
-                <g transform="translate(65,49) rotate(-25)">
-                  <circle cx="-24" cy="-16" r="11" fill="none" stroke="#a0a8b0" stroke-width="2.5"/>
-                  <circle cx="-24" cy="-16" r="5.5" fill="#c8d0d8"/>
-                  <line x1="-24" y1="-5" x2="30" y2="22" stroke="#a0a8b0" stroke-width="3" stroke-linecap="round"/>
-                  <circle cx="-24" cy="16" r="11" fill="none" stroke="#b8bfc8" stroke-width="2.5"/>
-                  <circle cx="-24" cy="16" r="5.5" fill="#d0d8e0"/>
-                  <line x1="-24" y1="5" x2="30" y2="-22" stroke="#b8bfc8" stroke-width="3" stroke-linecap="round"/>
-                </g>
-              </svg>
+          }
+        </div>
+
+        <!-- Fotoğraflar -->
+        <div class="left-section">
+          <div class="left-label">{{ "booking.photos" | translate }}</div>
+          @if (salon?.photos?.length) {
+            <!-- Gerçek fotoğraflar -->
+            <div class="photos-grid">
+              @for (
+                photo of salon!.photos!.slice(0, 3);
+                track photo.id;
+                let i = $index
+              ) {
+                <div class="photo-slot photo-real" (click)="openLightbox(i)">
+                  <img [src]="photo.url" alt="Salon fotoğrafı" />
+                  <div class="photo-zoom-icon">🔍</div>
+                </div>
+              }
             </div>
-            <div class="photo-slot">
-              <svg viewBox="0 0 130 98" xmlns="http://www.w3.org/2000/svg">
-                <defs><linearGradient id="prBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f0f4f8"/><stop offset="100%" stop-color="#e4ecf4"/></linearGradient></defs>
-                <rect width="130" height="98" fill="url(#prBg)"/>
-                <rect x="72" y="34" width="20" height="44" rx="5" fill="#5588c0"/>
-                <rect x="46" y="48" width="18" height="30" rx="9" fill="#f0e8d8"/>
-                <rect x="100" y="54" width="14" height="24" rx="3" fill="#4a9060"/>
-              </svg>
+          } @else {
+            <!-- Illustrasyon placeholder -->
+            <div class="photos-grid">
+              <div class="photo-slot">
+                <svg viewBox="0 0 272 100" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#f0ede8" />
+                      <stop offset="100%" stop-color="#e8e3db" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="272" height="100" fill="url(#wg)" />
+                  <rect y="72" width="272" height="28" fill="#e0dbd2" />
+                  <rect
+                    x="94"
+                    y="46"
+                    width="84"
+                    height="20"
+                    rx="5"
+                    fill="#cdc6bc"
+                  />
+                  <rect
+                    x="104"
+                    y="30"
+                    width="64"
+                    height="18"
+                    rx="6"
+                    fill="#c4bdb3"
+                  />
+                  <rect
+                    x="112"
+                    y="20"
+                    width="48"
+                    height="12"
+                    rx="5"
+                    fill="#cdc6bc"
+                  />
+                </svg>
+              </div>
+              <div class="photo-slot">
+                <svg viewBox="0 0 130 98" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="scBg" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#f5f2f0" />
+                      <stop offset="100%" stop-color="#ebe6e0" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="130" height="98" fill="url(#scBg)" />
+                  <g transform="translate(65,49) rotate(-25)">
+                    <circle
+                      cx="-24"
+                      cy="-16"
+                      r="11"
+                      fill="none"
+                      stroke="#a0a8b0"
+                      stroke-width="2.5"
+                    />
+                    <circle cx="-24" cy="-16" r="5.5" fill="#c8d0d8" />
+                    <line
+                      x1="-24"
+                      y1="-5"
+                      x2="30"
+                      y2="22"
+                      stroke="#a0a8b0"
+                      stroke-width="3"
+                      stroke-linecap="round"
+                    />
+                    <circle
+                      cx="-24"
+                      cy="16"
+                      r="11"
+                      fill="none"
+                      stroke="#b8bfc8"
+                      stroke-width="2.5"
+                    />
+                    <circle cx="-24" cy="16" r="5.5" fill="#d0d8e0" />
+                    <line
+                      x1="-24"
+                      y1="5"
+                      x2="30"
+                      y2="-22"
+                      stroke="#b8bfc8"
+                      stroke-width="3"
+                      stroke-linecap="round"
+                    />
+                  </g>
+                </svg>
+              </div>
+              <div class="photo-slot">
+                <svg viewBox="0 0 130 98" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="prBg" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#f0f4f8" />
+                      <stop offset="100%" stop-color="#e4ecf4" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="130" height="98" fill="url(#prBg)" />
+                  <rect
+                    x="72"
+                    y="34"
+                    width="20"
+                    height="44"
+                    rx="5"
+                    fill="#5588c0"
+                  />
+                  <rect
+                    x="46"
+                    y="48"
+                    width="18"
+                    height="30"
+                    rx="9"
+                    fill="#f0e8d8"
+                  />
+                  <rect
+                    x="100"
+                    y="54"
+                    width="14"
+                    height="24"
+                    rx="3"
+                    fill="#4a9060"
+                  />
+                </svg>
+              </div>
             </div>
+          }
+        </div>
+
+        <!-- Konum -->
+        @if (salon?.address) {
+          <div class="left-section">
+            <div class="left-label">{{ "booking.location" | translate }}</div>
+            <a
+              class="map-card"
+              [href]="
+                'https://www.google.com/maps/search/?api=1&query=' +
+                (salon?.address || '')
+              "
+              target="_blank"
+              rel="noopener"
+            >
+              <div class="map-thumb">
+                <svg viewBox="0 0 272 90" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="272" height="90" fill="#e8f0e4" />
+                  <rect
+                    x="5"
+                    y="5"
+                    width="55"
+                    height="28"
+                    rx="3"
+                    fill="#c8dcc0"
+                    opacity="0.9"
+                  />
+                  <rect
+                    x="5"
+                    y="58"
+                    width="55"
+                    height="27"
+                    rx="3"
+                    fill="#c8dcc0"
+                    opacity="0.9"
+                  />
+                  <rect
+                    x="185"
+                    y="5"
+                    width="82"
+                    height="28"
+                    rx="3"
+                    fill="#c8dcc0"
+                    opacity="0.9"
+                  />
+                  <rect
+                    x="185"
+                    y="58"
+                    width="82"
+                    height="27"
+                    rx="3"
+                    fill="#c8dcc0"
+                    opacity="0.9"
+                  />
+                  <rect
+                    x="68"
+                    y="5"
+                    width="46"
+                    height="28"
+                    rx="2"
+                    fill="#d8e4d0"
+                    opacity="0.9"
+                  />
+                  <rect
+                    x="120"
+                    y="5"
+                    width="58"
+                    height="28"
+                    rx="2"
+                    fill="#d4e0cc"
+                    opacity="0.9"
+                  />
+                  <rect
+                    x="68"
+                    y="58"
+                    width="46"
+                    height="27"
+                    rx="2"
+                    fill="#d8e4d0"
+                    opacity="0.9"
+                  />
+                  <rect
+                    x="120"
+                    y="58"
+                    width="58"
+                    height="27"
+                    rx="2"
+                    fill="#d4e0cc"
+                    opacity="0.9"
+                  />
+                  <rect x="0" y="33" width="272" height="20" fill="#f5f3ee" />
+                  <rect x="120" y="0" width="20" height="90" fill="#f5f3ee" />
+                  <line
+                    x1="0"
+                    y1="43"
+                    x2="115"
+                    y2="43"
+                    stroke="#e0dccc"
+                    stroke-width="1"
+                    stroke-dasharray="10,7"
+                  />
+                  <line
+                    x1="145"
+                    y1="43"
+                    x2="272"
+                    y2="43"
+                    stroke="#e0dccc"
+                    stroke-width="1"
+                    stroke-dasharray="10,7"
+                  />
+                  <ellipse
+                    cx="130"
+                    cy="47"
+                    rx="10"
+                    ry="3"
+                    fill="rgba(0,0,0,0.1)"
+                  />
+                  <path
+                    d="M130,14 C121,14 114,21 114,30 C114,42 130,55 130,55 C130,55 146,42 146,30 C146,21 139,14 130,14Z"
+                    fill="#e85555"
+                  />
+                  <circle cx="130" cy="30" r="6" fill="white" />
+                  <circle cx="130" cy="30" r="2.5" fill="#e85555" />
+                </svg>
+              </div>
+              <div class="map-info">
+                <div class="map-address">{{ salon?.address }}</div>
+                <button class="map-btn-small">
+                  {{ "booking.directions" | translate }}
+                </button>
+              </div>
+            </a>
           </div>
         }
       </div>
-
-      <!-- Konum -->
-      @if (salon?.address) {
-        <div class="left-section">
-          <div class="left-label">{{ 'booking.location' | translate }}</div>
-          <a class="map-card" [href]="'https://www.google.com/maps/search/?api=1&query=' + (salon?.address || '')" target="_blank" rel="noopener">
-            <div class="map-thumb">
-              <svg viewBox="0 0 272 90" xmlns="http://www.w3.org/2000/svg">
-                <rect width="272" height="90" fill="#e8f0e4"/>
-                <rect x="5" y="5" width="55" height="28" rx="3" fill="#c8dcc0" opacity="0.9"/>
-                <rect x="5" y="58" width="55" height="27" rx="3" fill="#c8dcc0" opacity="0.9"/>
-                <rect x="185" y="5" width="82" height="28" rx="3" fill="#c8dcc0" opacity="0.9"/>
-                <rect x="185" y="58" width="82" height="27" rx="3" fill="#c8dcc0" opacity="0.9"/>
-                <rect x="68" y="5" width="46" height="28" rx="2" fill="#d8e4d0" opacity="0.9"/>
-                <rect x="120" y="5" width="58" height="28" rx="2" fill="#d4e0cc" opacity="0.9"/>
-                <rect x="68" y="58" width="46" height="27" rx="2" fill="#d8e4d0" opacity="0.9"/>
-                <rect x="120" y="58" width="58" height="27" rx="2" fill="#d4e0cc" opacity="0.9"/>
-                <rect x="0" y="33" width="272" height="20" fill="#f5f3ee"/>
-                <rect x="120" y="0" width="20" height="90" fill="#f5f3ee"/>
-                <line x1="0" y1="43" x2="115" y2="43" stroke="#e0dccc" stroke-width="1" stroke-dasharray="10,7"/>
-                <line x1="145" y1="43" x2="272" y2="43" stroke="#e0dccc" stroke-width="1" stroke-dasharray="10,7"/>
-                <ellipse cx="130" cy="47" rx="10" ry="3" fill="rgba(0,0,0,0.1)"/>
-                <path d="M130,14 C121,14 114,21 114,30 C114,42 130,55 130,55 C130,55 146,42 146,30 C146,21 139,14 130,14Z" fill="#e85555"/>
-                <circle cx="130" cy="30" r="6" fill="white"/>
-                <circle cx="130" cy="30" r="2.5" fill="#e85555"/>
-              </svg>
-            </div>
-            <div class="map-info">
-              <div class="map-address">{{ salon?.address }}</div>
-              <button class="map-btn-small">{{ 'booking.directions' | translate }}</button>
-            </div>
-          </a>
-        </div>
-      }
-
-      </div><!-- /left-scroll-area -->
+      <!-- /left-scroll-area -->
 
       <!-- Özet -->
       <div class="left-summary">
-        <div class="left-label" style="margin-bottom:12px">{{ 'booking.summary' | translate }}</div>
+        <div class="left-label" style="margin-bottom: 12px">
+          {{ "booking.summary" | translate }}
+        </div>
         <div class="summary-rows">
           <div class="sum-row">
-            <span class="k">{{ 'booking.lbl.service' | translate }}</span>
-            <span class="v">{{ selectedService ? getServiceName(selectedService) : '—' }}</span>
+            <span class="k">{{ "booking.lbl.service" | translate }}</span>
+            <span class="v">{{
+              selectedService ? getServiceName(selectedService) : "—"
+            }}</span>
           </div>
           <div class="sum-row">
-            <span class="k">{{ 'booking.barber' | translate }}</span>
-            <span class="v">{{ selectedStaff?.fullName || '—' }}</span>
+            <span class="k">{{ "booking.barber" | translate }}</span>
+            <span class="v">{{ selectedStaff?.fullName || "—" }}</span>
           </div>
           <div class="sum-row">
-            <span class="k">{{ 'booking.lbl.date' | translate }}</span>
-            <span class="v">{{ selectedSlot ? formatDate(selectedSlot) : '—' }}</span>
+            <span class="k">{{ "booking.lbl.date" | translate }}</span>
+            <span class="v">{{
+              selectedSlot ? formatDate(selectedSlot) : "—"
+            }}</span>
           </div>
         </div>
         <div class="sum-divider"></div>
         <div class="sum-total">
-          <span class="k">{{ 'booking.total' | translate }}</span>
-          <span class="v">{{ selectedService ? formatPrice(selectedService.price, selectedService.currency) : '—' }}</span>
+          <span class="k">{{ "booking.total" | translate }}</span>
+          <span class="v">{{
+            selectedService
+              ? formatPrice(selectedService.price, selectedService.currency)
+              : "—"
+          }}</span>
         </div>
       </div>
     </div>
@@ -190,25 +427,35 @@
     <!-- RIGHT PANEL -->
     <div class="booking-right">
       <div class="booking-right-inner">
-
         <!-- 1. Hizmet -->
         <div class="step-block">
           <div class="step-header">
             <div class="step-num active">1</div>
-            <div class="step-title">{{ 'booking.step1' | translate }}</div>
+            <div class="step-title">{{ "booking.step1" | translate }}</div>
             <div class="step-sep"></div>
           </div>
           <div class="service-list">
             @for (service of services; track service.id) {
-              <div class="service-item" [class.selected]="selectedService?.id === service.id" (click)="selectService(service)">
+              <div
+                class="service-item"
+                [class.selected]="selectedService?.id === service.id"
+                (click)="selectService(service)"
+              >
                 <div class="service-left">
                   <div class="service-radio"></div>
                   <div>
-                    <div class="service-name">{{ getServiceName(service) }}</div>
-                    <div class="service-dur">⏱ {{ service.durationMinutes }} {{ 'booking.min' | translate }}</div>
+                    <div class="service-name">
+                      {{ getServiceName(service) }}
+                    </div>
+                    <div class="service-dur">
+                      ⏱ {{ service.durationMinutes }}
+                      {{ "booking.min" | translate }}
+                    </div>
                   </div>
                 </div>
-                <div class="service-price">{{ formatPrice(service.price, service.currency) }}</div>
+                <div class="service-price">
+                  {{ formatPrice(service.price, service.currency) }}
+                </div>
               </div>
             }
           </div>
@@ -218,13 +465,19 @@
         <div class="step-block">
           <div class="step-header">
             <div class="step-num active">2</div>
-            <div class="step-title">{{ 'booking.step2' | translate }}</div>
+            <div class="step-title">{{ "booking.step2" | translate }}</div>
             <div class="step-sep"></div>
           </div>
           <div class="staff-list">
             @for (staff of staffList; track staff.id) {
-              <div class="staff-item" [class.selected]="selectedStaff?.id === staff.id" (click)="selectStaff(staff)">
-                <div class="staff-avatar">{{ getInitials(staff.fullName) }}</div>
+              <div
+                class="staff-item"
+                [class.selected]="selectedStaff?.id === staff.id"
+                (click)="selectStaff(staff)"
+              >
+                <div class="staff-avatar">
+                  {{ getInitials(staff.fullName) }}
+                </div>
                 <div class="staff-name">{{ staff.fullName }}</div>
               </div>
             }
@@ -235,14 +488,15 @@
         <div class="step-block">
           <div class="step-header">
             <div class="step-num active">3</div>
-            <div class="step-title">{{ 'booking.step3' | translate }}</div>
+            <div class="step-title">{{ "booking.step3" | translate }}</div>
             <div class="step-sep"></div>
           </div>
           <app-custom-calendar
             [minDate]="minDate"
             [maxDate]="maxDate"
             [value]="selectedDate"
-            (valueChange)="onDateChange($event)">
+            (valueChange)="onDateChange($event)"
+          >
           </app-custom-calendar>
         </div>
 
@@ -251,19 +505,23 @@
           <div class="step-block">
             <div class="step-header">
               <div class="step-num active">4</div>
-              <div class="step-title">{{ 'booking.step4' | translate }}</div>
+              <div class="step-title">{{ "booking.step4" | translate }}</div>
               <div class="step-sep"></div>
             </div>
             <div class="slots-grid">
               @for (slot of slots; track slot.startTime) {
-                <button class="slot-btn" [class.selected]="selectedSlot === slot.startTime" (click)="selectSlot(slot)">
+                <button
+                  class="slot-btn"
+                  [class.selected]="selectedSlot === slot.startTime"
+                  (click)="selectSlot(slot)"
+                >
                   {{ formatTime(slot.startTime) }}
                 </button>
               }
             </div>
           </div>
         } @else if (selectedService && selectedStaff && selectedDate) {
-          <div class="no-slots">{{ 'booking.noSlots' | translate }}</div>
+          <div class="no-slots">{{ "booking.noSlots" | translate }}</div>
         }
 
         <!-- 5. Bilgiler -->
@@ -271,39 +529,101 @@
           <div class="step-block">
             <div class="step-header">
               <div class="step-num active">5</div>
-              <div class="step-title">{{ 'booking.step5' | translate }}</div>
+              <div class="step-title">{{ "booking.step5" | translate }}</div>
               <div class="step-sep"></div>
             </div>
             <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
               <div class="form-group">
                 <div class="phone-row">
-                  <input class="form-input" type="tel" formControlName="phone" placeholder="05XX XXX XX XX" maxlength="11" (input)="onPhoneInput($event)" />
+                  <input
+                    class="form-input"
+                    type="tel"
+                    formControlName="phone"
+                    placeholder="05XX XXX XX XX"
+                    maxlength="11"
+                    (input)="onPhoneInput($event)"
+                  />
                   @if (isLookingUp) {
                     <span class="lookup-spinner"></span>
                   }
                 </div>
                 @if (customerFound) {
-                  <div class="customer-found-badge">{{ 'booking.customerFound' | translate }}</div>
+                  <div class="customer-found-badge">
+                    {{ "booking.customerFound" | translate }}
+                  </div>
                 }
-                @if (customerForm.get('phone')?.errors?.['required'] && customerForm.get('phone')?.touched) {
-                  <span class="field-error">{{ 'booking.phoneRequired' | translate }}</span>
+                @if (
+                  customerForm.get("phone")?.errors?.["required"] &&
+                  customerForm.get("phone")?.touched
+                ) {
+                  <span class="field-error">{{
+                    "booking.phoneRequired" | translate
+                  }}</span>
                 }
-                @if (customerForm.get('phone')?.errors?.['pattern'] && customerForm.get('phone')?.touched) {
-                  <span class="field-error">{{ 'booking.phoneInvalid' | translate }}</span>
+                @if (
+                  customerForm.get("phone")?.errors?.["pattern"] &&
+                  customerForm.get("phone")?.touched
+                ) {
+                  <span class="field-error">{{
+                    "booking.phoneInvalid" | translate
+                  }}</span>
                 }
               </div>
               <div class="form-group">
-                <input class="form-input" type="text" formControlName="fullName" [placeholder]="'booking.fullNamePh' | translate" maxlength="30" />
-                @if (customerForm.get('fullName')?.errors?.['required'] && customerForm.get('fullName')?.touched) {
-                  <span class="field-error">{{ 'booking.fullNameRequired' | translate }}</span>
+                <input
+                  class="form-input"
+                  type="text"
+                  formControlName="fullName"
+                  [placeholder]="'booking.fullNamePh' | translate"
+                  maxlength="30"
+                />
+                @if (
+                  customerForm.get("fullName")?.errors?.["required"] &&
+                  customerForm.get("fullName")?.touched
+                ) {
+                  <span class="field-error">{{
+                    "booking.fullNameRequired" | translate
+                  }}</span>
                 }
               </div>
               <div class="form-group">
-                <input class="form-input" type="email" formControlName="email" [placeholder]="'booking.emailPh' | translate" maxlength="80" />
+                <input
+                  class="form-input"
+                  type="email"
+                  formControlName="email"
+                  [placeholder]="'booking.emailPh' | translate"
+                  maxlength="80"
+                />
               </div>
               <div class="form-group">
-                <textarea class="form-textarea" formControlName="notes" [placeholder]="'booking.notePh' | translate" rows="3" maxlength="200"></textarea>
+                <textarea
+                  class="form-textarea"
+                  formControlName="notes"
+                  [placeholder]="'booking.notePh' | translate"
+                  rows="3"
+                  maxlength="200"
+                ></textarea>
               </div>
+              @if (!otpVerified && !otpSent) {
+                <button
+                  type="button"
+                  class="btn-otp-send"
+                  [disabled]="
+                    isSendingOtp || customerForm.get('phone')?.invalid
+                  "
+                  (click)="sendOtp()"
+                >
+                  {{
+                    isSendingOtp
+                      ? "Gönderiliyor..."
+                      : "📱 Doğrulama Kodu Gönder"
+                  }}
+                </button>
+              }
+
+              @if (otpVerified) {
+                <div class="customer-found-badge">✓ Telefon doğrulandı</div>
+              }
 
               @if (!otpVerified && otpSent) {
                 <div class="otp-section">
@@ -312,27 +632,32 @@
                       class="form-input otp-input"
                       type="text"
                       [(ngModel)]="otpCode"
-                      [ngModelOptions]="{standalone: true}"
+                      [ngModelOptions]="{ standalone: true }"
                       placeholder="6 haneli kod"
                       maxlength="6"
-                      inputmode="numeric" />
+                      inputmode="numeric"
+                    />
                     <button
                       type="button"
                       class="btn-otp-verify"
                       [disabled]="isVerifyingOtp || otpCode.length < 6"
-                      (click)="verifyOtp()">
-                      {{ isVerifyingOtp ? 'Doğrulanıyor...' : 'Doğrula' }}
+                      (click)="verifyOtp()"
+                    >
+                      {{ isVerifyingOtp ? "Doğrulanıyor..." : "Doğrula" }}
                     </button>
                   </div>
                   <div class="otp-footer-row">
                     @if (otpTimer > 0) {
-                      <p class="otp-timer">Kod {{ timerDisplay }} içinde geçerli.</p>
+                      <p class="otp-timer">
+                        Kod {{ timerDisplay }} içinde geçerli.
+                      </p>
                     }
                     <button
                       type="button"
                       class="btn-otp-resend"
                       [disabled]="otpTimer > 0 || isSendingOtp"
-                      (click)="sendOtp()">
+                      (click)="sendOtp()"
+                    >
                       Tekrar Gönder
                     </button>
                   </div>
@@ -346,30 +671,61 @@
               }
 
               <div class="booking-preview">
-                <h3>{{ 'booking.previewTitle' | translate }}</h3>
-                <div class="preview-item"><span>{{ 'booking.lbl.service' | translate }}</span><span>{{ selectedService ? getServiceName(selectedService) : '' }}</span></div>
-                <div class="preview-item"><span>{{ 'booking.lbl.staff' | translate }}</span><span>{{ selectedStaff?.fullName }}</span></div>
-                <div class="preview-item"><span>{{ 'booking.dateAndTime' | translate }}</span><span>{{ formatDate(selectedSlot) }} - {{ formatTime(selectedSlot) }}</span></div>
-                <div class="preview-item total"><span>{{ 'booking.total' | translate }}</span><span>{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span></div>
+                <h3>{{ "booking.previewTitle" | translate }}</h3>
+                <div class="preview-item">
+                  <span>{{ "booking.lbl.service" | translate }}</span
+                  ><span>{{
+                    selectedService ? getServiceName(selectedService) : ""
+                  }}</span>
+                </div>
+                <div class="preview-item">
+                  <span>{{ "booking.lbl.staff" | translate }}</span
+                  ><span>{{ selectedStaff?.fullName }}</span>
+                </div>
+                <div class="preview-item">
+                  <span>{{ "booking.dateAndTime" | translate }}</span
+                  ><span
+                    >{{ formatDate(selectedSlot) }} -
+                    {{ formatTime(selectedSlot) }}</span
+                  >
+                </div>
+                <div class="preview-item total">
+                  <span>{{ "booking.total" | translate }}</span
+                  ><span>{{
+                    formatPrice(
+                      selectedService?.price || 0,
+                      selectedService?.currency || "TRY"
+                    )
+                  }}</span>
+                </div>
               </div>
 
               @if (errorMessage) {
                 <div class="error-message">{{ errorMessage }}</div>
               }
 
-              <button type="submit" class="btn-submit" [disabled]="isSubmitting || customerForm.invalid || !otpVerified">
-                {{ isSubmitting ? ('booking.submitting' | translate) : ('booking.submit' | translate) }}
+              <button
+                type="submit"
+                class="btn-submit"
+                [disabled]="
+                  isSubmitting || customerForm.invalid || !otpVerified
+                "
+              >
+                {{
+                  isSubmitting
+                    ? ("booking.submitting" | translate)
+                    : ("booking.submit" | translate)
+                }}
               </button>
             </form>
           </div>
         }
 
         <div class="booking-footer">
-          <p>{{ 'booking.poweredBy' | translate }}</p>
+          <p>{{ "booking.poweredBy" | translate }}</p>
         </div>
       </div>
     </div>
-
   </div>
 
   <!-- Lightbox -->
@@ -377,12 +733,27 @@
     <div class="lightbox-overlay" (click)="closeLightbox()">
       <button class="lightbox-close" (click)="closeLightbox()">✕</button>
       @if ((salon?.photos?.length ?? 0) > 1) {
-        <button class="lightbox-nav lightbox-prev" (click)="$event.stopPropagation(); lightboxPrev()">‹</button>
-        <button class="lightbox-nav lightbox-next" (click)="$event.stopPropagation(); lightboxNext()">›</button>
+        <button
+          class="lightbox-nav lightbox-prev"
+          (click)="$event.stopPropagation(); lightboxPrev()"
+        >
+          ‹
+        </button>
+        <button
+          class="lightbox-nav lightbox-next"
+          (click)="$event.stopPropagation(); lightboxNext()"
+        >
+          ›
+        </button>
       }
-      <img [src]="lightboxPhoto" (click)="$event.stopPropagation()" alt="Salon fotoğrafı" />
-      <div class="lightbox-counter">{{ lightboxIndex + 1 }} / {{ salon?.photos?.length }}</div>
+      <img
+        [src]="lightboxPhoto"
+        (click)="$event.stopPropagation()"
+        alt="Salon fotoğrafı"
+      />
+      <div class="lightbox-counter">
+        {{ lightboxIndex + 1 }} / {{ salon?.photos?.length }}
+      </div>
     </div>
   }
-
 }
