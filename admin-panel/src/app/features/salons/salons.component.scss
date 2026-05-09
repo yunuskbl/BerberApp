@@ -215,6 +215,17 @@ app-language-switcher {
   margin-bottom: 6px;
 }
 
+.card-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+
+  .rating-star  { color: #f59e0b; font-size: 14px; }
+  .rating-score { font-size: 13px; font-weight: 700; color: #111; }
+  .rating-count { font-size: 11px; color: #9ca3af; }
+}
+
 .card-address {
   display: flex;
   align-items: center;

@@ -1,0 +1,174 @@
+:host { display: block; min-height: 100vh; background: #f5f5f5; }
+
+.rate-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 48px;
+}
+
+.rate-header {
+  margin-bottom: 32px;
+}
+
+.rate-card {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.08);
+  padding: 40px 32px;
+  width: 100%;
+  max-width: 460px;
+  text-align: center;
+
+  .salon-label {
+    display: inline-block;
+    background: #f3f0ff;
+    color: #7c3aed;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 8px;
+  }
+
+  .subtitle {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 0 0 28px;
+  }
+}
+
+/* Yıldızlar */
+.star-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 40px;
+  cursor: pointer;
+  color: #d1d5db;
+  padding: 4px;
+  transition: color .15s, transform .15s;
+  line-height: 1;
+
+  &.filled  { color: #fbbf24; }
+  &.golden  { color: #f59e0b; }
+
+  &:hover { transform: scale(1.15); }
+}
+
+.star-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #7c3aed;
+  height: 20px;
+  margin-bottom: 24px;
+}
+
+/* Yorum */
+.comment-block {
+  text-align: left;
+  margin-bottom: 20px;
+
+  .comment-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+  }
+
+  textarea {
+    width: 100%;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 14px;
+    resize: none;
+    color: #111;
+    transition: border-color .2s;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: #7c3aed;
+    }
+  }
+
+  .char-count {
+    text-align: right;
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+}
+
+/* Hata */
+.error-msg {
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* Gönder */
+.submit-btn {
+  width: 100%;
+  background: #7c3aed;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, opacity .2s;
+
+  &:hover:not(:disabled) { background: #6d28d9; }
+  &:disabled { opacity: .55; cursor: not-allowed; }
+}
+
+/* Başarı / zaten yapıldı */
+.success-state {
+  padding: 16px 0;
+
+  .success-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 12px;
+  }
+
+  p {
+    color: #6b7280;
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .rate-card { padding: 28px 20px; }
+  .star-btn  { font-size: 34px; }
+}

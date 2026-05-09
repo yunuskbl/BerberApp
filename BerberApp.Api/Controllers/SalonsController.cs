@@ -29,16 +29,32 @@ public class SalonsController : ControllerBase
                 x.Name.ToLower().Contains(search.ToLower()) ||
                 (x.Address != null && x.Address.ToLower().Contains(search.ToLower())));
 
-        var salons = await query
-            .Select(x => new
+        var tenants = await query
+            .Select(x => new { x.Id, x.Name, x.Subdomain, x.Address, x.LogoUrl })
+            .ToListAsync();
+
+        var tenantIds  = tenants.Select(t => t.Id).ToList();
+        var allReviews = await _context.Reviews
+            .Where(r => tenantIds.Contains(r.TenantId) && !r.IsDeleted)
+            .GroupBy(r => r.TenantId)
+            .Select(g => new
             {
-                x.Id,
-                x.Name,
-                x.Subdomain,
-                x.Address,
-                x.LogoUrl
+                TenantId      = g.Key,
+                AverageRating = g.Average(r => r.Rating),
+                TotalReviews  = g.Count()
             })
             .ToListAsync();
+
+        var salons = tenants.Select(t =>
+        {
+            var rv = allReviews.FirstOrDefault(r => r.TenantId == t.Id);
+            return new
+            {
+                t.Id, t.Name, t.Subdomain, t.Address, t.LogoUrl,
+                AverageRating = rv != null ? Math.Round(rv.AverageRating, 1) : 0.0,
+                TotalReviews  = rv?.TotalReviews ?? 0
+            };
+        }).ToList();
 
         return Ok(new { success = true, data = salons });
     }

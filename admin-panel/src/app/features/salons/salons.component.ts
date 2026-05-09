@@ -11,13 +11,15 @@ import { DecorativeBgComponent } from '../../shared/components/decorative-bg/dec
 import { LogoComponent } from '../../shared/components/logo/logo.component';
 
 interface Salon {
-  id:         string;
-  name:       string;
-  subdomain:  string;
-  phone?:     string;
-  address?:   string;
-  logoUrl?:   string;
-  themeColor?: string;
+  id:             string;
+  name:           string;
+  subdomain:      string;
+  phone?:         string;
+  address?:       string;
+  logoUrl?:       string;
+  themeColor?:    string;
+  averageRating?: number;
+  totalReviews?:  number;
 }
 
 @Component({

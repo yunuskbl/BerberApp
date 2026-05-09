@@ -58,6 +58,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'rate/:subdomain/:appointmentId',
+    loadComponent: () =>
+      import('./features/rate/rate.component').then(
+        (m) => m.RateComponent,
+      ),
+  },
+  {
         path: 'pricing', 
         loadComponent: () =>
           import('./features/pricing/pricing.component').then(

@@ -12,5 +12,6 @@ namespace BerberApp.Application.Common.Interfaces
         Task SendAppointmentReceivedAsync(string recipient, AppointmentStatusDto dto);
         Task SendAppointmentConfirmedAsync(string recipient, AppointmentStatusDto dto);
         Task SendAppointmentCancelledAsync(string recipient, AppointmentStatusDto dto);
+        Task SendAppointmentCompletedAsync(string recipient, AppointmentStatusDto dto, string reviewUrl);
     }
 }

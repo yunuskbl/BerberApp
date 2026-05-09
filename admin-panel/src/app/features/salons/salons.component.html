@@ -100,6 +100,16 @@
             <!-- Card Body -->
             <div class="card-body">
               <h3 class="card-name">{{ salon.name }}</h3>
+
+              <!-- Rating -->
+              @if ((salon.totalReviews ?? 0) > 0) {
+                <div class="card-rating">
+                  <span class="rating-star">★</span>
+                  <span class="rating-score">{{ salon.averageRating }}</span>
+                  <span class="rating-count">({{ salon.totalReviews }} değerlendirme)</span>
+                </div>
+              }
+
               @if (salon.address) {
                 <p class="card-address">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none">

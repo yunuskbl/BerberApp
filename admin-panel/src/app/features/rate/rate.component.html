@@ -1,0 +1,78 @@
+<div class="rate-page">
+  <header class="rate-header">
+    <app-logo></app-logo>
+  </header>
+
+  <main class="rate-card">
+
+    <!-- Başarı ekranı -->
+    @if (isSubmitted) {
+      <div class="success-state">
+        <div class="success-icon">🎉</div>
+        <h2>Teşekkürler!</h2>
+        <p>Değerlendirmeniz alındı. Geri bildiriminiz salonun daha iyi hizmet vermesine katkı sağlar.</p>
+      </div>
+    }
+
+    <!-- Zaten değerlendirilmiş -->
+    @else if (alreadyDone) {
+      <div class="success-state">
+        <div class="success-icon">✅</div>
+        <h2>Zaten Değerlendirildi</h2>
+        <p>Bu randevu için daha önce bir değerlendirme yapılmış. Her randevu için yalnızca bir değerlendirme yapılabilir.</p>
+      </div>
+    }
+
+    <!-- Form -->
+    @else {
+      <div class="salon-label">{{ salonName || 'Salon' }}</div>
+      <h1>Deneyiminizi Değerlendirin</h1>
+      <p class="subtitle">Hizmetimiz nasıldı? Görüşleriniz bizim için çok değerli.</p>
+
+      <!-- Yıldız seçici -->
+      <div class="star-row">
+        @for (s of stars; track s) {
+          <button
+            class="star-btn"
+            [class.filled]="s <= displayStar"
+            [class.golden]="s <= selectedStar"
+            (mouseenter)="onHover(s)"
+            (mouseleave)="onLeave()"
+            (click)="onSelect(s)"
+            [attr.aria-label]="starLabel(s)">
+            ★
+          </button>
+        }
+      </div>
+
+      @if (displayStar > 0) {
+        <div class="star-label">{{ starLabel(displayStar) }}</div>
+      }
+
+      <!-- Yorum -->
+      <div class="comment-block">
+        <label class="comment-label">Yorum (isteğe bağlı)</label>
+        <textarea
+          [(ngModel)]="comment"
+          maxlength="500"
+          rows="4"
+          placeholder="Deneyiminizi anlatın..."></textarea>
+        <div class="char-count">{{ comment.length }}/500</div>
+      </div>
+
+      <!-- Hata mesajı -->
+      @if (errorMsg) {
+        <div class="error-msg">{{ errorMsg }}</div>
+      }
+
+      <!-- Gönder butonu -->
+      <button
+        class="submit-btn"
+        [disabled]="selectedStar === 0 || isSubmitting"
+        (click)="submit()">
+        @if (isSubmitting) { Gönderiliyor... } @else { Değerlendirmeyi Gönder }
+      </button>
+    }
+
+  </main>
+</div>

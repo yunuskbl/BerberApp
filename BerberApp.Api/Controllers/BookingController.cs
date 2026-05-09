@@ -319,6 +319,94 @@ public class BookingController : ControllerBase
         return Ok(new { success = true, message = "Randevunuz iptal edildi." });
     }
 
+    // ── REVIEWS ──────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Randevu için değerlendirme gönder (müşteri, herkese açık).
+    /// Her randevu için yalnızca bir değerlendirme kabul edilir.
+    /// </summary>
+    [HttpPost("{subdomain}/reviews/{appointmentId}")]
+    public async Task<IActionResult> CreateReview(
+        string subdomain,
+        Guid appointmentId,
+        [FromBody] CreateReviewRequest request)
+    {
+        if (request.Rating < 1 || request.Rating > 5)
+            return BadRequest(new { success = false, message = "Puan 1-5 arasında olmalıdır." });
+
+        var tenant = await _context.Tenants
+            .FirstOrDefaultAsync(x => x.Subdomain == subdomain && x.IsActive);
+        if (tenant is null)
+            return NotFound(new { success = false, message = "Salon bulunamadı." });
+
+        var appointment = await _context.Appointments
+            .Where(x => x.Id == appointmentId && x.TenantId == tenant.Id)
+            .FirstOrDefaultAsync();
+        if (appointment is null)
+            return NotFound(new { success = false, message = "Randevu bulunamadı." });
+
+        if (appointment.Status != BerberApp.Domain.Enums.AppointmentStatus.Completed)
+            return BadRequest(new { success = false, message = "Sadece tamamlanmış randevular değerlendirilebilir." });
+
+        var alreadyReviewed = await _context.Reviews
+            .AnyAsync(r => r.AppointmentId == appointmentId);
+        if (alreadyReviewed)
+            return Conflict(new { success = false, message = "Bu randevu için zaten değerlendirme yapılmış." });
+
+        var customer = await _context.Customers
+            .Where(x => x.Id == appointment.CustomerId)
+            .FirstOrDefaultAsync();
+
+        var review = new BerberApp.Domain.Entities.Review
+        {
+            TenantId      = tenant.Id,
+            AppointmentId = appointmentId,
+            CustomerName  = customer?.FullName ?? "Anonim",
+            Rating        = request.Rating,
+            Comment       = request.Comment?.Trim()
+        };
+
+        _context.Reviews.Add(review);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { success = true, message = "Değerlendirmeniz için teşekkürler!" });
+    }
+
+    /// <summary>Salon için puanlama özetini döndürür (herkese açık).</summary>
+    [HttpGet("{subdomain}/rating")]
+    public async Task<IActionResult> GetRating(string subdomain)
+    {
+        var tenant = await _context.Tenants
+            .FirstOrDefaultAsync(x => x.Subdomain == subdomain && x.IsActive);
+        if (tenant is null)
+            return NotFound(new { success = false, message = "Salon bulunamadı." });
+
+        var reviews = await _context.Reviews
+            .Where(r => r.TenantId == tenant.Id && !r.IsDeleted)
+            .Select(r => new { r.Rating, r.CustomerName, r.Comment, r.CreatedAt })
+            .ToListAsync();
+
+        var totalReviews   = reviews.Count;
+        var averageRating  = totalReviews > 0 ? reviews.Average(r => r.Rating) : 0.0;
+        var distribution   = Enumerable.Range(1, 5)
+            .Select(i => new { star = i, count = reviews.Count(r => r.Rating == i) })
+            .ToList();
+
+        return Ok(new
+        {
+            success = true,
+            data    = new { totalReviews, averageRating = Math.Round(averageRating, 1), distribution, reviews }
+        });
+    }
+
+    public class CreateReviewRequest
+    {
+        public int    Rating  { get; set; }
+        public string? Comment { get; set; }
+    }
+
+    // ── CUSTOMER LOOKUP ───────────────────────────────────────────────────────
+
     [HttpGet("{subdomain}/customer-lookup")]
     public async Task<IActionResult> CustomerLookup(string subdomain, [FromQuery] string phone)
     {

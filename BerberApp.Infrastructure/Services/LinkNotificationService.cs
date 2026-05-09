@@ -81,6 +81,31 @@ public class LinkNotificationService : INotificationService
         }
     }
 
+    public async Task SendAppointmentCompletedAsync(string recipient, AppointmentStatusDto dto, string reviewUrl)
+    {
+        try
+        {
+            var (channel, salonName, _) = await GetTenantInfoAsync(dto.TenantId);
+
+            if (channel == NotificationChannel.Sms)
+            {
+                await _smsService.SendAppointmentCompletedAsync(
+                    recipient, dto.CustomerName, dto.ServiceName, salonName, reviewUrl);
+                _logger.LogInformation("[SMS] Tamamlama bildirimi gönderildi: {Recipient}", recipient);
+            }
+            else
+            {
+                await _whatsAppService.SendAppointmentCompletedAsync(
+                    recipient, dto.CustomerName, dto.ServiceName, salonName, reviewUrl);
+                _logger.LogInformation("[WHATSAPP] Tamamlama bildirimi gönderildi: {Recipient}", recipient);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[BİLDİRİM HATA] Tamamlama bildirimi gönderilemedi: {Recipient}", recipient);
+        }
+    }
+
     private async Task<(NotificationChannel channel, string salonName, string address)> GetTenantInfoAsync(Guid tenantId)
     {
         var tenant = await _context.Tenants

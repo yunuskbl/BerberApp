@@ -3,13 +3,24 @@ using Microsoft.AspNetCore.Mvc;
 
 using BerberApp.Application.Appointment.Commands;
 using BerberApp.Application.Appointment.Queries;
+using BerberApp.Application.Common.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace BerberApp.Api.Controllers;
 
 public class AppointmentsController : BaseApiController
 {
-    public AppointmentsController(IMediator mediator) : base(mediator) { }
+    private readonly IAppDbContext _context;
+    private readonly IConfiguration _config;
+
+    public AppointmentsController(IMediator mediator, IAppDbContext context, IConfiguration config)
+        : base(mediator)
+    {
+        _context = context;
+        _config  = config;
+    }
     
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] Guid? staffId, [FromQuery] DateTime? date)
@@ -69,7 +80,23 @@ public class AppointmentsController : BaseApiController
     [HttpPatch("{id}/complete")]
     public async Task<IActionResult> Complete(Guid id)
     {
-        await Mediator.Send(new CompleteAppointmentCommand { Id = id, TenantId = TenantId });
+        // Tenant subdomain'ini al → müşteriye gidecek değerlendirme linkini oluştur
+        var subdomain    = await _context.Tenants
+            .Where(t => t.Id == TenantId)
+            .Select(t => t.Subdomain)
+            .FirstOrDefaultAsync();
+
+        var frontendBase = _config["AppSettings:FrontendBaseUrl"] ?? "https://berberapp.com.tr";
+        var reviewUrl    = subdomain is not null
+            ? $"{frontendBase}/rate/{subdomain}/{id}"
+            : null;
+
+        await Mediator.Send(new CompleteAppointmentCommand
+        {
+            Id        = id,
+            TenantId  = TenantId,
+            ReviewUrl = reviewUrl
+        });
         return NoContent();
     }
 

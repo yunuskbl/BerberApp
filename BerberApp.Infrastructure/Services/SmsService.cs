@@ -59,6 +59,15 @@ public class SmsService : ISmsService
         await SendSmsAsync(phone, message);
     }
 
+    public async Task SendAppointmentCompletedAsync(
+        string phone, string customerName, string serviceName, string salonName, string reviewUrl)
+    {
+        var salonPart = string.IsNullOrWhiteSpace(salonName) ? "" : $" ({salonName})";
+        var message   = $"ayarliyo{salonPart}: {serviceName} ziyaretiniz tamamlandi! " +
+                        $"Deneyiminizi degerlendirin: {reviewUrl}";
+        await SendSmsAsync(phone, message);
+    }
+
     private async Task SendSmsAsync(string phone, string message)
     {
         await MessageResource.CreateAsync(

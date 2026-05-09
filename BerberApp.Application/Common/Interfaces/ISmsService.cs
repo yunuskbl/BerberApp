@@ -12,5 +12,6 @@ namespace BerberApp.Application.Common.Interfaces
         Task SendAppointmentConfirmedAsync(string phone, string customerName, string serviceName, string staffName, DateTime startTime, string salonName = "", string address = "");
         Task SendAppointmentReminderAsync(string phone, string customerName, string serviceName, DateTime startTime, string salonName = "", string address = "");
         Task SendAppointmentCancelledAsync(string phone, string customerName, DateTime startTime, string salonName = "");
+        Task SendAppointmentCompletedAsync(string phone, string customerName, string serviceName, string salonName, string reviewUrl);
     }
 }

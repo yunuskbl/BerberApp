@@ -155,6 +155,30 @@ public class WhatsAppService : IWhatsAppService
 
         await SendMessageAsync(staffPhone, message);
     }
+
+    public async Task SendAppointmentCompletedAsync(
+        string phone, string customerName, string serviceName, string salonName, string reviewUrl)
+    {
+        var salonLine = string.IsNullOrWhiteSpace(salonName) ? "" : $"\n🏪 Salon: {salonName}";
+
+        var message = $"""
+        ✂ *ayarlıyo - Ziyaretiniz Tamamlandı!*
+
+        Merhaba {customerName}! 👋
+
+        {serviceName} hizmetinden yararlandığınız için teşekkürler! 😊{salonLine}
+
+        Deneyiminizi değerlendirir misiniz? Görüşleriniz bizim için çok önemli.
+
+        ⭐ *Puan vermek için tıklayın:*
+        {reviewUrl}
+
+        Teşekkürler! 🙏
+        """;
+
+        await SendMessageAsync(phone, message);
+    }
+
     private static DateTime ToTurkeyTime(DateTime utcTime)
     {
         // Kind'ı UTC olarak zorla
