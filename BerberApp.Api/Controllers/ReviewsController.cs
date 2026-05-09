@@ -24,10 +24,30 @@ public class ReviewsController : BaseApiController
                 r.Id,
                 r.Rating,
                 r.CustomerName,
+                r.CustomerId,
                 r.Comment,
                 r.CreatedAt
             })
             .ToListAsync();
+
+        // Birden fazla yorum yapan müşterileri işaretle
+        var repeatCustomerIds = reviews
+            .Where(r => r.CustomerId.HasValue)
+            .GroupBy(r => r.CustomerId)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToHashSet();
+
+        var enriched = reviews.Select(r => new
+        {
+            r.Id,
+            r.Rating,
+            r.CustomerName,
+            r.CustomerId,
+            r.Comment,
+            r.CreatedAt,
+            IsRepeatCustomer = r.CustomerId.HasValue && repeatCustomerIds.Contains(r.CustomerId)
+        }).ToList();
 
         var total   = reviews.Count;
         var average = total > 0 ? Math.Round(reviews.Average(r => r.Rating), 1) : 0.0;
@@ -35,6 +55,6 @@ public class ReviewsController : BaseApiController
             .Select(s => new { star = s, count = reviews.Count(r => r.Rating == s) })
             .ToList();
 
-        return Success(new { total, average, distribution = dist, reviews });
+        return Success(new { total, average, distribution = dist, reviews = enriched });
     }
 }

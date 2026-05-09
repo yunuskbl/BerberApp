@@ -17,20 +17,15 @@
 
     <!-- Özet kartı -->
     <div class="summary-card">
-
-      <!-- Ortalama puan -->
       <div class="avg-block">
         <div class="avg-score">{{ data.average }}</div>
         <div class="avg-stars">
-          @for (s of starArray(filledStars); track $index)    { <span class="star filled">★</span> }
+          @for (s of starArray(filledStars); track $index)     { <span class="star filled">★</span> }
           @for (s of emptyStarArray(filledStars); track $index){ <span class="star empty">★</span> }
         </div>
         <div class="avg-count">{{ data.total }} {{ 'reviews.count' | translate }}</div>
       </div>
-
       <div class="divider-v"></div>
-
-      <!-- Dağılım çubukları -->
       <div class="dist-block">
         @for (s of stars; track s) {
           <div class="dist-row">
@@ -44,18 +39,55 @@
       </div>
     </div>
 
+    <!-- Filtre bar -->
+    <div class="filter-bar">
+
+      <!-- Müşteri filtresi aktifse chip göster -->
+      @if (selectedCustomerName) {
+        <div class="filter-chip active">
+          <span>{{ selectedCustomerName }}</span>
+          <button class="chip-clear" (click)="clearCustomerFilter()">✕</button>
+        </div>
+        <span class="filter-hint">Bu müşterinin tüm yorumları</span>
+      } @else {
+        <!-- Tekrar eden müşteri toggle -->
+        @if (hasRepeatCustomers) {
+          <button
+            class="filter-btn"
+            [class.active]="hideRepeat"
+            (click)="hideRepeat = !hideRepeat">
+            @if (hideRepeat) { ✓ } Tekrar eden yorumları gizle
+          </button>
+        }
+        <span class="filter-hint">İsme tıklayarak müşteri yorumlarını filtrele</span>
+      }
+
+      <span class="filter-count">{{ filteredReviews.length }} yorum</span>
+    </div>
+
     <!-- Yorum listesi -->
     <div class="reviews-list">
-      @for (r of data.reviews; track r.id) {
+      @for (r of filteredReviews; track r.id) {
         <div class="review-card">
           <div class="review-head">
             <div class="reviewer-avatar">{{ r.customerName[0]?.toUpperCase() }}</div>
             <div class="reviewer-info">
-              <div class="reviewer-name">{{ r.customerName }}</div>
+              <div class="reviewer-name-row">
+                <button
+                  class="reviewer-name"
+                  [class.filtered]="selectedCustomerId === r.customerId && selectedCustomerName === r.customerName"
+                  (click)="filterByCustomer(r)"
+                  title="Bu müşterinin yorumlarını filtrele">
+                  {{ r.customerName }}
+                </button>
+                @if (r.isRepeatCustomer) {
+                  <span class="repeat-badge" title="Bu müşteriden birden fazla yorum var">↩ Tekrar</span>
+                }
+              </div>
               <div class="reviewer-date">{{ formatDate(r.createdAt) }}</div>
             </div>
             <div class="review-stars">
-              @for (s of starArray(r.rating); track $index)    { <span class="star filled">★</span> }
+              @for (s of starArray(r.rating); track $index)     { <span class="star filled">★</span> }
               @for (s of emptyStarArray(r.rating); track $index){ <span class="star empty">★</span> }
             </div>
           </div>

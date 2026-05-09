@@ -78,6 +78,65 @@
 .star.filled { color: #f59e0b; }
 .star.empty  { color: #e5e7eb; }
 
+/* ─── Filter bar ─── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  min-height: 36px;
+}
+
+.filter-btn {
+  padding: 6px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  transition: all .18s;
+  &:hover { border-color: #7c3aed; color: #7c3aed; }
+  &.active { background: #7c3aed; border-color: #7c3aed; color: #fff; }
+}
+
+.filter-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: #ede9fe;
+  border: 1.5px solid #7c3aed;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #5b21b6;
+  font-weight: 600;
+
+  .chip-clear {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #7c3aed;
+    font-size: 12px;
+    padding: 0;
+    line-height: 1;
+    &:hover { color: #4c1d95; }
+  }
+}
+
+.filter-hint {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.filter-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
 /* ─── Review cards ─── */
 .reviews-list { display: flex; flex-direction: column; gap: 12px; }
 
@@ -103,8 +162,36 @@
 
 .reviewer-info {
   flex: 1;
-  .reviewer-name { font-size: 14px; font-weight: 600; color: #111; }
+  .reviewer-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .reviewer-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 4px;
+    transition: color .15s;
+    &:hover { color: #7c3aed; }
+    &.filtered { color: #7c3aed; text-decoration: underline; }
+  }
   .reviewer-date { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+}
+
+.repeat-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .review-stars { display: flex; gap: 1px; }

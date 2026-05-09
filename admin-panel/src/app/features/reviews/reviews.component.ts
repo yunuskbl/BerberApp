@@ -9,8 +9,10 @@ interface Review {
   id: string;
   rating: number;
   customerName: string;
+  customerId: string | null;
   comment: string | null;
   createdAt: string;
+  isRepeatCustomer: boolean;
 }
 
 interface ReviewSummary {
@@ -31,6 +33,13 @@ export class ReviewsComponent implements OnInit {
   isLoading = true;
   data: ReviewSummary = { total: 0, average: 0, distribution: [], reviews: [] };
 
+  /** Seçili müşteri filtresi (customerId veya customerName) */
+  selectedCustomerId: string | null = null;
+  selectedCustomerName: string | null = null;
+
+  /** Tekrar eden müşteri yorumlarını gizle */
+  hideRepeat = false;
+
   readonly stars = [5, 4, 3, 2, 1];
 
   constructor(
@@ -43,6 +52,50 @@ export class ReviewsComponent implements OnInit {
       next: r => { if (r.success) this.data = r.data; this.isLoading = false; },
       error: ()  => { this.isLoading = false; },
     });
+  }
+
+  /** Gösterilecek filtrelenmiş yorum listesi */
+  get filteredReviews(): Review[] {
+    let list = this.data.reviews;
+
+    // Müşteri filtresi
+    if (this.selectedCustomerId) {
+      list = list.filter(r => r.customerId === this.selectedCustomerId);
+    }
+
+    // Tekrar eden müşteri filtresi: her müşteriden yalnızca ilk (en yeni) yorumu göster
+    if (this.hideRepeat && !this.selectedCustomerId) {
+      const seen = new Set<string>();
+      list = list.filter(r => {
+        const key = r.customerId ?? r.customerName;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    return list;
+  }
+
+  /** Tekrar eden müşteri var mı? */
+  get hasRepeatCustomers(): boolean {
+    return this.data.reviews.some(r => r.isRepeatCustomer);
+  }
+
+  /** Müşteri adına tıklayınca filtrele */
+  filterByCustomer(review: Review): void {
+    if (this.selectedCustomerId === review.customerId && this.selectedCustomerName === review.customerName) {
+      this.clearCustomerFilter();
+      return;
+    }
+    this.selectedCustomerId   = review.customerId;
+    this.selectedCustomerName = review.customerName;
+    this.hideRepeat = false;
+  }
+
+  clearCustomerFilter(): void {
+    this.selectedCustomerId   = null;
+    this.selectedCustomerName = null;
   }
 
   starArray(n: number): number[] { return Array(n).fill(0); }

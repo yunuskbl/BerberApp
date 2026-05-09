@@ -369,6 +369,7 @@ public class BookingController : ControllerBase
         {
             TenantId      = tenant.Id,
             AppointmentId = appointmentId,
+            CustomerId    = customer?.Id,
             CustomerName  = customer?.FullName ?? "Anonim",
             Rating        = request.Rating,
             Comment       = request.Comment?.Trim()
