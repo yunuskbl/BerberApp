@@ -3,23 +3,21 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 
+interface Feature {
+  name: string;
+  included: boolean;
+}
+
 interface Plan {
   name: string;
+  label: string;
   price: number;
   description: string;
   icon: string;
   featured: boolean;
-  savings?: number;
-  features: { name: string; included: boolean; icon: string }[];
+  features: Feature[];
   cta: string;
-}
-
-interface Testimonial {
-  name: string;
-  company: string;
-  avatar: string;
-  text: string;
-  rating: number;
+  ctaDisabled?: boolean;
 }
 
 interface FAQ {
@@ -28,6 +26,21 @@ interface FAQ {
   open?: boolean;
 }
 
+const ALL_FEATURES: Feature[] = [
+  { name: 'Online Randevu Sayfası',          included: true },
+  { name: 'Randevu Yönetimi',                included: true },
+  { name: 'Müşteri & Personel Yönetimi',     included: true },
+  { name: 'Hizmet & Fiyat Yönetimi',         included: true },
+  { name: 'Tema & Logo Özelleştirme',        included: true },
+  { name: 'Çoklu Dil (TR / EN / RU)',        included: true },
+  { name: 'WhatsApp Bildirimleri',            included: true },
+  { name: 'Randevu Hatırlatması',             included: true },
+  { name: 'Fotoğraf Galerisi',               included: true },
+  { name: 'Müşteri Değerlendirme Sistemi',   included: true },
+  { name: 'Rapor & Gelir Analizi',           included: true },
+  { name: 'Öncelikli Destek',               included: true },
+];
+
 @Component({
   selector: 'app-pricing',
   standalone: true,
@@ -35,149 +48,118 @@ interface FAQ {
   templateUrl: './pricing.component.html',
   styleUrls: ['./pricing.component.scss'],
   animations: [
-    trigger('cardHover', [
-      state('normal', style({ transform: 'translateY(0)', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' })),
-      state('hover', style({ transform: 'translateY(-8px)', boxShadow: '0 20px 40px rgba(99,102,241,0.2)' })),
-      transition('normal <=> hover', animate('300ms ease-in-out'))
-    ]),
     trigger('fadeIn', [
       transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(20px)' }),
-        animate('600ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+        style({ opacity: 0, transform: 'translateY(16px)' }),
+        animate('500ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
       ])
     ])
   ]
 })
 export class PricingComponent {
+
   plans: Plan[] = [
     {
-      name: 'Basic',
+      name: 'baslangic',
+      label: 'Başlangıç',
       price: 899,
-      description: 'Başlangıç için mükemmel',
-      icon: '📱',
+      description: 'Küçük işletmeler için temel araçlar',
+      icon: '🌱',
       featured: false,
+      ctaDisabled: true,
       features: [
-        { name: 'Randevu Yönetimi', included: true, icon: '📅' },
-        { name: 'Müşteri Yönetimi', included: true, icon: '👥' },
-        { name: 'Personel Yönetimi', included: true, icon: '👔' },
-        { name: 'Hizmet Yönetimi', included: true, icon: '✂️' },
-        { name: 'Rapor & Analytics', included: false, icon: '📊' },
-        { name: 'Gelişmiş Raporlar', included: false, icon: '📈' },
-        { name: '24/7 Destek', included: false, icon: '🆘' }
+        { name: 'Online Randevu Sayfası',          included: true  },
+        { name: 'Randevu Yönetimi',                included: true  },
+        { name: 'Müşteri & Personel Yönetimi',     included: true  },
+        { name: 'Hizmet & Fiyat Yönetimi',         included: true  },
+        { name: 'Tema & Logo Özelleştirme',        included: true  },
+        { name: 'Çoklu Dil (TR / EN / RU)',        included: true  },
+        { name: 'WhatsApp Bildirimleri',            included: false },
+        { name: 'Randevu Hatırlatması',             included: false },
+        { name: 'Fotoğraf Galerisi',               included: false },
+        { name: 'Müşteri Değerlendirme Sistemi',   included: false },
+        { name: 'Rapor & Gelir Analizi',           included: false },
+        { name: 'Öncelikli Destek',               included: false },
       ],
-      cta: 'Mevcut Plan'
+      cta: 'Mevcut Plan',
     },
     {
-      name: 'Standard',
+      name: 'profesyonel',
+      label: 'Profesyonel',
       price: 1799,
-      description: 'En popüler seçim',
-      icon: '⭐',
+      description: 'Büyüyen işletmeler için tam donanım',
+      icon: '⚡',
       featured: true,
-      savings: 17,
       features: [
-        { name: 'Randevu Yönetimi', included: true, icon: '📅' },
-        { name: 'Müşteri Yönetimi', included: true, icon: '👥' },
-        { name: 'Personel Yönetimi', included: true, icon: '👔' },
-        { name: 'Hizmet Yönetimi', included: true, icon: '✂️' },
-        { name: 'Rapor & Analytics', included: true, icon: '📊' },
-        { name: 'Gelişmiş Raporlar', included: false, icon: '📈' },
-        { name: '24/7 Destek', included: false, icon: '🆘' }
+        { name: 'Online Randevu Sayfası',          included: true  },
+        { name: 'Randevu Yönetimi',                included: true  },
+        { name: 'Müşteri & Personel Yönetimi',     included: true  },
+        { name: 'Hizmet & Fiyat Yönetimi',         included: true  },
+        { name: 'Tema & Logo Özelleştirme',        included: true  },
+        { name: 'Çoklu Dil (TR / EN / RU)',        included: true  },
+        { name: 'WhatsApp Bildirimleri',            included: true  },
+        { name: 'Randevu Hatırlatması',             included: true  },
+        { name: 'Fotoğraf Galerisi',               included: true  },
+        { name: 'Müşteri Değerlendirme Sistemi',   included: true  },
+        { name: 'Rapor & Gelir Analizi',           included: false },
+        { name: 'Öncelikli Destek',               included: false },
       ],
-      cta: 'Standard\'e Yükselt'
+      cta: 'Profesyonel\'e Geç',
     },
     {
-      name: 'Full',
+      name: 'premium',
+      label: 'Premium',
       price: 2399,
-      description: 'Profesyoneller için',
+      description: 'Profesyonel salonlar için tüm özellikler',
       icon: '👑',
       featured: false,
-      savings: 0,
-      features: [
-        { name: 'Randevu Yönetimi', included: true, icon: '📅' },
-        { name: 'Müşteri Yönetimi', included: true, icon: '👥' },
-        { name: 'Personel Yönetimi', included: true, icon: '👔' },
-        { name: 'Hizmet Yönetimi', included: true, icon: '✂️' },
-        { name: 'Rapor & Analytics', included: true, icon: '📊' },
-        { name: 'Gelişmiş Raporlar', included: true, icon: '📈' },
-        { name: '24/7 Destek', included: true, icon: '🆘' }
-      ],
-      cta: 'Full\'a Yükselt'
-    }
+      features: ALL_FEATURES,
+      cta: 'Premium\'a Geç',
+    },
   ];
 
-  testimonials: Testimonial[] = [
-    {
-      name: 'Ayşe Yılmaz',
-      company: 'Beauty Salon Istanbul',
-      avatar: '👩‍🦰',
-      text: 'BerberApp sayesinde randevu yönetimi çok daha kolay hale geldi. Müşteri memnuniyeti %40 arttı!',
-      rating: 5
-    },
-    {
-      name: 'Mehmet Kaya',
-      company: 'Elite Barber Shop',
-      avatar: '👨‍💼',
-      text: 'Standard paketindeki raporlar benim işletmemi analiz etmeme çok yardımcı oldu.',
-      rating: 5
-    },
-    {
-      name: 'Zeynep Demir',
-      company: 'Hair Design Studio',
-      avatar: '👩‍🎨',
-      text: 'Full paketini kullanmaya başladığımdan beri verim %60 arttı. Harika yazılım!',
-      rating: 5
-    }
-  ];
+  allFeatureNames = ALL_FEATURES.map(f => f.name);
 
   faqItems: FAQ[] = [
     {
       question: 'İstediğim zaman plan değiştirebilir miyim?',
-      answer: 'Evet! Herhangi bir zamanda plan değiştirebilir veya iptal edebilirsiniz. Ödeminiz günlere göre hesaplanacaktır.',
-      open: false
+      answer: 'Evet! İstediğiniz zaman planınızı yükseltebilir veya düşürebilirsiniz. Değişiklik anında geçerli olur.',
+      open: false,
     },
     {
-      question: 'Kredi kartı gerekli midir?',
-      answer: 'Hayır! Basic plan tamamen ücretsizdir. Premium planlara geçerken ödeme yapmanız gerekir.',
-      open: false
+      question: 'WhatsApp bildirimleri nasıl çalışıyor?',
+      answer: 'Randevu onayı, iptal ve hatırlatma mesajları müşterinizin telefonuna otomatik olarak WhatsApp üzerinden gönderilir. Ek bir kurulum gerekmez.',
+      open: false,
     },
     {
-      question: 'Kişi sayısının bir sınırı var mı?',
-      answer: 'Hayır! Tüm planlarda sınırsız müşteri ve personel ekleyebilirsiniz.',
-      open: false
+      question: 'Değerlendirme sistemi nedir?',
+      answer: 'Hizmet tamamlandığında müşteriye otomatik olarak bir değerlendirme linki gönderilir. Gelen puanlar ve yorumlar admin panelinizde görünür, ortalama puan salons sayfanızda yayınlanır.',
+      open: false,
     },
     {
-      question: 'Verileri yedekleyebilir miyim?',
-      answer: 'Evet! Verileriniz güvenli sunucularda saklanır ve istediğiniz zaman indirebilirsiniz.',
-      open: false
-    }
+      question: 'Kişi veya randevu sayısı sınırı var mı?',
+      answer: 'Hayır! Tüm planlarda sınırsız müşteri, personel ve randevu ekleyebilirsiniz.',
+      open: false,
+    },
+    {
+      question: 'Verilerim güvende mi?',
+      answer: 'Tüm verileriniz şifreli olarak Türkiye\'deki sunucularımızda saklanır ve günlük olarak yedeklenir.',
+      open: false,
+    },
   ];
-
-  cardHoverStates: { [key: string]: string } = {
-    Basic: 'normal',
-    Standard: 'normal',
-    Full: 'normal'
-  };
 
   constructor(private router: Router) {}
 
-  selectPlan(plan: string) {
-    if (plan === 'Basic') {
-      alert('Zaten Basic plan\'dadasınız!');
-      return;
-    }
-    alert(`${plan} paketine yükseltme işlemi başladı!`);
-    this.router.navigate(['/dashboard']);
+  selectPlan(name: string): void {
+    if (name === 'baslangic') return;
+    this.router.navigate(['/settings']);
   }
 
-  toggleFAQ(index: number) {
-    this.faqItems[index].open = !this.faqItems[index].open;
+  toggleFAQ(i: number): void {
+    this.faqItems[i].open = !this.faqItems[i].open;
   }
 
-  onCardHover(planName: string, state: string) {
-    this.cardHoverStates[planName] = state;
-  }
-
-  renderStars(rating: number): string {
-    return '⭐'.repeat(rating);
+  planHas(plan: Plan, featureName: string): boolean {
+    return plan.features.find(f => f.name === featureName)?.included ?? false;
   }
 }

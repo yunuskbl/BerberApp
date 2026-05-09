@@ -1,162 +1,123 @@
-<div class="pricing-wrapper" @fadeIn>
-  <!-- Hero Section -->
+<div class="pricing-page">
+
+  <!-- Hero -->
   <section class="hero">
-    <div class="hero-content">
-      <h1>Paket Seçenekleri</h1>
-      <p>Işletmenizin büyümesine uygun planı seçin</p>
-      <div class="hero-stats">
-        <div class="stat">
-          <span class="number">5000+</span>
-          <span class="label">Mutlu Müşteri</span>
-        </div>
-        <div class="stat">
-          <span class="number">99.9%</span>
-          <span class="label">Uptime</span>
-        </div>
-        <div class="stat">
-          <span class="number">24/7</span>
-          <span class="label">Destek</span>
-        </div>
-      </div>
+    <div class="hero-inner">
+      <p class="hero-eyebrow">Fiyatlandırma</p>
+      <h1>İşletmenize uygun<br><span class="gradient-text">planı seçin</span></h1>
+      <p class="hero-sub">Tüm planlarda kurulum ücreti yok. İstediğiniz zaman plan değiştirebilirsiniz.</p>
     </div>
   </section>
 
-  <!-- Pricing Cards -->
-  <section class="pricing-section">
-    <div class="pricing-container">
-      <div 
-        *ngFor="let plan of plans" 
-        class="pricing-card"
-        [class.featured]="plan.featured"
-        [@cardHover]="cardHoverStates[plan.name]"
-        (mouseenter)="onCardHover(plan.name, 'hover')"
-        (mouseleave)="onCardHover(plan.name, 'normal')">
-        
-        <!-- Badge -->
-        <div *ngIf="plan.featured" class="badge">
-          <span class="badge-icon">✨</span>
-          En Popüler
-        </div>
+  <!-- Plan Cards -->
+  <section class="plans-section">
+    <div class="plans-grid">
+      @for (plan of plans; track plan.name) {
+        <div class="plan-card" [class.featured]="plan.featured">
 
-        <div *ngIf="plan.savings" class="savings-badge">
-          %{{ plan.savings }} tasarruf
-        </div>
+          @if (plan.featured) {
+            <div class="popular-badge">En Popüler</div>
+          }
 
-        <!-- Plan Header -->
-        <div class="plan-header">
-          <span class="plan-icon">{{ plan.icon }}</span>
-          <h3>{{ plan.name }}</h3>
-          <p class="plan-description">{{ plan.description }}</p>
-        </div>
-
-        <!-- Price -->
-        <div class="price-section">
-          <div class="price">
-            <span class="amount">₺{{ plan.price }}</span>
-            <span class="period">/ay</span>
+          <div class="plan-top">
+            <span class="plan-icon">{{ plan.icon }}</span>
+            <h2 class="plan-name">{{ plan.label }}</h2>
+            <p class="plan-desc">{{ plan.description }}</p>
           </div>
-          <p class="price-note" *ngIf="plan.price === 0">Sonsuza kadar ücretsiz</p>
-          <p class="price-note" *ngIf="plan.price > 0">İlk ay yarı fiyatla</p>
+
+          <div class="plan-price">
+            <span class="price-amount">₺{{ plan.price }}</span>
+            <span class="price-period">/ay</span>
+          </div>
+
+          <button
+            class="plan-btn"
+            [class.btn-primary]="plan.featured"
+            [class.btn-outline]="!plan.featured"
+            [class.btn-disabled]="plan.ctaDisabled"
+            [disabled]="plan.ctaDisabled"
+            (click)="selectPlan(plan.name)">
+            {{ plan.cta }}
+          </button>
+
+          <ul class="feature-list">
+            @for (feature of plan.features; track feature.name) {
+              <li [class.off]="!feature.included">
+                <span class="feat-icon">{{ feature.included ? '✓' : '✗' }}</span>
+                {{ feature.name }}
+              </li>
+            }
+          </ul>
+
         </div>
-
-        <!-- Features List -->
-        <ul class="features-list">
-          <li *ngFor="let feature of plan.features" [class.disabled]="!feature.included">
-            <span class="feature-icon">{{ feature.icon }}</span>
-            <span class="feature-name">{{ feature.name }}</span>
-            <span class="feature-check" *ngIf="feature.included">✓</span>
-            <span class="feature-check disabled" *ngIf="!feature.included">✗</span>
-          </li>
-        </ul>
-
-        <!-- CTA Button -->
-        <button 
-          [class.primary]="plan.featured"
-          [class.secondary]="!plan.featured"
-          [class.disabled]="plan.name === 'Basic'"
-          [disabled]="plan.name === 'Basic'"
-          (click)="selectPlan(plan.name)"
-          class="cta-button">
-          {{ plan.cta }}
-          <span class="button-icon" *ngIf="plan.name !== 'Basic'">→</span>
-        </button>
-      </div>
+      }
     </div>
   </section>
 
   <!-- Comparison Table -->
-  <section class="comparison-section">
-    <h2>Detaylı Karşılaştırma</h2>
-    <div class="comparison-table">
-      <div class="comparison-header">
-        <div class="feature-col">Özellikler</div>
-        <div class="plan-col" *ngFor="let plan of plans">{{ plan.name }}</div>
-      </div>
-      
-      <div class="comparison-row" *ngFor="let feature of plans[0].features">
-        <div class="feature-col">{{ feature.name }}</div>
-        <div class="plan-col" *ngFor="let plan of plans">
-          <span *ngIf="plan.features[plans[0].features.indexOf(feature)].included" class="check">✓</span>
-          <span *ngIf="!plan.features[plans[0].features.indexOf(feature)].included" class="cross">✗</span>
-        </div>
-      </div>
-    </div>
-  </section>
+  <section class="compare-section">
+    <div class="compare-inner">
+      <h2>Detaylı Karşılaştırma</h2>
 
-  <!-- Testimonials -->
-  <section class="testimonials-section">
-    <h2>Müşteri Yorumları</h2>
-    <p class="section-subtitle">Binlerce işletme BerberApp'i tercih ediyor</p>
-    
-    <div class="testimonials-container">
-      <div *ngFor="let testimonial of testimonials" class="testimonial-card">
-        <div class="testimonial-header">
-          <span class="avatar">{{ testimonial.avatar }}</span>
-          <div class="user-info">
-            <h4>{{ testimonial.name }}</h4>
-            <p>{{ testimonial.company }}</p>
+      <div class="compare-table">
+        <!-- Header -->
+        <div class="compare-row compare-head">
+          <div class="compare-feat-col">Özellik</div>
+          @for (plan of plans; track plan.name) {
+            <div class="compare-plan-col" [class.featured-col]="plan.featured">
+              {{ plan.icon }} {{ plan.label }}
+            </div>
+          }
+        </div>
+
+        <!-- Rows -->
+        @for (feat of allFeatureNames; track feat) {
+          <div class="compare-row">
+            <div class="compare-feat-col">{{ feat }}</div>
+            @for (plan of plans; track plan.name) {
+              <div class="compare-plan-col" [class.featured-col]="plan.featured">
+                @if (planHas(plan, feat)) {
+                  <span class="c-check">✓</span>
+                } @else {
+                  <span class="c-cross">—</span>
+                }
+              </div>
+            }
           </div>
-        </div>
-        
-        <div class="rating">
-          {{ renderStars(testimonial.rating) }}
-        </div>
-        
-        <p class="testimonial-text">"{{ testimonial.text }}"</p>
+        }
       </div>
     </div>
   </section>
 
-  <!-- FAQ Section -->
+  <!-- FAQ -->
   <section class="faq-section">
-    <h2>Sıkça Sorulan Sorular</h2>
-    <p class="section-subtitle">Yanıtlara sahip olmadığınız sorular mı var? Bize yazın!</p>
-    
-    <div class="faq-container">
-      <div *ngFor="let item of faqItems; let i = index" 
-           class="faq-item"
-           [class.open]="item.open">
-        <button class="faq-question" (click)="toggleFAQ(i)">
-          <span>{{ item.question }}</span>
-          <span class="faq-icon">{{ item.open ? '−' : '+' }}</span>
-        </button>
-        
-        <div class="faq-answer" *ngIf="item.open" [@fadeIn]>
-          {{ item.answer }}
-        </div>
+    <div class="faq-inner">
+      <h2>Sıkça Sorulan Sorular</h2>
+      <div class="faq-list">
+        @for (item of faqItems; let i = $index; track i) {
+          <div class="faq-item" [class.open]="item.open">
+            <button class="faq-q" (click)="toggleFAQ(i)">
+              <span>{{ item.question }}</span>
+              <span class="faq-arrow">{{ item.open ? '−' : '+' }}</span>
+            </button>
+            @if (item.open) {
+              <div class="faq-a" @fadeIn>{{ item.answer }}</div>
+            }
+          </div>
+        }
       </div>
     </div>
   </section>
 
-  <!-- CTA Section -->
+  <!-- CTA -->
   <section class="cta-section">
-    <div class="cta-content">
-      <h2>Hazır mısınız?</h2>
-      <p>BerberApp'e hemen başlayın ve işletmenizi büyütün</p>
-      <button class="cta-button-large" (click)="selectPlan('Standard')">
-        Standard Planı Seçin
-        <span class="button-icon">→</span>
+    <div class="cta-inner">
+      <h2>Hemen başlayın</h2>
+      <p>Sorularınız için <strong>destek&#64;ayarliyo.com</strong> adresinden bize ulaşabilirsiniz.</p>
+      <button class="cta-btn" (click)="selectPlan('profesyonel')">
+        Profesyonel Planı Dene →
       </button>
     </div>
   </section>
+
 </div>
