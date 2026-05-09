@@ -16,6 +16,8 @@ export interface SalonInfo {
   logoUrl?: string;
   themeColor?: string;
   photos?: SalonPhoto[];
+  averageRating?: number;
+  totalReviews?: number;
 }
 
 export interface BookingService {

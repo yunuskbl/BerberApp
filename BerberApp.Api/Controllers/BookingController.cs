@@ -44,6 +44,12 @@ public class BookingController : ControllerBase
             .Select(x => new { x.Id, x.Url })
             .ToListAsync();
 
+        var ratingData = await _context.Reviews
+            .Where(r => r.TenantId == tenant.Id && !r.IsDeleted)
+            .GroupBy(r => r.TenantId)
+            .Select(g => new { AverageRating = g.Average(r => r.Rating), TotalReviews = g.Count() })
+            .FirstOrDefaultAsync();
+
         return Ok(new
         {
             success = true,
@@ -55,7 +61,9 @@ public class BookingController : ControllerBase
                 tenant.Address,
                 tenant.LogoUrl,
                 tenant.ThemeColor,
-                photos
+                photos,
+                AverageRating = ratingData != null ? Math.Round(ratingData.AverageRating, 1) : 0.0,
+                TotalReviews  = ratingData?.TotalReviews ?? 0
             }
         });
     }

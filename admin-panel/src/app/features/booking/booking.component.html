@@ -68,7 +68,9 @@
         @if (salon?.address) {
           <div class="salon-location">📍 {{ salon?.address }}</div>
         }
-        <div class="salon-rating">⭐ <span>4.9</span> · {{ 'booking.ratingApp' | translate }}</div>
+        @if ((salon?.totalReviews ?? 0) > 0) {
+          <div class="salon-rating">⭐ <span>{{ salon?.averageRating }}</span> · {{ salon?.totalReviews }} {{ 'booking.ratingApp' | translate }}</div>
+        }
       </div>
 
       <!-- Fotoğraflar -->
