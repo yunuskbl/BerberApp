@@ -120,9 +120,9 @@ public class LinkNotificationService : INotificationService
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == tenantId);
 
-        var mapsUrl = string.IsNullOrWhiteSpace(tenant?.Address) || string.IsNullOrWhiteSpace(tenant?.Subdomain)
-            ? string.Empty
-            : $"{_frontendBase}/map/{tenant.Subdomain}";
+        var mapsUrl = !string.IsNullOrWhiteSpace(tenant?.Subdomain)
+            ? $"{_frontendBase}/map/{tenant.Subdomain}"
+            : string.Empty;
 
         return (
             tenant?.PreferredNotificationChannel ?? NotificationChannel.WhatsApp,

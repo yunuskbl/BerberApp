@@ -50,9 +50,9 @@ public class AppointmentReminderJob
             try
             {
                 var salonName = apt.Tenant?.Name ?? string.Empty;
-                var mapsUrl   = string.IsNullOrWhiteSpace(apt.Tenant?.Address) || string.IsNullOrWhiteSpace(apt.Tenant?.Subdomain)
-                    ? string.Empty
-                    : $"{_frontendBase}/map/{apt.Tenant.Subdomain}";
+                var mapsUrl   = !string.IsNullOrWhiteSpace(apt.Tenant?.Subdomain)
+                    ? $"{_frontendBase}/map/{apt.Tenant.Subdomain}"
+                    : string.Empty;
 
                 if (apt.Tenant?.PreferredNotificationChannel == NotificationChannel.Sms)
                 {

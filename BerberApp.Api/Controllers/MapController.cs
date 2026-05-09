@@ -25,10 +25,12 @@ public class MapController : ControllerBase
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Subdomain == subdomain && x.IsActive);
 
-        if (tenant is null || string.IsNullOrWhiteSpace(tenant.Address))
-            return NotFound("Adres bulunamadı.");
+        if (tenant is null)
+            return NotFound("Salon bulunamadı.");
 
-        var mapsUrl = $"https://maps.google.com/?q={Uri.EscapeDataString(tenant.Address)}";
+        // Adres varsa adresle, yoksa salon adıyla Google Maps'te ara
+        var query   = !string.IsNullOrWhiteSpace(tenant.Address) ? tenant.Address : tenant.Name;
+        var mapsUrl = $"https://maps.google.com/?q={Uri.EscapeDataString(query)}";
         return base.Redirect(mapsUrl);
     }
 }
