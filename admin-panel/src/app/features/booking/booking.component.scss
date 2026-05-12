@@ -21,6 +21,12 @@
   display: flex;
 }
 
+/* Salon text wrapper — masaüstü: blok (alt alta), mobil: flex kolon */
+.salon-info {
+  display: flex;
+  flex-direction: column;
+}
+
 app-language-switcher {
   display: flex;
 }
@@ -413,18 +419,35 @@ app-language-switcher {
   .left-scroll-area { display: none; }  /* Fotoğraf, harita, konum gizle */
   .left-summary     { display: none; }
 
+  /* Dil çubuğunu mobilde normal akışa al — fixed yerine sticky üst bar */
+  .booking-lang-bar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 14px 6px;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
   /* Salon kimliği yatay şerit olarak */
   .salon-identity {
     display: flex; align-items: center; gap: 12px;
-    padding: 14px 16px; border-bottom: none; width: 100%;
+    padding: 12px 16px; border-bottom: none; width: 100%;
   }
   .salon-logo-wrap {
     width: 40px; height: 40px; border-radius: 10px;
     font-size: 14px; margin-bottom: 0; flex-shrink: 0;
   }
-  .salon-name     { font-size: 16px; margin-bottom: 2px; }
-  .salon-location { font-size: 12px; }
-  .salon-rating   { margin-top: 4px; font-size: 11px; padding: 3px 8px; }
+  .salon-info     { flex: 1; min-width: 0; gap: 2px; }
+  .salon-name     { font-size: 15px; margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .salon-location { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .salon-rating   { margin-top: 3px; font-size: 11px; padding: 3px 8px; }
 
   /* ── Adım blokları ── */
   .step-block { margin-bottom: 24px; }

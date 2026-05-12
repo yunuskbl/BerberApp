@@ -62,13 +62,15 @@
             {{ getInitials(salon?.name || '') }}
           }
         </div>
-        <div class="salon-name">{{ salon?.name }}</div>
-        @if (salon?.address) {
-          <div class="salon-location">📍 {{ salon?.address }}</div>
-        }
-        @if ((salon?.totalReviews ?? 0) > 0) {
-          <div class="salon-rating">⭐ <span>{{ salon?.averageRating }}</span> · {{ salon?.totalReviews }} {{ 'booking.ratingApp' | translate }}</div>
-        }
+        <div class="salon-info">
+          <div class="salon-name">{{ salon?.name }}</div>
+          @if (salon?.address) {
+            <div class="salon-location">📍 {{ salon?.address }}</div>
+          }
+          @if ((salon?.totalReviews ?? 0) > 0) {
+            <div class="salon-rating">⭐ <span>{{ salon?.averageRating }}</span> · {{ salon?.totalReviews }} {{ 'booking.ratingApp' | translate }}</div>
+          }
+        </div>
       </div>
 
       <!-- Fotoğraflar + Konum: masaüstünde scroll alanı, mobilde gizli -->
@@ -386,8 +388,8 @@
 
   </div>
 
-  <!-- Mobil seçim adası: adımlar sırasında göster, form açılınca gizle -->
-  @if ((selectedService || selectedStaff || selectedSlot) && !canProceed()) {
+  <!-- Mobil seçim adası: herhangi bir seçim varsa göster -->
+  @if (selectedService || selectedStaff || selectedSlot) {
     <div class="mobile-island">
       <div class="island-items">
         @if (selectedService) {
