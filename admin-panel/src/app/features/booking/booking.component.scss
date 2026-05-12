@@ -286,6 +286,26 @@ app-language-switcher {
   display: flex; gap: 8px; align-items: stretch;
   .form-input { flex: 1; min-width: 0; }
 }
+.btn-send-otp {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0 16px; height: 48px;
+  background: var(--accent); color: white;
+  border: none; border-radius: 10px;
+  font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif;
+  cursor: pointer; white-space: nowrap;
+  transition: opacity 0.15s;
+  &:hover:not(:disabled) { opacity: 0.85; }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+.otp-verified-badge {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0 14px; height: 48px;
+  background: #dcfce7; color: #16a34a;
+  border-radius: 10px; font-size: 13px; font-weight: 700;
+  white-space: nowrap;
+}
 .btn-otp-inline {
   flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;

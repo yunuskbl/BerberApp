@@ -281,6 +281,18 @@
                   @if (isLookingUp) {
                     <span class="lookup-spinner"></span>
                   }
+                  @if (!otpVerified) {
+                    <button
+                      type="button"
+                      class="btn-send-otp"
+                      [disabled]="isSendingOtp || otpTimer > 0 || customerForm.get('phone')?.invalid"
+                      (click)="sendOtp()">
+                      {{ isSendingOtp ? 'Gönderiliyor...' : otpTimer > 0 ? timerDisplay : 'Kodu Gönder' }}
+                    </button>
+                  }
+                  @if (otpVerified) {
+                    <span class="otp-verified-badge">✓ Doğrulandı</span>
+                  }
                 </div>
                 @if (customerFound) {
                   <div class="customer-found-badge">{{ 'booking.customerFound' | translate }}</div>
