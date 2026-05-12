@@ -99,6 +99,7 @@ builder.Services.AddAuthorization();
 // Services
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
+builder.Services.AddScoped<SmsService>();
 builder.Services.AddHttpClient<ISmsService, IletimerkeziSmsService>();
 builder.Services.AddScoped<INotificationService, LinkNotificationService>();
 builder.Services.AddScoped<IPlanService, PlanService>();

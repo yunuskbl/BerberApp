@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -13,9 +14,9 @@ namespace BerberApp.Api.Controllers;
 public class OtpController : ControllerBase
 {
     private readonly IMemoryCache _cache;
-    private readonly ISmsService _smsService;
+    private readonly SmsService _smsService;
 
-    public OtpController(IMemoryCache cache, ISmsService smsService)
+    public OtpController(IMemoryCache cache, SmsService smsService)
     {
         _cache = cache;
         _smsService = smsService;
