@@ -81,6 +81,12 @@ export class AppointmentListComponent implements OnInit {
       startTime: ['', Validators.required],
       notes: [''],
     });
+    this.editForm = this.fb.group({
+      staffId:   ['', Validators.required],
+      serviceId: ['', Validators.required],
+      date:      ['', Validators.required],
+      startTime: ['', Validators.required],
+    });
   }
 
   ngOnInit(): void {
@@ -209,12 +215,7 @@ export class AppointmentListComponent implements OnInit {
   isEditSubmitting    = false;
   editError           = '';
 
-  editForm: FormGroup = this.fb.group({
-    staffId:   ['', Validators.required],
-    serviceId: ['', Validators.required],
-    date:      ['', Validators.required],
-    startTime: ['', Validators.required],
-  });
+  editForm!: FormGroup;
 
   openEditModal(apt: Appointment): void {
     this.editingAppointment = apt;

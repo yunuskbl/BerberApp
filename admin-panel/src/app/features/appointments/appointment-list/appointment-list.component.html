@@ -299,7 +299,7 @@
         <div class="form-group">
           <label>Saat</label>
           @if (isEditSlotsLoading) {
-            <p class="slots-loading"><div class="spinner-sm" style="display:inline-block"></div> Yükleniyor...</p>
+            <p class="slots-loading">Yükleniyor...</p>
           } @else if (editSlots.length === 0 && editForm.get('date')?.value) {
             <p class="no-slots">Bu tarihte uygun saat yok.</p>
           } @else {
