@@ -507,7 +507,7 @@ app-language-switcher {
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 5px));
   flex-direction: column;
   gap: 10px;
   animation: islandIn 0.22s cubic-bezier(0.34, 1.2, 0.64, 1) both;
@@ -519,11 +519,21 @@ app-language-switcher {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Özet satırı — öğeler yatayda wrap yapar */
+/* Özet satırı — öğeler yatayda wrap yapar, fiyat sağa itilir */
 .island-summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 14px;
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.island-price {
+  margin-left: auto;
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
 }
 
 .island-item  { display: flex; align-items: center; gap: 6px; }

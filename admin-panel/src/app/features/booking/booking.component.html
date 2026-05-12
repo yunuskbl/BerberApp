@@ -361,13 +361,6 @@
                 </div>
               }
 
-              <div class="booking-preview">
-                <h3>{{ 'booking.previewTitle' | translate }}</h3>
-                <div class="preview-item"><span>{{ 'booking.lbl.service' | translate }}</span><span>{{ selectedService ? getServiceName(selectedService) : '' }}</span></div>
-                <div class="preview-item"><span>{{ 'booking.lbl.staff' | translate }}</span><span>{{ selectedStaff?.fullName }}</span></div>
-                <div class="preview-item"><span>{{ 'booking.dateAndTime' | translate }}</span><span>{{ formatDate(selectedSlot) }} - {{ formatTime(selectedSlot) }}</span></div>
-                <div class="preview-item total"><span>{{ 'booking.total' | translate }}</span><span>{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span></div>
-              </div>
 
               @if (errorMessage) {
                 <div class="error-message">{{ errorMessage }}</div>
@@ -397,7 +390,6 @@
           <div class="island-item">
             <span class="island-dot island-dot--done"></span>
             <span class="island-label">{{ getServiceName(selectedService) }}</span>
-            <span class="island-label">{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span>
           </div>
         }
         @if (selectedStaff) {
@@ -415,6 +407,11 @@
           <div class="island-item">
             <span class="island-dot island-dot--pending"></span>
             <span class="island-label island-label--muted">{{ 'booking.chooseTime' | translate }}</span>
+          </div>
+        }
+        @if (selectedService && (selectedService.price ?? 0) > 0) {
+          <div class="island-price">
+            {{ formatPrice(selectedService.price, selectedService.currency || 'TRY') }}
           </div>
         }
       </div>
