@@ -110,12 +110,14 @@
               <td>
                 <div class="actions">
                   @if (apt.status === AppointmentStatus.Confirmed) {
-                    <button class="action-btn complete" (click)="completeAppointment(apt.id)" title="✓">✓</button>
-                    <button class="action-btn cancel"   (click)="cancelAppointment(apt.id)"  title="✕">✕</button>
+                    <button class="action-btn complete" (click)="completeAppointment(apt.id)" title="Tamamla">✓</button>
+                    <button class="action-btn edit"     (click)="openEditModal(apt)"           title="Güncelle">✏</button>
+                    <button class="action-btn cancel"   (click)="cancelAppointment(apt.id)"    title="İptal">✕</button>
                   }
                   @if (apt.status === AppointmentStatus.Pending) {
-                    <button class="action-btn confirm" (click)="confirmAppointment(apt.id)" title="✓">✓</button>
-                    <button class="action-btn cancel"  (click)="cancelAppointment(apt.id)"  title="✕">✕</button>
+                    <button class="action-btn confirm" (click)="confirmAppointment(apt.id)" title="Onayla">✓</button>
+                    <button class="action-btn edit"    (click)="openEditModal(apt)"          title="Güncelle">✏</button>
+                    <button class="action-btn cancel"  (click)="cancelAppointment(apt.id)"   title="İptal">✕</button>
                   }
                 </div>
               </td>
@@ -260,3 +262,66 @@
     </div>
   </form>
 </div>
+
+<!-- ═══ GÜNCELLE MODAL ═══ -->
+@if (editingAppointment) {
+  <div class="modal-overlay" (click)="closeEditModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>Randevuyu Güncelle</h3>
+          <p class="modal-sub">{{ editingAppointment.customerName }} · {{ editingAppointment.serviceName }}</p>
+        </div>
+        <button class="drawer-close" (click)="closeEditModal()">✕</button>
+      </div>
+      <form [formGroup]="editForm" (ngSubmit)="onEditSubmit()" class="modal-body">
+        <div class="form-group">
+          <label>Personel</label>
+          <app-custom-select [options]="staffOptions" [placeholder]="'appt.staff' | translate"
+            [value]="editForm.get('staffId')?.value"
+            (valueChange)="editForm.patchValue({ staffId: $event }); onEditFieldChange()">
+          </app-custom-select>
+        </div>
+        <div class="form-group">
+          <label>Hizmet</label>
+          <app-custom-select [options]="serviceOptions" [placeholder]="'appt.service' | translate"
+            [value]="editForm.get('serviceId')?.value"
+            (valueChange)="editForm.patchValue({ serviceId: $event }); onEditFieldChange()">
+          </app-custom-select>
+        </div>
+        <div class="form-group">
+          <label>Tarih</label>
+          <app-custom-calendar [minDate]="''" [maxDate]="''"
+            [value]="editForm.get('date')?.value || ''"
+            (valueChange)="editForm.patchValue({ date: $event, startTime: '' }); onEditFieldChange()">
+          </app-custom-calendar>
+        </div>
+        <div class="form-group">
+          <label>Saat</label>
+          @if (isEditSlotsLoading) {
+            <p class="slots-loading"><div class="spinner-sm" style="display:inline-block"></div> Yükleniyor...</p>
+          } @else if (editSlots.length === 0 && editForm.get('date')?.value) {
+            <p class="no-slots">Bu tarihte uygun saat yok.</p>
+          } @else {
+            <div class="slots-grid">
+              @for (slot of editSlots; track slot.startTime) {
+                <button type="button" class="slot-btn"
+                  [class.selected]="editForm.get('startTime')?.value === slot.startTime"
+                  (click)="editForm.patchValue({ startTime: slot.startTime })">
+                  {{ formatSlotTime(slot.startTime) }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+        @if (editError) { <div class="error-message">{{ editError }}</div> }
+        <div class="drawer-footer" style="padding: 0; margin-top: 20px;">
+          <button type="button" class="btn btn-outline" (click)="closeEditModal()">İptal</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isEditSubmitting || editForm.invalid">
+            {{ isEditSubmitting ? 'Kaydediliyor...' : 'Kaydet & Bildir' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

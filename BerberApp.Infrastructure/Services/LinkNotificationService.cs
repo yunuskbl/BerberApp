@@ -110,6 +110,31 @@ public class LinkNotificationService : INotificationService
         }
     }
 
+    public async Task SendAppointmentUpdatedAsync(string recipient, AppointmentStatusDto dto)
+    {
+        try
+        {
+            var (channel, salonName, _) = await GetTenantInfoAsync(dto.TenantId);
+
+            if (channel == NotificationChannel.Sms)
+            {
+                await _smsService.SendAppointmentUpdatedAsync(
+                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName);
+                _logger.LogInformation("[SMS] Güncelleme bildirimi gönderildi: {Recipient}", recipient);
+            }
+            else
+            {
+                await _whatsAppService.SendAppointmentUpdatedAsync(
+                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName);
+                _logger.LogInformation("[WHATSAPP] Güncelleme bildirimi gönderildi: {Recipient}", recipient);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[BİLDİRİM HATA] Güncelleme bildirimi gönderilemedi: {Recipient}", recipient);
+        }
+    }
+
     /// <summary>
     /// Tenant bilgilerini çeker.
     /// mapsUrl: adres varsa "/map/{subdomain}" kısa redirect linki döner, WhatsApp'ta temiz görünür.

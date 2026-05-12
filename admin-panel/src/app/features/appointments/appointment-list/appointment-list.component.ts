@@ -202,6 +202,60 @@ export class AppointmentListComponent implements OnInit {
     });
   }
 
+  // ─── GÜNCELLE ─────────────────────────────────────────────
+  editingAppointment: Appointment | null = null;
+  editSlots:          AvailableSlot[]    = [];
+  isEditSlotsLoading  = false;
+  isEditSubmitting    = false;
+  editError           = '';
+
+  editForm: FormGroup = this.fb.group({
+    staffId:   ['', Validators.required],
+    serviceId: ['', Validators.required],
+    date:      ['', Validators.required],
+    startTime: ['', Validators.required],
+  });
+
+  openEditModal(apt: Appointment): void {
+    this.editingAppointment = apt;
+    this.editError          = '';
+    this.editSlots          = [];
+    const d = new Date(apt.startTime).toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' }); // YYYY-MM-DD
+    this.editForm.patchValue({ staffId: apt.staffId, serviceId: apt.serviceId, date: d, startTime: apt.startTime });
+    this.loadEditSlots();
+  }
+
+  closeEditModal(): void { this.editingAppointment = null; }
+
+  onEditFieldChange(): void { this.loadEditSlots(); }
+
+  loadEditSlots(): void {
+    const { staffId, serviceId, date } = this.editForm.value;
+    if (!staffId || !serviceId || !date) return;
+    this.isEditSlotsLoading = true;
+    this.appointmentService.getAvailableSlots(staffId, serviceId, date + 'T00:00:00Z').subscribe({
+      next: (res) => {
+        if (res.success) this.editSlots = res.data.filter((s: any) => s.isAvailable);
+        this.isEditSlotsLoading = false;
+      },
+      error: () => { this.isEditSlotsLoading = false; }
+    });
+  }
+
+  onEditSubmit(): void {
+    if (this.editForm.invalid || !this.editingAppointment) return;
+    this.isEditSubmitting = true;
+    this.editError        = '';
+    const { staffId, serviceId, startTime } = this.editForm.value;
+    this.appointmentService.update(this.editingAppointment.id, { staffId, serviceId, startTime }).subscribe({
+      next: (res) => {
+        if (res.success) { this.loadAppointments(); this.closeEditModal(); }
+        this.isEditSubmitting = false;
+      },
+      error: (err) => { this.editError = err.error?.message || 'Hata oluştu.'; this.isEditSubmitting = false; }
+    });
+  }
+
   cancelAppointment(id: string): void {
     if (!confirm('?')) return;
     this.appointmentService.cancel(id).subscribe({ next: () => this.loadAppointments() });

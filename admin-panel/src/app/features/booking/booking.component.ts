@@ -324,16 +324,13 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   formatTime(dateStr: string): string {
     return new Date(dateStr).toLocaleTimeString('tr-TR', {
-      hour: '2-digit',
-      minute: '2-digit',
+      hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul',
     });
   }
 
   formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString('tr-TR', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
+      weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Istanbul',
     });
   }
 

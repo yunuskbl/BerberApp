@@ -98,6 +98,32 @@ public class WhatsAppService : IWhatsAppService
         await SendMessageAsync(phone, message);
     }
 
+    public async Task SendAppointmentUpdatedAsync(
+        string phone, string customerName, string serviceName,
+        string staffName, DateTime startTime, string salonName = "")
+    {
+        var turkeyTime = ToTurkeyTime(startTime);
+        var culture    = new System.Globalization.CultureInfo("tr-TR");
+        var salonLine  = string.IsNullOrWhiteSpace(salonName) ? "" : $"\n🏪 Salon: {salonName}";
+
+        var message = $"""
+        ✂ *ayarlıyo - Randevu Güncellendi*
+
+        Merhaba {customerName}! 👋
+
+        Randevunuz güncellendi. Yeni bilgiler:
+
+        📅 Tarih: {turkeyTime.ToString("dd MMMM yyyy", culture)}
+        ⏰ Saat: {turkeyTime:HH:mm}
+        💈 Hizmet: {serviceName}
+        👤 Personel: {staffName}{salonLine}
+
+        Sorularınız için salonumuzu arayabilirsiniz.
+        """;
+
+        await SendMessageAsync(phone, message);
+    }
+
     private async Task SendMessageAsync(string phone, string message)
     {
         // Telefon numarasını WhatsApp formatına çevir

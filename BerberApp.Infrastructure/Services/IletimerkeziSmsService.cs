@@ -131,6 +131,9 @@ public class IletimerkeziSmsService : ISmsService
         return "90" + phone;
     }
 
+    public Task SendAppointmentUpdatedAsync(string phone, string customerName, string serviceName, string staffName, DateTime startTime, string salonName = "")
+        => Task.CompletedTask; // IletiMerkezi yapılandırılmadığında sessizce geç
+
     private static DateTime ToTurkeyTime(DateTime utcTime)
     {
         if (utcTime.Kind != DateTimeKind.Utc)

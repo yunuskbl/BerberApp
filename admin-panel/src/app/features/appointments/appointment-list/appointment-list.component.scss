@@ -483,8 +483,30 @@ select {
 .action-btn {
   &.confirm  { background: #dbeafe; color: #2563eb; &:hover { background: #bfdbfe; } }
   &.complete { background: #dcfce7; color: #16a34a; &:hover { background: #bbf7d0; } }
+  &.edit     { background: #f3f4f6; color: #374151; &:hover { background: #111827; color: white; } }
   &.cancel   { background: #fee2e2; color: #dc2626; &:hover { background: #fecaca; } }
 }
+
+/* ── Güncelle Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 400;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  backdrop-filter: blur(2px);
+}
+.modal {
+  background: white; border-radius: 16px; width: 100%; max-width: 480px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+}
+.modal-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 20px 24px 0;
+  h3 { font-size: 16px; font-weight: 700; margin: 0 0 2px; }
+  .modal-sub { font-size: 12px; color: #9ca3af; margin: 0; }
+}
+.modal-body { padding: 16px 24px 24px; }
+.slots-loading { font-size: 13px; color: #9ca3af; }
+.no-slots { font-size: 13px; color: #9ca3af; }
 
 // ── Görünüm Toggle ──────────────────────────────────────────
 .view-toggle {

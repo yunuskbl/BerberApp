@@ -9,10 +9,12 @@ namespace BerberApp.Application.Appointment.Handlers;
 public class UpdateAppointmentHandler : IRequestHandler<UpdateAppointmentCommand, AppointmentDto>
 {
     private readonly IAppDbContext _context;
+    private readonly INotificationService _notificationService;
 
-    public UpdateAppointmentHandler(IAppDbContext context)
+    public UpdateAppointmentHandler(IAppDbContext context, INotificationService notificationService)
     {
-        _context = context;
+        _context             = context;
+        _notificationService = notificationService;
     }
 
     public async Task<AppointmentDto> Handle(UpdateAppointmentCommand request, CancellationToken ct)
@@ -36,9 +38,24 @@ public class UpdateAppointmentHandler : IRequestHandler<UpdateAppointmentCommand
         appointment.ServiceId = request.ServiceId;
         appointment.StartTime = request.StartTime;
         appointment.EndTime   = request.StartTime.AddMinutes(service.DurationMinutes);
-        appointment.Notes     = request.Notes;
+        if (request.Notes is not null) appointment.Notes = request.Notes;
 
         await _context.SaveChangesAsync(ct);
+
+        // Müşteriye bildirim gönder (arka planda, hata fırlatmasın)
+        _ = _notificationService.SendAppointmentUpdatedAsync(
+            appointment.Customer.Phone,
+            new AppointmentStatusDto
+            {
+                Id           = appointment.Id,
+                TenantId     = appointment.TenantId,
+                CustomerName = appointment.Customer.FullName,
+                ServiceName  = service.Name,
+                StaffName    = staff.FullName,
+                StartTime    = appointment.StartTime,
+                EndTime      = appointment.EndTime,
+                Status       = appointment.Status.ToString(),
+            });
 
         return new AppointmentDto
         {

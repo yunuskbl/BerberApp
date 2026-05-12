@@ -273,12 +273,16 @@ export class CustomerListComponent implements OnInit {
 
   formatTime(dateStr: string): string {
     return new Date(dateStr).toLocaleString('tr-TR', {
-      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+      timeZone: 'Europe/Istanbul',
     });
   }
 
   formatSlotTime(dateStr: string): string {
-    return new Date(dateStr).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    return new Date(dateStr).toLocaleTimeString('tr-TR', {
+      hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul',
+    });
   }
 
   statusLabel(status: AppointmentStatus): string {
