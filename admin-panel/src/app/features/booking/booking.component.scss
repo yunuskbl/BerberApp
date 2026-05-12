@@ -395,40 +395,108 @@ app-language-switcher {
 
 .booking-footer { text-align: center; margin-top: 32px; p { font-size: 12px; color: #ccc; } }
 
+/* ── Mobil seçim adası (varsayılan: gizli) ── */
+.mobile-island { display: none; }
+
 @media (max-width: 768px) {
-  .booking-page { flex-direction: column; }
-  .booking-left { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid #ebebeb; }
-  .left-summary { display: none; }
-  .booking-right-inner { padding: 24px 20px 120px; }
-  .slots-grid { grid-template-columns: repeat(4, 1fr); }
+  /* ── Genel layout ── */
+  .booking-page    { flex-direction: column; min-height: 100vh; }
+  .booking-right   { overflow-y: visible; }
+  .booking-right-inner { padding: 20px 16px 32px; max-width: 100%; }
+
+  /* ── Sol panel: kompakt yatay şerit ── */
+  .booking-left {
+    width: 100%; height: auto; position: static;
+    border-right: none; border-bottom: 1px solid #ebebeb;
+    flex-direction: row; align-items: center; overflow: hidden;
+  }
+  .left-scroll-area { display: none; }  /* Fotoğraf, harita, konum gizle */
+  .left-summary     { display: none; }
+
+  /* Salon kimliği yatay şerit olarak */
+  .salon-identity {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; border-bottom: none; width: 100%;
+  }
+  .salon-logo-wrap {
+    width: 40px; height: 40px; border-radius: 10px;
+    font-size: 14px; margin-bottom: 0; flex-shrink: 0;
+  }
+  .salon-name     { font-size: 16px; margin-bottom: 2px; }
+  .salon-location { font-size: 12px; }
+  .salon-rating   { margin-top: 4px; font-size: 11px; padding: 3px 8px; }
+
+  /* ── Adım blokları ── */
+  .step-block { margin-bottom: 24px; }
+
+  /* ── Slot grid: 3 kolon ── */
+  .slots-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .slot-btn   { padding: 11px 0; font-size: 14px; }
+
+  /* ── Personel listesi: wrap düzelt ── */
+  .staff-list  { gap: 8px; }
+  .staff-item  { flex: 1; min-width: calc(50% - 4px); justify-content: center; }
+
+  /* ── Hizmet listesi: daha büyük dokunma hedefi ── */
+  .service-item { padding: 14px; }
+
+  /* ── Form alanları ── */
+  .form-input, .form-textarea { font-size: 16px; } /* iOS zoom engellemek için */
+  .phone-row { flex-wrap: wrap; gap: 8px; }
+  .btn-send-otp {
+    flex: 1; min-width: 120px; height: 50px;
+    font-size: 14px;
+  }
+
+  /* ── OTP alanı ── */
+  .otp-input { font-size: 20px !important; letter-spacing: 10px !important; }
+
+  /* ── Submit butonu ── */
+  .btn-submit { padding: 16px; font-size: 16px; border-radius: 12px; }
+
+  /* ── Booking preview ── */
+  .booking-preview { margin: 16px 0; }
+
+  /* ── Mobil ada göster ── */
   .mobile-island { display: flex; }
+}
+
+/* ── Çok dar ekranlar (≤ 375px) ── */
+@media (max-width: 375px) {
+  .slots-grid  { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .slot-btn    { font-size: 13px; padding: 10px 0; }
+  .staff-item  { min-width: 100%; }
+  .booking-right-inner { padding: 16px 14px 32px; }
 }
 
 /* ── Mobil seçim adası ── */
 .mobile-island {
-  display: none;
   position: fixed;
-  bottom: 16px; left: 16px; right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  left: 12px; right: 12px;
   z-index: 100;
-  background: rgba(17, 17, 17, 0.92);
-  backdrop-filter: blur(12px);
-  border-radius: 18px;
-  padding: 14px 18px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-  animation: islandIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: rgba(15, 15, 15, 0.94);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.06) inset;
+  animation: islandIn 0.25s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  pointer-events: none; /* içeriği bloklamamak için */
 }
 @keyframes islandIn {
-  from { opacity: 0; transform: translateY(20px) scale(0.95); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.island-items {
-  display: flex; flex-direction: column; gap: 6px;
+.island-items { display: flex; flex-direction: column; gap: 5px; }
+.island-item  { display: flex; align-items: center; gap: 8px; }
+.island-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  &--done    { background: #4ade80; }
+  &--pending { background: #facc15; }
 }
-.island-item {
-  display: flex; align-items: center; gap: 8px;
-}
-.island-icon { font-size: 13px; opacity: 0.7; flex-shrink: 0; }
 .island-label {
-  font-size: 13px; font-weight: 500; color: white;
+  font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.9);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  &--muted { color: rgba(255,255,255,0.45); font-style: italic; font-weight: 400; }
 }

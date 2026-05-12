@@ -53,9 +53,7 @@
     <!-- LEFT PANEL -->
     <div class="booking-left">
 
-      <div class="left-scroll-area">
-
-      <!-- Salon kimliği -->
+      <!-- Salon kimliği: her zaman görünür, mobilde kompakt yatay şerit -->
       <div class="salon-identity">
         <div class="salon-logo-wrap">
           @if (salon?.logoUrl) {
@@ -72,6 +70,9 @@
           <div class="salon-rating">⭐ <span>{{ salon?.averageRating }}</span> · {{ salon?.totalReviews }} {{ 'booking.ratingApp' | translate }}</div>
         }
       </div>
+
+      <!-- Fotoğraflar + Konum: masaüstünde scroll alanı, mobilde gizli -->
+      <div class="left-scroll-area">
 
       <!-- Fotoğraflar -->
       <div class="left-section">
@@ -385,25 +386,31 @@
 
   </div>
 
-  <!-- Mobil seçim adası -->
-  @if (selectedService || selectedStaff || selectedSlot) {
+  <!-- Mobil seçim adası: adımlar sırasında göster, form açılınca gizle -->
+  @if ((selectedService || selectedStaff || selectedSlot) && !canProceed()) {
     <div class="mobile-island">
       <div class="island-items">
         @if (selectedService) {
           <div class="island-item">
-            <span class="island-icon">✂</span>
+            <span class="island-dot island-dot--done"></span>
             <span class="island-label">{{ getServiceName(selectedService) }}</span>
           </div>
         }
         @if (selectedStaff) {
           <div class="island-item">
-            <span class="island-icon">👤</span>
+            <span class="island-dot island-dot--done"></span>
             <span class="island-label">{{ selectedStaff.fullName }}</span>
+          </div>
+        }
+        @if (selectedDate && !selectedSlot) {
+          <div class="island-item">
+            <span class="island-dot island-dot--pending"></span>
+            <span class="island-label island-label--muted">Saat seçin</span>
           </div>
         }
         @if (selectedSlot) {
           <div class="island-item">
-            <span class="island-icon">🕐</span>
+            <span class="island-dot island-dot--done"></span>
             <span class="island-label">{{ formatDate(selectedSlot) }}, {{ formatTime(selectedSlot) }}</span>
           </div>
         }
