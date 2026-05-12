@@ -14,16 +14,14 @@ public class OtpController : ControllerBase
 {
     private readonly IMemoryCache _cache;
     private readonly IWhatsAppService _whatsAppService;
-    private readonly ISmsService _smsService;   
 
-    public OtpController(IMemoryCache cache, IWhatsAppService whatsAppService, ISmsService smsService)
+    public OtpController(IMemoryCache cache, IWhatsAppService whatsAppService)
     {
         _cache = cache;
         _whatsAppService = whatsAppService;
-        _smsService = smsService;
     }
 
-    // OTP gönderme endpoint'i
+    // OTP gönderme endpoint'i — WhatsApp üzerinden gönderilir
     [HttpPost("send")]
     public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
     {
@@ -39,14 +37,14 @@ public class OtpController : ControllerBase
 
         try
         {
-            await _smsService.SendOtpAsync(request.Phone, otp);
+            await _whatsAppService.SendOtpAsync(request.Phone, otp);
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(500, new { success = false, message = "Kod gönderilemedi." });
+            return StatusCode(500, new { success = false, message = $"Kod gönderilemedi: {ex.Message}" });
         }
 
-        return Ok(new { success = true, message = "Doğrulama kodu gönderildi." });
+        return Ok(new { success = true, message = "Doğrulama kodu WhatsApp ile gönderildi." });
     }
 
     [HttpPost("verify")]
