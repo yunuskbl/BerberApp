@@ -317,6 +317,13 @@
                 <textarea class="form-textarea" formControlName="notes" [placeholder]="'booking.notePh' | translate" rows="3" maxlength="200"></textarea>
               </div>
 
+              @if (otpError) {
+                <p class="otp-error" style="margin: 4px 0 8px;">{{ otpError }}</p>
+              }
+              @if (otpSuccess && !otpVerified) {
+                <p class="otp-success" style="margin: 4px 0 8px;">{{ otpSuccess }}</p>
+              }
+
               @if (!otpVerified && otpSent) {
                 <div class="otp-section">
                   <div class="otp-input-row">
@@ -348,12 +355,6 @@
                       Tekrar Gönder
                     </button>
                   </div>
-                  @if (otpError) {
-                    <p class="otp-error">{{ otpError }}</p>
-                  }
-                  @if (otpSuccess) {
-                    <p class="otp-success">{{ otpSuccess }}</p>
-                  }
                 </div>
               }
 
