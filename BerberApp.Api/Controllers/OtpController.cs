@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 
 using BerberApp.Application.Common.Interfaces;
-using BerberApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -14,12 +13,12 @@ namespace BerberApp.Api.Controllers;
 public class OtpController : ControllerBase
 {
     private readonly IMemoryCache _cache;
-    private readonly SmsService _smsService;
+    private readonly IWhatsAppService _whatsAppService;
 
-    public OtpController(IMemoryCache cache, SmsService smsService)
+    public OtpController(IMemoryCache cache, IWhatsAppService whatsAppService)
     {
         _cache = cache;
-        _smsService = smsService;
+        _whatsAppService = whatsAppService;
     }
 
     // OTP gönderme endpoint'i — WhatsApp üzerinden gönderilir
@@ -38,14 +37,14 @@ public class OtpController : ControllerBase
 
         try
         {
-            await _smsService.SendOtpAsync(request.Phone, otp);
+            await _whatsAppService.SendOtpAsync(request.Phone, otp);
         }
         catch (Exception ex)
         {
             return StatusCode(500, new { success = false, message = $"Kod gönderilemedi: {ex.Message}" });
         }
 
-        return Ok(new { success = true, message = "Doğrulama kodu SMS ile gönderildi." });
+        return Ok(new { success = true, message = "Doğrulama kodu WhatsApp ile gönderildi." });
     }
 
     [HttpPost("verify")]
