@@ -397,6 +397,7 @@
           <div class="island-item">
             <span class="island-dot island-dot--done"></span>
             <span class="island-label">{{ getServiceName(selectedService) }}</span>
+            <span class="island-label">{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span>
           </div>
         }
         @if (selectedStaff) {

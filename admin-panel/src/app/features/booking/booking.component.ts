@@ -229,7 +229,12 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.slots = [];
     this.loadStaffForService(service.id);
   }
-
+  
+  loadStaffForServicePrice(serviceId: string): void {
+    this.bookingService.getStaff(this.subdomain, serviceId).subscribe({
+      next: (res) => { if (res.success) this.staffList = res.data; },
+    });
+  }
   loadStaffForService(serviceId: string): void {
     this.bookingService.getStaff(this.subdomain, serviceId).subscribe({
       next: (res) => { if (res.success) this.staffList = res.data; },
