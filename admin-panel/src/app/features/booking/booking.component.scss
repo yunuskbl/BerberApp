@@ -408,7 +408,7 @@ app-language-switcher {
   /* ── Genel layout ── */
   .booking-page    { flex-direction: column; min-height: 100vh; }
   .booking-right   { overflow-y: visible; }
-  .booking-right-inner { padding: 20px 16px 32px; max-width: 100%; }
+  .booking-right-inner { padding: 20px 16px calc(180px + env(safe-area-inset-bottom, 0px)); max-width: 100%; }
 
   /* ── Sol panel: kompakt yatay şerit ── */
   .booking-left {
@@ -482,11 +482,6 @@ app-language-switcher {
 
   /* ── Mobil ada göster ── */
   .mobile-island { display: flex; }
-
-  /* ── Alt bar için yeterli boşluk bırak ── */
-  .booking-right-inner {
-    padding-bottom: calc(180px + env(safe-area-inset-bottom, 0px));
-  }
 }
 
 /* ── Çok dar ekranlar (≤ 375px) ── */
@@ -494,7 +489,7 @@ app-language-switcher {
   .slots-grid  { grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .slot-btn    { font-size: 13px; padding: 10px 0; }
   .staff-item  { min-width: 100%; }
-  .booking-right-inner { padding: 16px 14px 32px; }
+  .booking-right-inner { padding: 16px 14px calc(180px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* ── Mobil alt bar (özet + buton) ── */
