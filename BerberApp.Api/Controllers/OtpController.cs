@@ -13,12 +13,12 @@ namespace BerberApp.Api.Controllers;
 public class OtpController : ControllerBase
 {
     private readonly IMemoryCache _cache;
-    private readonly IWhatsAppService _whatsAppService;
+    private readonly ISmsService _smsService;
 
-    public OtpController(IMemoryCache cache, IWhatsAppService whatsAppService)
+    public OtpController(IMemoryCache cache, ISmsService smsService)
     {
         _cache = cache;
-        _whatsAppService = whatsAppService;
+        _smsService = smsService;
     }
 
     // OTP gönderme endpoint'i — WhatsApp üzerinden gönderilir
@@ -37,14 +37,14 @@ public class OtpController : ControllerBase
 
         try
         {
-            await _whatsAppService.SendOtpAsync(request.Phone, otp);
+            await _smsService.SendOtpAsync(request.Phone, otp);
         }
         catch (Exception ex)
         {
             return StatusCode(500, new { success = false, message = $"Kod gönderilemedi: {ex.Message}" });
         }
 
-        return Ok(new { success = true, message = "Doğrulama kodu WhatsApp ile gönderildi." });
+        return Ok(new { success = true, message = "Doğrulama kodu SMS ile gönderildi." });
     }
 
     [HttpPost("verify")]
