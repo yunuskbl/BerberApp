@@ -277,20 +277,9 @@
             <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
               <div class="form-group">
                 <div class="phone-row">
-                  <input class="form-input" type="tel" formControlName="phone" placeholder="05XX XXX XX XX" maxlength="11" (input)="onPhoneInput($event)" [readonly]="otpVerified" />
+                  <input class="form-input" type="tel" formControlName="phone" placeholder="05XX XXX XX XX" maxlength="11" (input)="onPhoneInput($event)" />
                   @if (isLookingUp) {
                     <span class="lookup-spinner"></span>
-                  } @else if (otpVerified) {
-                    <span class="phone-verified-icon">✓</span>
-                  } @else {
-                    <button
-                      type="button"
-                      class="btn-otp-inline"
-                      [disabled]="isSendingOtp || !customerForm.get('phone')?.valid || (otpSent && otpTimer > 0)"
-                      (click)="sendOtp()">
-                      @if (isSendingOtp) { <span class="btn-spinner"></span> }
-                      {{ isSendingOtp ? '' : (otpSent && otpTimer > 0 ? timerDisplay : 'Kodu Gönder') }}
-                    </button>
                   }
                 </div>
                 @if (customerFound) {
