@@ -485,7 +485,7 @@ app-language-switcher {
 
   /* ── Alt bar için yeterli boşluk bırak ── */
   .booking-right-inner {
-    padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(180px + env(safe-area-inset-bottom, 0px));
   }
 }
 
