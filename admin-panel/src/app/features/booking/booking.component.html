@@ -368,7 +368,7 @@
                 <div class="error-message">{{ errorMessage }}</div>
               }
 
-              <button type="submit" class="btn-submit" [disabled]="isSubmitting || customerForm.invalid">
+              <button type="submit" class="btn-submit" [disabled]="isSubmitting || customerForm.invalid || !otpVerified">
                 {{ isSubmitting ? ('booking.submitting' | translate) : ('booking.submit' | translate) }}
               </button>
             </form>
