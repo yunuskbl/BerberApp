@@ -1,6 +1,7 @@
 ﻿using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BerberApp.Infrastructure.Persistence;
 
@@ -24,6 +25,30 @@ public class AppDbContext : DbContext, IAppDbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        // EF Core veritabanından DateTime okurken Kind = Unspecified döndürür.
+        // Bu global converter sayesinde tüm DateTime alanları Kind = Utc olarak okunur.
+        // Böylece JSON serializer "Z" suffix'i ekler ve tarayıcı saati doğru parse eder.
+        var utcConverter = new ValueConverter<DateTime, DateTime>(
+            v => v.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v, DateTimeKind.Utc),
+            v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+        var utcConverterNullable = new ValueConverter<DateTime?, DateTime?>(
+            v => v.HasValue
+                ? (v.Value.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v.Value, DateTimeKind.Utc))
+                : v,
+            v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTime))
+                    property.SetValueConverter(utcConverter);
+                else if (property.ClrType == typeof(DateTime?))
+                    property.SetValueConverter(utcConverterNullable);
+            }
+        }
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)

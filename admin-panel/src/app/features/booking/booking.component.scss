@@ -474,14 +474,19 @@ app-language-switcher {
   /* ── OTP alanı ── */
   .otp-input { font-size: 20px !important; letter-spacing: 10px !important; }
 
-  /* ── Submit butonu ── */
-  .btn-submit { padding: 16px; font-size: 16px; border-radius: 12px; }
+  /* ── Submit butonu mobilede gizle — barın içindeki buton kullanılır ── */
+  .btn-submit { display: none; }
 
   /* ── Booking preview ── */
   .booking-preview { margin: 16px 0; }
 
   /* ── Mobil ada göster ── */
   .mobile-island { display: flex; }
+
+  /* ── Alt bar için yeterli boşluk bırak ── */
+  .booking-right-inner {
+    padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* ── Çok dar ekranlar (≤ 375px) ── */
@@ -492,34 +497,66 @@ app-language-switcher {
   .booking-right-inner { padding: 16px 14px 32px; }
 }
 
-/* ── Mobil seçim adası ── */
+/* ── Mobil alt bar (özet + buton) ── */
 .mobile-island {
   position: fixed;
-  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  left: 12px; right: 12px;
-  z-index: 100;
-  background: rgba(15, 15, 15, 0.94);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border-radius: 16px;
-  padding: 12px 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.06) inset;
-  animation: islandIn 0.25s cubic-bezier(0.34, 1.4, 0.64, 1) both;
-  pointer-events: none; /* içeriği bloklamamak için */
+  bottom: 0;
+  left: 0; right: 0;
+  z-index: 200;
+  background: rgba(13, 13, 13, 0.96);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  flex-direction: column;
+  gap: 10px;
+  animation: islandIn 0.22s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+  pointer-events: auto;
 }
+
 @keyframes islandIn {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(100%); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.island-items { display: flex; flex-direction: column; gap: 5px; }
-.island-item  { display: flex; align-items: center; gap: 8px; }
+
+/* Özet satırı — öğeler yatayda wrap yapar */
+.island-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.island-item  { display: flex; align-items: center; gap: 6px; }
+
 .island-dot {
   width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
   &--done    { background: #4ade80; }
   &--pending { background: #facc15; }
 }
+
 .island-label {
-  font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.9);
+  font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  &--muted { color: rgba(255,255,255,0.45); font-style: italic; font-weight: 400; }
+  max-width: 160px;
+  &--muted { color: rgba(255,255,255,0.4); font-style: italic; font-weight: 400; }
+}
+
+/* Bar içindeki tamamla butonu */
+.island-submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.2px;
+  transition: opacity 0.15s, transform 0.1s;
+
+  &:hover:not(:disabled) { opacity: 0.88; }
+  &:active:not(:disabled) { transform: scale(0.98); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
 }

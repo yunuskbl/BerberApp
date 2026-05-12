@@ -388,10 +388,11 @@
 
   </div>
 
-  <!-- Mobil seçim adası: herhangi bir seçim varsa göster -->
+  <!-- Mobil alt bar: seçim özeti + (hazırsa) tamamla butonu -->
   @if (selectedService || selectedStaff || selectedSlot) {
     <div class="mobile-island">
-      <div class="island-items">
+      <!-- Özet satırı -->
+      <div class="island-summary">
         @if (selectedService) {
           <div class="island-item">
             <span class="island-dot island-dot--done"></span>
@@ -404,19 +405,28 @@
             <span class="island-label">{{ selectedStaff.fullName }}</span>
           </div>
         }
-        @if (selectedDate && !selectedSlot) {
-          <div class="island-item">
-            <span class="island-dot island-dot--pending"></span>
-            <span class="island-label island-label--muted">Saat seçin</span>
-          </div>
-        }
         @if (selectedSlot) {
           <div class="island-item">
             <span class="island-dot island-dot--done"></span>
             <span class="island-label">{{ formatDate(selectedSlot) }}, {{ formatTime(selectedSlot) }}</span>
           </div>
+        } @else if (selectedDate) {
+          <div class="island-item">
+            <span class="island-dot island-dot--pending"></span>
+            <span class="island-label island-label--muted">{{ 'booking.chooseTime' | translate }}</span>
+          </div>
         }
       </div>
+      <!-- Tamamla butonu — yalnızca form hazırsa -->
+      @if (canProceed()) {
+        <button
+          type="button"
+          class="island-submit-btn"
+          [disabled]="isSubmitting || customerForm.invalid || !otpVerified"
+          (click)="onSubmit()">
+          {{ isSubmitting ? ('booking.submitting' | translate) : ('booking.submit' | translate) }}
+        </button>
+      }
     </div>
   }
 
