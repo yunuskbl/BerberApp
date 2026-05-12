@@ -23,12 +23,13 @@ public class AppointmentsController : BaseApiController
     }
     
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] Guid? staffId, [FromQuery] DateTime? date)
+    public async Task<IActionResult> GetAll([FromQuery] Guid? staffId, [FromQuery] DateTime? date, [FromQuery] Guid? customerId)
         => Success(await Mediator.Send(new GetAllAppointmentsQuery
         {
-            TenantId = TenantId,
-            StaffId = staffId,
-            Date = date
+            TenantId   = TenantId,
+            StaffId    = staffId,
+            Date       = date,
+            CustomerId = customerId,
         }));
 
     [HttpGet("{id}")]
@@ -58,6 +59,14 @@ public class AppointmentsController : BaseApiController
         command.TenantId = TenantId;
         command.IsFromBookingPage = false;
         return Created(await Mediator.Send(command));
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateAppointmentCommand command)
+    {
+        command.Id       = id;
+        command.TenantId = TenantId;
+        return Success(await Mediator.Send(command));
     }
 
     [HttpPut("{id}/confirm")]

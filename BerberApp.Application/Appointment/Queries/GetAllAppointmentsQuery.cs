@@ -13,5 +13,6 @@ public class GetAllAppointmentsQuery : IRequest<List<AppointmentDto>>
 {
     public Guid TenantId { get; set; }
     public Guid? StaffId { get; set; }
+    public Guid? CustomerId { get; set; }
     public DateTime? Date { get; set; }
 }

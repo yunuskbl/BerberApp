@@ -399,6 +399,36 @@ app-language-switcher {
   .booking-page { flex-direction: column; }
   .booking-left { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid #ebebeb; }
   .left-summary { display: none; }
-  .booking-right-inner { padding: 24px 20px 60px; }
+  .booking-right-inner { padding: 24px 20px 120px; }
   .slots-grid { grid-template-columns: repeat(4, 1fr); }
+  .mobile-island { display: flex; }
+}
+
+/* ── Mobil seçim adası ── */
+.mobile-island {
+  display: none;
+  position: fixed;
+  bottom: 16px; left: 16px; right: 16px;
+  z-index: 100;
+  background: rgba(17, 17, 17, 0.92);
+  backdrop-filter: blur(12px);
+  border-radius: 18px;
+  padding: 14px 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  animation: islandIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes islandIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.island-items {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.island-item {
+  display: flex; align-items: center; gap: 8px;
+}
+.island-icon { font-size: 13px; opacity: 0.7; flex-shrink: 0; }
+.island-label {
+  font-size: 13px; font-weight: 500; color: white;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }

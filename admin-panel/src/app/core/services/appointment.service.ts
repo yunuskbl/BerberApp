@@ -18,11 +18,17 @@ export class AppointmentService {
   getAll(
     staffId?: string,
     date?: string,
+    customerId?: string,
   ): Observable<ApiResponse<Appointment[]>> {
     let params = new HttpParams();
-    if (staffId) params = params.set('staffId', staffId);
-    if (date) params = params.set('date', date);
+    if (staffId)    params = params.set('staffId', staffId);
+    if (date)       params = params.set('date', date);
+    if (customerId) params = params.set('customerId', customerId);
     return this.http.get<ApiResponse<Appointment[]>>(this.apiUrl, { params });
+  }
+
+  getByCustomer(customerId: string): Observable<ApiResponse<Appointment[]>> {
+    return this.getAll(undefined, undefined, customerId);
   }
 
   getById(id: string): Observable<ApiResponse<Appointment>> {
@@ -53,6 +59,10 @@ export class AppointmentService {
     request: CreateAppointmentRequest,
   ): Observable<ApiResponse<Appointment>> {
     return this.http.post<ApiResponse<Appointment>>(this.apiUrl, request);
+  }
+
+  update(id: string, data: { staffId: string; serviceId: string; startTime: string; notes?: string }): Observable<ApiResponse<Appointment>> {
+    return this.http.put<ApiResponse<Appointment>>(`${this.apiUrl}/${id}`, data);
   }
 
   cancel(id: string): Observable<void> {

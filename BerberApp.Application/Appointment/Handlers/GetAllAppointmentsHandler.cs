@@ -33,6 +33,9 @@ public class GetAllAppointmentsHandler : IRequestHandler<GetAllAppointmentsQuery
         if (request.StaffId.HasValue)
             query = query.Where(x => x.StaffId == request.StaffId.Value);
 
+        if (request.CustomerId.HasValue)
+            query = query.Where(x => x.CustomerId == request.CustomerId.Value);
+
         if (request.Date.HasValue)
         {
             // Tarih filtresi Türkiye saatine göre yapılmalı (UTC+3).
@@ -53,7 +56,7 @@ public class GetAllAppointmentsHandler : IRequestHandler<GetAllAppointmentsQuery
 
 
         var appointments = await query
-            .OrderBy(x => x.StartTime)
+            .OrderByDescending(x => x.StartTime)
             .ToListAsync(ct);
 
         return appointments.Select(x => new AppointmentDto

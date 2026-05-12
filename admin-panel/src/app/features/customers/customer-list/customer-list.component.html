@@ -46,7 +46,7 @@
               <td>
                 <div class="customer-info">
                   <div class="avatar">{{ getInitials(customer.fullName) }}</div>
-                  <span class="customer-name">{{ customer.fullName }}</span>
+                  <button class="customer-name-btn" (click)="openHistory(customer)">{{ customer.fullName }}</button>
                 </div>
               </td>
               <td class="text-muted">{{ customer.phone }}</td>
@@ -57,6 +57,7 @@
               <td class="text-muted notes-cell">{{ customer.notes || '—' }}</td>
               <td>
                 <div class="actions">
+                  <button class="action-btn history" (click)="openHistory(customer)" title="Geçmiş Randevular">📋</button>
                   <button class="action-btn edit" (click)="openDrawer(customer)" [title]="'common.edit' | translate">✏</button>
                   <button class="action-btn delete" (click)="deleteCustomer(customer.id)">🗑</button>
                 </div>
@@ -70,18 +71,16 @@
 
 </div>
 
+<!-- ═══ FORM DRAWER ═══ -->
 @if (isDrawerOpen) {
   <div class="drawer-overlay" (click)="closeDrawer()"></div>
 }
-
 <div class="drawer" [class.open]="isDrawerOpen">
   <div class="drawer-header">
     <h3>{{ (editingCustomer ? 'customers.edit' : 'customers.new') | translate }}</h3>
     <button class="drawer-close" (click)="closeDrawer()">✕</button>
   </div>
-
   <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="drawer-body">
-
     <div class="form-group">
       <label>{{ 'common.fullName' | translate }}</label>
       <input type="text" formControlName="fullName" placeholder="Mehmet Yılmaz"
@@ -90,7 +89,6 @@
         <span class="error-text">{{ 'common.fullNameRequired' | translate }}</span>
       }
     </div>
-
     <div class="form-group">
       <label>{{ 'customers.phone' | translate }}</label>
       <input type="text" formControlName="phone" placeholder="0555 123 45 67"
@@ -99,7 +97,6 @@
         <span class="error-text">{{ 'customers.phoneRequired' | translate }}</span>
       }
     </div>
-
     <div class="form-group">
       <label>{{ 'common.email' | translate }}</label>
       <input type="email" formControlName="email" placeholder="mehmet@mail.com"
@@ -108,22 +105,184 @@
         <span class="error-text">{{ 'customers.emailInvalid' | translate }}</span>
       }
     </div>
-
     <div class="form-group">
       <label>{{ 'common.notes' | translate }}</label>
       <textarea formControlName="notes" [placeholder]="'customers.notePh' | translate" rows="4"></textarea>
     </div>
-
     @if (errorMessage) {
       <div class="error-message">{{ errorMessage }}</div>
     }
-
     <div class="drawer-footer">
       <button type="button" class="btn btn-outline" (click)="closeDrawer()">{{ 'common.cancel' | translate }}</button>
       <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
         {{ isSubmitting ? ('common.saving' | translate) : ((editingCustomer ? 'common.update' : 'common.save') | translate) }}
       </button>
     </div>
-
   </form>
 </div>
+
+<!-- ═══ GEÇMİŞ DRAWER ═══ -->
+@if (isHistoryOpen) {
+  <div class="drawer-overlay" (click)="closeHistory()"></div>
+}
+<div class="drawer drawer--wide" [class.open]="isHistoryOpen">
+  <div class="drawer-header">
+    <div class="history-header-info">
+      @if (historyCustomer) {
+        <div class="avatar avatar--sm">{{ getInitials(historyCustomer.fullName) }}</div>
+        <div>
+          <h3>{{ historyCustomer.fullName }}</h3>
+          <p class="history-phone">{{ historyCustomer.phone }}</p>
+        </div>
+      }
+    </div>
+    <button class="drawer-close" (click)="closeHistory()">✕</button>
+  </div>
+
+  <div class="drawer-body">
+    @if (isHistoryLoading) {
+      <div class="loading-state"><div class="spinner"></div></div>
+    } @else if (customerHistory.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">📅</span>
+        <p>Henüz randevu yok.</p>
+      </div>
+    } @else {
+      <div class="history-list">
+        @for (apt of customerHistory; track apt.id) {
+          <div class="history-item">
+            <div class="history-item-main">
+              <div class="history-meta">
+                <span class="history-date">{{ formatTime(apt.startTime) }}</span>
+                <span class="status-badge" [class]="statusClass(apt.status)">{{ statusLabel(apt.status) }}</span>
+              </div>
+              <div class="history-detail">
+                <span class="history-service">{{ apt.serviceName }}</span>
+                <span class="history-staff">👤 {{ apt.staffName }}</span>
+              </div>
+            </div>
+            <div class="history-actions">
+              <button class="btn-history-action" (click)="openRepeatModal(apt)" title="Aynı randevuyu tekrarla">
+                🔁 Tekrarla
+              </button>
+              @if (apt.status === AppointmentStatus.Pending || apt.status === AppointmentStatus.Confirmed) {
+                <button class="btn-history-action btn-history-action--edit" (click)="openUpdateModal(apt)" title="Randevuyu güncelle">
+                  ✏ Güncelle
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ═══ GÜNCELLE MODAL ═══ -->
+@if (updatingAppointment) {
+  <div class="modal-overlay" (click)="closeUpdateModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Randevuyu Güncelle</h3>
+        <button class="drawer-close" (click)="closeUpdateModal()">✕</button>
+      </div>
+      <form [formGroup]="updateForm" (ngSubmit)="onUpdateSubmit()" class="modal-body">
+        <div class="form-group">
+          <label>Personel</label>
+          <select formControlName="staffId" (change)="onUpdateFormChange()">
+            @for (s of staffList; track s.id) {
+              <option [value]="s.id">{{ s.fullName }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Hizmet</label>
+          <select formControlName="serviceId" (change)="onUpdateFormChange()">
+            @for (s of serviceList; track s.id) {
+              <option [value]="s.id">{{ s.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tarih</label>
+          <input type="date" formControlName="date" [min]="minDate" [max]="maxDate" (change)="onUpdateFormChange()" />
+        </div>
+        <div class="form-group">
+          <label>Saat</label>
+          @if (updateSlotsLoading) {
+            <p class="slots-loading">Saatler yükleniyor...</p>
+          } @else if (updateSlots.length === 0) {
+            <p class="no-slots">Bu tarihte uygun saat yok.</p>
+          } @else {
+            <div class="slots-grid">
+              @for (slot of updateSlots; track slot.startTime) {
+                <button type="button" class="slot-btn"
+                  [class.selected]="updateForm.get('startTime')?.value === slot.startTime"
+                  (click)="updateForm.patchValue({ startTime: slot.startTime })">
+                  {{ formatSlotTime(slot.startTime) }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+        @if (updateError) { <div class="error-message">{{ updateError }}</div> }
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" (click)="closeUpdateModal()">İptal</button>
+          <button type="submit" class="btn btn-primary" [disabled]="updateSubmitting || updateForm.invalid">
+            {{ updateSubmitting ? 'Kaydediliyor...' : 'Kaydet' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ═══ TEKRARLA MODAL ═══ -->
+@if (repeatingAppointment) {
+  <div class="modal-overlay" (click)="closeRepeatModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Randevuyu Tekrarla</h3>
+        <button class="drawer-close" (click)="closeRepeatModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="repeat-summary">
+          <span>{{ repeatingAppointment.serviceName }}</span>
+          <span>·</span>
+          <span>{{ repeatingAppointment.staffName }}</span>
+        </div>
+        <div class="form-group">
+          <label>Yeni Tarih</label>
+          <input type="date" [(ngModel)]="repeatDate" [min]="minDate" [max]="maxDate" (change)="onRepeatDateChange()" />
+        </div>
+        @if (repeatDate) {
+          <div class="form-group">
+            <label>Saat</label>
+            @if (repeatSlotsLoading) {
+              <p class="slots-loading">Saatler yükleniyor...</p>
+            } @else if (repeatSlots.length === 0) {
+              <p class="no-slots">Bu tarihte uygun saat yok.</p>
+            } @else {
+              <div class="slots-grid">
+                @for (slot of repeatSlots; track slot.startTime) {
+                  <button type="button" class="slot-btn"
+                    [class.selected]="repeatSlot === slot.startTime"
+                    (click)="repeatSlot = slot.startTime">
+                    {{ formatSlotTime(slot.startTime) }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
+        @if (repeatError) { <div class="error-message">{{ repeatError }}</div> }
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" (click)="closeRepeatModal()">İptal</button>
+          <button type="button" class="btn btn-primary" [disabled]="!repeatSlot || repeatSubmitting" (click)="onRepeatSubmit()">
+            {{ repeatSubmitting ? 'Oluşturuluyor...' : 'Randevu Oluştur' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

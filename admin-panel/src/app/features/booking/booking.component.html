@@ -385,6 +385,32 @@
 
   </div>
 
+  <!-- Mobil seçim adası -->
+  @if (selectedService || selectedStaff || selectedSlot) {
+    <div class="mobile-island">
+      <div class="island-items">
+        @if (selectedService) {
+          <div class="island-item">
+            <span class="island-icon">✂</span>
+            <span class="island-label">{{ getServiceName(selectedService) }}</span>
+          </div>
+        }
+        @if (selectedStaff) {
+          <div class="island-item">
+            <span class="island-icon">👤</span>
+            <span class="island-label">{{ selectedStaff.fullName }}</span>
+          </div>
+        }
+        @if (selectedSlot) {
+          <div class="island-item">
+            <span class="island-icon">🕐</span>
+            <span class="island-label">{{ formatDate(selectedSlot) }}, {{ formatTime(selectedSlot) }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
   <!-- Lightbox -->
   @if (lightboxPhoto) {
     <div class="lightbox-overlay" (click)="closeLightbox()">

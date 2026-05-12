@@ -1,32 +1,68 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { CustomerService } from '../../../core/services/customer.service';
 import { Customer } from '../../../core/models/customer.model';
+import { AppointmentService } from '../../../core/services/appointment.service';
+import { Appointment, AppointmentStatus, AvailableSlot } from '../../../core/models/appointment.model';
+import { StaffService } from '../../../core/services/staff.service';
+import { ServiceService } from '../../../core/services/service.service';
+import { Staff } from '../../../core/models/staff.model';
+import { Service } from '../../../core/models/service.model';
 import { LanguageService } from '../../../core/services/language.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-customer-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, TranslatePipe],
   templateUrl: './customer-list.component.html',
   styleUrl: './customer-list.component.scss'
 })
 export class CustomerListComponent implements OnInit {
-  customerList: Customer[] = [];
-  filteredList: Customer[] = [];
-  isLoading        = true;
-  isDrawerOpen     = false;
-  isSubmitting     = false;
+  customerList:   Customer[]    = [];
+  filteredList:   Customer[]    = [];
+  staffList:      Staff[]       = [];
+  serviceList:    Service[]     = [];
+  isLoading       = true;
+  isDrawerOpen    = false;
+  isSubmitting    = false;
   editingCustomer: Customer | null = null;
-  errorMessage     = '';
-  searchQuery      = '';
+  errorMessage    = '';
+  searchQuery     = '';
 
   customerForm: FormGroup;
 
+  // --- Geçmiş ---
+  historyCustomer:    Customer | null = null;
+  customerHistory:    Appointment[]   = [];
+  isHistoryOpen       = false;
+  isHistoryLoading    = false;
+
+  // --- Güncelle modal ---
+  updatingAppointment: Appointment | null = null;
+  updateSlots:         AvailableSlot[]    = [];
+  updateSlotsLoading   = false;
+  updateSubmitting     = false;
+  updateError          = '';
+  updateForm: FormGroup;
+
+  // --- Tekrarla modal ---
+  repeatingAppointment: Appointment | null = null;
+  repeatDate   = '';
+  repeatSlots:  AvailableSlot[] = [];
+  repeatSlot   = '';
+  repeatSlotsLoading = false;
+  repeatSubmitting   = false;
+  repeatError        = '';
+
+  AppointmentStatus = AppointmentStatus;
+
   constructor(
-    private customerService: CustomerService,
+    private customerService:    CustomerService,
+    private appointmentService: AppointmentService,
+    private staffService:       StaffService,
+    private serviceService:     ServiceService,
     private fb: FormBuilder,
     public langService: LanguageService,
   ) {
@@ -36,10 +72,19 @@ export class CustomerListComponent implements OnInit {
       email:    ['', [Validators.email]],
       notes:    ['']
     });
+
+    this.updateForm = this.fb.group({
+      staffId:   ['', Validators.required],
+      serviceId: ['', Validators.required],
+      date:      ['', Validators.required],
+      startTime: ['', Validators.required],
+    });
   }
 
   ngOnInit(): void {
     this.loadCustomers();
+    this.staffService.getAll().subscribe(r => { if (r.success) this.staffList = r.data; });
+    this.serviceService.getAll().subscribe(r => { if (r.success) this.serviceList = r.data; });
   }
 
   loadCustomers(): void {
@@ -110,7 +155,145 @@ export class CustomerListComponent implements OnInit {
     this.customerService.delete(id).subscribe({ next: () => this.loadCustomers() });
   }
 
+  // ─── GEÇMİŞ ─────────────────────────────────────────────
+  openHistory(customer: Customer): void {
+    this.historyCustomer  = customer;
+    this.isHistoryOpen    = true;
+    this.isHistoryLoading = true;
+    this.customerHistory  = [];
+    this.appointmentService.getByCustomer(customer.id).subscribe({
+      next: (res) => { if (res.success) this.customerHistory = res.data; this.isHistoryLoading = false; },
+      error: () => { this.isHistoryLoading = false; }
+    });
+  }
+
+  closeHistory(): void {
+    this.isHistoryOpen        = false;
+    this.historyCustomer      = null;
+    this.customerHistory      = [];
+    this.updatingAppointment  = null;
+    this.repeatingAppointment = null;
+  }
+
+  // ─── GÜNCELLE ────────────────────────────────────────────
+  openUpdateModal(apt: Appointment): void {
+    this.updatingAppointment  = apt;
+    this.repeatingAppointment = null;
+    this.updateError          = '';
+    this.updateSlots          = [];
+    const d = new Date(apt.startTime).toISOString().split('T')[0];
+    this.updateForm.patchValue({ staffId: apt.staffId, serviceId: apt.serviceId, date: d, startTime: apt.startTime });
+    this.loadUpdateSlots();
+  }
+
+  closeUpdateModal(): void { this.updatingAppointment = null; }
+
+  onUpdateFormChange(): void { this.loadUpdateSlots(); }
+
+  loadUpdateSlots(): void {
+    const { staffId, serviceId, date } = this.updateForm.value;
+    if (!staffId || !serviceId || !date) return;
+    this.updateSlotsLoading = true;
+    this.appointmentService.getAvailableSlots(staffId, serviceId, date + 'T00:00:00Z').subscribe({
+      next: (res) => {
+        if (res.success) this.updateSlots = res.data.filter(s => s.isAvailable);
+        this.updateSlotsLoading = false;
+      },
+      error: () => { this.updateSlotsLoading = false; }
+    });
+  }
+
+  onUpdateSubmit(): void {
+    if (this.updateForm.invalid || !this.updatingAppointment) return;
+    this.updateSubmitting = true;
+    this.updateError      = '';
+    const { staffId, serviceId, startTime } = this.updateForm.value;
+    this.appointmentService.update(this.updatingAppointment.id, { staffId, serviceId, startTime }).subscribe({
+      next: (res) => {
+        if (res.success) {
+          const idx = this.customerHistory.findIndex(a => a.id === this.updatingAppointment!.id);
+          if (idx >= 0) this.customerHistory[idx] = res.data;
+          this.closeUpdateModal();
+        }
+        this.updateSubmitting = false;
+      },
+      error: (err) => { this.updateError = err.error?.message || 'Hata oluştu.'; this.updateSubmitting = false; }
+    });
+  }
+
+  // ─── TEKRARLA ────────────────────────────────────────────
+  openRepeatModal(apt: Appointment): void {
+    this.repeatingAppointment = apt;
+    this.updatingAppointment  = null;
+    this.repeatDate           = '';
+    this.repeatSlot           = '';
+    this.repeatSlots          = [];
+    this.repeatError          = '';
+  }
+
+  closeRepeatModal(): void { this.repeatingAppointment = null; }
+
+  onRepeatDateChange(): void {
+    if (!this.repeatDate || !this.repeatingAppointment) return;
+    this.repeatSlotsLoading = true;
+    this.repeatSlot         = '';
+    this.appointmentService
+      .getAvailableSlots(this.repeatingAppointment.staffId, this.repeatingAppointment.serviceId, this.repeatDate + 'T00:00:00Z')
+      .subscribe({
+        next: (res) => { if (res.success) this.repeatSlots = res.data.filter(s => s.isAvailable); this.repeatSlotsLoading = false; },
+        error: () => { this.repeatSlotsLoading = false; }
+      });
+  }
+
+  onRepeatSubmit(): void {
+    if (!this.repeatingAppointment || !this.repeatSlot || !this.historyCustomer) return;
+    this.repeatSubmitting = true;
+    this.repeatError      = '';
+    this.appointmentService.create({
+      customerId: this.historyCustomer.id,
+      staffId:    this.repeatingAppointment.staffId,
+      serviceId:  this.repeatingAppointment.serviceId,
+      startTime:  this.repeatSlot,
+    }).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.customerHistory.unshift(res.data);
+          this.closeRepeatModal();
+        }
+        this.repeatSubmitting = false;
+      },
+      error: (err) => { this.repeatError = err.error?.message || 'Hata oluştu.'; this.repeatSubmitting = false; }
+    });
+  }
+
+  // ─── HELPERS ─────────────────────────────────────────────
   getInitials(name: string): string {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  formatTime(dateStr: string): string {
+    return new Date(dateStr).toLocaleString('tr-TR', {
+      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  formatSlotTime(dateStr: string): string {
+    return new Date(dateStr).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  statusLabel(status: AppointmentStatus): string {
+    const map: Record<number, string> = { 0: 'Bekliyor', 1: 'Onaylandı', 2: 'Tamamlandı', 3: 'İptal', 4: 'Gelmedi' };
+    return map[status] ?? '—';
+  }
+
+  statusClass(status: AppointmentStatus): string {
+    const map: Record<number, string> = { 0: 'pending', 1: 'confirmed', 2: 'completed', 3: 'cancelled', 4: 'noshow' };
+    return map[status] ?? '';
+  }
+
+  get minDate(): string { return new Date().toISOString().split('T')[0]; }
+  get maxDate(): string {
+    const d = new Date(); d.setDate(d.getDate() + 60);
+    return d.toISOString().split('T')[0];
   }
 }
