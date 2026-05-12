@@ -123,8 +123,8 @@ const T: Record<Lang, Record<string, string>> = {
     // Settings — Bildirim kanalı
     'settings.notif.card':      'Bildirim Kanalı',
     'settings.notif.cardSub':   'Müşterilere hangi kanaldan bildirim gönderileceğini seçin',
-    'settings.notif.whatsapp':  'WhatsApp (Twilio)',
-    'settings.notif.sms':       'SMS (IletiMerkezi)',
+    'settings.notif.whatsapp':  'WhatsApp',
+    'settings.notif.sms':       'SMS',
     'settings.notif.save':      'Kanalı Kaydet',
     'settings.notif.saving':    'Kaydediliyor...',
     'settings.notif.saved':     'Bildirim kanalı güncellendi!',
@@ -446,8 +446,8 @@ const T: Record<Lang, Record<string, string>> = {
 
     'settings.notif.card':      'Notification Channel',
     'settings.notif.cardSub':   'Choose how to notify customers about their appointments',
-    'settings.notif.whatsapp':  'WhatsApp (Twilio)',
-    'settings.notif.sms':       'SMS (IletiMerkezi)',
+    'settings.notif.whatsapp':  'WhatsApp',
+    'settings.notif.sms':       'SMS',
     'settings.notif.save':      'Save Channel',
     'settings.notif.saving':    'Saving...',
     'settings.notif.saved':     'Notification channel updated!',
@@ -768,8 +768,8 @@ const T: Record<Lang, Record<string, string>> = {
 
     'settings.notif.card':      'Канал уведомлений',
     'settings.notif.cardSub':   'Выберите способ отправки уведомлений клиентам',
-    'settings.notif.whatsapp':  'WhatsApp (Twilio)',
-    'settings.notif.sms':       'SMS (IletiMerkezi)',
+    'settings.notif.whatsapp':  'WhatsApp',
+    'settings.notif.sms':       'SMS',
     'settings.notif.save':      'Сохранить канал',
     'settings.notif.saving':    'Сохранение...',
     'settings.notif.saved':     'Канал уведомлений обновлён!',
