@@ -17,4 +17,5 @@ public interface IGenericRepository<T> where T : BaseEntity
     Task UpdateAsync(T entity, CancellationToken ct = default);
     Task DeleteAsync(T entity, CancellationToken ct = default);
     Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken ct = default);
+    Task<int> CountAsync(Expression<Func<T, bool>> predicate, CancellationToken ct = default);
 }

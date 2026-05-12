@@ -135,7 +135,7 @@ export const routes: Routes = [
             (m) => m.ReportsListComponent,
           ),
         canActivate: [PlanGuard],
-        data: { requiredPlan: 'Premium' },
+        data: { requiredPlan: 'Profesyonel' },
       },
       {
         path: 'settings',

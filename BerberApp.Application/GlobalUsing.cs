@@ -7,5 +7,6 @@ global using AppointmentEntity = BerberApp.Domain.Entities.Appointment;
 global using WorkingHourEntity = BerberApp.Domain.Entities.WorkingHour;
 global using NotificationEntity = BerberApp.Domain.Entities.Notification;
 global using TenantPhotoEntity = BerberApp.Domain.Entities.TenantPhoto;
-global using ReviewEntity      = BerberApp.Domain.Entities.Review;
+global using ReviewEntity        = BerberApp.Domain.Entities.Review;
+global using SubscriptionEntity  = BerberApp.Domain.Entities.Subscription;
 global using BerberApp.Application.Common.Extensions;

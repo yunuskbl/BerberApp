@@ -84,6 +84,8 @@ $green:        #059669;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
 }
 
 .logo-dot {
@@ -674,6 +676,36 @@ $green:        #059669;
   font-size: 15px;
   color: $muted;
   margin-left: 4px;
+}
+
+// ── Plan Limits ───────────────────────────────────────────────────────────────
+.plan-limits {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.plan-limit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: $bg;
+  border: 1.5px solid $border;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: $text;
+
+  svg { flex-shrink: 0; color: $purple; }
+
+  .featured & {
+    background: $purple-light;
+    border-color: rgba(124,58,237,.25);
+    color: $purple-dark;
+  }
 }
 
 .plan-btn {

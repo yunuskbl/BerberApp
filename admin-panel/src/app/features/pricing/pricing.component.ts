@@ -4,9 +4,11 @@ import { Router, RouterModule } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 interface Feature { name: string; included: boolean; }
+interface PlanLimit { staff: string; appointments: string; }
 interface Plan {
   name: string; label: string; price: number; description: string;
   icon: string; featured: boolean; features: Feature[]; cta: string; ctaDisabled?: boolean;
+  limits: PlanLimit;
 }
 interface FAQ { question: string; answer: string; open?: boolean; }
 
@@ -85,28 +87,9 @@ export class PricingComponent {
   plans: Plan[] = [
     {
       name: 'baslangic', label: 'Başlangıç', price: 899,
-      description: 'Küçük işletmeler için temel araçlar',
+      description: 'Tek kişilik işletmeler için tam araçlar',
       icon: '🌱', featured: false, ctaDisabled: false,
-      features: [
-        { name: 'Online Randevu Sayfası',        included: true  },
-        { name: 'Randevu Yönetimi',              included: true  },
-        { name: 'Müşteri & Personel Yönetimi',   included: true  },
-        { name: 'Hizmet & Fiyat Yönetimi',       included: true  },
-        { name: 'Tema & Logo Özelleştirme',      included: true  },
-        { name: 'Çoklu Dil (TR / EN / RU)',      included: true  },
-        { name: 'WhatsApp Bildirimleri',          included: false },
-        { name: 'Randevu Hatırlatması',           included: false },
-        { name: 'Fotoğraf Galerisi',             included: false },
-        { name: 'Müşteri Değerlendirme Sistemi', included: false },
-        { name: 'Rapor & Gelir Analizi',         included: false },
-        { name: 'Öncelikli Destek',             included: false },
-      ],
-      cta: 'Başlangıç Planı',
-    },
-    {
-      name: 'profesyonel', label: 'Profesyonel', price: 1799,
-      description: 'Büyüyen işletmeler için tam donanım',
-      icon: '⚡', featured: true,
+      limits: { staff: '1 Personel', appointments: '100 Randevu/Ay' },
       features: [
         { name: 'Online Randevu Sayfası',        included: true  },
         { name: 'Randevu Yönetimi',              included: true  },
@@ -119,14 +102,36 @@ export class PricingComponent {
         { name: 'Fotoğraf Galerisi',             included: true  },
         { name: 'Müşteri Değerlendirme Sistemi', included: true  },
         { name: 'Rapor & Gelir Analizi',         included: false },
-        { name: 'Öncelikli Destek',             included: false },
+        { name: 'Öncelikli Destek',              included: false },
+      ],
+      cta: 'Başlangıç Planı',
+    },
+    {
+      name: 'profesyonel', label: 'Profesyonel', price: 1799,
+      description: 'Büyüyen işletmeler için tam donanım',
+      icon: '⚡', featured: true,
+      limits: { staff: '5 Personele Kadar', appointments: '500 Randevu/Ay' },
+      features: [
+        { name: 'Online Randevu Sayfası',        included: true  },
+        { name: 'Randevu Yönetimi',              included: true  },
+        { name: 'Müşteri & Personel Yönetimi',   included: true  },
+        { name: 'Hizmet & Fiyat Yönetimi',       included: true  },
+        { name: 'Tema & Logo Özelleştirme',      included: true  },
+        { name: 'Çoklu Dil (TR / EN / RU)',      included: true  },
+        { name: 'WhatsApp Bildirimleri',          included: true  },
+        { name: 'Randevu Hatırlatması',           included: true  },
+        { name: 'Fotoğraf Galerisi',             included: true  },
+        { name: 'Müşteri Değerlendirme Sistemi', included: true  },
+        { name: 'Rapor & Gelir Analizi',         included: true  },
+        { name: 'Öncelikli Destek',              included: false },
       ],
       cta: 'Profesyonel\'e Geç',
     },
     {
       name: 'premium', label: 'Premium', price: 2399,
-      description: 'Profesyonel salonlar için tüm özellikler',
+      description: 'Büyük salonlar için sınırsız kullanım',
       icon: '👑', featured: false,
+      limits: { staff: 'Sınırsız Personel', appointments: 'Sınırsız Randevu' },
       features: ALL_FEATURES,
       cta: 'Premium\'a Geç',
     },
@@ -152,8 +157,8 @@ export class PricingComponent {
       answer: 'Hizmet tamamlandığında müşteriye otomatik olarak bir değerlendirme linki gönderilir. Gelen puanlar ve yorumlar admin panelinizde görünür.',
     },
     {
-      question: 'Kişi veya randevu sayısı sınırı var mı?',
-      answer: 'Hayır! Tüm planlarda sınırsız müşteri, personel ve randevu ekleyebilirsiniz.',
+      question: 'Personel ve randevu limitleri nedir?',
+      answer: 'Başlangıç planında 1 personel ve ayda 100 randevu, Profesyonel planında 5 personel ve ayda 500 randevu desteklenmektedir. Premium planda personel ve randevu sayısı sınırsızdır. Müşteri sayısı tüm planlarda sınırsızdır.',
     },
     {
       question: 'Verilerim güvende mi?',
@@ -171,6 +176,10 @@ export class PricingComponent {
 
   scrollTo(id: string): void {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  scrollToTop(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   selectPlan(_name: string): void {

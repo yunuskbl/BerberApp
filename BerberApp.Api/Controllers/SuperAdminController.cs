@@ -189,6 +189,8 @@ public class SuperAdminController : ControllerBase
         else
         {
             subscription.Plan = planType;
+            subscription.Status = BerberApp.Domain.Enums.SubscriptionStatus.Active;
+            subscription.ExpiryDate = DateTime.UtcNow.AddYears(1);
             subscription.UpdatedAt = DateTime.UtcNow;
         }
 

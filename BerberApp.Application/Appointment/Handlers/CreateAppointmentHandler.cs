@@ -14,6 +14,7 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
     private readonly IGenericRepository<StaffEntity> _staffRepo;
     private readonly IGenericRepository<CustomerEntity> _customerRepo;
     private readonly IGenericRepository<WorkingHourEntity> _workingHourRepo;
+    private readonly IGenericRepository<SubscriptionEntity> _subscriptionRepo;
     private readonly IWhatsAppService _whatsAppService;
     private readonly INotificationService _notificationService;
 
@@ -23,6 +24,7 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
         IGenericRepository<StaffEntity> staffRepo,
         IGenericRepository<CustomerEntity> customerRepo,
         IGenericRepository<WorkingHourEntity> workingHourRepo,
+        IGenericRepository<SubscriptionEntity> subscriptionRepo,
         IWhatsAppService whatsAppService,
         INotificationService notificationService)
     {
@@ -31,12 +33,43 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
         _staffRepo = staffRepo;
         _customerRepo = customerRepo;
         _workingHourRepo = workingHourRepo;
+        _subscriptionRepo = subscriptionRepo;
         _whatsAppService = whatsAppService;
         _notificationService = notificationService;
     }
 
     public async Task<AppointmentDto> Handle(CreateAppointmentCommand request, CancellationToken ct)
     {
+        // Aylık randevu plan limiti kontrolü
+        var subscription = await _subscriptionRepo.GetAsync(
+            x => x.TenantId == request.TenantId && x.Status == SubscriptionStatus.Active, ct);
+        var plan = subscription?.Plan ?? PlanType.Baslangic;
+
+        int appointmentLimit = plan switch
+        {
+            PlanType.Baslangic   => 100,
+            PlanType.Profesyonel => 500,
+            _                    => int.MaxValue
+        };
+
+        if (appointmentLimit < int.MaxValue)
+        {
+            var now = DateTime.UtcNow;
+            var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var monthEnd = monthStart.AddMonths(1);
+
+            int monthlyCount = await _appointmentRepo.CountAsync(
+                x => x.TenantId == request.TenantId &&
+                     x.StartTime >= monthStart &&
+                     x.StartTime < monthEnd &&
+                     x.Status != AppointmentStatus.Cancelled, ct);
+
+            if (monthlyCount >= appointmentLimit)
+                throw new BadRequestException(
+                    $"Bu ay için randevu limitinize ulaştınız ({appointmentLimit} randevu). " +
+                    "Daha fazla randevu için planınızı yükseltin.");
+        }
+
         // Servis kontrolü
         var service = await _serviceRepo.GetAsync(
             x => x.Id == request.ServiceId && x.TenantId == request.TenantId, ct);

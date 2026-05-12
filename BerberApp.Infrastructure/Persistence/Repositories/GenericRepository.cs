@@ -51,4 +51,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 
     public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken ct = default)
         => await _dbSet.AnyAsync(predicate, ct);
+
+    public async Task<int> CountAsync(Expression<Func<T, bool>> predicate, CancellationToken ct = default)
+        => await _dbSet.CountAsync(predicate, ct);
 }
