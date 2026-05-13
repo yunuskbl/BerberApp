@@ -16,4 +16,5 @@ public interface IWhatsAppService
         , DateTime startTime, int sequenceNumber);
     Task SendAppointmentCompletedAsync(string phone, string customerName, string serviceName, string salonName, string reviewUrl);
     Task SendAppointmentUpdatedAsync(string phone, string customerName, string serviceName, string staffName, DateTime startTime, string salonName = "");
+    Task SendMonthlyLimitWarningAsync(string phone, string salonName, int currentCount, int limit, bool isFull);
 }

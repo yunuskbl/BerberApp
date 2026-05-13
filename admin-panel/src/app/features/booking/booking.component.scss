@@ -585,3 +585,28 @@ app-language-switcher {
   &:active:not(:disabled) { transform: scale(0.98); }
   &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
+
+/* Kapasite uyarı banner */
+.capacity-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+
+  .capacity-icon { font-size: 22px; line-height: 1; flex-shrink: 0; }
+  strong { display: block; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  p { margin: 0; font-size: 13px; opacity: 0.85; }
+
+  &.capacity-full {
+    background: #fff1f1;
+    border: 1px solid #fca5a5;
+    color: #7f1d1d;
+  }
+  &.capacity-warn {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    color: #78350f;
+  }
+}
