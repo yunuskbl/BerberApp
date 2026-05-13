@@ -209,11 +209,10 @@
                   (click)="$event.stopPropagation()" />
                 <select
                   class="svc-currency-select"
-                  [value]="getServiceCustomCurrency(svc.id) ?? svc.currency"
                   (change)="setServiceCustomCurrency(svc.id, $any($event.target).value)"
                   (click)="$event.stopPropagation()">
                   @for (cur of currencies; track cur) {
-                    <option [value]="cur">{{ cur }}</option>
+                    <option [value]="cur" [selected]="(getServiceCustomCurrency(svc.id) ?? svc.currency) === cur">{{ cur }}</option>
                   }
                 </select>
               </div>
@@ -226,6 +225,9 @@
       }
     </div>
 
+    @if (svcSuccessMessage) {
+      <p class="svc-success-message">{{ svcSuccessMessage }}</p>
+    }
     @if (svcErrorMessage) {
       <p class="error-message" style="color:var(--danger,#dc2626);margin:0.5rem 1rem 0;font-size:0.85rem;">{{ svcErrorMessage }}</p>
     }
