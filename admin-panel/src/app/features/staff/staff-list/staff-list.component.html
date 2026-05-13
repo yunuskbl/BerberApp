@@ -203,7 +203,7 @@
                   type="number"
                   min="0"
                   step="1"
-                  placeholder="{{ svc.price }}"
+                  placeholder="—"
                   [value]="getServiceCustomPrice(svc.id) ?? ''"
                   (change)="setServiceCustomPrice(svc.id, $any($event.target).value)"
                   (click)="$event.stopPropagation()" />
