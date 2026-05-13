@@ -8,6 +8,7 @@ public class StaffService : BaseEntity
     public Guid ServiceId { get; set; }
 
     public decimal? CustomPrice { get; set; }
+    public string? CustomCurrency { get; set; }
     public int? CustomDurationMinutes { get; set; }
 
     public Staff Staff { get; set; } = null!;

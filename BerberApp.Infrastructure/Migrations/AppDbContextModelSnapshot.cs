@@ -564,6 +564,10 @@ namespace BerberApp.Infrastructure.Migrations
                     b.Property<decimal?>("CustomPrice")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("CustomCurrency")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
                     b.Property<int?>("CustomDurationMinutes")
                         .HasColumnType("integer");
 

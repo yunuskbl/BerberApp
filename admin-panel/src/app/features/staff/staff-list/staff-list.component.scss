@@ -90,9 +90,15 @@
   display: flex; flex-direction: column; gap: 4px;
 }
 .svc-price-label { font-size: 11px; color: #9ca3af; }
+.svc-price-inputs { display: flex; gap: 6px; }
 .svc-price-input {
-  width: 100%; padding: 7px 10px; border: 1px solid #e5e7eb; border-radius: 7px;
+  flex: 1; padding: 7px 10px; border: 1px solid #e5e7eb; border-radius: 7px;
   font-size: 13px; color: #111827; background: white; outline: none;
+  &:focus { border-color: #111827; }
+}
+.svc-currency-select {
+  width: 72px; padding: 7px 6px; border: 1px solid #e5e7eb; border-radius: 7px;
+  font-size: 13px; color: #111827; background: white; outline: none; cursor: pointer;
   &:focus { border-color: #111827; }
 }
 .toggle-switch { width: 40px; height: 22px; background: #e5e7eb; border-radius: 11px; position: relative; transition: background 0.2s; flex-shrink: 0; &.on { background: #111827; } }

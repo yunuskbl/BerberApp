@@ -57,7 +57,7 @@ public class StaffController : BaseApiController
 
         var staffServices = await _context.StaffServices
             .Where(ss => ss.StaffId == id)
-            .Select(ss => new { ss.ServiceId, ss.CustomPrice, ss.CustomDurationMinutes })
+            .Select(ss => new { ss.ServiceId, ss.CustomPrice, ss.CustomCurrency, ss.CustomDurationMinutes })
             .ToListAsync();
 
         return Success(staffServices);
@@ -92,6 +92,7 @@ public class StaffController : BaseApiController
                 StaffId = id,
                 ServiceId = item.ServiceId,
                 CustomPrice = item.CustomPrice,
+                CustomCurrency = item.CustomCurrency,
                 CustomDurationMinutes = item.CustomDurationMinutes,
                 CreatedAt = DateTime.UtcNow
             });
@@ -101,6 +102,6 @@ public class StaffController : BaseApiController
         return Success("Hizmet atamaları güncellendi.");
     }
 
-    public record StaffServiceItem(Guid ServiceId, decimal? CustomPrice, int? CustomDurationMinutes);
+    public record StaffServiceItem(Guid ServiceId, decimal? CustomPrice, string? CustomCurrency, int? CustomDurationMinutes);
     public record SetStaffServicesRequest(List<StaffServiceItem> Items);
 }
