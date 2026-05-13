@@ -72,6 +72,8 @@ public class StaffController : BaseApiController
         if (staff is null)
             return NotFound(new { success = false, message = "Personel bulunamadı." });
 
+        request = request with { Items = request.Items ?? new List<StaffServiceItem>() };
+
         var validServiceIds = await _context.Services
             .Where(s => request.Items.Select(i => i.ServiceId).Contains(s.Id) && s.TenantId == TenantId)
             .Select(s => s.Id)

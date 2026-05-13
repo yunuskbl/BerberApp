@@ -210,7 +210,9 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.bookingService.getServices(this.subdomain).subscribe({
       next: (res) => {
         if (res.success) this.services = res.data;
+        else this.errorMessage = 'Hizmetler yüklenemedi.';
       },
+      error: () => { this.errorMessage = 'Hizmetler yüklenemedi.'; },
     });
   }
 

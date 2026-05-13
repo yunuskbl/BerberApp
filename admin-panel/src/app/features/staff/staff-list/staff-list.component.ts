@@ -44,6 +44,7 @@ export class StaffListComponent implements OnInit {
   allServices: Service[] = [];
   assignedServices: Map<string, { customPrice: number | null; customDurationMinutes: number | null }> = new Map();
   isSavingSvc = false;
+  svcErrorMessage = '';
 
   staffForm: FormGroup;
 
@@ -158,6 +159,7 @@ export class StaffListComponent implements OnInit {
   openServices(staff: Staff): void {
     this.selectedStaffForSvc = staff;
     this.assignedServices = new Map();
+    this.svcErrorMessage = '';
     this.isServicesOpen = true;
 
     this.serviceService.getAll().subscribe({
@@ -217,7 +219,10 @@ export class StaffListComponent implements OnInit {
 
     this.staffService.setServices(this.selectedStaffForSvc.id, items).subscribe({
       next: () => { this.isSavingSvc = false; this.closeServices(); },
-      error: () => { this.isSavingSvc = false; }
+      error: (err) => {
+        this.isSavingSvc = false;
+        this.svcErrorMessage = err?.error?.message || 'Hizmetler kaydedilemedi. Lütfen tekrar deneyin.';
+      }
     });
   }
 

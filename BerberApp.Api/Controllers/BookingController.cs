@@ -91,7 +91,7 @@ public class BookingController : ControllerBase
                 x.Currency,
                 x.Color,
                 StaffPrices = x.StaffServices
-                    .Where(ss => !ss.IsDeleted && ss.CustomPrice != null)
+                    .Where(ss => ss.CustomPrice != null)
                     .Select(ss => ss.CustomPrice!.Value)
                     .ToList()
             })
@@ -134,7 +134,7 @@ public class BookingController : ControllerBase
             .Where(x => x.TenantId == tenant.Id && x.IsActive);
 
         if (serviceId.HasValue)
-            query = query.Where(x => x.StaffServices.Any(ss => ss.ServiceId == serviceId.Value && !ss.IsDeleted));
+            query = query.Where(x => x.StaffServices.Any(ss => ss.ServiceId == serviceId.Value));
 
         if (serviceId.HasValue)
         {
@@ -152,7 +152,7 @@ public class BookingController : ControllerBase
                     x.AvatarUrl,
                     x.Bio,
                     CustomPrice = x.StaffServices
-                        .Where(ss => ss.ServiceId == sid && !ss.IsDeleted)
+                        .Where(ss => ss.ServiceId == sid)
                         .Select(ss => ss.CustomPrice)
                         .FirstOrDefault()
                 })

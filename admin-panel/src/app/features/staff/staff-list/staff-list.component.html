@@ -215,6 +215,9 @@
       }
     </div>
 
+    @if (svcErrorMessage) {
+      <p class="error-message" style="color:var(--danger,#dc2626);margin:0.5rem 1rem 0;font-size:0.85rem;">{{ svcErrorMessage }}</p>
+    }
     <div class="drawer-footer">
       <button type="button" class="btn btn-outline" (click)="closeServices()">{{ 'common.cancel' | translate }}</button>
       <button type="button" class="btn btn-primary" [disabled]="isSavingSvc" (click)="saveServices()">
