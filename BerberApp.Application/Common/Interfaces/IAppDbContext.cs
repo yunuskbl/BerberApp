@@ -21,6 +21,7 @@ namespace BerberApp.Application.Common.Interfaces
         DbSet<Subscription> Subscriptions { get; }
         DbSet<TenantPhotoEntity> TenantPhotos { get; }
         DbSet<ReviewEntity> Reviews { get; }
+        DbSet<StaffServiceEntity> StaffServices { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
