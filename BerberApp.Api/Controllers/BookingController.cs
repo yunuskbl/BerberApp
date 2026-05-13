@@ -75,9 +75,9 @@ public class BookingController : ControllerBase
         });
     }
 
-    // Salona ait hizmetleri getir
+    // Salona ait hizmetleri getir (opsiyonel: staffId ile filtrele)
     [HttpGet("{subdomain}/services")]
-    public async Task<IActionResult> GetServices(string subdomain)
+    public async Task<IActionResult> GetServices(string subdomain, [FromQuery] Guid? staffId)
     {
         var tenant = await _context.Tenants
             .FirstOrDefaultAsync(x => x.Subdomain == subdomain && x.IsActive);
@@ -85,8 +85,12 @@ public class BookingController : ControllerBase
         if (tenant is null)
             return NotFound(new { success = false, message = "Salon bulunamadı." });
 
-        var services = await _context.Services
-            .Where(x => x.TenantId == tenant.Id && x.IsActive)
+        var query = _context.Services.Where(x => x.TenantId == tenant.Id && x.IsActive);
+
+        if (staffId.HasValue)
+            query = query.Where(x => x.StaffServices.Any(ss => ss.StaffId == staffId.Value));
+
+        var services = await query
             .Select(x => new
             {
                 x.Id,
@@ -97,36 +101,47 @@ public class BookingController : ControllerBase
                 x.Price,
                 x.Currency,
                 x.Color,
-                StaffPrices = x.StaffServices
-                    .Where(ss => ss.CustomPrice != null)
-                    .Select(ss => new { ss.CustomPrice, Currency = ss.CustomCurrency ?? x.Currency })
-                    .ToList()
+                CustomDuration = staffId.HasValue
+                    ? x.StaffServices
+                        .Where(ss => ss.StaffId == staffId.Value)
+                        .Select(ss => ss.CustomDurationMinutes)
+                        .FirstOrDefault()
+                    : null,
+                CustomPrice = staffId.HasValue
+                    ? x.StaffServices
+                        .Where(ss => ss.StaffId == staffId.Value)
+                        .Select(ss => ss.CustomPrice)
+                        .FirstOrDefault()
+                    : null,
+                CustomCurrency = staffId.HasValue
+                    ? x.StaffServices
+                        .Where(ss => ss.StaffId == staffId.Value)
+                        .Select(ss => ss.CustomCurrency)
+                        .FirstOrDefault()
+                    : null,
+                HasOtherStaffPrices = x.StaffServices.Any(ss => ss.CustomPrice != null)
             })
             .ToListAsync();
 
-        var result = services.Select(x =>
+        var result = services.Select(x => new
         {
-            var hasStaffPrices = x.StaffPrices.Count > 0;
-            return new
-            {
-                x.Id,
-                x.Name,
-                x.NameEn,
-                x.NameRu,
-                x.DurationMinutes,
-                x.Price,
-                x.Currency,
-                x.Color,
-                MinPrice  = hasStaffPrices ? (decimal?)null : x.Price,
-                MaxPrice  = hasStaffPrices ? (decimal?)null : x.Price,
-                HasMixedCurrencies = hasStaffPrices
-            };
+            x.Id,
+            x.Name,
+            x.NameEn,
+            x.NameRu,
+            DurationMinutes = x.CustomDuration ?? x.DurationMinutes,
+            Price = x.CustomPrice ?? x.Price,
+            Currency = (x.CustomPrice.HasValue ? x.CustomCurrency : null) ?? x.Currency,
+            x.Color,
+            MinPrice = (decimal?)null,
+            MaxPrice = (decimal?)null,
+            HasMixedCurrencies = x.HasOtherStaffPrices && !staffId.HasValue
         });
 
         return Ok(new { success = true, data = result });
     }
 
-    // Salona ait personeli getir (opsiyonel: serviceId ile filtrele)
+    // Salona ait personeli getir (booking akışında servis filtresi yok)
     [HttpGet("{subdomain}/staff")]
     public async Task<IActionResult> GetStaff(string subdomain, [FromQuery] Guid? serviceId)
     {
@@ -136,51 +151,10 @@ public class BookingController : ControllerBase
         if (tenant is null)
             return NotFound(new { success = false, message = "Salon bulunamadı." });
 
-        var query = _context.Staff
-            .Where(x => x.TenantId == tenant.Id && x.IsActive);
+        var query = _context.Staff.Where(x => x.TenantId == tenant.Id && x.IsActive);
 
         if (serviceId.HasValue)
             query = query.Where(x => x.StaffServices.Any(ss => ss.ServiceId == serviceId.Value));
-
-        if (serviceId.HasValue)
-        {
-            var sid = serviceId.Value;
-            var servicePrice = await _context.Services
-                .Where(s => s.Id == sid)
-                .Select(s => new { s.Price, s.Currency })
-                .FirstOrDefaultAsync();
-
-            var staffWithPrice = await query
-                .Select(x => new
-                {
-                    x.Id,
-                    x.FullName,
-                    x.AvatarUrl,
-                    x.Bio,
-                    CustomPrice = x.StaffServices
-                        .Where(ss => ss.ServiceId == sid)
-                        .Select(ss => ss.CustomPrice)
-                        .FirstOrDefault(),
-                    CustomCurrency = x.StaffServices
-                        .Where(ss => ss.ServiceId == sid)
-                        .Select(ss => ss.CustomCurrency)
-                        .FirstOrDefault()
-                })
-                .ToListAsync();
-
-            var result = staffWithPrice.Select(x => new
-            {
-                x.Id,
-                x.FullName,
-                x.AvatarUrl,
-                x.Bio,
-                Price = x.CustomPrice ?? servicePrice?.Price ?? 0,
-                Currency = (x.CustomPrice.HasValue ? x.CustomCurrency : null) ?? servicePrice?.Currency ?? "TRY",
-                HasCustomPrice = x.CustomPrice.HasValue
-            });
-
-            return Ok(new { success = true, data = result });
-        }
 
         var staff = await query
             .Select(x => new { x.Id, x.FullName, x.AvatarUrl, x.Bio })
@@ -195,6 +169,7 @@ public class BookingController : ControllerBase
         string subdomain,
         [FromQuery] Guid staffId,
         [FromQuery] Guid serviceId,
+        [FromQuery] List<Guid>? serviceIds,
         [FromQuery] DateTime date)
     {
         var tenant = await _context.Tenants
@@ -203,12 +178,35 @@ public class BookingController : ControllerBase
         if (tenant is null)
             return NotFound(new { success = false, message = "Salon bulunamadı." });
 
+        // Çoklu hizmet varsa toplam süreyi hesapla
+        int? totalDuration = null;
+        var effectiveIds = serviceIds?.Count > 0 ? serviceIds : null;
+        if (effectiveIds != null)
+        {
+            var services = await _context.Services
+                .Where(s => effectiveIds.Contains(s.Id))
+                .Select(s => new { s.Id, s.DurationMinutes })
+                .ToListAsync();
+
+            var customDurations = await _context.StaffServices
+                .Where(ss => ss.StaffId == staffId && effectiveIds.Contains(ss.ServiceId) && ss.CustomDurationMinutes != null)
+                .Select(ss => new { ss.ServiceId, ss.CustomDurationMinutes })
+                .ToListAsync();
+
+            totalDuration = services.Sum(s =>
+            {
+                var custom = customDurations.FirstOrDefault(cd => cd.ServiceId == s.Id);
+                return custom?.CustomDurationMinutes ?? s.DurationMinutes;
+            });
+        }
+
         var result = await _mediator.Send(new GetAvailableSlotsQuery
         {
             TenantId = tenant.Id,
             StaffId = staffId,
-            ServiceId = serviceId,
-            Date = date
+            ServiceId = effectiveIds?.FirstOrDefault() ?? serviceId,
+            Date = date,
+            TotalDurationMinutes = totalDuration
         });
 
         return Ok(new { success = true, data = result });
@@ -281,17 +279,62 @@ public class BookingController : ControllerBase
             await _context.SaveChangesAsync();
         }
 
+        // Çoklu hizmet desteği: toplam süre ve görüntüleme adı hesapla
+        var effectiveServiceIds = request.ServiceIds?.Count > 0
+            ? request.ServiceIds
+            : new List<Guid> { request.ServiceId };
+
+        int? totalDurationMinutes = null;
+        string? serviceNamesDisplay = null;
+
+        if (effectiveServiceIds.Count > 1)
+        {
+            var svcs = await _context.Services
+                .Where(s => effectiveServiceIds.Contains(s.Id))
+                .Select(s => new { s.Id, s.Name, s.DurationMinutes })
+                .ToListAsync();
+
+            var customDurs = await _context.StaffServices
+                .Where(ss => ss.StaffId == request.StaffId && effectiveServiceIds.Contains(ss.ServiceId) && ss.CustomDurationMinutes != null)
+                .Select(ss => new { ss.ServiceId, ss.CustomDurationMinutes })
+                .ToListAsync();
+
+            totalDurationMinutes = svcs.Sum(s =>
+            {
+                var cd = customDurs.FirstOrDefault(x => x.ServiceId == s.Id);
+                return cd?.CustomDurationMinutes ?? s.DurationMinutes;
+            });
+
+            serviceNamesDisplay = string.Join(" + ", effectiveServiceIds
+                .Select(id => svcs.FirstOrDefault(s => s.Id == id)?.Name)
+                .Where(n => n != null));
+        }
+
         var result = await _mediator.Send(new CreateAppointmentCommand
         {
             TenantId = tenant.Id,
             CustomerId = customer.Id,
             StaffId = request.StaffId,
-            ServiceId = request.ServiceId,
-            StartTime = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc),  
+            ServiceId = effectiveServiceIds.First(),
+            StartTime = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc),
             Notes = request.Notes,
             IsFromBookingPage = true,
-            NotificationPhone = tenant.NotificationPhone
+            NotificationPhone = tenant.NotificationPhone,
+            TotalDurationMinutes = totalDurationMinutes,
+            ServiceNamesDisplay = serviceNamesDisplay
         });
+
+        // Tüm seçilen hizmetleri AppointmentServices tablosuna kaydet
+        if (effectiveServiceIds.Count > 0)
+        {
+            var apptServices = effectiveServiceIds.Select(sid => new BerberApp.Domain.Entities.AppointmentService
+            {
+                AppointmentId = result.Id,
+                ServiceId = sid
+            });
+            _context.AppointmentServices.AddRange(apptServices);
+            await _context.SaveChangesAsync();
+        }
 
         // Uyarı eşiklerini kontrol et (sadece eşiği tam geçen anda gönder)
         if (monthlyLimit < int.MaxValue && !string.IsNullOrWhiteSpace(tenant.NotificationPhone))
@@ -356,6 +399,7 @@ public class BookingController : ControllerBase
         public string? Email { get; set; }
         public Guid StaffId { get; set; }
         public Guid ServiceId { get; set; }
+        public List<Guid>? ServiceIds { get; set; }
         public DateTime StartTime { get; set; }
         public string? Notes { get; set; }
     }

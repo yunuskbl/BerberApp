@@ -15,4 +15,5 @@ public class GetAvailableSlotsQuery : IRequest<List<AvailableSlotDto>>
     public Guid StaffId { get; set; }
     public Guid ServiceId { get; set; }
     public DateTime Date { get; set; }
+    public int? TotalDurationMinutes { get; set; }
 }

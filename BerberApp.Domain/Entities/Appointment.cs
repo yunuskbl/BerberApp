@@ -25,4 +25,5 @@ public class Appointment : BaseEntity
     public Staff Staff { get; set; } = null!;
     public Service Service { get; set; } = null!;
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+    public ICollection<AppointmentService> AppointmentServices { get; set; } = new List<AppointmentService>();
 }

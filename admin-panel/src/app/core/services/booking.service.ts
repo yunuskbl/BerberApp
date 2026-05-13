@@ -58,6 +58,7 @@ export interface BookingRequest {
   email?: string;
   staffId: string;
   serviceId: string;
+  serviceIds?: string[];
   startTime: string;
   notes?: string;
 }
@@ -72,25 +73,26 @@ export class BookingApiService {
     return this.http.get(`${this.apiUrl}/booking/${subdomain}`);
   }
 
-  getServices(subdomain: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/booking/${subdomain}/services`);
+  getServices(subdomain: string, staffId?: string): Observable<any> {
+    const params = staffId ? new HttpParams().set('staffId', staffId) : undefined;
+    return this.http.get(`${this.apiUrl}/booking/${subdomain}/services`, { params });
   }
 
-  getStaff(subdomain: string, serviceId?: string): Observable<any> {
-    const params = serviceId ? new HttpParams().set('serviceId', serviceId) : undefined;
-    return this.http.get(`${this.apiUrl}/booking/${subdomain}/staff`, { params });
+  getStaff(subdomain: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/booking/${subdomain}/staff`);
   }
 
   getAvailableSlots(
     subdomain: string,
     staffId: string,
-    serviceId: string,
+    serviceIds: string[],
     date: string,
   ): Observable<any> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('staffId', staffId)
-      .set('serviceId', serviceId)
+      .set('serviceId', serviceIds[0] ?? '')
       .set('date', date);
+    serviceIds.forEach(id => { params = params.append('serviceIds', id); });
     return this.http.get(
       `${this.apiUrl}/booking/${subdomain}/available-slots`,
       { params },

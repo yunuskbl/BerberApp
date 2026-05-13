@@ -21,6 +21,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<TenantPhoto> TenantPhotos => Set<TenantPhoto>();
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<StaffService> StaffServices => Set<StaffService>();
+    public DbSet<AppointmentService> AppointmentServices => Set<AppointmentService>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
