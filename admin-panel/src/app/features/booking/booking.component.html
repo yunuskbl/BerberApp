@@ -74,7 +74,7 @@
             </a>
           }
           @if ((salon?.totalReviews ?? 0) > 0) {
-            <div class="salon-rating">⭐ <span>{{ salon?.averageRating }}</span> · {{ salon?.totalReviews }} {{ 'booking.ratingApp' | translate }}</div>
+            <a class="salon-rating" [routerLink]="['/reviews', subdomain]">⭐ <span>{{ salon?.averageRating }}</span> · {{ salon?.totalReviews }} {{ 'booking.ratingApp' | translate }}</a>
           }
         </div>
       </div>
