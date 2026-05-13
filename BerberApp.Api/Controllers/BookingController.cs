@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using BerberApp.Domain.Entities;
 
 
 namespace BerberApp.Api.Controllers;
@@ -20,12 +21,14 @@ public class BookingController : ControllerBase
     private readonly IMediator _mediator;
     private readonly IAppDbContext _context;
     private readonly IMemoryCache _cache;
+    private readonly IWhatsAppService _whatsApp;
 
-    public BookingController(IMediator mediator, IAppDbContext context, IMemoryCache cache)
+    public BookingController(IMediator mediator, IAppDbContext context, IMemoryCache cache, IWhatsAppService whatsApp)
     {
         _mediator = mediator;
         _context = context;
         _cache = cache;
+        _whatsApp = whatsApp;
     }
 
     // Salon bilgilerini getir
@@ -50,6 +53,8 @@ public class BookingController : ControllerBase
             .Select(g => new { AverageRating = g.Average(r => r.Rating), TotalReviews = g.Count() })
             .FirstOrDefaultAsync();
 
+        var (monthlyCount, monthlyLimit) = await GetMonthlyAppointmentUsageAsync(tenant.Id);
+
         return Ok(new
         {
             success = true,
@@ -63,7 +68,9 @@ public class BookingController : ControllerBase
                 tenant.ThemeColor,
                 photos,
                 AverageRating = ratingData != null ? Math.Round(ratingData.AverageRating, 1) : 0.0,
-                TotalReviews  = ratingData?.TotalReviews ?? 0
+                TotalReviews  = ratingData?.TotalReviews ?? 0,
+                IsAtCapacity  = monthlyLimit < int.MaxValue && monthlyCount >= monthlyLimit,
+                IsNearCapacity = monthlyLimit < int.MaxValue && monthlyCount >= (int)(monthlyLimit * 0.8) && monthlyCount < monthlyLimit
             }
         });
     }
@@ -218,6 +225,11 @@ public class BookingController : ControllerBase
         if (tenant is null)
             return NotFound(new { success = false, message = "Salon bulunamadı." });
 
+        // Aylık randevu limit kontrolü
+        var (monthlyCount, monthlyLimit) = await GetMonthlyAppointmentUsageAsync(tenant.Id);
+        if (monthlyLimit < int.MaxValue && monthlyCount >= monthlyLimit)
+            return BadRequest(new { success = false, message = "Bu salon bu ay için randevu kapasitesine ulaştı." });
+
         // Telefon doğrulanmış mı kontrol et
         if (!_cache.TryGetValue($"verified:{request.Phone}", out bool isVerified) || !isVerified)
             return BadRequest(new { success = false, message = "Telefon numarası doğrulanmamış." });
@@ -280,6 +292,17 @@ public class BookingController : ControllerBase
             IsFromBookingPage = true,
             NotificationPhone = tenant.NotificationPhone
         });
+
+        // Uyarı eşiklerini kontrol et (sadece eşiği tam geçen anda gönder)
+        if (monthlyLimit < int.MaxValue && !string.IsNullOrWhiteSpace(tenant.NotificationPhone))
+        {
+            var newCount = monthlyCount + 1;
+            var warningAt80 = (int)(monthlyLimit * 0.8);
+            if (newCount == warningAt80)
+                _ = _whatsApp.SendMonthlyLimitWarningAsync(tenant.NotificationPhone, tenant.Name, newCount, monthlyLimit, false);
+            else if (newCount == monthlyLimit)
+                _ = _whatsApp.SendMonthlyLimitWarningAsync(tenant.NotificationPhone, tenant.Name, newCount, monthlyLimit, true);
+        }
 
         return Ok(new { success = true, data = result, appointmentId = result.Id });
     }
@@ -506,6 +529,37 @@ public class BookingController : ControllerBase
             return Ok(new { success = false });
 
         return Ok(new { success = true, data = new { customer.FullName } });
+    }
+
+    private async Task<(int count, int limit)> GetMonthlyAppointmentUsageAsync(Guid tenantId)
+    {
+        var plan = await _context.Subscriptions
+            .Where(s => s.TenantId == tenantId && s.Status == BerberApp.Domain.Enums.SubscriptionStatus.Active)
+            .OrderByDescending(s => s.StartDate)
+            .Select(s => s.Plan)
+            .FirstOrDefaultAsync();
+
+        var limit = plan switch
+        {
+            BerberApp.Domain.Enums.PlanType.Baslangic   => 100,
+            BerberApp.Domain.Enums.PlanType.Profesyonel => 500,
+            _                                            => int.MaxValue
+        };
+
+        if (limit == int.MaxValue) return (0, int.MaxValue);
+
+        var turkeyTz = GetTurkeyTimeZone();
+        var nowTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, turkeyTz);
+        var startOfMonth = new DateTime(nowTurkey.Year, nowTurkey.Month, 1);
+        var startOfMonthUtc = TimeZoneInfo.ConvertTimeToUtc(
+            DateTime.SpecifyKind(startOfMonth, DateTimeKind.Unspecified), turkeyTz);
+
+        var count = await _context.Appointments
+            .CountAsync(x => x.TenantId == tenantId &&
+                             x.StartTime >= startOfMonthUtc &&
+                             x.Status != AppointmentStatus.Cancelled);
+
+        return (count, limit);
     }
 
     private static string NormalizePhone(string? p) =>

@@ -18,6 +18,8 @@ export interface SalonInfo {
   photos?: SalonPhoto[];
   averageRating?: number;
   totalReviews?: number;
+  isAtCapacity?: boolean;
+  isNearCapacity?: boolean;
 }
 
 export interface BookingService {

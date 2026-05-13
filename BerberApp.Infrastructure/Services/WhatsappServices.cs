@@ -205,6 +205,35 @@ public class WhatsAppService : IWhatsAppService
         await SendMessageAsync(phone, message);
     }
 
+    public async Task SendMonthlyLimitWarningAsync(string phone, string salonName, int currentCount, int limit, bool isFull)
+    {
+        var message = isFull
+            ? $"""
+            ⚠️ *ayarlıyo - Aylık Randevu Limitiniz Doldu!*
+
+            Merhaba {salonName}!
+
+            Bu ay {limit} randevu limitinize ulaştınız. 🚫
+
+            Yeni randevular bu ay alınamayacak. Limitinizi artırmak için planınızı yükseltin.
+
+            👉 Paketinizi yükseltmek için: app.ayarliyo.com/pricing
+            """
+            : $"""
+            ⚠️ *ayarlıyo - Aylık Randevu Limitine Yaklaşıyorsunuz!*
+
+            Merhaba {salonName}!
+
+            Bu ay {currentCount}/{limit} randevu kullandınız. (%80)
+
+            Limitinize yaklaşıyorsunuz. Kesintisiz hizmet için planınızı yükseltmeyi düşünün.
+
+            👉 Paketleri incelemek için: app.ayarliyo.com/pricing
+            """;
+
+        await SendMessageAsync(phone, message);
+    }
+
     private static DateTime ToTurkeyTime(DateTime utcTime)
     {
         // Kind'ı UTC olarak zorla
