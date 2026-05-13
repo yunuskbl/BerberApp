@@ -10,6 +10,7 @@ interface Review {
   rating: number;
   customerName: string;
   customerId: string | null;
+  customerPhone: string | null;
   comment: string | null;
   createdAt: string;
   isRepeatCustomer: boolean;
@@ -32,6 +33,9 @@ interface ReviewSummary {
 export class ReviewsComponent implements OnInit {
   isLoading = true;
   data: ReviewSummary = { total: 0, average: 0, distribution: [], reviews: [] };
+
+  /** Arama sorgusu (isim veya telefon) */
+  searchQuery = '';
 
   /** Seçili müşteri filtresi (customerId veya customerName) */
   selectedCustomerId: string | null = null;
@@ -58,6 +62,15 @@ export class ReviewsComponent implements OnInit {
   get filteredReviews(): Review[] {
     let list = this.data.reviews;
 
+    // Arama filtresi (isim veya telefon)
+    const q = this.searchQuery.trim().toLowerCase();
+    if (q) {
+      list = list.filter(r =>
+        r.customerName.toLowerCase().includes(q) ||
+        (r.customerPhone ?? '').toLowerCase().replace(/\s/g, '').includes(q.replace(/\s/g, ''))
+      );
+    }
+
     // Müşteri filtresi
     if (this.selectedCustomerId) {
       list = list.filter(r => r.customerId === this.selectedCustomerId);
@@ -75,6 +88,15 @@ export class ReviewsComponent implements OnInit {
     }
 
     return list;
+  }
+
+  onSearch(event: Event): void {
+    this.searchQuery = (event.target as HTMLInputElement).value;
+    this.clearCustomerFilter();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
   }
 
   /** Tekrar eden müşteri var mı? */

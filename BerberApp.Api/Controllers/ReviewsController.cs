@@ -29,7 +29,11 @@ public class ReviewsController : BaseApiController
                 r.CustomerName,
                 r.CustomerId,
                 r.Comment,
-                r.CreatedAt
+                r.CreatedAt,
+                CustomerPhone = _context.Customers
+                    .Where(c => c.Id == r.CustomerId)
+                    .Select(c => c.Phone)
+                    .FirstOrDefault()
             })
             .ToListAsync();
 
@@ -47,6 +51,7 @@ public class ReviewsController : BaseApiController
             r.Rating,
             r.CustomerName,
             r.CustomerId,
+            r.CustomerPhone,
             r.Comment,
             r.CreatedAt,
             IsRepeatCustomer = r.CustomerId.HasValue && repeatCustomerIds.Contains(r.CustomerId)

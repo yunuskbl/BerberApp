@@ -39,6 +39,22 @@
       </div>
     </div>
 
+    <!-- Arama çubuğu -->
+    <div class="search-bar">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="İsim veya telefon ile ara..."
+        [value]="searchQuery"
+        (input)="onSearch($event)" />
+      @if (searchQuery) {
+        <button class="search-clear" (click)="clearSearch()">✕</button>
+      }
+    </div>
+
     <!-- Filtre bar -->
     <div class="filter-bar">
 
@@ -84,7 +100,12 @@
                   <span class="repeat-badge" title="Bu müşteriden birden fazla yorum var">↩ Tekrar</span>
                 }
               </div>
-              <div class="reviewer-date">{{ formatDate(r.createdAt) }}</div>
+              <div class="reviewer-meta">
+                <span class="reviewer-date">{{ formatDate(r.createdAt) }}</span>
+                @if (r.customerPhone) {
+                  <span class="reviewer-phone">{{ r.customerPhone }}</span>
+                }
+              </div>
             </div>
             <div class="review-stars">
               @for (s of starArray(r.rating); track $index)     { <span class="star filled">★</span> }
