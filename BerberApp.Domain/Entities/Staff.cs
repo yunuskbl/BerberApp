@@ -18,7 +18,7 @@ public class Staff : BaseEntity
 
     // Navigation
     public Tenant Tenant { get; set; } = null!;
-    public ICollection<Service> Services { get; set; } = new List<Service>();
+    public ICollection<StaffService> StaffServices { get; set; } = new List<StaffService>();
     public ICollection<WorkingHour> WorkingHours { get; set; } = new List<WorkingHour>();
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 }

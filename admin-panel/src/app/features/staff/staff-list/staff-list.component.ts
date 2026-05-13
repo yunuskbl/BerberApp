@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -22,7 +22,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 @Component({
   selector: 'app-staff-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, CurrencyPipe, ReactiveFormsModule, TranslatePipe],
   templateUrl: './staff-list.component.html',
   styleUrl: './staff-list.component.scss',
 })
@@ -42,7 +42,7 @@ export class StaffListComponent implements OnInit {
   isServicesOpen = false;
   selectedStaffForSvc: Staff | null = null;
   allServices: Service[] = [];
-  assignedServiceIds: Set<string> = new Set();
+  assignedServices: Map<string, { customPrice: number | null; customDurationMinutes: number | null }> = new Map();
   isSavingSvc = false;
 
   staffForm: FormGroup;
@@ -157,7 +157,7 @@ export class StaffListComponent implements OnInit {
 
   openServices(staff: Staff): void {
     this.selectedStaffForSvc = staff;
-    this.assignedServiceIds = new Set();
+    this.assignedServices = new Map();
     this.isServicesOpen = true;
 
     this.serviceService.getAll().subscribe({
@@ -166,7 +166,14 @@ export class StaffListComponent implements OnInit {
 
     this.staffService.getServices(staff.id).subscribe({
       next: (res) => {
-        if (res.success) this.assignedServiceIds = new Set(res.data);
+        if (res.success && Array.isArray(res.data)) {
+          this.assignedServices = new Map(
+            res.data.map((item: any) => [item.serviceId, {
+              customPrice: item.customPrice ?? null,
+              customDurationMinutes: item.customDurationMinutes ?? null
+            }])
+          );
+        }
       }
     });
   }
@@ -177,20 +184,38 @@ export class StaffListComponent implements OnInit {
   }
 
   toggleService(serviceId: string): void {
-    if (this.assignedServiceIds.has(serviceId))
-      this.assignedServiceIds.delete(serviceId);
+    if (this.assignedServices.has(serviceId))
+      this.assignedServices.delete(serviceId);
     else
-      this.assignedServiceIds.add(serviceId);
+      this.assignedServices.set(serviceId, { customPrice: null, customDurationMinutes: null });
+  }
+
+  isServiceAssigned(serviceId: string): boolean {
+    return this.assignedServices.has(serviceId);
+  }
+
+  getServiceCustomPrice(serviceId: string): number | null {
+    return this.assignedServices.get(serviceId)?.customPrice ?? null;
+  }
+
+  setServiceCustomPrice(serviceId: string, value: string): void {
+    const entry = this.assignedServices.get(serviceId);
+    if (!entry) return;
+    const parsed = value ? parseFloat(value) : null;
+    entry.customPrice = parsed !== null && !isNaN(parsed) ? parsed : null;
   }
 
   saveServices(): void {
     if (!this.selectedStaffForSvc) return;
     this.isSavingSvc = true;
 
-    this.staffService.setServices(
-      this.selectedStaffForSvc.id,
-      Array.from(this.assignedServiceIds)
-    ).subscribe({
+    const items = Array.from(this.assignedServices.entries()).map(([serviceId, data]) => ({
+      serviceId,
+      customPrice: data.customPrice,
+      customDurationMinutes: data.customDurationMinutes
+    }));
+
+    this.staffService.setServices(this.selectedStaffForSvc.id, items).subscribe({
       next: () => { this.isSavingSvc = false; this.closeServices(); },
       error: () => { this.isSavingSvc = false; }
     });

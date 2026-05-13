@@ -29,6 +29,8 @@ export interface BookingService {
   price: number;
   currency: string;
   color?: string;
+  minPrice: number;
+  maxPrice: number;
 }
 
 export interface BookingStaff {
@@ -36,6 +38,9 @@ export interface BookingStaff {
   fullName: string;
   avatarUrl?: string;
   bio?: string;
+  price?: number;
+  currency?: string;
+  hasCustomPrice?: boolean;
 }
 
 export interface BookingSlot {

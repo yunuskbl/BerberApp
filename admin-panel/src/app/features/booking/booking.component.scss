@@ -258,8 +258,15 @@ app-language-switcher {
   font-size: 10px; font-weight: 700; color: #999;
 }
 .staff-item.selected .staff-avatar { background: var(--accent); color: white; }
+.staff-info-wrap { display: flex; flex-direction: column; gap: 2px; }
 .staff-name { font-size: 13px; font-weight: 500; color: #999; }
 .staff-item.selected .staff-name { color: #111; }
+.staff-price {
+  font-size: 11px; color: #bbb; font-weight: 500;
+  .staff-item.selected & { color: #666; }
+  &--custom { color: var(--accent); opacity: 0.85; }
+  .staff-item.selected &--custom { opacity: 1; }
+}
 
 .slots-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .slot-btn {

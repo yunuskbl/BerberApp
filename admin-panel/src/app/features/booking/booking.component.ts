@@ -344,6 +344,24 @@ export class BookingComponent implements OnInit, OnDestroy {
     }).format(price);
   }
 
+  formatPriceRange(service: BookingService): string {
+    const currency = service.currency || 'TRY';
+    if (!service.minPrice && !service.maxPrice) return this.formatPrice(service.price, currency);
+    const min = service.minPrice ?? service.price;
+    const max = service.maxPrice ?? service.price;
+    if (min === max) return this.formatPrice(min, currency);
+    return `${this.formatPrice(min, currency)} – ${this.formatPrice(max, currency)}`;
+  }
+
+  get effectivePrice(): number {
+    if (this.selectedStaff?.price != null) return this.selectedStaff.price;
+    return this.selectedService?.price ?? 0;
+  }
+
+  get effectiveCurrency(): string {
+    return this.selectedStaff?.currency ?? this.selectedService?.currency ?? 'TRY';
+  }
+
   getServiceName(service: BookingService): string {
     const lang = this.langService.lang();
     if (lang === 'en' && service.nameEn) return service.nameEn;

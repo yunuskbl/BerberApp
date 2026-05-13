@@ -25,9 +25,10 @@ namespace BerberApp.Infrastructure.Persistence.Configurations
                    .HasForeignKey(x => x.TenantId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasMany(x => x.Services)
-                   .WithMany(x => x.Staff)
-                   .UsingEntity(j => j.ToTable("StaffServices"));
+            builder.HasMany(x => x.StaffServices)
+                   .WithOne(x => x.Staff)
+                   .HasForeignKey(x => x.StaffId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

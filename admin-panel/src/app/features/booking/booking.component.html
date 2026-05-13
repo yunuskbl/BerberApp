@@ -191,7 +191,7 @@
         <div class="sum-divider"></div>
         <div class="sum-total">
           <span class="k">{{ 'booking.total' | translate }}</span>
-          <span class="v">{{ selectedService ? formatPrice(selectedService.price, selectedService.currency) : '—' }}</span>
+          <span class="v">{{ selectedService ? formatPrice(effectivePrice, effectiveCurrency) : '—' }}</span>
         </div>
       </div>
     </div>
@@ -217,7 +217,7 @@
                     <div class="service-dur">⏱ {{ service.durationMinutes }} {{ 'booking.min' | translate }}</div>
                   </div>
                 </div>
-                <div class="service-price">{{ formatPrice(service.price, service.currency) }}</div>
+                <div class="service-price">{{ formatPriceRange(service) }}</div>
               </div>
             }
           </div>
@@ -234,7 +234,14 @@
             @for (staff of staffList; track staff.id) {
               <div class="staff-item" [class.selected]="selectedStaff?.id === staff.id" (click)="selectStaff(staff)">
                 <div class="staff-avatar">{{ getInitials(staff.fullName) }}</div>
-                <div class="staff-name">{{ staff.fullName }}</div>
+                <div class="staff-info-wrap">
+                  <div class="staff-name">{{ staff.fullName }}</div>
+                  @if (selectedService && staff.price != null) {
+                    <div class="staff-price" [class.staff-price--custom]="staff.hasCustomPrice">
+                      {{ formatPrice(staff.price, staff.currency || selectedService.currency) }}
+                    </div>
+                  }
+                </div>
               </div>
             }
           </div>
@@ -415,9 +422,9 @@
             <span class="island-label island-label--muted">{{ 'booking.chooseTime' | translate }}</span>
           </div>
         }
-        @if (selectedService && (selectedService.price ?? 0) > 0) {
+        @if (selectedService && effectivePrice > 0) {
           <div class="island-price">
-            {{ formatPrice(selectedService.price, selectedService.currency || 'TRY') }}
+            {{ formatPrice(effectivePrice, effectiveCurrency) }}
           </div>
         }
       </div>

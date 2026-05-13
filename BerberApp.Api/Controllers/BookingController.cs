@@ -89,11 +89,35 @@ public class BookingController : ControllerBase
                 x.DurationMinutes,
                 x.Price,
                 x.Currency,
-                x.Color
+                x.Color,
+                StaffPrices = x.StaffServices
+                    .Where(ss => !ss.IsDeleted && ss.CustomPrice != null)
+                    .Select(ss => ss.CustomPrice!.Value)
+                    .ToList()
             })
             .ToListAsync();
 
-        return Ok(new { success = true, data = services });
+        var result = services.Select(x =>
+        {
+            var allPrices = x.StaffPrices.Append(x.Price).Where(p => p > 0).ToList();
+            var minPrice = allPrices.Count > 0 ? allPrices.Min() : x.Price;
+            var maxPrice = allPrices.Count > 0 ? allPrices.Max() : x.Price;
+            return new
+            {
+                x.Id,
+                x.Name,
+                x.NameEn,
+                x.NameRu,
+                x.DurationMinutes,
+                x.Price,
+                x.Currency,
+                x.Color,
+                MinPrice = minPrice,
+                MaxPrice = maxPrice
+            };
+        });
+
+        return Ok(new { success = true, data = result });
     }
 
     // Salona ait personeli getir (opsiyonel: serviceId ile filtrele)
@@ -110,7 +134,43 @@ public class BookingController : ControllerBase
             .Where(x => x.TenantId == tenant.Id && x.IsActive);
 
         if (serviceId.HasValue)
-            query = query.Where(x => x.Services.Any(s => s.Id == serviceId.Value));
+            query = query.Where(x => x.StaffServices.Any(ss => ss.ServiceId == serviceId.Value && !ss.IsDeleted));
+
+        if (serviceId.HasValue)
+        {
+            var sid = serviceId.Value;
+            var servicePrice = await _context.Services
+                .Where(s => s.Id == sid)
+                .Select(s => new { s.Price, s.Currency })
+                .FirstOrDefaultAsync();
+
+            var staffWithPrice = await query
+                .Select(x => new
+                {
+                    x.Id,
+                    x.FullName,
+                    x.AvatarUrl,
+                    x.Bio,
+                    CustomPrice = x.StaffServices
+                        .Where(ss => ss.ServiceId == sid && !ss.IsDeleted)
+                        .Select(ss => ss.CustomPrice)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+
+            var result = staffWithPrice.Select(x => new
+            {
+                x.Id,
+                x.FullName,
+                x.AvatarUrl,
+                x.Bio,
+                Price = x.CustomPrice ?? servicePrice?.Price ?? 0,
+                Currency = servicePrice?.Currency ?? "TRY",
+                HasCustomPrice = x.CustomPrice.HasValue
+            });
+
+            return Ok(new { success = true, data = result });
+        }
 
         var staff = await query
             .Select(x => new { x.Id, x.FullName, x.AvatarUrl, x.Bio })

@@ -50,37 +50,55 @@ public class StaffController : BaseApiController
     public async Task<IActionResult> GetServices(Guid id)
     {
         var staff = await _context.Staff
-            .Include(s => s.Services)
             .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == TenantId);
 
         if (staff is null)
             return NotFound(new { success = false, message = "Personel bulunamadı." });
 
-        var serviceIds = staff.Services.Select(s => s.Id).ToList();
-        return Success(serviceIds);
+        var staffServices = await _context.StaffServices
+            .Where(ss => ss.StaffId == id)
+            .Select(ss => new { ss.ServiceId, ss.CustomPrice, ss.CustomDurationMinutes })
+            .ToListAsync();
+
+        return Success(staffServices);
     }
 
     [HttpPut("{id}/services")]
     public async Task<IActionResult> SetServices(Guid id, [FromBody] SetStaffServicesRequest request)
     {
         var staff = await _context.Staff
-            .Include(s => s.Services)
             .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == TenantId);
 
         if (staff is null)
             return NotFound(new { success = false, message = "Personel bulunamadı." });
 
-        var services = await _context.Services
-            .Where(s => request.ServiceIds.Contains(s.Id) && s.TenantId == TenantId)
+        var validServiceIds = await _context.Services
+            .Where(s => request.Items.Select(i => i.ServiceId).Contains(s.Id) && s.TenantId == TenantId)
+            .Select(s => s.Id)
             .ToListAsync();
 
-        staff.Services.Clear();
-        foreach (var svc in services)
-            staff.Services.Add(svc);
+        var existing = await _context.StaffServices
+            .Where(ss => ss.StaffId == id)
+            .ToListAsync();
+
+        _context.StaffServices.RemoveRange(existing);
+
+        foreach (var item in request.Items.Where(i => validServiceIds.Contains(i.ServiceId)))
+        {
+            _context.StaffServices.Add(new BerberApp.Domain.Entities.StaffService
+            {
+                StaffId = id,
+                ServiceId = item.ServiceId,
+                CustomPrice = item.CustomPrice,
+                CustomDurationMinutes = item.CustomDurationMinutes,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
 
         await _context.SaveChangesAsync();
         return Success("Hizmet atamaları güncellendi.");
     }
 
-    public record SetStaffServicesRequest(List<Guid> ServiceIds);
+    public record StaffServiceItem(Guid ServiceId, decimal? CustomPrice, int? CustomDurationMinutes);
+    public record SetStaffServicesRequest(List<StaffServiceItem> Items);
 }

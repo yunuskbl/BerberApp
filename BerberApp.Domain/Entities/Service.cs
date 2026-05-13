@@ -21,5 +21,5 @@ public class Service : BaseEntity
 
     // Navigation
     public Tenant Tenant { get; set; } = null!;
-    public ICollection<Staff> Staff { get; set; } = new List<Staff>();
+    public ICollection<StaffService> StaffServices { get; set; } = new List<StaffService>();
 }

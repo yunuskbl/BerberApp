@@ -180,18 +180,35 @@
     <p class="services-hint">{{ 'staff.servicesHint' | translate }}</p>
     <div class="services-list">
       @for (svc of allServices; track svc.id) {
-        <label class="service-toggle-row" (click)="toggleService(svc.id)">
-          <div class="service-toggle-info">
-            @if (svc.color) {
-              <span class="svc-dot" [style.background]="svc.color"></span>
-            }
-            <span class="svc-name">{{ svc.name }}</span>
-            <span class="svc-dur">{{ svc.durationMinutes }} {{ 'common.min' | translate }}</span>
+        <div class="service-toggle-row">
+          <div class="service-toggle-top" (click)="toggleService(svc.id)">
+            <div class="service-toggle-info">
+              @if (svc.color) {
+                <span class="svc-dot" [style.background]="svc.color"></span>
+              }
+              <span class="svc-name">{{ svc.name }}</span>
+              <span class="svc-dur">{{ svc.durationMinutes }} {{ 'common.min' | translate }}</span>
+              <span class="svc-default-price">{{ svc.price | currency: svc.currency : 'symbol' : '1.0-0' }}</span>
+            </div>
+            <div class="toggle-switch" [class.on]="isServiceAssigned(svc.id)">
+              <div class="toggle-knob"></div>
+            </div>
           </div>
-          <div class="toggle-switch" [class.on]="assignedServiceIds.has(svc.id)">
-            <div class="toggle-knob"></div>
-          </div>
-        </label>
+          @if (isServiceAssigned(svc.id)) {
+            <div class="svc-price-row">
+              <label class="svc-price-label">Özel fiyat (boş bırakılırsa servis fiyatı uygulanır)</label>
+              <input
+                class="svc-price-input"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="{{ svc.price }}"
+                [value]="getServiceCustomPrice(svc.id) ?? ''"
+                (change)="setServiceCustomPrice(svc.id, $any($event.target).value)"
+                (click)="$event.stopPropagation()" />
+            </div>
+          }
+        </div>
       }
       @if (allServices.length === 0) {
         <p class="empty-hint">{{ 'services.empty' | translate }}</p>

@@ -35,7 +35,7 @@ export class StaffService {
     return this.http.get<any>(`${this.apiUrl}/${staffId}/services`);
   }
 
-  setServices(staffId: string, serviceIds: string[]): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${staffId}/services`, { serviceIds });
+  setServices(staffId: string, items: { serviceId: string; customPrice: number | null; customDurationMinutes: number | null }[]): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${staffId}/services`, { items });
   }
 }
