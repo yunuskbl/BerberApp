@@ -92,14 +92,18 @@ public class BookingController : ControllerBase
                 x.Color,
                 StaffPrices = x.StaffServices
                     .Where(ss => ss.CustomPrice != null)
-                    .Select(ss => ss.CustomPrice!.Value)
+                    .Select(ss => new { ss.CustomPrice, Currency = ss.CustomCurrency ?? x.Currency })
                     .ToList()
             })
             .ToListAsync();
 
         var result = services.Select(x =>
         {
-            var allPrices = x.StaffPrices.Append(x.Price).Where(p => p > 0).ToList();
+            var sameCurrencyPrices = x.StaffPrices
+                .Where(sp => sp.Currency == x.Currency)
+                .Select(sp => sp.CustomPrice!.Value)
+                .ToList();
+            var allPrices = sameCurrencyPrices.Append(x.Price).Where(p => p > 0).ToList();
             var minPrice = allPrices.Count > 0 ? allPrices.Min() : x.Price;
             var maxPrice = allPrices.Count > 0 ? allPrices.Max() : x.Price;
             return new
@@ -154,6 +158,10 @@ public class BookingController : ControllerBase
                     CustomPrice = x.StaffServices
                         .Where(ss => ss.ServiceId == sid)
                         .Select(ss => ss.CustomPrice)
+                        .FirstOrDefault(),
+                    CustomCurrency = x.StaffServices
+                        .Where(ss => ss.ServiceId == sid)
+                        .Select(ss => ss.CustomCurrency)
                         .FirstOrDefault()
                 })
                 .ToListAsync();
@@ -165,7 +173,7 @@ public class BookingController : ControllerBase
                 x.AvatarUrl,
                 x.Bio,
                 Price = x.CustomPrice ?? servicePrice?.Price ?? 0,
-                Currency = servicePrice?.Currency ?? "TRY",
+                Currency = (x.CustomPrice.HasValue ? x.CustomCurrency : null) ?? servicePrice?.Currency ?? "TRY",
                 HasCustomPrice = x.CustomPrice.HasValue
             });
 
