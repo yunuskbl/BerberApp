@@ -259,6 +259,29 @@ export class BookingComponent implements OnInit, OnDestroy {
     return this.selectedServices[0]?.currency ?? 'TRY';
   }
 
+  get hasMixedCurrencies(): boolean {
+    if (this.selectedServices.length <= 1) return false;
+    const first = this.selectedServices[0]?.currency ?? 'TRY';
+    return this.selectedServices.some(s => (s.currency ?? 'TRY') !== first);
+  }
+
+  get formattedTotalPrice(): string {
+    if (this.selectedServices.length === 0) return '—';
+    if (this.hasMixedCurrencies) {
+      const byCurrency = new Map<string, number>();
+      for (const s of this.selectedServices) {
+        const c = s.currency ?? 'TRY';
+        byCurrency.set(c, (byCurrency.get(c) ?? 0) + (s.price ?? 0));
+      }
+      return Array.from(byCurrency.entries())
+        .map(([c, total]) => total > 0 ? this.formatPrice(total, c) : null)
+        .filter(Boolean)
+        .join(' + ') || '—';
+    }
+    if (this.totalPrice <= 0) return '—';
+    return this.formatPrice(this.totalPrice, this.totalCurrency);
+  }
+
   get selectedServiceNames(): string {
     return this.selectedServices.map(s => this.getServiceName(s)).join(' + ') || '—';
   }
