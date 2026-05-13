@@ -348,6 +348,7 @@ export class BookingComponent implements OnInit, OnDestroy {
   }
 
   formatPriceRange(service: BookingService): string {
+    if (service.hasMixedCurrencies) return this.langService.t('booking.priceVaries') || 'Personele göre değişir';
     const currency = service.currency || 'TRY';
     if (!service.minPrice && !service.maxPrice) return this.formatPrice(service.price, currency);
     const min = service.minPrice ?? service.price;

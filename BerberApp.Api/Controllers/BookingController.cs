@@ -104,8 +104,8 @@ public class BookingController : ControllerBase
             decimal? minPrice, maxPrice;
             if (hasMixedCurrencies)
             {
-                minPrice = x.Price;
-                maxPrice = x.Price;
+                minPrice = null;
+                maxPrice = null;
             }
             else
             {
@@ -134,7 +134,8 @@ public class BookingController : ControllerBase
                 x.Currency,
                 x.Color,
                 MinPrice = minPrice,
-                MaxPrice = maxPrice
+                MaxPrice = maxPrice,
+                HasMixedCurrencies = hasMixedCurrencies
             };
         });
 
