@@ -31,7 +31,7 @@
         <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.service' | translate }}</span><span class="summary-value">{{ selectedServiceNames }}</span></div>
         <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.date' | translate }}</span><span class="summary-value">{{ formatDate(selectedSlot) }}</span></div>
         <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.time' | translate }}</span><span class="summary-value">{{ formatTime(selectedSlot) }}</span></div>
-        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.price' | translate }}</span><span class="summary-value">{{ totalPrice > 0 ? formatPrice(totalPrice, totalCurrency) : '—' }}</span></div>
+        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.price' | translate }}</span><span class="summary-value">{{ formattedTotalPrice }}</span></div>
       </div>
       <p class="success-note">{{ 'booking.successNote' | translate }}</p>
       @if (salon?.phone) {
@@ -197,7 +197,7 @@
         <div class="sum-divider"></div>
         <div class="sum-total">
           <span class="k">{{ 'booking.total' | translate }}</span>
-          <span class="v">{{ selectedServices.length > 0 && totalPrice > 0 ? formatPrice(totalPrice, totalCurrency) : '—' }}</span>
+          <span class="v">{{ selectedServices.length > 0 ? formattedTotalPrice : '—' }}</span>
         </div>
       </div>
     </div>
@@ -269,9 +269,7 @@
             @if (selectedServices.length > 1) {
               <div class="multi-service-total">
                 <span>⏱ {{ totalDuration }} {{ 'booking.min' | translate }}</span>
-                @if (totalPrice > 0) {
-                  <span class="multi-total-price">{{ formatPrice(totalPrice, totalCurrency) }}</span>
-                }
+                <span class="multi-total-price">{{ formattedTotalPrice }}</span>
               </div>
             }
           </div>
@@ -452,8 +450,8 @@
             <span class="island-label island-label--muted">{{ 'booking.chooseTime' | translate }}</span>
           </div>
         }
-        @if (totalPrice > 0) {
-          <div class="island-price">{{ formatPrice(totalPrice, totalCurrency) }}</div>
+        @if (selectedServices.length > 0 && formattedTotalPrice !== '—') {
+          <div class="island-price">{{ formattedTotalPrice }}</div>
         }
       </div>
       <!-- Tamamla butonu — yalnızca form hazırsa -->
