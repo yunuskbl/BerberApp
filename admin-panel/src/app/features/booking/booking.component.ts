@@ -351,6 +351,8 @@ export class BookingComponent implements OnInit, OnDestroy {
     return service.name;
   }
 
+  encodeURI(s: string): string { return encodeURIComponent(s); }
+
   getInitials(name: string): string {
     return name
       .split(' ')

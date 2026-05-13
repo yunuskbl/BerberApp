@@ -65,7 +65,13 @@
         <div class="salon-info">
           <div class="salon-name">{{ salon?.name }}</div>
           @if (salon?.address) {
-            <div class="salon-location">📍 {{ salon?.address }}</div>
+            <a class="salon-location"
+               [href]="'https://www.google.com/maps/search/?api=1&query=' + encodeURI(salon!.address!)"
+               target="_blank"
+               rel="noopener"
+               [title]="salon!.address!">
+              📍 {{ salon?.address }}
+            </a>
           }
           @if ((salon?.totalReviews ?? 0) > 0) {
             <div class="salon-rating">⭐ <span>{{ salon?.averageRating }}</span> · {{ salon?.totalReviews }} {{ 'booking.ratingApp' | translate }}</div>
