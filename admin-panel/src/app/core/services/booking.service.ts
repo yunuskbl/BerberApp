@@ -29,8 +29,9 @@ export interface BookingService {
   price: number;
   currency: string;
   color?: string;
-  minPrice: number;
-  maxPrice: number;
+  minPrice: number | null;
+  maxPrice: number | null;
+  hasMixedCurrencies: boolean;
 }
 
 export interface BookingStaff {
