@@ -46,6 +46,7 @@ export class StaffListComponent implements OnInit {
   readonly currencies = ['TRY', 'USD', 'EUR', 'GBP'];
   isSavingSvc = false;
   svcErrorMessage = '';
+  svcSuccessMessage = '';
 
   staffForm: FormGroup;
 
@@ -236,7 +237,11 @@ export class StaffListComponent implements OnInit {
     });
 
     this.staffService.setServices(this.selectedStaffForSvc.id, items).subscribe({
-      next: () => { this.isSavingSvc = false; this.closeServices(); },
+      next: () => {
+        this.isSavingSvc = false;
+        this.svcSuccessMessage = 'Hizmetler başarıyla kaydedildi.';
+        setTimeout(() => { this.svcSuccessMessage = ''; this.closeServices(); }, 2000);
+      },
       error: (err) => {
         this.isSavingSvc = false;
         this.svcErrorMessage = err?.error?.message || 'Hizmetler kaydedilemedi. Lütfen tekrar deneyin.';
