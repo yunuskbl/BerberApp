@@ -28,10 +28,14 @@ public class GetAvailableSlotsHandler : IRequestHandler<GetAvailableSlotsQuery, 
 
     public async Task<List<AvailableSlotDto>> Handle(GetAvailableSlotsQuery request, CancellationToken ct)
     {
-        var service = await _serviceRepo.GetAsync(
-            x => x.Id == request.ServiceId && x.TenantId == request.TenantId, ct);
-        if (service is null)
-            throw new NotFoundException("Hizmet", request.ServiceId);
+        ServiceEntity? service = null;
+        if (!request.TotalDurationMinutes.HasValue)
+        {
+            service = await _serviceRepo.GetAsync(
+                x => x.Id == request.ServiceId && x.TenantId == request.TenantId, ct);
+            if (service is null)
+                throw new NotFoundException("Hizmet", request.ServiceId);
+        }
 
         var staffExists = await _staffRepo.AnyAsync(
             x => x.Id == request.StaffId && x.TenantId == request.TenantId, ct);
@@ -83,7 +87,7 @@ public class GetAvailableSlotsHandler : IRequestHandler<GetAvailableSlotsQuery, 
                  x.Status != AppointmentStatus.Cancelled, ct);
 
         var slots = new List<AvailableSlotDto>();
-        var duration = TimeSpan.FromMinutes(service.DurationMinutes);
+        var duration = TimeSpan.FromMinutes(request.TotalDurationMinutes ?? service!.DurationMinutes);
         var current = startUtc;
 
         while (current + duration <= endUtc)

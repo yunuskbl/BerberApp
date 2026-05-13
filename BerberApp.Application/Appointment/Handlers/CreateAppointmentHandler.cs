@@ -90,7 +90,8 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
 
         // request.StartTime zaten UTC geliyor, ToUtc() ÇAĞIRMA
         var startTimeUtc = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc);
-        var endTimeUtc = startTimeUtc.AddMinutes(service.DurationMinutes);
+        var durationMinutes = request.TotalDurationMinutes ?? service.DurationMinutes;
+        var endTimeUtc = startTimeUtc.AddMinutes(durationMinutes);
 
         // Geçmiş tarih kontrolü
         if (startTimeUtc <= DateTime.UtcNow)
@@ -188,7 +189,7 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
                         notificationPhone,
                         customer.FullName,
                         customer.Phone,
-                        service.Name,
+                        request.ServiceNamesDisplay ?? service.Name,
                         startTimeTurkey,
                         sequenceNumber
                     );
@@ -210,7 +211,7 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
                     Id = appointment.Id,
                     TenantId = request.TenantId,
                     CustomerName = customer.FullName,
-                    ServiceName = service.Name,
+                    ServiceName = request.ServiceNamesDisplay ?? service.Name,
                     StaffName = staff.FullName,
                     StartTime = appointment.StartTime,
                     EndTime = appointment.EndTime,
@@ -226,12 +227,12 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
             StaffId = staff.Id,
             StaffName = staff.FullName,
             ServiceId = service.Id,
-            ServiceName = service.Name,
+            ServiceName = request.ServiceNamesDisplay ?? service.Name,
             StartTime = appointment.StartTime,
             EndTime = appointment.EndTime,
             Status = appointment.Status,
             Notes = appointment.Notes,
-            DurationMinutes = service.DurationMinutes
+            DurationMinutes = durationMinutes
         };
     }
 

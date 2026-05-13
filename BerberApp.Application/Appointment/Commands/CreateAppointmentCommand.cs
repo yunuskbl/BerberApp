@@ -19,4 +19,6 @@ public class CreateAppointmentCommand : IRequest<AppointmentDto>
     public string? Notes { get; set; }
     public bool IsFromBookingPage { get; set; } = false;
     public string? NotificationPhone { get; set; }
+    public int? TotalDurationMinutes { get; set; }
+    public string? ServiceNamesDisplay { get; set; }
 }

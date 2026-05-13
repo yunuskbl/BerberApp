@@ -586,6 +586,54 @@ app-language-switcher {
   &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 
+/* Çoklu hizmet seçimi — checkbox */
+.service-check {
+  width: 18px; height: 18px; flex-shrink: 0;
+  border-radius: 5px;
+  border: 2px solid #d0cbc4;
+  background: #fff;
+  transition: background 0.15s, border-color 0.15s;
+  position: relative;
+
+  &.checked {
+    background: var(--accent);
+    border-color: var(--accent);
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 3px; top: 0px;
+      width: 5px; height: 9px;
+      border: 2px solid #fff;
+      border-top: none; border-left: none;
+      transform: rotate(45deg);
+    }
+  }
+}
+
+/* Çoklu hizmet toplam satırı */
+.multi-service-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #f7f5f2;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+
+  .multi-total-price { font-weight: 700; color: #111; }
+}
+
+/* Özet panelinde hizmet chip'leri */
+.sum-service-chip {
+  display: block;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 /* Kapasite uyarı banner */
 .capacity-banner {
   display: flex;

@@ -47,8 +47,8 @@ export class BookingComponent implements OnInit, OnDestroy {
   staffList: BookingStaff[] = [];
   slots: BookingSlot[] = [];
 
-  selectedService: BookingService | null = null;
   selectedStaff: BookingStaff | null = null;
+  selectedServices: BookingService[] = [];
   selectedDate = '';
   selectedSlot = '';
 
@@ -195,7 +195,6 @@ export class BookingComponent implements OnInit, OnDestroy {
           this.titleService.setTitle(this.salon!.name + ' - BerberApp');
           const color = this.salon!.themeColor || '#111111';
           (this.el.nativeElement as HTMLElement).style.setProperty('--accent', color);
-          this.loadServices();
           this.loadStaff();
         }
         this.isLoading = false;
@@ -207,16 +206,6 @@ export class BookingComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadServices(): void {
-    this.bookingService.getServices(this.subdomain).subscribe({
-      next: (res) => {
-        if (res.success) this.services = res.data;
-        else this.errorMessage = 'Hizmetler yüklenemedi.';
-      },
-      error: () => { this.errorMessage = 'Hizmetler yüklenemedi.'; },
-    });
-  }
-
   loadStaff(): void {
     this.bookingService.getStaff(this.subdomain).subscribe({
       next: (res) => {
@@ -225,25 +214,53 @@ export class BookingComponent implements OnInit, OnDestroy {
     });
   }
 
-  selectService(service: BookingService): void {
-    this.selectedService = service;
-    this.selectedStaff = null;
+  selectStaff(staff: BookingStaff): void {
+    this.selectedStaff = staff;
+    this.selectedServices = [];
+    this.selectedDate = '';
     this.selectedSlot = '';
     this.slots = [];
-    this.loadStaffForService(service.id);
+    this.loadServicesForStaff(staff.id);
   }
 
-  loadStaffForService(serviceId: string): void {
-    this.bookingService.getStaff(this.subdomain, serviceId).subscribe({
-      next: (res) => { if (res.success) this.staffList = res.data; },
+  loadServicesForStaff(staffId: string): void {
+    this.bookingService.getServices(this.subdomain, staffId).subscribe({
+      next: (res) => {
+        if (res.success) this.services = res.data;
+      },
     });
   }
 
-  selectStaff(staff: BookingStaff): void {
-    this.selectedStaff = staff;
+  toggleService(service: BookingService): void {
+    const idx = this.selectedServices.findIndex(s => s.id === service.id);
+    if (idx >= 0) {
+      this.selectedServices = this.selectedServices.filter(s => s.id !== service.id);
+    } else {
+      this.selectedServices = [...this.selectedServices, service];
+    }
     this.selectedSlot = '';
     this.slots = [];
     this.loadSlotsIfReady();
+  }
+
+  isServiceSelected(service: BookingService): boolean {
+    return this.selectedServices.some(s => s.id === service.id);
+  }
+
+  get totalDuration(): number {
+    return this.selectedServices.reduce((sum, s) => sum + s.durationMinutes, 0);
+  }
+
+  get totalPrice(): number {
+    return this.selectedServices.reduce((sum, s) => sum + (s.price ?? 0), 0);
+  }
+
+  get totalCurrency(): string {
+    return this.selectedServices[0]?.currency ?? 'TRY';
+  }
+
+  get selectedServiceNames(): string {
+    return this.selectedServices.map(s => this.getServiceName(s)).join(' + ') || '—';
   }
 
   onDateChange(date: string): void {
@@ -254,19 +271,14 @@ export class BookingComponent implements OnInit, OnDestroy {
   }
 
   loadSlotsIfReady(): void {
-    if (!this.selectedService || !this.selectedStaff || !this.selectedDate)
+    if (!this.selectedStaff || this.selectedServices.length === 0 || !this.selectedDate)
       return;
 
-    // "2025-04-23" → timezone kayması olmadan UTC'ye gönder
     const dateUtc = this.selectedDate + 'T00:00:00Z';
+    const serviceIds = this.selectedServices.map(s => s.id);
 
     this.bookingService
-      .getAvailableSlots(
-        this.subdomain,
-        this.selectedStaff.id,
-        this.selectedService.id,
-        dateUtc, // <-- değişti
-      )
+      .getAvailableSlots(this.subdomain, this.selectedStaff.id, serviceIds, dateUtc)
       .subscribe({
         next: (res) => {
           if (res.success)
@@ -281,8 +293,8 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   canProceed(): boolean {
     return (
-      !!this.selectedService &&
       !!this.selectedStaff &&
+      this.selectedServices.length > 0 &&
       !!this.selectedDate &&
       !!this.selectedSlot
     );
@@ -295,6 +307,7 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
 
     const { fullName, phone, email, notes } = this.customerForm.value;
+    const serviceIds = this.selectedServices.map(s => s.id);
 
     this.bookingService
       .createAppointment(this.subdomain, {
@@ -302,7 +315,8 @@ export class BookingComponent implements OnInit, OnDestroy {
         phone,
         email,
         staffId: this.selectedStaff!.id,
-        serviceId: this.selectedService!.id,
+        serviceId: serviceIds[0],
+        serviceIds,
         startTime: this.selectedSlot,
         notes,
       })
@@ -355,15 +369,6 @@ export class BookingComponent implements OnInit, OnDestroy {
     const max = service.maxPrice ?? service.price;
     if (min === max) return this.formatPrice(min, currency);
     return `${this.formatPrice(min, currency)} – ${this.formatPrice(max, currency)}`;
-  }
-
-  get effectivePrice(): number {
-    if (this.selectedStaff?.price != null) return this.selectedStaff.price;
-    return this.selectedService?.price ?? 0;
-  }
-
-  get effectiveCurrency(): string {
-    return this.selectedStaff?.currency ?? this.selectedService?.currency ?? 'TRY';
   }
 
   getServiceName(service: BookingService): string {
@@ -431,7 +436,7 @@ export class BookingComponent implements OnInit, OnDestroy {
   }
 
   startTimer(): void {
-    this.otpTimer = 120; // 2 dakika
+    this.otpTimer = 120;
     this.timerInterval = setInterval(() => {
       this.otpTimer--;
       if (this.otpTimer <= 0) {

@@ -27,11 +27,11 @@
       <div class="pending-note">{{ 'booking.pendingNote' | translate }}</div>
       <div class="booking-summary">
         <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.salon' | translate }}</span><span class="summary-value">{{ salon?.name }}</span></div>
-        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.service' | translate }}</span><span class="summary-value">{{ selectedService ? getServiceName(selectedService) : '' }}</span></div>
         <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.staff' | translate }}</span><span class="summary-value">{{ selectedStaff?.fullName }}</span></div>
+        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.service' | translate }}</span><span class="summary-value">{{ selectedServiceNames }}</span></div>
         <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.date' | translate }}</span><span class="summary-value">{{ formatDate(selectedSlot) }}</span></div>
         <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.time' | translate }}</span><span class="summary-value">{{ formatTime(selectedSlot) }}</span></div>
-        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.price' | translate }}</span><span class="summary-value">{{ formatPrice(selectedService?.price || 0, selectedService?.currency || 'TRY') }}</span></div>
+        <div class="summary-item"><span class="summary-label">{{ 'booking.lbl.price' | translate }}</span><span class="summary-value">{{ totalPrice > 0 ? formatPrice(totalPrice, totalCurrency) : '—' }}</span></div>
       </div>
       <p class="success-note">{{ 'booking.successNote' | translate }}</p>
       @if (salon?.phone) {
@@ -176,12 +176,18 @@
         <div class="left-label" style="margin-bottom:12px">{{ 'booking.summary' | translate }}</div>
         <div class="summary-rows">
           <div class="sum-row">
-            <span class="k">{{ 'booking.lbl.service' | translate }}</span>
-            <span class="v">{{ selectedService ? getServiceName(selectedService) : '—' }}</span>
-          </div>
-          <div class="sum-row">
             <span class="k">{{ 'booking.barber' | translate }}</span>
             <span class="v">{{ selectedStaff?.fullName || '—' }}</span>
+          </div>
+          <div class="sum-row">
+            <span class="k">{{ 'booking.lbl.service' | translate }}</span>
+            <span class="v">
+              @if (selectedServices.length > 0) {
+                @for (svc of selectedServices; track svc.id) {
+                  <span class="sum-service-chip">{{ getServiceName(svc) }}</span>
+                }
+              } @else { — }
+            </span>
           </div>
           <div class="sum-row">
             <span class="k">{{ 'booking.lbl.date' | translate }}</span>
@@ -191,7 +197,7 @@
         <div class="sum-divider"></div>
         <div class="sum-total">
           <span class="k">{{ 'booking.total' | translate }}</span>
-          <span class="v">{{ selectedStaff ? formatPrice(effectivePrice, effectiveCurrency) : '—' }}</span>
+          <span class="v">{{ selectedServices.length > 0 && totalPrice > 0 ? formatPrice(totalPrice, totalCurrency) : '—' }}</span>
         </div>
       </div>
     </div>
@@ -219,33 +225,10 @@
           </div>
         }
 
-        <!-- 1. Hizmet -->
+        <!-- 1. Personel -->
         <div class="step-block">
           <div class="step-header">
             <div class="step-num active">1</div>
-            <div class="step-title">{{ 'booking.step1' | translate }}</div>
-            <div class="step-sep"></div>
-          </div>
-          <div class="service-list">
-            @for (service of services; track service.id) {
-              <div class="service-item" [class.selected]="selectedService?.id === service.id" (click)="selectService(service)">
-                <div class="service-left">
-                  <div class="service-radio"></div>
-                  <div>
-                    <div class="service-name">{{ getServiceName(service) }}</div>
-                    <div class="service-dur">⏱ {{ service.durationMinutes }} {{ 'booking.min' | translate }}</div>
-                  </div>
-                </div>
-                <div class="service-price">{{ formatPriceRange(service) }}</div>
-              </div>
-            }
-          </div>
-        </div>
-
-        <!-- 2. Personel -->
-        <div class="step-block">
-          <div class="step-header">
-            <div class="step-num active">2</div>
             <div class="step-title">{{ 'booking.step2' | translate }}</div>
             <div class="step-sep"></div>
           </div>
@@ -255,16 +238,44 @@
                 <div class="staff-avatar">{{ getInitials(staff.fullName) }}</div>
                 <div class="staff-info-wrap">
                   <div class="staff-name">{{ staff.fullName }}</div>
-                  @if (selectedService && staff.price != null) {
-                    <div class="staff-price" [class.staff-price--custom]="staff.hasCustomPrice">
-                      {{ formatPrice(staff.price, staff.currency || selectedService.currency) }}
-                    </div>
-                  }
                 </div>
               </div>
             }
           </div>
         </div>
+
+        <!-- 2. Hizmetler (personel seçildikten sonra) -->
+        @if (selectedStaff) {
+          <div class="step-block">
+            <div class="step-header">
+              <div class="step-num active">2</div>
+              <div class="step-title">{{ 'booking.step1' | translate }}</div>
+              <div class="step-sep"></div>
+            </div>
+            <div class="service-list">
+              @for (service of services; track service.id) {
+                <div class="service-item" [class.selected]="isServiceSelected(service)" (click)="toggleService(service)">
+                  <div class="service-left">
+                    <div class="service-check" [class.checked]="isServiceSelected(service)"></div>
+                    <div>
+                      <div class="service-name">{{ getServiceName(service) }}</div>
+                      <div class="service-dur">⏱ {{ service.durationMinutes }} {{ 'booking.min' | translate }}</div>
+                    </div>
+                  </div>
+                  <div class="service-price">{{ formatPriceRange(service) }}</div>
+                </div>
+              }
+            </div>
+            @if (selectedServices.length > 1) {
+              <div class="multi-service-total">
+                <span>⏱ {{ totalDuration }} {{ 'booking.min' | translate }}</span>
+                @if (totalPrice > 0) {
+                  <span class="multi-total-price">{{ formatPrice(totalPrice, totalCurrency) }}</span>
+                }
+              </div>
+            }
+          </div>
+        }
 
         <!-- 3. Tarih -->
         <div class="step-block">
@@ -297,7 +308,7 @@
               }
             </div>
           </div>
-        } @else if (selectedService && selectedStaff && selectedDate) {
+        } @else if (selectedServices.length > 0 && selectedStaff && selectedDate) {
           <div class="no-slots">{{ 'booking.noSlots' | translate }}</div>
         }
 
@@ -414,20 +425,20 @@
   </div>
 
   <!-- Mobil alt bar: seçim özeti + (hazırsa) tamamla butonu -->
-  @if (selectedService || selectedStaff || selectedSlot) {
+  @if (selectedStaff || selectedServices.length > 0 || selectedSlot) {
     <div class="mobile-island">
       <!-- Özet satırı -->
       <div class="island-summary">
-        @if (selectedService) {
-          <div class="island-item">
-            <span class="island-dot island-dot--done"></span>
-            <span class="island-label">{{ getServiceName(selectedService) }}</span>
-          </div>
-        }
         @if (selectedStaff) {
           <div class="island-item">
             <span class="island-dot island-dot--done"></span>
             <span class="island-label">{{ selectedStaff.fullName }}</span>
+          </div>
+        }
+        @if (selectedServices.length > 0) {
+          <div class="island-item">
+            <span class="island-dot island-dot--done"></span>
+            <span class="island-label">{{ selectedServiceNames }}</span>
           </div>
         }
         @if (selectedSlot) {
@@ -441,10 +452,8 @@
             <span class="island-label island-label--muted">{{ 'booking.chooseTime' | translate }}</span>
           </div>
         }
-        @if (selectedService && effectivePrice > 0) {
-          <div class="island-price">
-            {{ formatPrice(effectivePrice, effectiveCurrency) }}
-          </div>
+        @if (totalPrice > 0) {
+          <div class="island-price">{{ formatPrice(totalPrice, totalCurrency) }}</div>
         }
       </div>
       <!-- Tamamla butonu — yalnızca form hazırsa -->
