@@ -274,6 +274,26 @@ $green:        #059669;
   &:hover { border-color: $purple; color: $purple; }
 }
 
+.hero-sectors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.sector-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  font-size: 13px;
+  color: $muted;
+  white-space: nowrap;
+}
+
 .hero-trust {
   display: flex;
   gap: 20px;
@@ -1052,7 +1072,7 @@ $green:        #059669;
   .hero-inner { grid-template-columns: 1fr; gap: 48px; }
   .hero-mockup { order: -1; }
   .hero { text-align: center; }
-  .hero-actions, .hero-trust { justify-content: center; }
+  .hero-actions, .hero-trust, .hero-sectors { justify-content: center; }
   .hero-title { font-size: 40px; }
 
   .features-grid { grid-template-columns: repeat(2, 1fr); }
