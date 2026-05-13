@@ -1,4 +1,4 @@
-using BerberApp.Domain.Commons;
+using BerberApp.Domain.Common;
 
 namespace BerberApp.Domain.Entities;
 
