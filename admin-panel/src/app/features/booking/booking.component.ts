@@ -351,12 +351,12 @@ export class BookingComponent implements OnInit, OnDestroy {
               { queryParams: { phone } }
             );
           } else {
-            this.errorMessage = res.message;
+            this.errorMessage = 'Randevu oluşturulamadı. Lütfen tekrar deneyin.';
           }
           this.isSubmitting = false;
         },
-        error: (err) => {
-          this.errorMessage = err.error?.message || 'Randevu oluşturulamadı.';
+        error: () => {
+          this.errorMessage = 'Randevu oluşturulamadı. Lütfen tekrar deneyin.';
           this.isSubmitting = false;
         },
       });
@@ -429,8 +429,8 @@ export class BookingComponent implements OnInit, OnDestroy {
         }
         this.isSendingOtp = false;
       },
-      error: (err) => {
-        this.otpError = err.error?.message || 'Kod gönderilemedi.';
+      error: () => {
+        this.otpError = 'Doğrulama kodu gönderilemedi. Lütfen tekrar deneyin.';
         this.isSendingOtp = false;
       },
     });
@@ -451,8 +451,8 @@ export class BookingComponent implements OnInit, OnDestroy {
         }
         this.isVerifyingOtp = false;
       },
-      error: (err) => {
-        this.otpError = err.error?.message || 'Hatalı kod.';
+      error: () => {
+        this.otpError = 'Kod doğrulanamadı. Lütfen tekrar deneyin.';
         this.isVerifyingOtp = false;
       },
     });
