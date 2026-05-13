@@ -42,7 +42,8 @@ export class StaffListComponent implements OnInit {
   isServicesOpen = false;
   selectedStaffForSvc: Staff | null = null;
   allServices: Service[] = [];
-  assignedServices: Map<string, { customPrice: number | null; customDurationMinutes: number | null }> = new Map();
+  assignedServices: Map<string, { customPrice: number | null; customCurrency: string | null; customDurationMinutes: number | null }> = new Map();
+  readonly currencies = ['TRY', 'USD', 'EUR', 'GBP'];
   isSavingSvc = false;
   svcErrorMessage = '';
 
@@ -172,6 +173,7 @@ export class StaffListComponent implements OnInit {
           this.assignedServices = new Map(
             res.data.map((item: any) => [item.serviceId, {
               customPrice: item.customPrice ?? null,
+              customCurrency: item.customCurrency ?? null,
               customDurationMinutes: item.customDurationMinutes ?? null
             }])
           );
@@ -189,7 +191,7 @@ export class StaffListComponent implements OnInit {
     if (this.assignedServices.has(serviceId))
       this.assignedServices.delete(serviceId);
     else
-      this.assignedServices.set(serviceId, { customPrice: null, customDurationMinutes: null });
+      this.assignedServices.set(serviceId, { customPrice: null, customCurrency: null, customDurationMinutes: null });
   }
 
   isServiceAssigned(serviceId: string): boolean {
@@ -207,6 +209,16 @@ export class StaffListComponent implements OnInit {
     entry.customPrice = parsed !== null && !isNaN(parsed) ? parsed : null;
   }
 
+  getServiceCustomCurrency(serviceId: string): string | null {
+    return this.assignedServices.get(serviceId)?.customCurrency ?? null;
+  }
+
+  setServiceCustomCurrency(serviceId: string, value: string): void {
+    const entry = this.assignedServices.get(serviceId);
+    if (!entry) return;
+    entry.customCurrency = value || null;
+  }
+
   saveServices(): void {
     if (!this.selectedStaffForSvc) return;
     this.isSavingSvc = true;
@@ -214,6 +226,7 @@ export class StaffListComponent implements OnInit {
     const items = Array.from(this.assignedServices.entries()).map(([serviceId, data]) => ({
       serviceId,
       customPrice: data.customPrice,
+      customCurrency: data.customCurrency,
       customDurationMinutes: data.customDurationMinutes
     }));
 
