@@ -99,30 +99,7 @@ public class BookingController : ControllerBase
 
         var result = services.Select(x =>
         {
-            var hasMixedCurrencies = x.StaffPrices
-                .Any(sp => sp.Currency != null && sp.Currency != x.Currency);
-            decimal? minPrice, maxPrice;
-            if (hasMixedCurrencies)
-            {
-                minPrice = null;
-                maxPrice = null;
-            }
-            else
-            {
-                var staffPrices = x.StaffPrices
-                    .Select(sp => sp.CustomPrice!.Value)
-                    .Where(p => p > 0).ToList();
-                if (staffPrices.Count > 0)
-                {
-                    minPrice = staffPrices.Min();
-                    maxPrice = staffPrices.Max();
-                }
-                else
-                {
-                    minPrice = x.Price;
-                    maxPrice = x.Price;
-                }
-            }
+            var hasStaffPrices = x.StaffPrices.Count > 0;
             return new
             {
                 x.Id,
@@ -133,9 +110,9 @@ public class BookingController : ControllerBase
                 x.Price,
                 x.Currency,
                 x.Color,
-                MinPrice = minPrice,
-                MaxPrice = maxPrice,
-                HasMixedCurrencies = hasMixedCurrencies
+                MinPrice  = hasStaffPrices ? (decimal?)null : x.Price,
+                MaxPrice  = hasStaffPrices ? (decimal?)null : x.Price,
+                HasMixedCurrencies = hasStaffPrices
             };
         });
 
