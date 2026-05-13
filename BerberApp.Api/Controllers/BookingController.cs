@@ -109,14 +109,19 @@ public class BookingController : ControllerBase
             }
             else
             {
-                var sameCurrencyPrices = x.StaffPrices
+                var staffPrices = x.StaffPrices
                     .Select(sp => sp.CustomPrice!.Value)
-                    .ToList();
-                var allPrices = sameCurrencyPrices
-                    .Concat(x.Price.HasValue ? new[] { x.Price.Value } : Array.Empty<decimal>())
                     .Where(p => p > 0).ToList();
-                minPrice = allPrices.Count > 0 ? allPrices.Min() : x.Price;
-                maxPrice = allPrices.Count > 0 ? allPrices.Max() : x.Price;
+                if (staffPrices.Count > 0)
+                {
+                    minPrice = staffPrices.Min();
+                    maxPrice = staffPrices.Max();
+                }
+                else
+                {
+                    minPrice = x.Price;
+                    maxPrice = x.Price;
+                }
             }
             return new
             {
