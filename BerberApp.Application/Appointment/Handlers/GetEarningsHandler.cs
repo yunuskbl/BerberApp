@@ -85,7 +85,7 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
         {
             var svc = services.FirstOrDefault(s => s.Id == serviceId);
             if (svc is null) return 0;
-            return svc.Price * (rates.GetValueOrDefault(svc.Currency.ToUpper(), 1m));
+            return (svc.Price ?? 0) * (rates.GetValueOrDefault(svc.Currency.ToUpper(), 1m));
         }
 
         var totalEarnings  = appointments.Sum(x => GetPrice(x.ServiceId));
