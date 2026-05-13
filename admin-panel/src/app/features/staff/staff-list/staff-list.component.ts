@@ -223,12 +223,17 @@ export class StaffListComponent implements OnInit {
     if (!this.selectedStaffForSvc) return;
     this.isSavingSvc = true;
 
-    const items = Array.from(this.assignedServices.entries()).map(([serviceId, data]) => ({
-      serviceId,
-      customPrice: data.customPrice,
-      customCurrency: data.customCurrency,
-      customDurationMinutes: data.customDurationMinutes
-    }));
+    const items = Array.from(this.assignedServices.entries()).map(([serviceId, data]) => {
+      const svc = this.allServices.find(s => s.id === serviceId);
+      return {
+        serviceId,
+        customPrice: data.customPrice,
+        customCurrency: data.customPrice != null
+          ? (data.customCurrency ?? svc?.currency ?? null)
+          : null,
+        customDurationMinutes: data.customDurationMinutes
+      };
+    });
 
     this.staffService.setServices(this.selectedStaffForSvc.id, items).subscribe({
       next: () => { this.isSavingSvc = false; this.closeServices(); },
