@@ -73,7 +73,7 @@ export class ServiceListComponent implements OnInit {
     if (this.serviceForm.invalid) return;
     this.isSubmitting = true;
     this.errorMessage = '';
-    const value = { ...this.serviceForm.value, price: this.serviceForm.value.price ?? 0 };
+    const value = { ...this.serviceForm.value, price: this.serviceForm.value.price ?? null };
 
     if (this.editingService) {
       this.serviceService.update(this.editingService.id, value).subscribe({

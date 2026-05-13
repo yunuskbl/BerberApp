@@ -246,7 +246,7 @@ namespace BerberApp.Infrastructure.Migrations
                     b.Property<string>("NameRu")
                         .HasColumnType("text");
 
-                    b.Property<decimal>("Price")
+                    b.Property<decimal?>("Price")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("TenantId")

@@ -101,7 +101,7 @@ public class BookingController : ControllerBase
         {
             var hasMixedCurrencies = x.StaffPrices
                 .Any(sp => sp.Currency != null && sp.Currency != x.Currency);
-            decimal minPrice, maxPrice;
+            decimal? minPrice, maxPrice;
             if (hasMixedCurrencies)
             {
                 minPrice = x.Price;
@@ -112,7 +112,9 @@ public class BookingController : ControllerBase
                 var sameCurrencyPrices = x.StaffPrices
                     .Select(sp => sp.CustomPrice!.Value)
                     .ToList();
-                var allPrices = sameCurrencyPrices.Append(x.Price).Where(p => p > 0).ToList();
+                var allPrices = sameCurrencyPrices
+                    .Concat(x.Price.HasValue ? new[] { x.Price.Value } : Array.Empty<decimal>())
+                    .Where(p => p > 0).ToList();
                 minPrice = allPrices.Count > 0 ? allPrices.Min() : x.Price;
                 maxPrice = allPrices.Count > 0 ? allPrices.Max() : x.Price;
             }
