@@ -58,6 +58,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'reviews/:subdomain',
+    loadComponent: () =>
+      import('./features/public-reviews/public-reviews.component').then(
+        (m) => m.PublicReviewsComponent,
+      ),
+  },
+  {
     path: 'rate/:subdomain/:appointmentId',
     loadComponent: () =>
       import('./features/rate/rate.component').then(

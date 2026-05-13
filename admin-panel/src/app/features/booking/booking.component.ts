@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ElementRef, Renderer2 } from '@angular/co
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, takeUntil } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -35,6 +35,7 @@ import { DecorativeBgComponent } from '../../shared/components/decorative-bg/dec
     LanguageSwitcherComponent,
     TranslatePipe,
     DecorativeBgComponent,
+    RouterLink,
   ],
   templateUrl: './booking.component.html',
   styleUrl: './booking.component.scss',

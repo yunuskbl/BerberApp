@@ -1,0 +1,84 @@
+<div class="reviews-page">
+  <header class="reviews-header">
+    <app-logo></app-logo>
+    <a class="back-link" [routerLink]="['/book', subdomain]">← Randevu Al</a>
+  </header>
+
+  @if (isLoading) {
+    <div class="loading"><div class="spinner"></div></div>
+  } @else if (error) {
+    <div class="error-state">{{ error }}</div>
+  } @else {
+    <main class="reviews-main">
+
+      <!-- Salon başlığı -->
+      <div class="salon-header">
+        <div class="salon-logo">
+          @if (salon?.logoUrl) {
+            <img [src]="salon!.logoUrl" [alt]="salon?.name" />
+          } @else {
+            {{ getInitials(salon?.name || '') }}
+          }
+        </div>
+        <div class="salon-meta">
+          <h1 class="salon-name">{{ salon?.name }}</h1>
+          @if (data && data.totalReviews > 0) {
+            <div class="salon-avg">
+              <span class="avg-score">{{ data.averageRating }}</span>
+              <span class="stars-row">
+                @for (s of getStars(5); track s) {
+                  <span class="star" [class.filled]="s <= data.averageRating">★</span>
+                }
+              </span>
+              <span class="total-count">{{ data.totalReviews }} değerlendirme</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      @if (!data || data.totalReviews === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">💬</div>
+          <p>Henüz değerlendirme yapılmamış.</p>
+        </div>
+      } @else {
+
+        <!-- Dağılım -->
+        <div class="distribution-card">
+          @for (star of [5,4,3,2,1]; track star) {
+            <div class="dist-row">
+              <span class="dist-label">{{ star }} ★</span>
+              <div class="dist-bar-wrap">
+                <div class="dist-bar" [style.width.%]="getBarWidth(star)"></div>
+              </div>
+              <span class="dist-count">{{ getCount(star) }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Yorum listesi -->
+        <div class="reviews-list">
+          @for (review of data.reviews; track review.createdAt) {
+            <div class="review-card">
+              <div class="review-top">
+                <div class="reviewer-avatar">{{ getInitials(review.customerName) }}</div>
+                <div class="reviewer-info">
+                  <div class="reviewer-name">{{ review.customerName }}</div>
+                  <div class="reviewer-date">{{ formatDate(review.createdAt) }}</div>
+                </div>
+                <div class="review-stars">
+                  @for (s of getStars(5); track s) {
+                    <span class="star" [class.filled]="s <= review.rating">★</span>
+                  }
+                </div>
+              </div>
+              @if (review.comment) {
+                <p class="review-comment">{{ review.comment }}</p>
+              }
+            </div>
+          }
+        </div>
+      }
+    </main>
+  }
+</div>
