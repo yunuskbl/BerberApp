@@ -66,6 +66,33 @@ export class ReportsListComponent implements OnInit {
     }).format(new Date());
   }
 
+  setQuickRange(range: 'week' | 'month' | '30d' | 'year'): void {
+    const now = new Date();
+    let start: Date;
+    switch (range) {
+      case 'week': {
+        const day = now.getDay() || 7;
+        start = new Date(now); start.setDate(now.getDate() - day + 1); break;
+      }
+      case 'month':  start = new Date(now.getFullYear(), now.getMonth(), 1); break;
+      case '30d':    start = new Date(now); start.setDate(now.getDate() - 30); break;
+      case 'year':   start = new Date(now.getFullYear(), 0, 1); break;
+    }
+    this.reportStartDate = this.getDateString(start!);
+    this.reportEndDate   = this.getDateString(now);
+    this.loadEarnings();
+  }
+
+  staffShare(earnings: number): number {
+    if (!this.earnings?.totalInTry) return 0;
+    return Math.round((earnings / this.earnings.totalInTry) * 100);
+  }
+
+  serviceShare(count: number): number {
+    if (!this.earnings?.totalAppointments) return 0;
+    return Math.round((count / this.earnings.totalAppointments) * 100);
+  }
+
   printReport(): void {
     window.print();
   }
