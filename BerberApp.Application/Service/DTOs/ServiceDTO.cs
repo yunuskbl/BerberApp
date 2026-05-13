@@ -12,7 +12,7 @@ public class ServiceDto
     public string? NameEn { get; set; }
     public string? NameRu { get; set; }
     public int DurationMinutes { get; set; }
-    public decimal Price { get; set; }
+    public decimal? Price { get; set; }
     public string Currency { get; set; } = "TRY";
     public string? Color { get; set; }
     public bool IsActive { get; set; }
