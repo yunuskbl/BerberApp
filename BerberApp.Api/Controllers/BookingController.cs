@@ -99,13 +99,23 @@ public class BookingController : ControllerBase
 
         var result = services.Select(x =>
         {
-            var sameCurrencyPrices = x.StaffPrices
-                .Where(sp => sp.Currency == x.Currency)
-                .Select(sp => sp.CustomPrice!.Value)
-                .ToList();
-            var allPrices = sameCurrencyPrices.Append(x.Price).Where(p => p > 0).ToList();
-            var minPrice = allPrices.Count > 0 ? allPrices.Min() : x.Price;
-            var maxPrice = allPrices.Count > 0 ? allPrices.Max() : x.Price;
+            var hasMixedCurrencies = x.StaffPrices
+                .Any(sp => sp.Currency != null && sp.Currency != x.Currency);
+            decimal minPrice, maxPrice;
+            if (hasMixedCurrencies)
+            {
+                minPrice = x.Price;
+                maxPrice = x.Price;
+            }
+            else
+            {
+                var sameCurrencyPrices = x.StaffPrices
+                    .Select(sp => sp.CustomPrice!.Value)
+                    .ToList();
+                var allPrices = sameCurrencyPrices.Append(x.Price).Where(p => p > 0).ToList();
+                minPrice = allPrices.Count > 0 ? allPrices.Min() : x.Price;
+                maxPrice = allPrices.Count > 0 ? allPrices.Max() : x.Price;
+            }
             return new
             {
                 x.Id,
