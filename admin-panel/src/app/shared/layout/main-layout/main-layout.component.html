@@ -1,7 +1,22 @@
-<div class="layout" >
-  <app-sidebar ></app-sidebar>
+<div class="layout">
+  <app-sidebar></app-sidebar>
   <div class="layout-content">
     <app-header></app-header>
+
+    @if (isOnTrial) {
+      <div class="trial-banner" [class.trial-urgent]="trialDaysLeft <= 3">
+        <span class="trial-icon">⏳</span>
+        <span class="trial-text">
+          @if (trialDaysLeft > 0) {
+            Ücretsiz deneme süreniz <strong>{{ trialDaysLeft }} gün</strong> sonra sona eriyor.
+          } @else {
+            Ücretsiz deneme süreniz bugün sona eriyor.
+          }
+        </span>
+        <a routerLink="/upgrade" class="trial-cta">Planı Yükselt →</a>
+      </div>
+    }
+
     <main class="main-content">
       <router-outlet></router-outlet>
     </main>

@@ -67,6 +67,20 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
         };
 
         _context.Users.Add(user);
+
+        // 14 günlük ücretsiz deneme aboneliği oluştur
+        var trialEnd = DateTime.UtcNow.AddDays(14);
+        var trial = new BerberApp.Domain.Entities.Subscription
+        {
+            TenantId   = tenant.Id,
+            Plan       = PlanType.Baslangic,
+            Status     = SubscriptionStatus.Trial,
+            StartDate  = DateTime.UtcNow,
+            ExpiryDate = trialEnd,
+            Price      = 0,
+            Currency   = "TRY",
+        };
+        _context.Subscriptions.Add(trial);
         await _context.SaveChangesAsync(ct);
 
         // Yeni user'a default plan ver (Basic)
@@ -90,7 +104,10 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
             FullName = $"{user.FirstName} {user.LastName}",
             Role = user.Role.ToString(),
             TenantId = user.TenantId,
-            Subdomain = tenant.Subdomain
+            Subdomain = tenant.Subdomain,
+            IsOnTrial = true,
+            TrialEndsAt = trialEnd,
+            SubscriptionExpired = false,
         };
     }
 }
