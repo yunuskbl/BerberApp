@@ -10,6 +10,8 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { DecorativeBgComponent } from '../../shared/components/decorative-bg/decorative-bg.component';
 import { LogoComponent } from '../../shared/components/logo/logo.component';
 
+interface SalonPhoto { id: string; url: string; }
+
 interface Salon {
   id:             string;
   name:           string;
@@ -20,6 +22,7 @@ interface Salon {
   themeColor?:    string;
   averageRating?: number;
   totalReviews?:  number;
+  photos?:        SalonPhoto[];
 }
 
 @Component({
@@ -30,10 +33,30 @@ interface Salon {
   styleUrl: './salons.component.scss'
 })
 export class SalonsComponent implements OnInit {
-  salons:      Salon[] = [];
-  isLoading    = true;
-  searchQuery  = '';
-  errorMessage = '';
+  salons:        Salon[] = [];
+  isLoading      = true;
+  searchQuery    = '';
+  errorMessage   = '';
+  carouselIndex  = new Map<string, number>();
+
+  getIdx(id: string): number { return this.carouselIndex.get(id) ?? 0; }
+
+  prevPhoto(salonId: string, photos: SalonPhoto[], e: Event): void {
+    e.preventDefault(); e.stopPropagation();
+    const cur = this.getIdx(salonId);
+    this.carouselIndex.set(salonId, (cur - 1 + photos.length) % photos.length);
+  }
+
+  nextPhoto(salonId: string, photos: SalonPhoto[], e: Event): void {
+    e.preventDefault(); e.stopPropagation();
+    const cur = this.getIdx(salonId);
+    this.carouselIndex.set(salonId, (cur + 1) % photos.length);
+  }
+
+  goToPhoto(salonId: string, idx: number, e: Event): void {
+    e.preventDefault(); e.stopPropagation();
+    this.carouselIndex.set(salonId, idx);
+  }
 
   constructor(private http: HttpClient, private titleService: Title) {}
 

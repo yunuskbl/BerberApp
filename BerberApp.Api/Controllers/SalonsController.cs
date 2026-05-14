@@ -30,10 +30,11 @@ public class SalonsController : ControllerBase
                 (x.Address != null && x.Address.ToLower().Contains(search.ToLower())));
 
         var tenants = await query
-            .Select(x => new { x.Id, x.Name, x.Subdomain, x.Address, x.LogoUrl })
+            .Select(x => new { x.Id, x.Name, x.Subdomain, x.Address, x.LogoUrl, x.ThemeColor })
             .ToListAsync();
 
-        var tenantIds  = tenants.Select(t => t.Id).ToList();
+        var tenantIds = tenants.Select(t => t.Id).ToList();
+
         var allReviews = await _context.Reviews
             .Where(r => tenantIds.Contains(r.TenantId) && !r.IsDeleted)
             .GroupBy(r => r.TenantId)
@@ -45,14 +46,23 @@ public class SalonsController : ControllerBase
             })
             .ToListAsync();
 
+        var allPhotos = await _context.TenantPhotos
+            .Where(p => tenantIds.Contains(p.TenantId) && !p.IsDeleted)
+            .Select(p => new { p.TenantId, p.Id, p.Url })
+            .ToListAsync();
+
         var salons = tenants.Select(t =>
         {
-            var rv = allReviews.FirstOrDefault(r => r.TenantId == t.Id);
+            var rv     = allReviews.FirstOrDefault(r => r.TenantId == t.Id);
+            var photos = allPhotos.Where(p => p.TenantId == t.Id)
+                                  .Select(p => new { p.Id, p.Url })
+                                  .ToList();
             return new
             {
-                t.Id, t.Name, t.Subdomain, t.Address, t.LogoUrl,
+                t.Id, t.Name, t.Subdomain, t.Address, t.LogoUrl, t.ThemeColor,
                 AverageRating = rv != null ? Math.Round(rv.AverageRating, 1) : 0.0,
-                TotalReviews  = rv?.TotalReviews ?? 0
+                TotalReviews  = rv?.TotalReviews ?? 0,
+                Photos        = photos
             };
         }).ToList();
 
