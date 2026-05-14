@@ -16,4 +16,7 @@ public class LoginResponse
     public string Role { get; set; } = string.Empty;
     public Guid TenantId { get; set; }
     public string? Subdomain { get; set; }
+    public bool IsOnTrial { get; set; }
+    public DateTime? TrialEndsAt { get; set; }
+    public bool SubscriptionExpired { get; set; }
 }

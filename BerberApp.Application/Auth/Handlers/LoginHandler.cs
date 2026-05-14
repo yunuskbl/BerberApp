@@ -41,23 +41,22 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResponse>
             .FirstOrDefaultAsync(x => x.Id == user.TenantId, ct);
 
         var userPlan = PlanType.Baslangic;
-        Subscription subscription = null;
-        // Aktif aboneliği al
+        Subscription? subscription = null;
+        // Aktif veya trial aboneliği al
         try
         {
             subscription = await _context.Subscriptions
-       .Where(x => x.TenantId == user.TenantId &&
-                x.Status == SubscriptionStatus.Active &&
-                x.ExpiryDate > DateTime.UtcNow)
-       .OrderByDescending(x => x.StartDate)
-       .FirstOrDefaultAsync(ct);
+                .Where(x => x.TenantId == user.TenantId &&
+                       (x.Status == SubscriptionStatus.Active || x.Status == SubscriptionStatus.Trial) &&
+                       x.ExpiryDate > DateTime.UtcNow)
+                .OrderByDescending(x => x.StartDate)
+                .FirstOrDefaultAsync(ct);
 
-            userPlan = subscription?.Plan ?? PlanType.Baslangic;  // ← Default: Basic
+            userPlan = subscription?.Plan ?? PlanType.Baslangic;
         }
         catch (Exception)
         {
-
-            userPlan = subscription?.Plan ?? PlanType.Baslangic;
+            userPlan = PlanType.Baslangic;
         }
         
 
@@ -79,7 +78,10 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResponse>
             FullName = $"{user.FirstName} {user.LastName}",
             Role = user.Role.ToString(),
             TenantId = user.TenantId,
-            Subdomain = tenant?.Subdomain
+            Subdomain = tenant?.Subdomain,
+            IsOnTrial = subscription?.Status == SubscriptionStatus.Trial,
+            TrialEndsAt = subscription?.Status == SubscriptionStatus.Trial ? subscription.ExpiryDate : null,
+            SubscriptionExpired = subscription == null || subscription.ExpiryDate <= DateTime.UtcNow,
         };
     }
 

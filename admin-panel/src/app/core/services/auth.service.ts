@@ -20,6 +20,9 @@ export class AuthService {
           localStorage.setItem('refreshToken', response.data.refreshToken);
           localStorage.setItem('user', JSON.stringify(response.data));
           localStorage.setItem('subdomain', response.data.subdomain || '');
+          localStorage.setItem('isOnTrial', response.data.isOnTrial ? 'true' : 'false');
+          localStorage.setItem('trialEndsAt', response.data.trialEndsAt ?? '');
+          localStorage.setItem('subscriptionExpired', response.data.subscriptionExpired ? 'true' : 'false');
 
           try {
             const decoded: any = jwtDecode(response.data.accessToken);
@@ -40,6 +43,9 @@ export class AuthService {
           localStorage.setItem('refreshToken', response.data.refreshToken);
           localStorage.setItem('user', JSON.stringify(response.data));
           localStorage.setItem('subdomain', response.data.subdomain || '');
+          localStorage.setItem('isOnTrial', response.data.isOnTrial ? 'true' : 'false');
+          localStorage.setItem('trialEndsAt', response.data.trialEndsAt ?? '');
+          localStorage.setItem('subscriptionExpired', response.data.subscriptionExpired ? 'true' : 'false');
           try {
             const decoded: any = jwtDecode(response.data.accessToken);
             localStorage.setItem('userPlan', decoded.plan_type || 'Baslangic');
@@ -85,6 +91,29 @@ export class AuthService {
     localStorage.removeItem('user');
     localStorage.removeItem('userPlan');
     localStorage.removeItem('subdomain');
+    localStorage.removeItem('isOnTrial');
+    localStorage.removeItem('trialEndsAt');
+    localStorage.removeItem('subscriptionExpired');
+  }
+
+  isOnTrial(): boolean {
+    return localStorage.getItem('isOnTrial') === 'true';
+  }
+
+  getTrialEndsAt(): Date | null {
+    const val = localStorage.getItem('trialEndsAt');
+    return val ? new Date(val) : null;
+  }
+
+  getTrialDaysLeft(): number {
+    const end = this.getTrialEndsAt();
+    if (!end) return 0;
+    const diff = end.getTime() - Date.now();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  }
+
+  isSubscriptionExpired(): boolean {
+    return localStorage.getItem('subscriptionExpired') === 'true';
   }
 
   getToken(): string | null {

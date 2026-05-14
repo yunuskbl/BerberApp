@@ -15,6 +15,7 @@ namespace BerberApp.Domain.Enums
         Inactive = 2,
         Expired = 3,
         Cancelled = 4,
-        Pending = 5
+        Pending = 5,
+        Trial = 6
     }
 }
