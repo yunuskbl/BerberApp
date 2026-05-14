@@ -284,6 +284,8 @@ app-language-switcher {
 .card-body {
   padding: 30px 20px 20px;
   border-radius: 0 0 16px 16px;
+  position: relative;
+  padding-bottom: 70px;
 }
 
 .card-name {
@@ -319,6 +321,9 @@ app-language-switcher {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
 }
 
 .card-cta {
