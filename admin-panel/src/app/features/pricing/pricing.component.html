@@ -17,7 +17,7 @@
         <button class="btn-nav-login" (click)="goToApp()">
           {{ isLoggedIn ? 'Panele Git' : 'Giriş Yap' }}
         </button>
-        <button class="btn-nav-cta" (click)="scrollTo('pricing')">
+        <button class="btn-nav-cta" (click)="isLoggedIn ? goToApp() : goToRegister()">
           Hemen Başla
         </button>
       </div>
@@ -50,7 +50,7 @@
           <span class="sector-chip">+ daha fazlası</span>
         </div>
         <div class="hero-actions">
-          <button class="btn-hero-primary" (click)="scrollTo('pricing')">
+          <button class="btn-hero-primary" (click)="isLoggedIn ? goToApp() : goToRegister()">
             Ücretsiz Dene
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
@@ -317,8 +317,8 @@
       <h2>İşletmenizi dijitale taşıyın</h2>
       <p>Kurulum ücretsiz. Dakikalar içinde aktif olun.</p>
       <div class="cta-actions">
-        <button class="cta-btn-primary" (click)="scrollTo('pricing')">
-          Planları İncele
+        <button class="cta-btn-primary" (click)="isLoggedIn ? goToApp() : goToRegister()">
+          Ücretsiz Başla
         </button>
         <a class="cta-btn-contact" href="mailto:destek@ayarliyo.com">
           Bize Yazın →

@@ -1,0 +1,208 @@
+<div class="register-wrapper">
+
+  <div class="register-card">
+
+    <!-- Logo -->
+    <div class="register-logo">
+      <app-logo variant="light"></app-logo>
+    </div>
+
+    <!-- Seçilen Plan Etiketi -->
+    @if (planLabel) {
+      <div class="plan-badge">{{ planLabel }} planıyla başlıyorsunuz</div>
+    }
+
+    <!-- Adım göstergesi -->
+    <div class="steps-indicator">
+      <div class="step-dot" [class.active]="step >= 1" [class.done]="step > 1">
+        <span>1</span>
+      </div>
+      <div class="step-line" [class.done]="step > 1"></div>
+      <div class="step-dot" [class.active]="step >= 2">
+        <span>2</span>
+      </div>
+    </div>
+    <p class="step-label">
+      {{ step === 1 ? 'İşletme Bilgileri' : 'Hesap Bilgileri' }}
+    </p>
+
+    <!-- ── ADIM 1 ─────────────────────────────── -->
+    @if (step === 1) {
+      <form [formGroup]="step1Form" (ngSubmit)="nextStep()">
+
+        <div class="field">
+          <label>İŞLETME ADI</label>
+          <input
+            type="text"
+            formControlName="tenantName"
+            placeholder="Örn: Ahmet Berber Salonu"
+            maxlength="100"
+            (input)="onTenantNameChange()"
+            [class.error]="step1Form.get('tenantName')?.invalid && step1Form.get('tenantName')?.touched" />
+          @if (step1Form.get('tenantName')?.errors?.['required'] && step1Form.get('tenantName')?.touched) {
+            <span class="field-error">İşletme adı zorunludur.</span>
+          }
+        </div>
+
+        <div class="field">
+          <label>RANDEVU LİNKİ</label>
+          <div class="subdomain-wrap">
+            <span class="subdomain-prefix">ayarliyo.com/book/</span>
+            <input
+              type="text"
+              formControlName="subdomain"
+              placeholder="isletme-adiniz"
+              maxlength="50"
+              [class.error]="step1Form.get('subdomain')?.invalid && step1Form.get('subdomain')?.touched" />
+          </div>
+          @if (step1Form.get('subdomain')?.errors?.['required'] && step1Form.get('subdomain')?.touched) {
+            <span class="field-error">Randevu linki zorunludur.</span>
+          }
+          @if (step1Form.get('subdomain')?.errors?.['pattern'] && step1Form.get('subdomain')?.touched) {
+            <span class="field-error">Sadece küçük harf, rakam ve tire (-) kullanılabilir.</span>
+          }
+        </div>
+
+        <div class="field">
+          <label>TELEFON</label>
+          <input
+            type="tel"
+            formControlName="phone"
+            placeholder="05XX XXX XX XX"
+            maxlength="15"
+            [class.error]="step1Form.get('phone')?.invalid && step1Form.get('phone')?.touched" />
+          @if (step1Form.get('phone')?.errors?.['required'] && step1Form.get('phone')?.touched) {
+            <span class="field-error">Telefon zorunludur.</span>
+          }
+          @if (step1Form.get('phone')?.errors?.['pattern'] && step1Form.get('phone')?.touched) {
+            <span class="field-error">Geçerli bir telefon numarası giriniz.</span>
+          }
+        </div>
+
+        <button type="submit" class="btn-primary">
+          Devam Et
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+      </form>
+    }
+
+    <!-- ── ADIM 2 ─────────────────────────────── -->
+    @if (step === 2) {
+      <form [formGroup]="step2Form" (ngSubmit)="onSubmit()">
+
+        <div class="field-row">
+          <div class="field">
+            <label>AD</label>
+            <input
+              type="text"
+              formControlName="firstName"
+              placeholder="Ahmet"
+              maxlength="50"
+              [class.error]="step2Form.get('firstName')?.invalid && step2Form.get('firstName')?.touched" />
+            @if (step2Form.get('firstName')?.errors?.['required'] && step2Form.get('firstName')?.touched) {
+              <span class="field-error">Ad zorunludur.</span>
+            }
+          </div>
+          <div class="field">
+            <label>SOYAD</label>
+            <input
+              type="text"
+              formControlName="lastName"
+              placeholder="Yılmaz"
+              maxlength="50"
+              [class.error]="step2Form.get('lastName')?.invalid && step2Form.get('lastName')?.touched" />
+            @if (step2Form.get('lastName')?.errors?.['required'] && step2Form.get('lastName')?.touched) {
+              <span class="field-error">Soyad zorunludur.</span>
+            }
+          </div>
+        </div>
+
+        <div class="field">
+          <label>EMAIL</label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="ornek@mail.com"
+            [class.error]="step2Form.get('email')?.invalid && step2Form.get('email')?.touched" />
+          @if (step2Form.get('email')?.errors?.['required'] && step2Form.get('email')?.touched) {
+            <span class="field-error">Email zorunludur.</span>
+          }
+          @if (step2Form.get('email')?.errors?.['email'] && step2Form.get('email')?.touched) {
+            <span class="field-error">Geçerli bir email giriniz.</span>
+          }
+        </div>
+
+        <div class="field">
+          <label>ŞİFRE</label>
+          <div class="password-wrap">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="En az 6 karakter, 1 büyük harf, 1 rakam"
+              [class.error]="step2Form.get('password')?.invalid && step2Form.get('password')?.touched" />
+            <button type="button" class="toggle-pw" (click)="showPassword = !showPassword">
+              {{ showPassword ? '🙈' : '👁' }}
+            </button>
+          </div>
+          @if (step2Form.get('password')?.errors?.['required'] && step2Form.get('password')?.touched) {
+            <span class="field-error">Şifre zorunludur.</span>
+          }
+          @if (step2Form.get('password')?.errors?.['minlength'] && step2Form.get('password')?.touched) {
+            <span class="field-error">Şifre en az 6 karakter olmalıdır.</span>
+          }
+          @if (step2Form.get('password')?.errors?.['pattern'] && step2Form.get('password')?.touched) {
+            <span class="field-error">En az bir büyük harf ve bir rakam içermelidir.</span>
+          }
+        </div>
+
+        <div class="field">
+          <label>ŞİFRE TEKRAR</label>
+          <input
+            type="password"
+            formControlName="confirmPassword"
+            placeholder="Şifrenizi tekrar girin"
+            [class.error]="(step2Form.errors?.['passwordMismatch'] || step2Form.get('confirmPassword')?.errors?.['required']) && step2Form.get('confirmPassword')?.touched" />
+          @if (step2Form.get('confirmPassword')?.errors?.['required'] && step2Form.get('confirmPassword')?.touched) {
+            <span class="field-error">Şifre tekrarı zorunludur.</span>
+          }
+          @if (step2Form.errors?.['passwordMismatch'] && step2Form.get('confirmPassword')?.touched) {
+            <span class="field-error">Şifreler eşleşmiyor.</span>
+          }
+        </div>
+
+        @if (errorMessage) {
+          <div class="error-message">{{ errorMessage }}</div>
+        }
+
+        <div class="btn-row">
+          <button type="button" class="btn-back" (click)="prevStep()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Geri
+          </button>
+          <button type="submit" class="btn-primary btn-submit" [disabled]="isLoading">
+            @if (!isLoading) {
+              Hesap Oluştur
+            } @else {
+              <span class="loading">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+              </span>
+            }
+          </button>
+        </div>
+
+      </form>
+    }
+
+    <p class="footer-text">
+      Zaten hesabınız var mı? <a routerLink="/login">Giriş yapın</a>
+    </p>
+
+  </div>
+</div>
