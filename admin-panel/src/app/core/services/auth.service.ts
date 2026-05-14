@@ -32,6 +32,25 @@ export class AuthService {
     );
   }
 
+  register(request: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/register`, request).pipe(
+      tap(response => {
+        if (response.success) {
+          localStorage.setItem('accessToken', response.data.accessToken);
+          localStorage.setItem('refreshToken', response.data.refreshToken);
+          localStorage.setItem('user', JSON.stringify(response.data));
+          localStorage.setItem('subdomain', response.data.subdomain || '');
+          try {
+            const decoded: any = jwtDecode(response.data.accessToken);
+            localStorage.setItem('userPlan', decoded.plan_type || 'Baslangic');
+          } catch {
+            localStorage.setItem('userPlan', 'Baslangic');
+          }
+        }
+      })
+    );
+  }
+
   logout(): void {
     // Sunucuda refresh token'ı geçersiz kıl (hata olursa yine de local temizle)
     this.http.post(`${this.apiUrl}/logout`, {}).pipe(

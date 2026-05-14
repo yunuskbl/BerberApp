@@ -1,0 +1,316 @@
+.register-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111827;
+  padding: 24px 16px;
+}
+
+.register-card {
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 48px 40px;
+  box-shadow: 0 32px 64px rgba(0,0,0,0.4);
+}
+
+.register-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+
+  ::ng-deep .wordmark {
+    font-size: 32px !important;
+    color: #111827 !important;
+  }
+  ::ng-deep .wordmark::after {
+    width: 9px !important;
+    height: 9px !important;
+    background: #111827 !important;
+  }
+  ::ng-deep .tagline {
+    text-align: center;
+    color: #9ca3af !important;
+    font-size: 9px !important;
+  }
+}
+
+.plan-badge {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+  background: #d1fae5;
+  border-radius: 20px;
+  padding: 5px 14px;
+  margin-bottom: 20px;
+  display: inline-block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Adım Göstergesi ────────────────────────── */
+.steps-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 6px;
+}
+
+.step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #d1d5db;
+  transition: all 0.2s;
+
+  &.active {
+    border-color: #111827;
+    background: #111827;
+    color: #fff;
+  }
+  &.done {
+    border-color: #059669;
+    background: #059669;
+    color: #fff;
+  }
+}
+
+.step-line {
+  width: 60px;
+  height: 2px;
+  background: #e5e7eb;
+  transition: background 0.2s;
+  &.done { background: #059669; }
+}
+
+.step-label {
+  text-align: center;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+/* ── Form Alanları ──────────────────────────── */
+.field {
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: #9ca3af;
+    margin-bottom: 7px;
+    text-transform: uppercase;
+  }
+
+  input {
+    width: 100%;
+    padding: 11px 14px;
+    background: #f9fafb;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 9px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #111827;
+    transition: all 0.18s;
+    outline: none;
+    box-sizing: border-box;
+
+    &::placeholder { color: #d1d5db; }
+    &:focus {
+      border-color: #111827;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(17,24,39,0.08);
+    }
+    &.error { border-color: #dc2626; }
+  }
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.subdomain-wrap {
+  display: flex;
+  align-items: center;
+  background: #f9fafb;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 9px;
+  overflow: hidden;
+  transition: all 0.18s;
+
+  &:focus-within {
+    border-color: #111827;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(17,24,39,0.08);
+  }
+
+  .subdomain-prefix {
+    padding: 11px 10px 11px 14px;
+    font-size: 12px;
+    color: #9ca3af;
+    white-space: nowrap;
+    border-right: 1.5px solid #e5e7eb;
+    background: #f3f4f6;
+    flex-shrink: 0;
+  }
+
+  input {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding-left: 10px !important;
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.password-wrap {
+  position: relative;
+
+  input { padding-right: 44px !important; }
+
+  .toggle-pw {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    padding: 0;
+    line-height: 1;
+  }
+}
+
+.field-error {
+  display: block;
+  font-size: 11px;
+  color: #dc2626;
+  margin-top: 4px;
+}
+
+.error-message {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 11px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+/* ── Butonlar ───────────────────────────────── */
+.btn-primary {
+  width: 100%;
+  padding: 13px;
+  background: #111827;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+  letter-spacing: -0.2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+
+  &:hover:not(:disabled) {
+    background: #1f2937;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.btn-back {
+  padding: 13px 18px;
+  background: #f3f4f6;
+  color: #6b7280;
+  border: none;
+  border-radius: 9px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.18s;
+  flex-shrink: 0;
+
+  &:hover { background: #e5e7eb; color: #374151; }
+}
+
+.btn-submit { flex: 1; }
+
+/* ── Loading ─────────────────────────────────── */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    background: white;
+    border-radius: 50%;
+    animation: bounce 0.6s infinite alternate;
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+  }
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); opacity: 0.6; }
+  to   { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ── Footer ──────────────────────────────────── */
+.footer-text {
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+  margin-top: 24px;
+
+  a {
+    color: #111827;
+    font-weight: 600;
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+@media (max-width: 520px) {
+  .register-card { padding: 36px 24px; }
+  .field-row { grid-template-columns: 1fr; }
+  .subdomain-prefix { font-size: 11px; }
+}

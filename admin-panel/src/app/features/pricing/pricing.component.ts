@@ -192,8 +192,16 @@ export class PricingComponent {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  selectPlan(_name: string): void {
-    this.router.navigate([this.isLoggedIn ? '/settings' : '/login']);
+  goToRegister(): void {
+    this.router.navigate(['/kayit']);
+  }
+
+  selectPlan(name: string): void {
+    if (this.isLoggedIn) {
+      this.router.navigate(['/settings']);
+    } else {
+      this.router.navigate(['/kayit'], { queryParams: { plan: name } });
+    }
   }
 
   toggleFAQ(i: number): void { this.faqItems[i].open = !this.faqItems[i].open; }

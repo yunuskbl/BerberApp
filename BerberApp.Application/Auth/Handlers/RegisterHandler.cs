@@ -89,7 +89,8 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
             Email = user.Email,
             FullName = $"{user.FirstName} {user.LastName}",
             Role = user.Role.ToString(),
-            TenantId = user.TenantId
+            TenantId = user.TenantId,
+            Subdomain = tenant.Subdomain
         };
     }
 }
