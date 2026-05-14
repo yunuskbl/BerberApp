@@ -12,4 +12,7 @@ export interface LoginResponse {
   role: string;
   tenantId: string;
   subdomain?: string;
+  isOnTrial?: boolean;
+  trialEndsAt?: string;
+  subscriptionExpired?: boolean;
 }
