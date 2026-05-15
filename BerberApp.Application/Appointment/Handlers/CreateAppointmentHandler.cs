@@ -173,7 +173,7 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
 
         if (request.IsFromBookingPage)
         {
-            var notificationPhone = request.NotificationPhone ?? staff.Phone;
+            var notificationPhone = staff.Phone ?? request.NotificationPhone;
             Console.WriteLine($"[WHATSAPP] Bildirim numarası: '{notificationPhone}'");
 
             if (!string.IsNullOrWhiteSpace(notificationPhone))
