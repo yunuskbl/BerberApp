@@ -171,3 +171,41 @@
     color: #f59e0b;
   }
 }
+
+/* ── Mobile bottom nav ── */
+.sa-bottom-nav { display: none; }
+
+@media (max-width: 768px) {
+  .sa-sidebar { display: none; }
+
+  .sa-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #0f172a;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    z-index: 200;
+    padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+  }
+
+  .bnav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    text-decoration: none;
+    color: rgba(255,255,255,0.45);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 0;
+    transition: color 0.15s;
+
+    &:hover { color: rgba(255,255,255,0.75); }
+    &.active { color: #f59e0b; }
+  }
+
+  .bnav-icon  { font-size: 20px; line-height: 1; }
+  .bnav-label { font-size: 10px; font-weight: 500; }
+}

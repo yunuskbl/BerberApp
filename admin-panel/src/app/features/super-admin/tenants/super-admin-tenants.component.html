@@ -89,49 +89,49 @@
           <tbody>
             @for (tenant of filteredTenants; track tenant.id) {
               <tr [class.inactive]="!tenant.isActive">
-                <td class="name-cell">
+                <td class="name-cell" data-label="İşletme">
                   <div class="tenant-name">{{ tenant.name }}</div>
                   @if (tenant.phone) {
                     <div class="tenant-meta">📞 {{ tenant.phone }}</div>
                   }
                 </td>
-                <td class="admin-cell">
+                <td class="admin-cell" data-label="Admin">
                   <div class="admin-email">{{ tenant.adminEmail ?? '—' }}</div>
                   <div class="admin-name">{{ tenant.adminName ?? '' }}</div>
                 </td>
-                <td class="subdomain-cell">
+                <td class="subdomain-cell" data-label="Subdomain">
                   <a [href]="'https://' + tenant.subdomain + '.ayarliyo.com'" target="_blank" class="subdomain-link">
                     {{ tenant.subdomain }}
                   </a>
                 </td>
-                <td class="center">{{ tenant.staffCount }}</td>
-                <td class="center">{{ tenant.customerCount }}</td>
-                <td class="center">
+                <td class="center" data-label="Personel">{{ tenant.staffCount }}</td>
+                <td class="center" data-label="Müşteri">{{ tenant.customerCount }}</td>
+                <td class="center" data-label="Randevu">
                   <span>{{ tenant.totalAppointments }}</span>
                   @if (tenant.pendingAppointments > 0) {
                     <span class="pending-badge">{{ tenant.pendingAppointments }} bekl.</span>
                   }
                 </td>
-                <td class="plan-cell">
+                <td class="plan-cell" data-label="Plan">
                   <span class="badge badge--plan">{{ tenant.plan }}</span>
                 </td>
-                <td class="sub-cell">
+                <td class="sub-cell" data-label="Abonelik">
                   <span [class]="'sub-badge sub-badge--' + subStatusClass(tenant)">
                     {{ subStatusLabel(tenant) }}
                   </span>
                 </td>
-                <td class="expiry-cell">
+                <td class="expiry-cell" data-label="Bitiş / Kalan">
                   <span [class.expiry-urgent]="(tenant.daysLeft ?? 99) <= 3">
                     {{ formatExpiry(tenant) }}
                   </span>
                 </td>
-                <td class="date-cell">{{ formatDate(tenant.createdAt) }}</td>
-                <td class="status-cell">
+                <td class="date-cell" data-label="Kayıt">{{ formatDate(tenant.createdAt) }}</td>
+                <td class="status-cell" data-label="Durum">
                   <span [class]="'status ' + (tenant.isActive ? 'active' : 'inactive')">
                     {{ tenant.isActive ? 'Aktif' : 'Pasif' }}
                   </span>
                 </td>
-                <td class="actions-cell">
+                <td class="actions-cell" data-label="İşlem">
                   <a [routerLink]="['/superadmin/tenants', tenant.id]" class="btn-action detail" title="Detay">🔍</a>
                   <button class="btn-action toggle" (click)="toggleTenantActive(tenant.id, tenant.isActive)"
                     title="Durumunu Değiştir">{{ tenant.isActive ? '⊘' : '✓' }}</button>

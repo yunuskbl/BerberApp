@@ -204,6 +204,58 @@
 }
 
 @media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    h2 { font-size: 22px; }
+  }
+
   .filters-bar { flex-direction: column; }
+  .search-bar  { width: 100%; }
   .stats-grid  { grid-template-columns: 1fr 1fr; }
+
+  /* ── Table → Card layout ── */
+  .table-wrapper { overflow: visible; }
+
+  .payments-table {
+    thead { display: none; }
+
+    tbody tr {
+      display: block;
+      background: #1e293b;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 4px 12px;
+
+      &.expired-row { opacity: 0.7; }
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: 10px 0;
+      font-size: 13px;
+
+      &:last-child { border-bottom: none; }
+
+      &::before {
+        content: attr(data-label);
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        flex-shrink: 0;
+        margin-right: 10px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
 }

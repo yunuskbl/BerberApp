@@ -88,24 +88,24 @@
         <tbody>
           @for (s of filtered; track s.id) {
             <tr [class.expired-row]="s.isExpired">
-              <td class="tenant-cell">
+              <td class="tenant-cell" data-label="İşletme">
                 <div class="tenant-name">{{ s.tenantName ?? '—' }}</div>
               </td>
-              <td class="email-cell">{{ s.adminEmail ?? '—' }}</td>
-              <td class="plan-cell">
+              <td class="email-cell" data-label="Admin">{{ s.adminEmail ?? '—' }}</td>
+              <td class="plan-cell" data-label="Plan">
                 <span class="badge badge--plan">{{ s.plan }}</span>
               </td>
-              <td>
+              <td data-label="Durum">
                 <span [class]="'sub-badge sub-badge--' + statusClass(s.status)">
                   {{ statusLabel(s.status) }}
                 </span>
               </td>
-              <td class="price-cell">{{ formatPrice(s.price, s.currency) }}</td>
-              <td class="date-cell">{{ formatDate(s.startDate) }}</td>
-              <td class="date-cell">
+              <td class="price-cell" data-label="Fiyat">{{ formatPrice(s.price, s.currency) }}</td>
+              <td class="date-cell" data-label="Başlangıç">{{ formatDate(s.startDate) }}</td>
+              <td class="date-cell" data-label="Bitiş">
                 <span [class.text-red]="s.isExpired">{{ formatDate(s.expiryDate) }}</span>
               </td>
-              <td class="days-cell">
+              <td class="days-cell" data-label="Kalan Gün">
                 @if (s.daysLeft != null && !s.isExpired) {
                   <span [class.text-amber]="s.daysLeft <= 7" [class.text-red]="s.daysLeft <= 3">
                     {{ s.daysLeft }}g

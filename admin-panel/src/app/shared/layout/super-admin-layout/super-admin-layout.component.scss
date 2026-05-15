@@ -16,6 +16,6 @@
 @media (max-width: 768px) {
   .sa-content {
     margin-left: 0;
-    padding: 16px;
+    padding: 16px 16px calc(16px + 64px + env(safe-area-inset-bottom));
   }
 }

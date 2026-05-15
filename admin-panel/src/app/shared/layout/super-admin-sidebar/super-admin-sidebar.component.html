@@ -31,3 +31,17 @@
     </div>
   </div>
 </aside>
+
+<!-- Mobile bottom navigation -->
+<nav class="sa-bottom-nav">
+  @for (item of menuItems; track item.route) {
+    <a [routerLink]="item.route" routerLinkActive="active" class="bnav-item">
+      <span class="bnav-icon">{{ item.icon }}</span>
+      <span class="bnav-label">{{ item.label }}</span>
+    </a>
+  }
+  <button class="bnav-item" (click)="logout()">
+    <span class="bnav-icon">🚪</span>
+    <span class="bnav-label">Çıkış</span>
+  </button>
+</nav>
