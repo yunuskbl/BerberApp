@@ -79,11 +79,18 @@ export const routes: Routes = [
       ),
   },
   {
-        path: 'pricing', 
-        loadComponent: () =>
-          import('./features/pricing/pricing.component').then(
-            (m) => m.PricingComponent,
-          ),
+    path: 'pricing',
+    loadComponent: () =>
+      import('./features/pricing/pricing.component').then(
+        (m) => m.PricingComponent,
+      ),
+  },
+  {
+    path: 'payment',
+    loadComponent: () =>
+      import('./features/payment/payment.component').then(
+        (m) => m.PaymentComponent,
+      ),
   },
 
   // SuperAdmin routes — separate layout

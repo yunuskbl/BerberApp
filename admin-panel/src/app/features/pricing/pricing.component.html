@@ -235,13 +235,20 @@
                 {{ plan.limits.appointments }}
               </span>
             </div>
-            <button
-              class="plan-btn"
-              [class.btn-primary]="plan.featured"
-              [class.btn-outline]="!plan.featured"
-              (click)="selectPlan(plan.name)">
-              {{ plan.cta }}
-            </button>
+            <div class="plan-btn-group">
+              <button
+                class="plan-btn btn-buy"
+                [class.btn-primary]="plan.featured"
+                [class.btn-primary-light]="!plan.featured"
+                (click)="buyPlan(plan.name)">
+                Hemen Satın Al
+              </button>
+              <button
+                class="plan-btn btn-trial btn-outline"
+                (click)="selectPlan(plan.name)">
+                Ücretsiz Dene
+              </button>
+            </div>
             <ul class="feature-list">
               @for (feature of plan.features; track feature.name) {
                 <li [class.off]="!feature.included">

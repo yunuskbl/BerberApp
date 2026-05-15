@@ -729,6 +729,13 @@ $green:        #059669;
   }
 }
 
+.plan-btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
 .plan-btn {
   width: 100%;
   padding: 13px;
@@ -738,7 +745,6 @@ $green:        #059669;
   cursor: pointer;
   border: 2px solid transparent;
   transition: all .2s;
-  margin-bottom: 28px;
 
   &.btn-primary {
     background: $purple;
@@ -747,10 +753,20 @@ $green:        #059669;
     &:hover { background: $purple-dark; border-color: $purple-dark; }
   }
 
+  &.btn-primary-light {
+    background: $purple-light;
+    color: $purple-dark;
+    border-color: $purple-light;
+    &:hover { background: darken($purple-light, 5%); border-color: darken($purple-light, 5%); }
+  }
+
   &.btn-outline {
     background: $white;
     color: $purple;
     border-color: $purple;
+    padding: 10px 13px;
+    font-size: 13px;
+    font-weight: 500;
     &:hover { background: $purple-light; }
   }
 }

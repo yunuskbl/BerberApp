@@ -198,9 +198,17 @@ export class PricingComponent {
 
   selectPlan(name: string): void {
     if (this.isLoggedIn) {
-      this.router.navigate(['/settings']);
+      this.router.navigate(['/payment'], { queryParams: { plan: name } });
     } else {
       this.router.navigate(['/kayit'], { queryParams: { plan: name } });
+    }
+  }
+
+  buyPlan(name: string): void {
+    if (this.isLoggedIn) {
+      this.router.navigate(['/payment'], { queryParams: { plan: name } });
+    } else {
+      this.router.navigate(['/kayit'], { queryParams: { plan: name, mode: 'buy' } });
     }
   }
 

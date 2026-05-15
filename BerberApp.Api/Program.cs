@@ -103,6 +103,8 @@ builder.Services.AddScoped<SmsService>();
 builder.Services.AddHttpClient<ISmsService, IletimerkeziSmsService>();
 builder.Services.AddScoped<INotificationService, LinkNotificationService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
+builder.Services.AddScoped<IIyzicoService, BerberApp.Infrastructure.Services.IyzicoService>();
+builder.Services.AddScoped<BerberApp.Infrastructure.Services.IyzicoService>();
 builder.Services.AddHttpClient<ITranslationService, MyMemoryTranslationService>();
 builder.Services.AddHttpClient<IExchangeRateService, FrankfurterExchangeRateService>();
 

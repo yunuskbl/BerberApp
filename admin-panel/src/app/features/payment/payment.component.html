@@ -1,0 +1,71 @@
+<div class="payment-page">
+
+  <!-- Yükleniyor -->
+  @if (state === 'loading') {
+    <div class="state-center">
+      <div class="spinner-ring"></div>
+      <p>Ödeme formu hazırlanıyor…</p>
+    </div>
+  }
+
+  <!-- Form -->
+  @if (state === 'form') {
+    <div class="payment-layout">
+      <div class="payment-sidebar">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">ayarlıyo</span>
+        </div>
+        <div class="order-card">
+          <p class="order-label">Sipariş Özeti</p>
+          <div class="order-plan">
+            <span class="plan-icon">{{ planMap[plan]?.icon }}</span>
+            <div>
+              <span class="plan-name">{{ planLabel }} Planı</span>
+              <span class="plan-period">1 Yıllık Abonelik</span>
+            </div>
+          </div>
+          <div class="order-total">
+            <span>Toplam</span>
+            <span class="total-price">₺{{ price | number:'1.0-0' }}</span>
+          </div>
+          <ul class="order-features">
+            <li>✓ Anında aktivasyon</li>
+            <li>✓ 365 gün geçerli</li>
+            <li>✓ SSL güvenli ödeme</li>
+            <li>✓ iyzico güvencesi</li>
+          </ul>
+        </div>
+      </div>
+      <div class="payment-main">
+        <h1 class="form-title">Ödeme Bilgileri</h1>
+        <p class="form-sub">Kredi/banka kartı bilgilerinizi güvenle girin.</p>
+        <div id="iyzico-checkout-form" [innerHTML]="checkoutHtml"></div>
+      </div>
+    </div>
+  }
+
+  <!-- Başarı -->
+  @if (state === 'success') {
+    <div class="state-center">
+      <div class="result-icon success-icon">✓</div>
+      <h2>Ödeme Başarılı!</h2>
+      <p>{{ successPlan || 'Aboneliğiniz' }} aktif edildi. İyi kullanımlar 🎉</p>
+      <button class="btn-primary" (click)="goToDashboard()">Panele Git</button>
+    </div>
+  }
+
+  <!-- Hata -->
+  @if (state === 'fail') {
+    <div class="state-center">
+      <div class="result-icon fail-icon">✕</div>
+      <h2>Ödeme Başarısız</h2>
+      <p>{{ failReason || errorMessage || 'Ödeme işlemi tamamlanamadı.' }}</p>
+      <div class="result-actions">
+        <button class="btn-outline" (click)="goToPricing()">Planlara Dön</button>
+        <button class="btn-primary" (click)="retry()">Tekrar Dene</button>
+      </div>
+    </div>
+  }
+
+</div>

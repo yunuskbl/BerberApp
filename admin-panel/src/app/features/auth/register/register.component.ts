@@ -27,6 +27,7 @@ export class RegisterComponent implements OnInit {
   errorMessage = '';
   showPassword = false;
   selectedPlan = '';
+  buyMode = false;
 
   step1Form: FormGroup;
   step2Form: FormGroup;
@@ -65,6 +66,7 @@ export class RegisterComponent implements OnInit {
 
   ngOnInit(): void {
     this.selectedPlan = this.route.snapshot.queryParamMap.get('plan') || '';
+    this.buyMode = this.route.snapshot.queryParamMap.get('mode') === 'buy';
     if (this.authService.isLoggedIn()) {
       this.router.navigate(['/dashboard']);
     }
@@ -120,7 +122,11 @@ export class RegisterComponent implements OnInit {
     this.authService.register(payload).subscribe({
       next: (res) => {
         if (res.success) {
-          this.router.navigate(['/dashboard']);
+          if (this.buyMode && this.selectedPlan) {
+            this.router.navigate(['/payment'], { queryParams: { plan: this.selectedPlan } });
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         } else {
           this.errorMessage = res.message || 'Kayıt oluşturulamadı.';
         }
