@@ -184,7 +184,7 @@ export class AppointmentListComponent implements OnInit {
     this.appointmentForm.patchValue({ startTime: '' });
     this.appointmentService.getAvailableSlots(staffId, serviceId, new Date(date).toISOString()).subscribe({
       next: (res) => {
-        if (res.success) this.availableSlots = res.data.filter((s: any) => s.isAvailable);
+        if (res.success) this.availableSlots = res.data;
         this.isLoadingSlots = false;
       },
       error: () => { this.isLoadingSlots = false; }
@@ -236,7 +236,7 @@ export class AppointmentListComponent implements OnInit {
     this.isEditSlotsLoading = true;
     this.appointmentService.getAvailableSlots(staffId, serviceId, date + 'T00:00:00Z').subscribe({
       next: (res) => {
-        if (res.success) this.editSlots = res.data.filter((s: any) => s.isAvailable);
+        if (res.success) this.editSlots = res.data;
         this.isEditSlotsLoading = false;
       },
       error: () => { this.isEditSlotsLoading = false; }

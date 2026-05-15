@@ -141,7 +141,14 @@ export class DashboardComponent implements OnInit {
     this.appointmentService.confirm(id).subscribe({
       next: () => {
         this.pendingAppointments = this.pendingAppointments.filter(a => a.id !== id);
+        this.loadDashboard();
       },
+    });
+  }
+
+  completeAppointment(id: string): void {
+    this.appointmentService.complete(id).subscribe({
+      next: () => this.loadDashboard(),
     });
   }
 }

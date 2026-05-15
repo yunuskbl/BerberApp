@@ -300,8 +300,13 @@
             </div>
             <div class="slots-grid">
               @for (slot of slots; track slot.startTime) {
-                <button class="slot-btn" [class.selected]="selectedSlot === slot.startTime" (click)="selectSlot(slot)">
+                <button class="slot-btn"
+                  [class.selected]="selectedSlot === slot.startTime"
+                  [class.slot-occupied]="!slot.isAvailable"
+                  [disabled]="!slot.isAvailable"
+                  (click)="selectSlot(slot)">
                   {{ formatTime(slot.startTime) }}
+                  @if (!slot.isAvailable) { <span class="slot-dolu">Dolu</span> }
                 </button>
               }
             </div>

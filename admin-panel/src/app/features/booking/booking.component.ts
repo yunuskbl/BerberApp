@@ -305,12 +305,13 @@ export class BookingComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           if (res.success)
-            this.slots = res.data.filter((s: BookingSlot) => s.isAvailable);
+            this.slots = res.data;
         },
       });
   }
 
   selectSlot(slot: BookingSlot): void {
+    if (!slot.isAvailable) return;
     this.selectedSlot = slot.startTime;
   }
 

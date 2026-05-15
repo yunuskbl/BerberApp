@@ -102,9 +102,21 @@
                 <span class="apt-customer">{{ apt.customerName }}</span>
                 <span class="apt-service">{{ apt.serviceName }} · {{ apt.staffName }}</span>
               </div>
-              <span class="badge {{ getStatusClass(apt.status) }}">
-                {{ getStatusKey(apt.status) | translate }}
-              </span>
+              <div class="apt-actions">
+                @if (apt.status === AppointmentStatus.Confirmed) {
+                  <button class="apt-action-btn btn-complete" (click)="completeAppointment(apt.id)" title="Tamamla">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Tamamla
+                  </button>
+                } @else if (apt.status === AppointmentStatus.Pending) {
+                  <button class="apt-action-btn btn-confirm-small" (click)="confirmAppointment(apt.id)" title="Onayla">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Onayla
+                  </button>
+                } @else {
+                  <span class="badge {{ getStatusClass(apt.status) }}">{{ getStatusKey(apt.status) | translate }}</span>
+                }
+              </div>
             </div>
           }
         </div>

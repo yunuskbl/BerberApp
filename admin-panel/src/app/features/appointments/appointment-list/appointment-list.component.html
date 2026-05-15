@@ -233,8 +233,11 @@
           @for (slot of availableSlots; track slot.startTime) {
             <button type="button" class="slot-btn"
               [class.selected]="appointmentForm.get('startTime')?.value === formatSlotValue(slot.startTime)"
-              (click)="appointmentForm.patchValue({ startTime: formatSlotValue(slot.startTime) })">
+              [class.slot-occupied]="!slot.isAvailable"
+              [disabled]="!slot.isAvailable"
+              (click)="slot.isAvailable && appointmentForm.patchValue({ startTime: formatSlotValue(slot.startTime) })">
               {{ formatSlotTime(slot.startTime) }}
+              @if (!slot.isAvailable) { <span class="slot-dolu">Dolu</span> }
             </button>
           }
         </div>
@@ -307,8 +310,11 @@
               @for (slot of editSlots; track slot.startTime) {
                 <button type="button" class="slot-btn"
                   [class.selected]="editForm.get('startTime')?.value === slot.startTime"
-                  (click)="editForm.patchValue({ startTime: slot.startTime })">
+                  [class.slot-occupied]="!slot.isAvailable"
+                  [disabled]="!slot.isAvailable"
+                  (click)="slot.isAvailable && editForm.patchValue({ startTime: slot.startTime })">
                   {{ formatSlotTime(slot.startTime) }}
+                  @if (!slot.isAvailable) { <span class="slot-dolu">Dolu</span> }
                 </button>
               }
             </div>

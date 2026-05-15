@@ -276,8 +276,17 @@ app-language-switcher {
   border: 1px solid #ebebeb; border-radius: 8px;
   font-size: 13px; font-weight: 500; color: #aaa;
   cursor: pointer; transition: all 0.15s; font-family: 'Inter', sans-serif;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
   &:hover    { border-color: #999; color: #333; }
   &.selected { background: var(--accent); color: white; border-color: var(--accent); font-weight: 600; }
+  &.slot-occupied, &:disabled {
+    background: #fafafa; border-color: #f0f0f0;
+    color: #ddd; cursor: not-allowed; pointer-events: none;
+  }
+}
+.slot-dolu {
+  font-size: 9px; font-weight: 700; color: #ef4444;
+  letter-spacing: 0.3px; text-transform: uppercase; line-height: 1;
 }
 .no-slots { font-size: 13px; color: #bbb; padding: 12px 0; }
 
