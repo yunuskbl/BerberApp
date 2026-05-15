@@ -327,13 +327,20 @@ public class BookingController : ControllerBase
         // Tüm seçilen hizmetleri AppointmentServices tablosuna kaydet
         if (effectiveServiceIds.Count > 0)
         {
-            var apptServices = effectiveServiceIds.Select(sid => new BerberApp.Domain.Entities.AppointmentService
+            try
             {
-                AppointmentId = result.Id,
-                ServiceId = sid
-            });
-            _context.AppointmentServices.AddRange(apptServices);
-            await _context.SaveChangesAsync();
+                var apptServices = effectiveServiceIds.Select(sid => new BerberApp.Domain.Entities.AppointmentService
+                {
+                    AppointmentId = result.Id,
+                    ServiceId = sid
+                });
+                _context.AppointmentServices.AddRange(apptServices);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[AppointmentServices HATA] {ex.Message}");
+            }
         }
 
         // Uyarı eşiklerini kontrol et (sadece eşiği tam geçen anda gönder)

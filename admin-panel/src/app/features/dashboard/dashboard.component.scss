@@ -205,6 +205,110 @@
   color: #e5e7eb;
 }
 
+/* ── Pending Panel ── */
+.pending-panel {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 14px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.pending-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #fde68a;
+}
+
+.pending-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #92400e;
+    letter-spacing: -0.2px;
+  }
+}
+
+.pending-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #f59e0b;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.8); }
+}
+
+.pending-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px; height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: #f59e0b;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pending-list { padding: 4px 0; }
+
+.pending-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 20px;
+  border-bottom: 1px solid rgba(253, 230, 138, 0.5);
+  transition: background 0.12s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: rgba(253, 230, 138, 0.25); }
+}
+
+.pending-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 56px;
+
+  .pd-day  { font-size: 11px; color: #92400e; font-weight: 600; }
+  .pd-time { font-size: 13px; font-weight: 700; color: #78350f; }
+}
+
+.pending-info {
+  flex: 1;
+
+  .pi-customer { display: block; font-size: 13px; font-weight: 600; color: #111827; }
+  .pi-detail   { font-size: 11px; color: #9ca3af; margin-top: 1px; }
+}
+
+.btn-confirm {
+  padding: 5px 14px;
+  border-radius: 8px;
+  background: #111827;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:hover { background: #1f2937; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.2); }
+  &:active { transform: translateY(0); }
+}
+
 /* ── Content Grid ── */
 .content-grid {
   display: grid;

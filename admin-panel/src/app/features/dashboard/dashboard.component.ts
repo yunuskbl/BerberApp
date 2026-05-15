@@ -27,7 +27,9 @@ interface Stat {
 })
 export class DashboardComponent implements OnInit {
   todayAppointments: Appointment[] = [];
+  pendingAppointments: Appointment[] = [];
   isLoading = true;
+  isPendingLoading = true;
   earnings: EarningsDto | null = null;
 
   AppointmentStatus = AppointmentStatus;
@@ -65,6 +67,18 @@ export class DashboardComponent implements OnInit {
         }
         this.isLoading = false;
       },
+    });
+
+    this.appointmentService.getAll().subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.pendingAppointments = res.data
+            .filter(a => a.status === AppointmentStatus.Pending)
+            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+        }
+        this.isPendingLoading = false;
+      },
+      error: () => { this.isPendingLoading = false; }
     });
 
     const todayStart = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())).toISOString();
@@ -114,6 +128,20 @@ export class DashboardComponent implements OnInit {
   formatTime(dateStr: string): string {
     return new Date(dateStr).toLocaleTimeString(this.langService.dateLocale, {
       hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul',
+    });
+  }
+
+  formatDate(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString(this.langService.dateLocale, {
+      day: 'numeric', month: 'short', timeZone: 'Europe/Istanbul',
+    });
+  }
+
+  confirmAppointment(id: string): void {
+    this.appointmentService.confirm(id).subscribe({
+      next: () => {
+        this.pendingAppointments = this.pendingAppointments.filter(a => a.id !== id);
+      },
     });
   }
 }

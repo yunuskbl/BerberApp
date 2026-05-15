@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { SuperAdminService, SuperAdminTenant, CreateTenantRequest } from '../../../core/services/superadmin.service';
 
 @Component({
   selector: 'app-super-admin-tenants',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule],
   templateUrl: './super-admin-tenants.component.html',
   styleUrl: './super-admin-tenants.component.scss'
 })
@@ -125,23 +125,50 @@ export class SuperAdminTenantsComponent implements OnInit {
     });
   }
 
-  get totalTenants(): number {
-    return this.tenants.length;
+  searchQuery = '';
+
+  get filteredTenants() {
+    if (!this.searchQuery.trim()) return this.tenants;
+    const q = this.searchQuery.toLowerCase();
+    return this.tenants.filter(t =>
+      t.name.toLowerCase().includes(q) ||
+      t.subdomain.toLowerCase().includes(q) ||
+      t.adminEmail?.toLowerCase().includes(q)
+    );
   }
 
-  get activeTenants(): number {
-    return this.tenants.filter(t => t.isActive).length;
+  get totalTenants(): number { return this.tenants.length; }
+  get activeTenants(): number { return this.tenants.filter(t => t.isActive).length; }
+  get trialTenants(): number { return this.tenants.filter(t => t.isOnTrial).length; }
+  get totalAppointments(): number { return this.tenants.reduce((s, t) => s + t.totalAppointments, 0); }
+  get totalCustomers(): number { return this.tenants.reduce((s, t) => s + t.customerCount, 0); }
+
+  subStatusLabel(t: any): string {
+    if (!t.subscriptionStatus || t.subscriptionStatus === 'None') return 'Yok';
+    const map: Record<string, string> = {
+      Trial: 'Deneme', Active: 'Aktif', Expired: 'Süresi Doldu',
+      Cancelled: 'İptal', Inactive: 'Pasif', Pending: 'Bekliyor'
+    };
+    return map[t.subscriptionStatus] ?? t.subscriptionStatus;
   }
 
-  get totalAppointments(): number {
-    return this.tenants.reduce((sum, t) => sum + t.totalAppointments, 0);
-  }
-
-  get totalCustomers(): number {
-    return this.tenants.reduce((sum, t) => sum + t.customerCount, 0);
+  subStatusClass(t: any): string {
+    const map: Record<string, string> = {
+      Trial: 'trial', Active: 'active', Expired: 'expired',
+      Cancelled: 'cancelled', None: 'none'
+    };
+    return map[t.subscriptionStatus] ?? 'none';
   }
 
   formatDate(dateStr: string): string {
+    if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('tr-TR');
+  }
+
+  formatExpiry(t: any): string {
+    if (!t.subscriptionExpiresAt) return '—';
+    const d = new Date(t.subscriptionExpiresAt);
+    const label = d.toLocaleDateString('tr-TR');
+    return t.daysLeft != null ? `${label} (${t.daysLeft}g)` : label;
   }
 }

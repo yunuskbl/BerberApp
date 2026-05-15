@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
@@ -13,12 +13,18 @@ export interface SuperAdminTenant {
   address?: string;
   isActive: boolean;
   createdAt: string;
+  adminEmail?: string;
+  adminName?: string;
   staffCount: number;
   customerCount: number;
   totalAppointments: number;
   pendingAppointments: number;
   completedAppointments: number;
   plan?: string;
+  subscriptionStatus?: string;
+  subscriptionExpiresAt?: string;
+  isOnTrial: boolean;
+  daysLeft?: number;
 }
 
 export interface CreateTenantRequest {
@@ -30,6 +36,36 @@ export interface CreateTenantRequest {
   password: string;
   phone?: string;
   address?: string;
+}
+
+export interface SuperAdminReports {
+  totalTenants: number;
+  activeTenants: number;
+  trialTenants: number;
+  activePaidTenants: number;
+  newThisMonth: number;
+  newThisWeek: number;
+  totalAppointments: number;
+  appointmentsThisMonth: number;
+  expiringSoon: number;
+  planDistribution: { plan: string; count: number }[];
+  monthlyGrowth: { year: number; month: number; count: number }[];
+}
+
+export interface SuperAdminSubscription {
+  id: string;
+  tenantId: string;
+  tenantName?: string;
+  adminEmail?: string;
+  plan: string;
+  status: string;
+  startDate: string;
+  expiryDate: string;
+  price: number;
+  currency: string;
+  createdAt: string;
+  isExpired: boolean;
+  daysLeft?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -68,5 +104,15 @@ export class SuperAdminService {
 
   resetTenantData(tenantId: string): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}/reset`, {});
+  }
+
+  getReports(): Observable<ApiResponse<SuperAdminReports>> {
+    return this.http.get<ApiResponse<SuperAdminReports>>(`${this.apiUrl}/reports`);
+  }
+
+  getSubscriptions(status?: string): Observable<ApiResponse<SuperAdminSubscription[]>> {
+    let params = new HttpParams();
+    if (status) params = params.set('status', status);
+    return this.http.get<ApiResponse<SuperAdminSubscription[]>>(`${this.apiUrl}/subscriptions`, { params });
   }
 }

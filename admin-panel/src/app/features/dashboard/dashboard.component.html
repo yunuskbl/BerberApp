@@ -37,6 +37,42 @@
     </a>
   </div>
 
+  <!-- ── Bekleyen Randevular Panel ── -->
+  @if (isPendingLoading || pendingAppointments.length > 0) {
+    <div class="pending-panel">
+      <div class="pending-header">
+        <div class="pending-title-row">
+          <span class="pending-dot"></span>
+          <h3>Onay Bekleyen Randevular</h3>
+          @if (!isPendingLoading) {
+            <span class="pending-count">{{ pendingAppointments.length }}</span>
+          }
+        </div>
+        <a routerLink="/appointments" class="card-link">Tümünü Gör →</a>
+      </div>
+
+      @if (isPendingLoading) {
+        <div class="loading-state"><div class="spinner"></div></div>
+      } @else {
+        <div class="pending-list">
+          @for (apt of pendingAppointments; track apt.id) {
+            <div class="pending-item">
+              <div class="pending-date">
+                <span class="pd-day">{{ formatDate(apt.startTime) }}</span>
+                <span class="pd-time">{{ formatTime(apt.startTime) }}</span>
+              </div>
+              <div class="pending-info">
+                <span class="pi-customer">{{ apt.customerName }}</span>
+                <span class="pi-detail">{{ apt.serviceName }} · {{ apt.staffName }}</span>
+              </div>
+              <button class="btn-confirm" (click)="confirmAppointment(apt.id)">Onayla</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
   <!-- ── Content Grid ── -->
   <div class="content-grid">
 

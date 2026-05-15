@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Domain.Entities;
 
 namespace BerberApp.Api.Controllers;
 
@@ -36,6 +37,7 @@ public class SuperAdminController : ControllerBase
     {
         try
         {
+            var now = DateTime.UtcNow;
             var tenants = await _context.Tenants
                 .IgnoreQueryFilters()
                 .Where(t => t.Id != SYSTEM_TENANT_ID && !t.IsDeleted)
@@ -50,18 +52,41 @@ public class SuperAdminController : ControllerBase
                     Address = t.Address,
                     IsActive = t.IsActive,
                     CreatedAt = t.CreatedAt,
+                    AdminEmail = t.Users
+                        .Where(u => u.Role == UserRole.Admin)
+                        .Select(u => u.Email)
+                        .FirstOrDefault(),
+                    AdminName = t.Users
+                        .Where(u => u.Role == UserRole.Admin)
+                        .Select(u => u.FirstName + " " + u.LastName)
+                        .FirstOrDefault(),
                     StaffCount = t.Staff.Count(),
                     CustomerCount = t.Customers.Count(),
                     TotalAppointments = t.Appointments.Count(),
                     PendingAppointments = t.Appointments.Count(a => a.Status == AppointmentStatus.Pending),
                     CompletedAppointments = t.Appointments.Count(a => a.Status == AppointmentStatus.Completed),
                     Plan = _context.Subscriptions
-                        .Where(s => s.TenantId == t.Id
-                                 && s.Status == SubscriptionStatus.Active
-                                 && s.ExpiryDate > DateTime.UtcNow)
+                        .Where(s => s.TenantId == t.Id)
                         .OrderByDescending(s => s.StartDate)
                         .Select(s => s.Plan.ToString())
-                        .FirstOrDefault() ?? "Baslangic"
+                        .FirstOrDefault() ?? "Baslangic",
+                    SubscriptionStatus = _context.Subscriptions
+                        .Where(s => s.TenantId == t.Id)
+                        .OrderByDescending(s => s.StartDate)
+                        .Select(s => s.Status.ToString())
+                        .FirstOrDefault() ?? "None",
+                    SubscriptionExpiresAt = _context.Subscriptions
+                        .Where(s => s.TenantId == t.Id)
+                        .OrderByDescending(s => s.StartDate)
+                        .Select(s => (DateTime?)s.ExpiryDate)
+                        .FirstOrDefault(),
+                    IsOnTrial = _context.Subscriptions
+                        .Any(s => s.TenantId == t.Id && s.Status == SubscriptionStatus.Trial && s.ExpiryDate > now),
+                    DaysLeft = _context.Subscriptions
+                        .Where(s => s.TenantId == t.Id && s.ExpiryDate > now)
+                        .OrderByDescending(s => s.StartDate)
+                        .Select(s => (int?)EF.Functions.DateDiffDay(now, s.ExpiryDate))
+                        .FirstOrDefault()
                 })
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
@@ -71,6 +96,147 @@ public class SuperAdminController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "SuperAdmin tenants list error");
+            return StatusCode(500, new { success = false, message = "Hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Sistem geneli raporlar
+    /// </summary>
+    [HttpGet("reports")]
+    public async Task<IActionResult> GetReports()
+    {
+        try
+        {
+            var now = DateTime.UtcNow;
+            var thirtyDaysAgo = now.AddDays(-30);
+            var sevenDaysAgo = now.AddDays(-7);
+
+            var totalTenants = await _context.Tenants
+                .IgnoreQueryFilters()
+                .CountAsync(t => t.Id != SYSTEM_TENANT_ID && !t.IsDeleted);
+
+            var activeTenants = await _context.Tenants
+                .IgnoreQueryFilters()
+                .CountAsync(t => t.Id != SYSTEM_TENANT_ID && !t.IsDeleted && t.IsActive);
+
+            var trialTenants = await _context.Subscriptions
+                .CountAsync(s => s.Status == SubscriptionStatus.Trial && s.ExpiryDate > now);
+
+            var activePaidTenants = await _context.Subscriptions
+                .CountAsync(s => s.Status == SubscriptionStatus.Active && s.ExpiryDate > now);
+
+            var newThisMonth = await _context.Tenants
+                .IgnoreQueryFilters()
+                .CountAsync(t => t.Id != SYSTEM_TENANT_ID && !t.IsDeleted && t.CreatedAt >= thirtyDaysAgo);
+
+            var newThisWeek = await _context.Tenants
+                .IgnoreQueryFilters()
+                .CountAsync(t => t.Id != SYSTEM_TENANT_ID && !t.IsDeleted && t.CreatedAt >= sevenDaysAgo);
+
+            var totalAppointments = await _context.Appointments.CountAsync();
+            var appointmentsThisMonth = await _context.Appointments
+                .CountAsync(a => a.CreatedAt >= thirtyDaysAgo);
+
+            var planDist = await _context.Subscriptions
+                .Where(s => s.ExpiryDate > now)
+                .GroupBy(s => s.Plan)
+                .Select(g => new { Plan = g.Key.ToString(), Count = g.Count() })
+                .ToListAsync();
+
+            // Son 6 ayın kayıt trendi
+            var monthlyGrowth = await _context.Tenants
+                .IgnoreQueryFilters()
+                .Where(t => t.Id != SYSTEM_TENANT_ID && !t.IsDeleted && t.CreatedAt >= now.AddMonths(-6))
+                .GroupBy(t => new { t.CreatedAt.Year, t.CreatedAt.Month })
+                .Select(g => new { g.Key.Year, g.Key.Month, Count = g.Count() })
+                .OrderBy(g => g.Year).ThenBy(g => g.Month)
+                .ToListAsync();
+
+            var expiringSoon = await _context.Subscriptions
+                .Where(s => s.ExpiryDate > now && s.ExpiryDate <= now.AddDays(7))
+                .CountAsync();
+
+            return Ok(new
+            {
+                success = true,
+                data = new
+                {
+                    totalTenants,
+                    activeTenants,
+                    trialTenants,
+                    activePaidTenants,
+                    newThisMonth,
+                    newThisWeek,
+                    totalAppointments,
+                    appointmentsThisMonth,
+                    expiringSoon,
+                    planDistribution = planDist,
+                    monthlyGrowth
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "SuperAdmin reports error");
+            return StatusCode(500, new { success = false, message = "Hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Tüm abonelikler / ödeme takibi
+    /// </summary>
+    [HttpGet("subscriptions")]
+    public async Task<IActionResult> GetAllSubscriptions([FromQuery] string? status = null)
+    {
+        try
+        {
+            var now = DateTime.UtcNow;
+            var query = _context.Subscriptions
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                if (Enum.TryParse<SubscriptionStatus>(status, true, out var s))
+                    query = query.Where(sub => sub.Status == s);
+            }
+
+            var subs = await query
+                .OrderByDescending(s => s.CreatedAt)
+                .Select(s => new
+                {
+                    s.Id,
+                    s.TenantId,
+                    TenantName = _context.Tenants
+                        .IgnoreQueryFilters()
+                        .Where(t => t.Id == s.TenantId)
+                        .Select(t => t.Name)
+                        .FirstOrDefault(),
+                    AdminEmail = _context.Users
+                        .Where(u => u.TenantId == s.TenantId && u.Role == UserRole.Admin)
+                        .Select(u => u.Email)
+                        .FirstOrDefault(),
+                    Plan = s.Plan.ToString(),
+                    Status = s.Status.ToString(),
+                    s.StartDate,
+                    s.ExpiryDate,
+                    s.Price,
+                    s.Currency,
+                    s.CreatedAt,
+                    IsExpired = s.ExpiryDate <= now,
+                    DaysLeft = s.ExpiryDate > now
+                        ? (int?)EF.Functions.DateDiffDay(now, s.ExpiryDate)
+                        : null
+                })
+                .ToListAsync();
+
+            return Ok(new { success = true, data = subs });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "SuperAdmin subscriptions error");
             return StatusCode(500, new { success = false, message = "Hata oluştu." });
         }
     }
