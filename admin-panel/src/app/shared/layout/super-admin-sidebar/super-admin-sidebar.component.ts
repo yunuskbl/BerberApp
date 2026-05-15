@@ -12,9 +12,11 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class SuperAdminSidebarComponent {
   menuItems = [
-    { icon: '🏢', label: 'İşletmeler', route: '/superadmin/tenants' },
-    { icon: '📊', label: 'Raporlar', route: '/superadmin/reports' },
-    { icon: '💳', label: 'Ödemeler', route: '/superadmin/payments' },
+    { icon: '🏢', label: 'İşletmeler',      route: '/superadmin/tenants' },
+    { icon: '📊', label: 'Raporlar',         route: '/superadmin/reports' },
+    { icon: '💳', label: 'Ödemeler',         route: '/superadmin/payments' },
+    { icon: '🏦', label: 'Ödeme Yöntemleri', route: '/superadmin/payment-methods' },
+    { icon: '✉️', label: 'Mesajlar',          route: '/superadmin/messages' },
   ];
 
   constructor(private authService: AuthService, private router: Router) {}

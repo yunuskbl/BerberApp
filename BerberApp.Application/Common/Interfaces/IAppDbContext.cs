@@ -23,6 +23,8 @@ namespace BerberApp.Application.Common.Interfaces
         DbSet<ReviewEntity> Reviews { get; }
         DbSet<StaffServiceEntity> StaffServices { get; }
         DbSet<AppointmentServiceEntity> AppointmentServices { get; }
+        DbSet<PaymentMethod> PaymentMethods { get; }
+        DbSet<ContactMessage> ContactMessages { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

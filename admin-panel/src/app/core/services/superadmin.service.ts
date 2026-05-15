@@ -52,6 +52,31 @@ export interface SuperAdminReports {
   monthlyGrowth: { year: number; month: number; count: number }[];
 }
 
+export interface PaymentMethod {
+  id: string;
+  name: string;
+  bankName: string;
+  iban: string;
+  accountHolder: string;
+  description?: string;
+  isActive: boolean;
+  order: number;
+  createdAt: string;
+}
+
+export interface ContactMessage {
+  id: string;
+  tenantId: string;
+  tenantName: string;
+  senderEmail: string;
+  subject: string;
+  message: string;
+  status: 'New' | 'Read' | 'Replied';
+  reply?: string;
+  repliedAt?: string;
+  createdAt: string;
+}
+
 export interface SuperAdminSubscription {
   id: string;
   tenantId: string;
@@ -114,5 +139,41 @@ export class SuperAdminService {
     let params = new HttpParams();
     if (status) params = params.set('status', status);
     return this.http.get<ApiResponse<SuperAdminSubscription[]>>(`${this.apiUrl}/subscriptions`, { params });
+  }
+
+  // Ödeme Yöntemleri
+  getPaymentMethods(): Observable<ApiResponse<PaymentMethod[]>> {
+    return this.http.get<ApiResponse<PaymentMethod[]>>(`${this.apiUrl}/payment-methods`);
+  }
+
+  createPaymentMethod(req: Omit<PaymentMethod, 'id' | 'createdAt'>): Observable<ApiResponse<PaymentMethod>> {
+    return this.http.post<ApiResponse<PaymentMethod>>(`${this.apiUrl}/payment-methods`, req);
+  }
+
+  updatePaymentMethod(id: string, req: Omit<PaymentMethod, 'id' | 'createdAt'>): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(`${this.apiUrl}/payment-methods/${id}`, req);
+  }
+
+  deletePaymentMethod(id: string): Observable<ApiResponse<any>> {
+    return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/payment-methods/${id}`);
+  }
+
+  // İletişim Mesajları
+  getContactMessages(status?: string): Observable<ApiResponse<ContactMessage[]>> {
+    let params = new HttpParams();
+    if (status) params = params.set('status', status);
+    return this.http.get<ApiResponse<ContactMessage[]>>(`${this.apiUrl}/contact-messages`, { params });
+  }
+
+  replyToMessage(id: string, reply: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/contact-messages/${id}/reply`, { reply });
+  }
+
+  markMessageRead(id: string): Observable<ApiResponse<any>> {
+    return this.http.patch<ApiResponse<any>>(`${this.apiUrl}/contact-messages/${id}/read`, {});
+  }
+
+  deleteContactMessage(id: string): Observable<ApiResponse<any>> {
+    return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/contact-messages/${id}`);
   }
 }

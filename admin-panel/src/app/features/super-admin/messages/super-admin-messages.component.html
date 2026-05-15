@@ -1,0 +1,94 @@
+<div class="sa-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        Mesajlar
+        @if (newCount > 0) {
+          <span class="new-badge">{{ newCount }} yeni</span>
+        }
+      </h1>
+      <p class="page-sub">Salon sahiplerinden gelen iletişim mesajları</p>
+    </div>
+    <div class="filter-row">
+      <select [(ngModel)]="selectedStatus" (change)="load()">
+        @for (opt of statusOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (successMessage) {
+    <div class="alert alert-success">{{ successMessage }}</div>
+  }
+  @if (errorMessage) {
+    <div class="alert alert-error">{{ errorMessage }}</div>
+  }
+
+  @if (isLoading) {
+    <div class="state-center"><div class="spinner"></div></div>
+  } @else if (messages.length === 0) {
+    <div class="state-center">
+      <p>Mesaj bulunamadı.</p>
+    </div>
+  } @else {
+    <div class="messages-list">
+      @for (msg of messages; track msg.id) {
+        <div class="msg-row" [class.unread]="msg.status === 'New'" (click)="openMessage(msg)">
+          <div class="msg-left">
+            <div class="msg-avatar">{{ msg.tenantName.charAt(0) }}</div>
+          </div>
+          <div class="msg-body">
+            <div class="msg-meta">
+              <span class="msg-tenant">{{ msg.tenantName }}</span>
+              <span class="msg-email">{{ msg.senderEmail }}</span>
+            </div>
+            <div class="msg-subject">{{ msg.subject }}</div>
+            <div class="msg-preview">{{ msg.message | slice:0:100 }}{{ msg.message.length > 100 ? '…' : '' }}</div>
+          </div>
+          <div class="msg-right">
+            <span class="status-badge status-{{ msg.status.toLowerCase() }}">{{ statusLabel(msg.status) }}</span>
+            <span class="msg-date">{{ formatDate(msg.createdAt) }}</span>
+            <button class="btn-icon-danger" (click)="deleteMsg(msg.id, $event)" title="Sil">✕</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Mesaj Detay / Yanıt Paneli -->
+  @if (selectedMessage) {
+    <div class="detail-overlay" (click)="closeMessage()"></div>
+    <div class="detail-panel">
+      <div class="detail-header">
+        <div>
+          <h2>{{ selectedMessage.subject }}</h2>
+          <p class="detail-meta">{{ selectedMessage.tenantName }} · {{ selectedMessage.senderEmail }} · {{ formatDate(selectedMessage.createdAt) }}</p>
+        </div>
+        <button class="btn-close" (click)="closeMessage()">✕</button>
+      </div>
+      <div class="detail-message">{{ selectedMessage.message }}</div>
+
+      @if (selectedMessage.reply) {
+        <div class="detail-reply-box">
+          <p class="reply-label">Yanıtınız</p>
+          <p>{{ selectedMessage.reply }}</p>
+          @if (selectedMessage.repliedAt) {
+            <span class="reply-date">{{ formatDate(selectedMessage.repliedAt) }}</span>
+          }
+        </div>
+      }
+
+      <div class="reply-form">
+        <label>Yanıt Yaz</label>
+        <textarea [(ngModel)]="replyText" rows="4" placeholder="Yanıtınızı yazın…"></textarea>
+        <div class="reply-actions">
+          <button class="btn-ghost" (click)="closeMessage()">Kapat</button>
+          <button class="btn-primary" (click)="sendReply()" [disabled]="isSendingReply || !replyText.trim()">
+            {{ isSendingReply ? 'Gönderiliyor…' : 'Yanıtla' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

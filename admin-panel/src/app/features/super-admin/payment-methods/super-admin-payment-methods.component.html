@@ -1,0 +1,103 @@
+<div class="sa-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Ödeme Yöntemleri</h1>
+      <p class="page-sub">Salon sahiplerine gösterilen banka / havale bilgileri</p>
+    </div>
+    <button class="btn-primary" (click)="openAdd()">+ Yeni Ekle</button>
+  </div>
+
+  @if (successMessage) {
+    <div class="alert alert-success">{{ successMessage }}</div>
+  }
+  @if (errorMessage) {
+    <div class="alert alert-error">{{ errorMessage }}</div>
+  }
+
+  <!-- Form Drawer -->
+  @if (showForm) {
+    <div class="form-card">
+      <h2 class="form-title">{{ editingId ? 'Düzenle' : 'Yeni Ödeme Yöntemi' }}</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label>Yöntem Adı *</label>
+          <input [(ngModel)]="form.name" placeholder="Örn: Garanti BBVA" />
+        </div>
+        <div class="field">
+          <label>Banka Adı *</label>
+          <input [(ngModel)]="form.bankName" placeholder="Garanti BBVA" />
+        </div>
+        <div class="field full">
+          <label>IBAN *</label>
+          <input [(ngModel)]="form.iban" placeholder="TR00 0000 0000 0000 0000 0000 00" />
+        </div>
+        <div class="field">
+          <label>Hesap Sahibi *</label>
+          <input [(ngModel)]="form.accountHolder" placeholder="Ad Soyad / Şirket Adı" />
+        </div>
+        <div class="field">
+          <label>Sıra</label>
+          <input type="number" [(ngModel)]="form.order" min="0" />
+        </div>
+        <div class="field full">
+          <label>Açıklama</label>
+          <textarea [(ngModel)]="form.description" rows="2" placeholder="Ek bilgi (isteğe bağlı)"></textarea>
+        </div>
+        @if (editingId) {
+          <div class="field">
+            <label class="toggle-label">
+              <input type="checkbox" [(ngModel)]="form.isActive" />
+              Aktif
+            </label>
+          </div>
+        }
+      </div>
+      <div class="form-actions">
+        <button class="btn-ghost" (click)="cancel()">İptal</button>
+        <button class="btn-primary" (click)="save()">{{ editingId ? 'Kaydet' : 'Ekle' }}</button>
+      </div>
+    </div>
+  }
+
+  <!-- Liste -->
+  @if (isLoading) {
+    <div class="state-center"><div class="spinner"></div></div>
+  } @else if (methods.length === 0) {
+    <div class="state-center">
+      <p>Henüz ödeme yöntemi eklenmemiş.</p>
+      <button class="btn-primary" (click)="openAdd()">İlk yöntemi ekle</button>
+    </div>
+  } @else {
+    <div class="methods-grid">
+      @for (m of methods; track m.id) {
+        <div class="method-card" [class.inactive]="!m.isActive">
+          <div class="method-header">
+            <span class="method-icon">🏦</span>
+            <div class="method-info">
+              <span class="method-name">{{ m.name }}</span>
+              <span class="method-bank">{{ m.bankName }}</span>
+            </div>
+            <span class="status-badge" [class.active]="m.isActive" [class.inactive]="!m.isActive">
+              {{ m.isActive ? 'Aktif' : 'Pasif' }}
+            </span>
+          </div>
+          <div class="iban-row">
+            <span class="iban-label">IBAN</span>
+            <span class="iban-value">{{ m.iban }}</span>
+          </div>
+          <div class="holder-row">
+            <span class="holder-label">Hesap Sahibi</span>
+            <span class="holder-value">{{ m.accountHolder }}</span>
+          </div>
+          @if (m.description) {
+            <p class="method-desc">{{ m.description }}</p>
+          }
+          <div class="method-actions">
+            <button class="btn-sm" (click)="openEdit(m)">Düzenle</button>
+            <button class="btn-sm btn-danger" (click)="delete(m.id)">Sil</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

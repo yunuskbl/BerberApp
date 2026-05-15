@@ -496,9 +496,153 @@ public class SuperAdminController : ControllerBase
             return StatusCode(500, new { success = false, message = $"Silme işlemi başarısız oldu: {ex.Message}" });
         }
     }
+
+    // ─── ÖDEME YÖNTEMLERİ ───────────────────────────────────────────────────
+
+    [HttpGet("payment-methods")]
+    public async Task<IActionResult> GetPaymentMethods()
+    {
+        var methods = await _context.PaymentMethods
+            .IgnoreQueryFilters()
+            .Where(p => !p.IsDeleted)
+            .OrderBy(p => p.Order)
+            .Select(p => new
+            {
+                p.Id, p.Name, p.BankName, p.Iban,
+                p.AccountHolder, p.Description, p.IsActive, p.Order, p.CreatedAt
+            })
+            .ToListAsync();
+
+        return Ok(new { success = true, data = methods });
+    }
+
+    [HttpPost("payment-methods")]
+    public async Task<IActionResult> CreatePaymentMethod([FromBody] PaymentMethodRequest req)
+    {
+        var method = new BerberApp.Domain.Entities.PaymentMethod
+        {
+            Name = req.Name,
+            BankName = req.BankName,
+            Iban = req.Iban,
+            AccountHolder = req.AccountHolder,
+            Description = req.Description,
+            IsActive = true,
+            Order = req.Order
+        };
+        _context.PaymentMethods.Add(method);
+        await _context.SaveChangesAsync();
+        return Ok(new { success = true, message = "Ödeme yöntemi eklendi.", data = method });
+    }
+
+    [HttpPut("payment-methods/{id}")]
+    public async Task<IActionResult> UpdatePaymentMethod(Guid id, [FromBody] PaymentMethodRequest req)
+    {
+        var method = await _context.PaymentMethods.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+        if (method == null) return NotFound(new { success = false, message = "Bulunamadı." });
+
+        method.Name = req.Name;
+        method.BankName = req.BankName;
+        method.Iban = req.Iban;
+        method.AccountHolder = req.AccountHolder;
+        method.Description = req.Description;
+        method.IsActive = req.IsActive;
+        method.Order = req.Order;
+        await _context.SaveChangesAsync();
+        return Ok(new { success = true, message = "Güncellendi." });
+    }
+
+    [HttpDelete("payment-methods/{id}")]
+    public async Task<IActionResult> DeletePaymentMethod(Guid id)
+    {
+        var method = await _context.PaymentMethods.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+        if (method == null) return NotFound(new { success = false, message = "Bulunamadı." });
+
+        _context.PaymentMethods.Remove(method);
+        await _context.SaveChangesAsync();
+        return Ok(new { success = true, message = "Silindi." });
+    }
+
+    // ─── İLETİŞİM MESAJLARI ─────────────────────────────────────────────────
+
+    [HttpGet("contact-messages")]
+    public async Task<IActionResult> GetContactMessages([FromQuery] string? status)
+    {
+        var query = _context.ContactMessages
+            .IgnoreQueryFilters()
+            .Where(m => !m.IsDeleted);
+
+        if (!string.IsNullOrEmpty(status))
+            query = query.Where(m => m.Status == status);
+
+        var messages = await query
+            .OrderByDescending(m => m.CreatedAt)
+            .Select(m => new
+            {
+                m.Id, m.TenantId, m.TenantName, m.SenderEmail,
+                m.Subject, m.Message, m.Status, m.Reply, m.RepliedAt, m.CreatedAt
+            })
+            .ToListAsync();
+
+        return Ok(new { success = true, data = messages });
+    }
+
+    [HttpPatch("contact-messages/{id}/read")]
+    public async Task<IActionResult> MarkMessageRead(Guid id)
+    {
+        var msg = await _context.ContactMessages.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
+        if (msg == null) return NotFound(new { success = false, message = "Bulunamadı." });
+
+        if (msg.Status == "New") { msg.Status = "Read"; await _context.SaveChangesAsync(); }
+        return Ok(new { success = true });
+    }
+
+    [HttpPost("contact-messages/{id}/reply")]
+    public async Task<IActionResult> ReplyToMessage(Guid id, [FromBody] ReplyRequest req)
+    {
+        var msg = await _context.ContactMessages.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
+        if (msg == null) return NotFound(new { success = false, message = "Bulunamadı." });
+
+        msg.Reply = req.Reply;
+        msg.Status = "Replied";
+        msg.RepliedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return Ok(new { success = true, message = "Yanıt kaydedildi." });
+    }
+
+    [HttpDelete("contact-messages/{id}")]
+    public async Task<IActionResult> DeleteContactMessage(Guid id)
+    {
+        var msg = await _context.ContactMessages.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
+        if (msg == null) return NotFound(new { success = false, message = "Bulunamadı." });
+
+        _context.ContactMessages.Remove(msg);
+        await _context.SaveChangesAsync();
+        return Ok(new { success = true, message = "Silindi." });
+    }
 }
 
 public class ChangePlanRequest
 {
     public string Plan { get; set; } = string.Empty;
+}
+
+public class PaymentMethodRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public string BankName { get; set; } = string.Empty;
+    public string Iban { get; set; } = string.Empty;
+    public string AccountHolder { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public bool IsActive { get; set; } = true;
+    public int Order { get; set; } = 0;
+}
+
+public class ReplyRequest
+{
+    public string Reply { get; set; } = string.Empty;
 }

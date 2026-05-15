@@ -1,0 +1,67 @@
+<div class="contact-page">
+  <div class="page-header">
+    <h1>Bize Ulaşın</h1>
+    <p>Sorularınız, önerileriniz veya ödeme bildirimleri için mesaj gönderin.</p>
+  </div>
+
+  <div class="contact-grid">
+    <!-- Sol: İletişim Formu -->
+    <div class="contact-card">
+      <h2>Mesaj Gönder</h2>
+
+      @if (successMessage) {
+        <div class="alert alert-success">{{ successMessage }}</div>
+      }
+      @if (errorMessage) {
+        <div class="alert alert-error">{{ errorMessage }}</div>
+      }
+
+      <div class="field">
+        <label>Konu *</label>
+        <input [(ngModel)]="subject" placeholder="Mesajınızın konusu" />
+      </div>
+      <div class="field">
+        <label>Mesaj *</label>
+        <textarea [(ngModel)]="message" rows="6" placeholder="Mesajınızı buraya yazın…"></textarea>
+      </div>
+      <button class="btn-primary" (click)="send()" [disabled]="isSending">
+        {{ isSending ? 'Gönderiliyor…' : 'Gönder' }}
+      </button>
+    </div>
+
+    <!-- Sağ: Ödeme Bilgileri -->
+    <div class="payment-card">
+      <h2>Ödeme Bilgileri</h2>
+      <p class="payment-info">Abonelik ödemelerinizi aşağıdaki banka hesaplarına yapabilirsiniz. Havale açıklamasına işletme adınızı eklemeyi unutmayın.</p>
+
+      @if (isLoadingMethods) {
+        <div class="spinner-wrap"><div class="spinner"></div></div>
+      } @else if (paymentMethods.length === 0) {
+        <p class="empty-text">Henüz ödeme yöntemi tanımlanmamış.</p>
+      } @else {
+        @for (m of paymentMethods; track m.id) {
+          <div class="payment-method">
+            <div class="pm-header">
+              <span class="pm-icon">🏦</span>
+              <div>
+                <span class="pm-name">{{ m.name }}</span>
+                <span class="pm-bank">{{ m.bankName }}</span>
+              </div>
+            </div>
+            <div class="pm-row">
+              <span class="pm-label">IBAN</span>
+              <span class="pm-iban">{{ m.iban }}</span>
+            </div>
+            <div class="pm-row">
+              <span class="pm-label">Hesap Sahibi</span>
+              <span class="pm-value">{{ m.accountHolder }}</span>
+            </div>
+            @if (m.description) {
+              <p class="pm-desc">{{ m.description }}</p>
+            }
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>

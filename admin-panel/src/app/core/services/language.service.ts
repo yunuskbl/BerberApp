@@ -13,6 +13,7 @@ const T: Record<Lang, Record<string, string>> = {
     'nav.services':     'Hizmetler',
     'nav.customers':    'Müşteriler',
     'nav.settings':     'Ayarlar',
+    'nav.contact':      'Bize Ulaşın',
     'nav.reports':      'Raporlar',
     'nav.reviews':      'Değerlendirmeler',
 
@@ -354,6 +355,7 @@ const T: Record<Lang, Record<string, string>> = {
     'nav.services':     'Services',
     'nav.customers':    'Customers',
     'nav.settings':     'Settings',
+    'nav.contact':      'Contact Us',
     'nav.reports':      'Reports',
     'nav.reviews':      'Reviews',
 
@@ -683,6 +685,7 @@ const T: Record<Lang, Record<string, string>> = {
     'nav.services':     'Услуги',
     'nav.customers':    'Клиенты',
     'nav.settings':     'Настройки',
+    'nav.contact':      'Связаться',
     'nav.reports':      'Отчёты',
     'nav.reviews':      'Отзывы',
 

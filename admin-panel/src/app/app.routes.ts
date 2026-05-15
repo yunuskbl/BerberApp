@@ -121,6 +121,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'payment-methods',
+        loadComponent: () =>
+          import('./features/super-admin/payment-methods/super-admin-payment-methods.component').then(
+            (m) => m.SuperAdminPaymentMethodsComponent,
+          ),
+      },
+      {
+        path: 'messages',
+        loadComponent: () =>
+          import('./features/super-admin/messages/super-admin-messages.component').then(
+            (m) => m.SuperAdminMessagesComponent,
+          ),
+      },
+      {
         path: '',
         redirectTo: 'tenants',
         pathMatch: 'full',
@@ -170,6 +184,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/settings/settings.component').then(
             (m) => m.SettingsComponent,
+          ),
+      },
+      {
+        path: 'contact',
+        loadComponent: () =>
+          import('./features/contact/contact.component').then(
+            (m) => m.ContactComponent,
           ),
       },
       {
