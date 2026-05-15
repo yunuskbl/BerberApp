@@ -165,7 +165,8 @@ app-language-switcher {
   border: 1px solid #ebebeb;
   overflow: visible; /* logo taşmasın diye hidden kaldırıldı */
   text-decoration: none;
-  display: block;
+  display: flex;
+  flex-direction: column;
   transition: transform 0.15s, box-shadow 0.15s;
 
   &:hover {
@@ -284,8 +285,9 @@ app-language-switcher {
 .card-body {
   padding: 30px 20px 20px;
   border-radius: 0 0 16px 16px;
-  position: relative;
-  padding-bottom: 70px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .card-name {
@@ -321,9 +323,7 @@ app-language-switcher {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
+  margin-top: auto;
 }
 
 .card-cta {
