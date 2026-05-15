@@ -41,6 +41,27 @@ public class ContactController : BaseApiController
     }
 
     /// <summary>
+    /// Salon admininin kendi mesajlarını (ve SuperAdmin yanıtlarını) getirir
+    /// </summary>
+    [Authorize]
+    [HttpGet("messages")]
+    public async Task<IActionResult> GetMyMessages()
+    {
+        var messages = await _context.ContactMessages
+            .IgnoreQueryFilters()
+            .Where(m => m.TenantId == TenantId && !m.IsDeleted)
+            .OrderByDescending(m => m.CreatedAt)
+            .Select(m => new
+            {
+                m.Id, m.Subject, m.Message, m.Status,
+                m.Reply, m.RepliedAt, m.CreatedAt
+            })
+            .ToListAsync();
+
+        return Ok(new { success = true, data = messages });
+    }
+
+    /// <summary>
     /// Salon admini mesaj gönderir
     /// </summary>
     [Authorize]

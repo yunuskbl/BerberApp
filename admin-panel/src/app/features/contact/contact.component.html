@@ -4,64 +4,144 @@
     <p>Sorularınız, önerileriniz veya ödeme bildirimleri için mesaj gönderin.</p>
   </div>
 
-  <div class="contact-grid">
-    <!-- Sol: İletişim Formu -->
-    <div class="contact-card">
-      <h2>Mesaj Gönder</h2>
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'send'" (click)="setTab('send')">
+      Mesaj Gönder
+    </button>
+    <button class="tab" [class.active]="activeTab === 'messages'" (click)="setTab('messages')">
+      Mesajlarım
+      @if (unreadReplies > 0) {
+        <span class="tab-badge">{{ unreadReplies }} yanıt</span>
+      }
+    </button>
+    <button class="tab" [class.active]="activeTab === 'payment'" (click)="setTab('payment')">
+      Ödeme Bilgileri
+    </button>
+  </div>
 
+  <!-- TAB: Mesaj Gönder -->
+  @if (activeTab === 'send') {
+    <div class="tab-content">
       @if (successMessage) {
         <div class="alert alert-success">{{ successMessage }}</div>
       }
       @if (errorMessage) {
         <div class="alert alert-error">{{ errorMessage }}</div>
       }
-
-      <div class="field">
-        <label>Konu *</label>
-        <input [(ngModel)]="subject" placeholder="Mesajınızın konusu" />
+      <div class="form-card">
+        <div class="field">
+          <label>Konu *</label>
+          <input [(ngModel)]="subject" placeholder="Mesajınızın konusu" />
+        </div>
+        <div class="field">
+          <label>Mesaj *</label>
+          <textarea [(ngModel)]="message" rows="6" placeholder="Mesajınızı buraya yazın…"></textarea>
+        </div>
+        <button class="btn-primary" (click)="send()" [disabled]="isSending">
+          {{ isSending ? 'Gönderiliyor…' : 'Gönder' }}
+        </button>
       </div>
-      <div class="field">
-        <label>Mesaj *</label>
-        <textarea [(ngModel)]="message" rows="6" placeholder="Mesajınızı buraya yazın…"></textarea>
-      </div>
-      <button class="btn-primary" (click)="send()" [disabled]="isSending">
-        {{ isSending ? 'Gönderiliyor…' : 'Gönder' }}
-      </button>
     </div>
+  }
 
-    <!-- Sağ: Ödeme Bilgileri -->
-    <div class="payment-card">
-      <h2>Ödeme Bilgileri</h2>
-      <p class="payment-info">Abonelik ödemelerinizi aşağıdaki banka hesaplarına yapabilirsiniz. Havale açıklamasına işletme adınızı eklemeyi unutmayın.</p>
+  <!-- TAB: Mesajlarım -->
+  @if (activeTab === 'messages') {
+    <div class="tab-content">
+      @if (isLoadingMessages) {
+        <div class="state-center"><div class="spinner"></div></div>
+      } @else if (myMessages.length === 0) {
+        <div class="state-center">
+          <p>Henüz mesaj göndermediniz.</p>
+          <button class="btn-outline" (click)="setTab('send')">İlk mesajı gönder</button>
+        </div>
+      } @else {
+        <div class="messages-list">
+          @for (msg of myMessages; track msg.id) {
+            <div class="msg-item" [class.has-reply]="msg.status === 'Replied'" (click)="toggle(msg.id)">
+              <div class="msg-summary">
+                <div class="msg-left">
+                  <span class="status-dot status-{{ msg.status.toLowerCase() }}"></span>
+                  <div class="msg-info">
+                    <span class="msg-subject">{{ msg.subject }}</span>
+                    <span class="msg-date">{{ formatDate(msg.createdAt) }}</span>
+                  </div>
+                </div>
+                <div class="msg-right">
+                  <span class="status-badge status-{{ msg.status.toLowerCase() }}">
+                    {{ statusLabel(msg.status) }}
+                  </span>
+                  <span class="chevron" [class.open]="expandedId === msg.id">›</span>
+                </div>
+              </div>
 
+              @if (expandedId === msg.id) {
+                <div class="msg-detail">
+                  <div class="msg-body-box">
+                    <p class="box-label">Gönderdiğiniz mesaj</p>
+                    <p class="box-text">{{ msg.message }}</p>
+                  </div>
+
+                  @if (msg.reply) {
+                    <div class="reply-box">
+                      <p class="box-label">
+                        <span class="reply-icon">↩</span>
+                        SuperAdmin yanıtı
+                        @if (msg.repliedAt) {
+                          <span class="reply-date">· {{ formatDate(msg.repliedAt) }}</span>
+                        }
+                      </p>
+                      <p class="box-text">{{ msg.reply }}</p>
+                    </div>
+                  } @else {
+                    <p class="awaiting-text">Yanıt bekleniyor…</p>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- TAB: Ödeme Bilgileri -->
+  @if (activeTab === 'payment') {
+    <div class="tab-content">
+      <p class="payment-info">
+        Abonelik ödemelerinizi aşağıdaki banka hesaplarına yapabilirsiniz.
+        Havale açıklamasına işletme adınızı eklemeyi unutmayın.
+      </p>
       @if (isLoadingMethods) {
-        <div class="spinner-wrap"><div class="spinner"></div></div>
+        <div class="state-center"><div class="spinner"></div></div>
       } @else if (paymentMethods.length === 0) {
         <p class="empty-text">Henüz ödeme yöntemi tanımlanmamış.</p>
       } @else {
-        @for (m of paymentMethods; track m.id) {
-          <div class="payment-method">
-            <div class="pm-header">
-              <span class="pm-icon">🏦</span>
-              <div>
-                <span class="pm-name">{{ m.name }}</span>
-                <span class="pm-bank">{{ m.bankName }}</span>
+        <div class="methods-list">
+          @for (m of paymentMethods; track m.id) {
+            <div class="payment-method">
+              <div class="pm-header">
+                <span class="pm-icon">🏦</span>
+                <div>
+                  <span class="pm-name">{{ m.name }}</span>
+                  <span class="pm-bank">{{ m.bankName }}</span>
+                </div>
               </div>
+              <div class="pm-row">
+                <span class="pm-label">IBAN</span>
+                <span class="pm-iban">{{ m.iban }}</span>
+              </div>
+              <div class="pm-row">
+                <span class="pm-label">Hesap Sahibi</span>
+                <span class="pm-value">{{ m.accountHolder }}</span>
+              </div>
+              @if (m.description) {
+                <p class="pm-desc">{{ m.description }}</p>
+              }
             </div>
-            <div class="pm-row">
-              <span class="pm-label">IBAN</span>
-              <span class="pm-iban">{{ m.iban }}</span>
-            </div>
-            <div class="pm-row">
-              <span class="pm-label">Hesap Sahibi</span>
-              <span class="pm-value">{{ m.accountHolder }}</span>
-            </div>
-            @if (m.description) {
-              <p class="pm-desc">{{ m.description }}</p>
-            }
-          </div>
-        }
+          }
+        </div>
       }
     </div>
-  </div>
+  }
 </div>

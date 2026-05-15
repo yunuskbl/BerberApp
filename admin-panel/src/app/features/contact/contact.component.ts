@@ -13,6 +13,16 @@ interface PaymentMethodPublic {
   description?: string;
 }
 
+interface MyMessage {
+  id: string;
+  subject: string;
+  message: string;
+  status: 'New' | 'Read' | 'Replied';
+  reply?: string;
+  repliedAt?: string;
+  createdAt: string;
+}
+
 @Component({
   selector: 'app-contact',
   standalone: true,
@@ -21,8 +31,14 @@ interface PaymentMethodPublic {
   styleUrl: './contact.component.scss'
 })
 export class ContactComponent implements OnInit {
+  activeTab: 'send' | 'messages' | 'payment' = 'send';
+
   paymentMethods: PaymentMethodPublic[] = [];
   isLoadingMethods = true;
+
+  myMessages: MyMessage[] = [];
+  isLoadingMessages = false;
+  expandedId: string | null = null;
 
   subject = '';
   message = '';
@@ -33,9 +49,42 @@ export class ContactComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
+    this.loadPaymentMethods();
+    this.loadMessages();
+  }
+
+  loadPaymentMethods(): void {
     this.http.get<any>(`${environment.apiUrl}/contact/payment-methods`).subscribe({
       next: res => { if (res.success) this.paymentMethods = res.data; this.isLoadingMethods = false; },
       error: () => { this.isLoadingMethods = false; }
+    });
+  }
+
+  loadMessages(): void {
+    this.isLoadingMessages = true;
+    this.http.get<any>(`${environment.apiUrl}/contact/messages`).subscribe({
+      next: res => { if (res.success) this.myMessages = res.data; this.isLoadingMessages = false; },
+      error: () => { this.isLoadingMessages = false; }
+    });
+  }
+
+  get repliedCount(): number { return this.myMessages.filter(m => m.status === 'Replied').length; }
+  get unreadReplies(): number {
+    return this.myMessages.filter(m => m.status === 'Replied' && m.reply).length;
+  }
+
+  setTab(tab: 'send' | 'messages' | 'payment'): void { this.activeTab = tab; }
+
+  toggle(id: string): void { this.expandedId = this.expandedId === id ? null : id; }
+
+  statusLabel(s: string): string {
+    return { New: 'Bekliyor', Read: 'İnceleniyor', Replied: 'Yanıtlandı' }[s] ?? s;
+  }
+
+  formatDate(d: string): string {
+    return new Date(d).toLocaleDateString('tr-TR', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
     });
   }
 
@@ -55,6 +104,8 @@ export class ContactComponent implements OnInit {
           this.successMessage = 'Mesajınız iletildi. En kısa sürede yanıtlanacaktır.';
           this.subject = '';
           this.message = '';
+          this.loadMessages();
+          setTimeout(() => this.setTab('messages'), 800);
         }
         this.isSending = false;
       },
