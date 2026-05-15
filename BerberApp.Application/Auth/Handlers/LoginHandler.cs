@@ -52,7 +52,25 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResponse>
                 .OrderByDescending(x => x.StartDate)
                 .FirstOrDefaultAsync(ct);
 
-            userPlan = subscription?.Plan ?? PlanType.Baslangic;
+            // Abonelik yoksa (eski kayıt) otomatik 14 günlük trial oluştur
+            if (subscription == null)
+            {
+                var trialEnd = DateTime.UtcNow.AddDays(14);
+                subscription = new Subscription
+                {
+                    TenantId   = user.TenantId,
+                    Plan       = PlanType.Baslangic,
+                    Status     = SubscriptionStatus.Trial,
+                    StartDate  = DateTime.UtcNow,
+                    ExpiryDate = trialEnd,
+                    Price      = 0,
+                    Currency   = "TRY",
+                };
+                _context.Subscriptions.Add(subscription);
+                await _context.SaveChangesAsync(ct);
+            }
+
+            userPlan = subscription.Plan;
         }
         catch (Exception)
         {
