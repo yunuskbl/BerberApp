@@ -82,14 +82,14 @@ public class SuperAdminController : ControllerBase
                         .FirstOrDefault(),
                     IsOnTrial = _context.Subscriptions
                         .Any(s => s.TenantId == t.Id && s.Status == SubscriptionStatus.Trial && s.ExpiryDate > now),
-                    DaysLeft = _context.Subscriptions
-                        .Where(s => s.TenantId == t.Id && s.ExpiryDate > now)
-                        .OrderByDescending(s => s.StartDate)
-                        .Select(s => (int?)EF.Functions.DateDiffDay(now, s.ExpiryDate))
-                        .FirstOrDefault()
+                    DaysLeft = null
                 })
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
+
+            foreach (var t in tenants)
+                if (t.SubscriptionExpiresAt.HasValue && t.SubscriptionExpiresAt.Value > now)
+                    t.DaysLeft = (int)(t.SubscriptionExpiresAt.Value - now).TotalDays;
 
             return Ok(new { success = true, data = tenants });
         }
@@ -203,7 +203,7 @@ public class SuperAdminController : ControllerBase
                     query = query.Where(sub => sub.Status == s);
             }
 
-            var subs = await query
+            var subsRaw = await query
                 .OrderByDescending(s => s.CreatedAt)
                 .Select(s => new
                 {
@@ -226,11 +226,25 @@ public class SuperAdminController : ControllerBase
                     s.Currency,
                     s.CreatedAt,
                     IsExpired = s.ExpiryDate <= now,
-                    DaysLeft = s.ExpiryDate > now
-                        ? (int?)EF.Functions.DateDiffDay(now, s.ExpiryDate)
-                        : null
                 })
                 .ToListAsync();
+
+            var subs = subsRaw.Select(s => new
+            {
+                s.Id,
+                s.TenantId,
+                s.TenantName,
+                s.AdminEmail,
+                s.Plan,
+                s.Status,
+                s.StartDate,
+                s.ExpiryDate,
+                s.Price,
+                s.Currency,
+                s.CreatedAt,
+                s.IsExpired,
+                DaysLeft = s.ExpiryDate > now ? (int?)(s.ExpiryDate - now).TotalDays : null,
+            }).ToList();
 
             return Ok(new { success = true, data = subs });
         }
