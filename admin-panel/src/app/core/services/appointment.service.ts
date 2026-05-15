@@ -69,7 +69,7 @@ export class AppointmentService {
     return this.http.patch<void>(`${this.apiUrl}/${id}/cancel`, {});
   }
 
-  complete(id: string): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/${id}/complete`, {});
+  complete(id: string): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/${id}/complete`, {});
   }
 }

@@ -263,7 +263,13 @@ export class AppointmentListComponent implements OnInit {
   }
 
   completeAppointment(id: string): void {
-    this.appointmentService.complete(id).subscribe({ next: () => this.loadAppointments() });
+    this.errorMessage = '';
+    this.appointmentService.complete(id).subscribe({
+      next: () => this.loadAppointments(),
+      error: (err) => {
+        this.errorMessage = err.error?.message || err.error?.errors?.[0] || 'Randevu tamamlanamadı.';
+      }
+    });
   }
 
   confirmAppointment(id: string): void {

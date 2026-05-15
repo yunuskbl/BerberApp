@@ -90,10 +90,17 @@ public class AppointmentsController : BaseApiController
     public async Task<IActionResult> Complete(Guid id)
     {
         // Tenant subdomain'ini al → müşteriye gidecek değerlendirme linkini oluştur
-        var subdomain    = await _context.Tenants
-            .Where(t => t.Id == TenantId)
-            .Select(t => t.Subdomain)
-            .FirstOrDefaultAsync();
+        var tenantId = TenantId;
+
+        string? subdomain = null;
+        try
+        {
+            subdomain = await _context.Tenants
+                .Where(t => t.Id == tenantId)
+                .Select(t => t.Subdomain)
+                .FirstOrDefaultAsync();
+        }
+        catch { /* subdomain alınamazsa reviewUrl olmadan devam et */ }
 
         var frontendBase = _config["AppSettings:FrontendBaseUrl"] ?? "https://ayarliyo.com";
         var reviewUrl    = subdomain is not null
@@ -103,10 +110,10 @@ public class AppointmentsController : BaseApiController
         await Mediator.Send(new CompleteAppointmentCommand
         {
             Id        = id,
-            TenantId  = TenantId,
+            TenantId  = tenantId,
             ReviewUrl = reviewUrl
         });
-        return NoContent();
+        return Ok(new { success = true, message = "Randevu tamamlandı." });
     }
 
 }
