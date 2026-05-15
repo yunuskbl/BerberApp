@@ -1,6 +1,5 @@
-// upgrade.component.ts
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -17,7 +16,7 @@ import { CommonModule } from '@angular/common';
         <p>
           Sizin paketiniz: <strong>{{ currentPlan }}</strong>
         </p>
-        <button (click)="goToPricing()" class="btn-upgrade">
+        <button (click)="goToPayment()" class="btn-upgrade">
           Paket Yükselt
         </button>
       </div>
@@ -60,17 +59,23 @@ export class UpgradeComponent implements OnInit {
   currentPlan = 'Baslangic';
   requiredPlan = 'Profesyonel';
 
-  constructor(private route: ActivatedRoute) {}
+  private readonly planSlugMap: Record<string, string> = {
+    Profesyonel: 'profesyonel',
+    Premium:     'premium',
+    Baslangic:   'baslangic',
+  };
+
+  constructor(private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
-      this.currentPlan = params['current'] || 'Baslangic';
+      this.currentPlan  = params['current']  || 'Baslangic';
       this.requiredPlan = params['required'] || 'Profesyonel';
     });
   }
 
-  goToPricing() {
-    // Pricing sayfasına yönlendir
-    window.location.href = '/pricing';
+  goToPayment() {
+    const slug = this.planSlugMap[this.requiredPlan] ?? 'profesyonel';
+    this.router.navigate(['/payment'], { queryParams: { plan: slug } });
   }
 }
