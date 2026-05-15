@@ -356,9 +356,14 @@ export class BookingComponent implements OnInit, OnDestroy {
           }
           this.isSubmitting = false;
         },
-        error: () => {
-          this.errorMessage = 'Bir hata oluştu. Lütfen tekrar deneyin.';
+        error: (err) => {
+          this.errorMessage = err.status < 500 && err.error?.message
+            ? err.error.message
+            : 'Bir hata oluştu. Lütfen tekrar deneyin.';
           this.isSubmitting = false;
+          setTimeout(() => {
+            document.querySelector('.error-message')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 50);
         },
       });
   }
