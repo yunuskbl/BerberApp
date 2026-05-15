@@ -20,6 +20,7 @@ interface MyMessage {
   status: 'New' | 'Read' | 'Replied';
   reply?: string;
   repliedAt?: string;
+  isReplySeen: boolean;
   createdAt: string;
 }
 
@@ -68,14 +69,22 @@ export class ContactComponent implements OnInit {
     });
   }
 
-  get repliedCount(): number { return this.myMessages.filter(m => m.status === 'Replied').length; }
   get unreadReplies(): number {
-    return this.myMessages.filter(m => m.status === 'Replied' && m.reply).length;
+    return this.myMessages.filter(m => m.status === 'Replied' && !m.isReplySeen).length;
   }
 
   setTab(tab: 'send' | 'messages' | 'payment'): void { this.activeTab = tab; }
 
-  toggle(id: string): void { this.expandedId = this.expandedId === id ? null : id; }
+  toggle(id: string): void {
+    this.expandedId = this.expandedId === id ? null : id;
+    if (this.expandedId === id) {
+      const msg = this.myMessages.find(m => m.id === id);
+      if (msg && msg.reply && !msg.isReplySeen) {
+        msg.isReplySeen = true;
+        this.http.patch(`${environment.apiUrl}/contact/messages/${id}/seen`, {}).subscribe();
+      }
+    }
+  }
 
   statusLabel(s: string): string {
     return { New: 'Bekliyor', Read: 'İnceleniyor', Replied: 'Yanıtlandı' }[s] ?? s;

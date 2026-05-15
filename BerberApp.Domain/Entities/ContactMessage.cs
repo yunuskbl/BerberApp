@@ -12,4 +12,5 @@ public class ContactMessage : BaseEntity
     public string Status { get; set; } = "New";
     public string? Reply { get; set; }
     public DateTime? RepliedAt { get; set; }
+    public bool IsReplySeen { get; set; } = false;
 }

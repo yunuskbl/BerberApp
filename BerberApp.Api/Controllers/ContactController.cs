@@ -54,11 +54,33 @@ public class ContactController : BaseApiController
             .Select(m => new
             {
                 m.Id, m.Subject, m.Message, m.Status,
-                m.Reply, m.RepliedAt, m.CreatedAt
+                m.Reply, m.RepliedAt, m.IsReplySeen, m.CreatedAt
             })
             .ToListAsync();
 
         return Ok(new { success = true, data = messages });
+    }
+
+    /// <summary>
+    /// Salon admini yanıtı gördü olarak işaretler (bildirim kapanır)
+    /// </summary>
+    [Authorize]
+    [HttpPatch("messages/{id}/seen")]
+    public async Task<IActionResult> MarkReplySeen(Guid id)
+    {
+        var msg = await _context.ContactMessages
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(m => m.Id == id && m.TenantId == TenantId && !m.IsDeleted);
+
+        if (msg == null) return NotFound(new { success = false });
+
+        if (!msg.IsReplySeen && msg.Reply != null)
+        {
+            msg.IsReplySeen = true;
+            await _context.SaveChangesAsync();
+        }
+
+        return Ok(new { success = true });
     }
 
     /// <summary>
