@@ -1,0 +1,125 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h2>Ödemeler & Abonelikler</h2>
+      <p>İşletmelerin abonelik durumu ve ödeme takibi</p>
+    </div>
+  </div>
+
+  @if (!isLoading) {
+    <div class="stats-grid">
+      <div class="stat-card stat-card--green">
+        <div class="stat-icon">💳</div>
+        <div class="stat-content">
+          <div class="stat-label">Aktif Abonelik</div>
+          <div class="stat-value">{{ activeCount }}</div>
+        </div>
+      </div>
+      <div class="stat-card stat-card--amber">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-content">
+          <div class="stat-label">Deneme</div>
+          <div class="stat-value">{{ trialCount }}</div>
+        </div>
+      </div>
+      <div class="stat-card stat-card--red">
+        <div class="stat-icon">⛔</div>
+        <div class="stat-content">
+          <div class="stat-label">Süresi Dolmuş</div>
+          <div class="stat-value">{{ expiredCount }}</div>
+        </div>
+      </div>
+      <div class="stat-card stat-card--purple">
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+          <div class="stat-label">Aktif Gelir (TRY)</div>
+          <div class="stat-value">{{ totalRevenue | number }}</div>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error">{{ errorMessage }}</div>
+  }
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="search-bar">
+      <input type="text" [(ngModel)]="searchQuery" placeholder="İşletme adı, e-posta veya plan ara..."
+        class="search-input"/>
+      @if (searchQuery) {
+        <button class="search-clear" (click)="searchQuery=''">✕</button>
+      }
+    </div>
+    <div class="status-tabs">
+      @for (opt of statusOptions; track opt.value) {
+        <button class="tab-btn" [class.active]="selectedStatus === opt.value"
+          (click)="selectedStatus = opt.value; load()">
+          {{ opt.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading-state"><div class="spinner"></div></div>
+  } @else if (filtered.length === 0) {
+    <div class="empty-state">
+      <span class="empty-icon">💳</span>
+      <h3>Kayıt bulunamadı</h3>
+      <p>Filtre veya arama kriterini değiştirin.</p>
+    </div>
+  } @else {
+    <div class="table-wrapper">
+      <table class="payments-table">
+        <thead>
+          <tr>
+            <th>İşletme</th>
+            <th>Admin</th>
+            <th>Plan</th>
+            <th>Durum</th>
+            <th>Fiyat</th>
+            <th>Başlangıç</th>
+            <th>Bitiş</th>
+            <th>Kalan Gün</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of filtered; track s.id) {
+            <tr [class.expired-row]="s.isExpired">
+              <td class="tenant-cell">
+                <div class="tenant-name">{{ s.tenantName ?? '—' }}</div>
+              </td>
+              <td class="email-cell">{{ s.adminEmail ?? '—' }}</td>
+              <td class="plan-cell">
+                <span class="badge badge--plan">{{ s.plan }}</span>
+              </td>
+              <td>
+                <span [class]="'sub-badge sub-badge--' + statusClass(s.status)">
+                  {{ statusLabel(s.status) }}
+                </span>
+              </td>
+              <td class="price-cell">{{ formatPrice(s.price, s.currency) }}</td>
+              <td class="date-cell">{{ formatDate(s.startDate) }}</td>
+              <td class="date-cell">
+                <span [class.text-red]="s.isExpired">{{ formatDate(s.expiryDate) }}</span>
+              </td>
+              <td class="days-cell">
+                @if (s.daysLeft != null && !s.isExpired) {
+                  <span [class.text-amber]="s.daysLeft <= 7" [class.text-red]="s.daysLeft <= 3">
+                    {{ s.daysLeft }}g
+                  </span>
+                } @else if (s.isExpired) {
+                  <span class="text-red">Doldu</span>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

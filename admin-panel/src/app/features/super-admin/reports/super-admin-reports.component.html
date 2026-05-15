@@ -1,0 +1,121 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h2>Raporlar</h2>
+      <p>Sistem geneli istatistikler ve büyüme analizi</p>
+    </div>
+    <button class="btn btn-outline" (click)="loadReports()">↻ Yenile</button>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading-state"><div class="spinner"></div></div>
+  } @else if (errorMessage) {
+    <div class="alert alert-error">{{ errorMessage }}</div>
+  } @else if (reports) {
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon">🏢</div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ reports.totalTenants }}</div>
+          <div class="kpi-label">Toplam İşletme</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--green">
+        <div class="kpi-icon">✓</div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ reports.activeTenants }}</div>
+          <div class="kpi-label">Aktif İşletme</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--purple">
+        <div class="kpi-icon">💳</div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ reports.activePaidTenants }}</div>
+          <div class="kpi-label">Ücretli Abonelik</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--amber">
+        <div class="kpi-icon">⏳</div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ reports.trialTenants }}</div>
+          <div class="kpi-label">Deneme Süresi</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--red">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ reports.expiringSoon }}</div>
+          <div class="kpi-label">Yakında Bitiyor</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📅</div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ reports.totalAppointments }}</div>
+          <div class="kpi-label">Toplam Randevu</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--green">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ reports.appointmentsThisMonth }}</div>
+          <div class="kpi-label">Bu Ay Randevu</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--purple">
+        <div class="kpi-icon">🆕</div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ reports.newThisMonth }}</div>
+          <div class="kpi-label">Bu Ay Yeni</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <!-- Plan Distribution -->
+      <div class="chart-card">
+        <h3>Plan Dağılımı</h3>
+        @if (reports.planDistribution.length === 0) {
+          <p class="no-data">Veri yok</p>
+        } @else {
+          <div class="plan-bars">
+            @for (p of reports.planDistribution; track p.plan) {
+              <div class="plan-bar-row">
+                <div class="plan-bar-label">{{ p.plan }}</div>
+                <div class="plan-bar-track">
+                  <div class="plan-bar-fill"
+                    [style.width.%]="reports.totalTenants > 0 ? (p.count / reports.totalTenants * 100) : 0">
+                  </div>
+                </div>
+                <div class="plan-bar-count">{{ p.count }}</div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Monthly Growth -->
+      <div class="chart-card">
+        <h3>Aylık Büyüme (Son 12 Ay)</h3>
+        @if (reports.monthlyGrowth.length === 0) {
+          <p class="no-data">Veri yok</p>
+        } @else {
+          <div class="bar-chart">
+            @for (m of reports.monthlyGrowth; track m.month + '-' + m.year) {
+              <div class="bar-col">
+                <div class="bar-value">{{ m.count }}</div>
+                <div class="bar"
+                  [style.height.%]="maxGrowthCount > 0 ? (m.count / maxGrowthCount * 100) : 0">
+                </div>
+                <div class="bar-label">{{ getMonthName(m.month) }}</div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+  }
+</div>

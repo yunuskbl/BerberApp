@@ -107,6 +107,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'reports',
+        loadComponent: () =>
+          import('./features/super-admin/reports/super-admin-reports.component').then(
+            (m) => m.SuperAdminReportsComponent,
+          ),
+      },
+      {
+        path: 'payments',
+        loadComponent: () =>
+          import('./features/super-admin/payments/super-admin-payments.component').then(
+            (m) => m.SuperAdminPaymentsComponent,
+          ),
+      },
+      {
         path: '',
         redirectTo: 'tenants',
         pathMatch: 'full',

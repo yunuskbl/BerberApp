@@ -13,6 +13,8 @@ import { AuthService } from '../../../core/services/auth.service';
 export class SuperAdminSidebarComponent {
   menuItems = [
     { icon: '🏢', label: 'İşletmeler', route: '/superadmin/tenants' },
+    { icon: '📊', label: 'Raporlar', route: '/superadmin/reports' },
+    { icon: '💳', label: 'Ödemeler', route: '/superadmin/payments' },
   ];
 
   constructor(private authService: AuthService, private router: Router) {}
