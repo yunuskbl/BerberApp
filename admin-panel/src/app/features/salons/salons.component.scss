@@ -260,35 +260,32 @@ app-language-switcher {
 /* Hover'da carousel butonlarını göster */
 .salon-card:hover .carousel-btn { opacity: 1; }
 
-/* Logo — card-header'ın dışına taşar, en üstte */
-.card-logo {
-  position: absolute;
-  bottom: -20px;
-  left: 20px;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: white;
-  border: 3px solid white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 800;
-  color: #111;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
-  overflow: hidden;
-  z-index: 10; /* Her şeyin önünde */
-
-  img { width: 100%; height: 100%; object-fit: cover; }
-}
-
 .card-body {
-  padding: 30px 20px 20px;
+  padding: 16px 20px 20px;
   border-radius: 0 0 16px 16px;
   display: flex;
   flex-direction: column;
   flex: 1;
+}
+
+.card-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: white;
+  border: 2px solid #ebebeb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #111;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+  overflow: hidden;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
 }
 
 .card-name {
@@ -351,6 +348,18 @@ app-language-switcher {
 
 @media (max-width: 600px) {
   .salons-grid { grid-template-columns: 1fr; }
-  .header-inner { gap: 12px; }
-  .salons-body { padding: 20px 16px 40px; }
+  .header-inner { gap: 10px; }
+  .salons-body { padding: 16px 12px 40px; }
+  .header-search { max-width: none; }
+  .search-wrap input { font-size: 13px; }
+  .search-wrap button { padding: 6px 10px; font-size: 12px; }
+  .card-header { height: 160px; }
+  .card-body { padding: 14px 16px 16px; }
+  .card-name { font-size: 14px; }
+  .card-cta { padding: 7px 14px; font-size: 12px; }
+}
+
+@media (max-width: 400px) {
+  .salons-grid { gap: 12px; }
+  .brand-name { font-size: 13px; }
 }

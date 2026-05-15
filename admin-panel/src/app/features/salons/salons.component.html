@@ -117,17 +117,16 @@
 
             </div>
 
-            <!-- Logo — card-header dışında, salon-card'a göre konumlanır -->
-            <div class="card-logo">
-              @if (salon.logoUrl) {
-                <img [src]="salon.logoUrl" [alt]="salon.name" />
-              } @else {
-                {{ getInitials(salon.name) }}
-              }
-            </div>
-
             <!-- Card Body -->
             <div class="card-body">
+              <!-- Logo sol üst köşe -->
+              <div class="card-logo">
+                @if (salon.logoUrl) {
+                  <img [src]="salon.logoUrl" [alt]="salon.name" />
+                } @else {
+                  {{ getInitials(salon.name) }}
+                }
+              </div>
               <h3 class="card-name">{{ salon.name }}</h3>
 
               <!-- Rating -->
