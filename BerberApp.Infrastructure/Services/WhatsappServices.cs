@@ -234,6 +234,35 @@ public class WhatsAppService : IWhatsAppService
         await SendMessageAsync(phone, message);
     }
 
+    public async Task SendSubscriptionExpiryWarningAsync(string phone, string salonName, int daysLeft)
+    {
+        var message = daysLeft <= 1
+            ? $"""
+            🚨 *ayarlıyo - Aboneliğiniz Yarın Sona Eriyor!*
+
+            Merhaba {salonName}!
+
+            Aboneliğiniz yarın sona erecek. 😟
+
+            Kesintisiz hizmet için aboneliğinizi hemen yenileyin.
+
+            👉 Yenilemek için: app.ayarliyo.com/payment
+            """
+            : $"""
+            ⏰ *ayarlıyo - Aboneliğiniz {daysLeft} Gün İçinde Sona Eriyor*
+
+            Merhaba {salonName}!
+
+            Aboneliğinizin sona ermesine {daysLeft} gün kaldı.
+
+            Hizmet kesintisi yaşamamak için aboneliğinizi önceden yenileyin.
+
+            👉 Yenilemek için: app.ayarliyo.com/payment
+            """;
+
+        await SendMessageAsync(phone, message);
+    }
+
     private static DateTime ToTurkeyTime(DateTime utcTime)
     {
         // Kind'ı UTC olarak zorla

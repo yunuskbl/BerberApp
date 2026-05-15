@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.EntityFrameworkCore;
 
 namespace BerberApp.Api.Controllers;
 
@@ -12,28 +11,36 @@ namespace BerberApp.Api.Controllers;
 [AllowAnonymous]
 public class OtpController : ControllerBase
 {
-    private readonly IMemoryCache _cache;
+    private readonly IAppDbContext _context;
     private readonly IWhatsAppService _whatsAppService;
 
-    public OtpController(IMemoryCache cache, IWhatsAppService whatsAppService)
+    public OtpController(IAppDbContext context, IWhatsAppService whatsAppService)
     {
-        _cache = cache;
+        _context = context;
         _whatsAppService = whatsAppService;
     }
 
-    // OTP gönderme endpoint'i — WhatsApp üzerinden gönderilir
     [HttpPost("send")]
     public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Phone))
             return BadRequest(new { success = false, message = "Telefon numarası gerekli." });
 
-        // 6 haneli OTP oluştur (kriptografik güvenli)
-        var otp = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
-        var cacheKey = $"otp:{request.Phone}";
+        // Mevcut OTP kayıtlarını sil
+        var existing = await _context.OtpRecords
+            .Where(x => x.Phone == request.Phone)
+            .ToListAsync();
+        _context.OtpRecords.RemoveRange(existing);
 
-        // 5 dakika geçerli
-        _cache.Set(cacheKey, otp, TimeSpan.FromMinutes(5));
+        var otp = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
+
+        _context.OtpRecords.Add(new OtpRecord
+        {
+            Phone = request.Phone,
+            Code = otp,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(5)
+        });
+        await _context.SaveChangesAsync();
 
         try
         {
@@ -48,21 +55,22 @@ public class OtpController : ControllerBase
     }
 
     [HttpPost("verify")]
-    public IActionResult VerifyOtp([FromBody] VerifyOtpRequest request)
+    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
     {
-        var cacheKey = $"otp:{request.Phone}";
+        var record = await _context.OtpRecords
+            .Where(x => x.Phone == request.Phone && !x.IsVerified && x.ExpiresAt > DateTime.UtcNow)
+            .OrderByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
 
-        if (!_cache.TryGetValue(cacheKey, out string? storedOtp))
+        if (record is null)
             return BadRequest(new { success = false, message = "Kod süresi dolmuş veya geçersiz." });
 
-        if (storedOtp != request.Code)
+        if (record.Code != request.Code)
             return BadRequest(new { success = false, message = "Hatalı kod." });
 
-        // Doğrulama başarılı — kodu sil
-        _cache.Remove(cacheKey);
-
-        // Doğrulanmış telefonu cache'e ekle (30 dakika geçerli)
-        _cache.Set($"verified:{request.Phone}", true, TimeSpan.FromMinutes(30));
+        record.IsVerified = true;
+        record.VerifiedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
 
         return Ok(new { success = true, message = "Telefon doğrulandı." });
     }

@@ -25,6 +25,7 @@ namespace BerberApp.Application.Common.Interfaces
         DbSet<AppointmentServiceEntity> AppointmentServices { get; }
         DbSet<PaymentMethod> PaymentMethods { get; }
         DbSet<ContactMessage> ContactMessages { get; }
+        DbSet<OtpRecord> OtpRecords { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

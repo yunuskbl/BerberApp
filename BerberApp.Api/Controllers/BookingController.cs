@@ -7,7 +7,6 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using BerberApp.Domain.Entities;
 
 
@@ -20,14 +19,12 @@ public class BookingController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IAppDbContext _context;
-    private readonly IMemoryCache _cache;
     private readonly IWhatsAppService _whatsApp;
 
-    public BookingController(IMediator mediator, IAppDbContext context, IMemoryCache cache, IWhatsAppService whatsApp)
+    public BookingController(IMediator mediator, IAppDbContext context, IWhatsAppService whatsApp)
     {
         _mediator = mediator;
         _context = context;
-        _cache = cache;
         _whatsApp = whatsApp;
     }
 
@@ -228,9 +225,18 @@ public class BookingController : ControllerBase
         if (monthlyLimit < int.MaxValue && monthlyCount >= monthlyLimit)
             return BadRequest(new { success = false, message = "Bu salon bu ay için randevu kapasitesine ulaştı." });
 
-        // Telefon doğrulanmış mı kontrol et
-        if (!_cache.TryGetValue($"verified:{request.Phone}", out bool isVerified) || !isVerified)
+        // Telefon doğrulanmış mı kontrol et (son 30 dakika içinde doğrulanmış OTP)
+        var verifiedOtp = await _context.OtpRecords
+            .Where(x => x.Phone == request.Phone && x.IsVerified &&
+                        x.VerifiedAt != null && x.VerifiedAt > DateTime.UtcNow.AddMinutes(-30))
+            .FirstOrDefaultAsync();
+
+        if (verifiedOtp is null)
             return BadRequest(new { success = false, message = "Telefon numarası doğrulanmamış." });
+
+        // Kullanıldıktan sonra OTP kaydını sil
+        _context.OtpRecords.Remove(verifiedOtp);
+        await _context.SaveChangesAsync();
 
         // Telefon başına günlük limit kontrolü
         var turkeyTz = GetTurkeyTimeZone();

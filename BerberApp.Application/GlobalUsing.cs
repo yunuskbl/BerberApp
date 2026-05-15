@@ -11,4 +11,5 @@ global using ReviewEntity        = BerberApp.Domain.Entities.Review;
 global using SubscriptionEntity  = BerberApp.Domain.Entities.Subscription;
 global using StaffServiceEntity        = BerberApp.Domain.Entities.StaffService;
 global using AppointmentServiceEntity  = BerberApp.Domain.Entities.AppointmentService;
+global using OtpRecordEntity = BerberApp.Domain.Entities.OtpRecord;
 global using BerberApp.Application.Common.Extensions;

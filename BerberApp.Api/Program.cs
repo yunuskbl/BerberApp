@@ -209,6 +209,12 @@ RecurringJob.AddOrUpdate<ExpireAppointmentsJob>(
     job => job.ExpireOldAppointmentsAsync(),
     "*/5 * * * *"
 );
+// Her gün sabah 09:00'da abonelik sona erme uyarısı gönder
+RecurringJob.AddOrUpdate<SubscriptionExpiryReminderJob>(
+    "subscription-expiry-reminders",
+    job => job.SendExpiryRemindersAsync(),
+    "0 9 * * *"
+);
 
 app.MapControllers();
 

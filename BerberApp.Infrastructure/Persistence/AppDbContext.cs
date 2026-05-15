@@ -24,6 +24,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<AppointmentService> AppointmentServices => Set<AppointmentService>();
     public DbSet<PaymentMethod> PaymentMethods => Set<PaymentMethod>();
     public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
+    public DbSet<OtpRecord> OtpRecords => Set<OtpRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
