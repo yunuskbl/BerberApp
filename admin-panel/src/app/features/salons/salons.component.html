@@ -61,7 +61,9 @@
 
               @if (salon.photos && salon.photos.length > 0) {
                 <!-- Carousel -->
-                <div class="carousel">
+                <div class="carousel"
+                     (touchstart)="onTouchStart(salon.id, $event)"
+                     (touchend)="onTouchEnd(salon.id, salon.photos!, $event)">
                   @for (photo of salon.photos; track photo.id; let i = $index) {
                     <img
                       class="carousel-img"

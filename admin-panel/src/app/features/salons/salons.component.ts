@@ -38,6 +38,7 @@ export class SalonsComponent implements OnInit {
   searchQuery    = '';
   errorMessage   = '';
   carouselIndex  = new Map<string, number>();
+  touchStartX    = new Map<string, number>();
 
   getIdx(id: string): number { return this.carouselIndex.get(id) ?? 0; }
 
@@ -56,6 +57,19 @@ export class SalonsComponent implements OnInit {
   goToPhoto(salonId: string, idx: number, e: Event): void {
     e.preventDefault(); e.stopPropagation();
     this.carouselIndex.set(salonId, idx);
+  }
+
+  onTouchStart(salonId: string, e: TouchEvent): void {
+    this.touchStartX.set(salonId, e.touches[0].clientX);
+  }
+
+  onTouchEnd(salonId: string, photos: SalonPhoto[], e: TouchEvent): void {
+    const startX = this.touchStartX.get(salonId);
+    if (startX === undefined) return;
+    const deltaX = e.changedTouches[0].clientX - startX;
+    this.touchStartX.delete(salonId);
+    if (Math.abs(deltaX) < 30) return;
+    deltaX < 0 ? this.nextPhoto(salonId, photos, e) : this.prevPhoto(salonId, photos, e);
   }
 
   constructor(private http: HttpClient, private titleService: Title) {}

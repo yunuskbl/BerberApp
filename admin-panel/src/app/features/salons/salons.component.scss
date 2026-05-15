@@ -356,6 +356,12 @@ app-language-switcher {
 @media (max-width: 600px) {
   .salons-page { overflow-x: hidden; }
 
+  /* Mobilde swipe aktif — ok butonlarını her zaman göster */
+  .carousel .carousel-btn { opacity: 0.75; }
+  /* Dot'lar zaten görünür, touch-action swipe'ı engellemesin */
+  .carousel { touch-action: pan-y; }
+
+
   /* Navbar: 2 satır */
   .salons-header { padding: 0 16px; }
 

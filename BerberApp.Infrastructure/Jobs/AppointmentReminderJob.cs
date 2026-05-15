@@ -49,22 +49,25 @@ public class AppointmentReminderJob
         {
             try
             {
-                var salonName = apt.Tenant?.Name ?? string.Empty;
-                var mapsUrl   = !string.IsNullOrWhiteSpace(apt.Tenant?.Subdomain)
+                var salonName  = apt.Tenant?.Name ?? string.Empty;
+                var mapsUrl    = !string.IsNullOrWhiteSpace(apt.Tenant?.Subdomain)
                     ? $"{_frontendBase}/api/map/{apt.Tenant.Subdomain}"
+                    : string.Empty;
+                var bookingUrl = !string.IsNullOrWhiteSpace(apt.Tenant?.Subdomain)
+                    ? $"{_frontendBase}/{apt.Tenant.Subdomain}"
                     : string.Empty;
 
                 if (apt.Tenant?.PreferredNotificationChannel == NotificationChannel.Sms)
                 {
                     await _smsService.SendAppointmentReminderAsync(
                         apt.Customer.Phone, apt.Customer.FullName,
-                        apt.Service.Name, apt.StartTime, salonName, mapsUrl);
+                        apt.Service.Name, apt.StartTime, salonName, mapsUrl, bookingUrl);
                 }
                 else
                 {
                     await _whatsAppService.SendAppointmentReminderAsync(
                         apt.Customer.Phone, apt.Customer.FullName,
-                        apt.Service.Name, apt.StartTime, salonName, mapsUrl);
+                        apt.Service.Name, apt.StartTime, salonName, mapsUrl, bookingUrl);
                 }
             }
             catch { }

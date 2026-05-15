@@ -39,18 +39,18 @@ public class LinkNotificationService : INotificationService
     {
         try
         {
-            var (channel, salonName, mapsUrl) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, mapsUrl, bookingUrl) = await GetTenantInfoAsync(dto.TenantId);
 
             if (channel == NotificationChannel.Sms)
             {
                 await _smsService.SendAppointmentConfirmedAsync(
-                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, mapsUrl);
+                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, mapsUrl, bookingUrl);
                 _logger.LogInformation("[SMS] Onay bildirimi gönderildi: {Recipient}", recipient);
             }
             else
             {
                 await _whatsAppService.SendAppointmentConfirmedAsync(
-                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, mapsUrl);
+                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, mapsUrl, bookingUrl);
                 _logger.LogInformation("[WHATSAPP] Onay bildirimi gönderildi: {Recipient}", recipient);
             }
         }
@@ -64,18 +64,18 @@ public class LinkNotificationService : INotificationService
     {
         try
         {
-            var (channel, salonName, _) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, _, bookingUrl) = await GetTenantInfoAsync(dto.TenantId);
 
             if (channel == NotificationChannel.Sms)
             {
                 await _smsService.SendAppointmentCancelledAsync(
-                    recipient, dto.CustomerName, dto.StartTime, salonName);
+                    recipient, dto.CustomerName, dto.StartTime, salonName, bookingUrl);
                 _logger.LogInformation("[SMS] İptal bildirimi gönderildi: {Recipient}", recipient);
             }
             else
             {
                 await _whatsAppService.SendAppointmentCancelledAsync(
-                    recipient, dto.CustomerName, dto.StartTime, salonName);
+                    recipient, dto.CustomerName, dto.StartTime, salonName, bookingUrl);
                 _logger.LogInformation("[WHATSAPP] İptal bildirimi gönderildi: {Recipient}", recipient);
             }
         }
@@ -89,7 +89,7 @@ public class LinkNotificationService : INotificationService
     {
         try
         {
-            var (channel, salonName, _) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, _, _) = await GetTenantInfoAsync(dto.TenantId);
 
             if (channel == NotificationChannel.Sms)
             {
@@ -114,18 +114,18 @@ public class LinkNotificationService : INotificationService
     {
         try
         {
-            var (channel, salonName, _) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, _, bookingUrl) = await GetTenantInfoAsync(dto.TenantId);
 
             if (channel == NotificationChannel.Sms)
             {
                 await _smsService.SendAppointmentUpdatedAsync(
-                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName);
+                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, bookingUrl);
                 _logger.LogInformation("[SMS] Güncelleme bildirimi gönderildi: {Recipient}", recipient);
             }
             else
             {
                 await _whatsAppService.SendAppointmentUpdatedAsync(
-                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName);
+                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, bookingUrl);
                 _logger.LogInformation("[WHATSAPP] Güncelleme bildirimi gönderildi: {Recipient}", recipient);
             }
         }
@@ -135,24 +135,24 @@ public class LinkNotificationService : INotificationService
         }
     }
 
-    /// <summary>
-    /// Tenant bilgilerini çeker.
-    /// mapsUrl: adres varsa "/map/{subdomain}" kısa redirect linki döner, WhatsApp'ta temiz görünür.
-    /// </summary>
-    private async Task<(NotificationChannel channel, string salonName, string mapsUrl)> GetTenantInfoAsync(Guid tenantId)
+    private async Task<(NotificationChannel channel, string salonName, string mapsUrl, string bookingUrl)> GetTenantInfoAsync(Guid tenantId)
     {
         var tenant = await _context.Tenants
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == tenantId);
 
-        var mapsUrl = !string.IsNullOrWhiteSpace(tenant?.Subdomain)
+        var mapsUrl    = !string.IsNullOrWhiteSpace(tenant?.Subdomain)
             ? $"{_frontendBase}/api/map/{tenant.Subdomain}"
+            : string.Empty;
+        var bookingUrl = !string.IsNullOrWhiteSpace(tenant?.Subdomain)
+            ? $"{_frontendBase}/{tenant.Subdomain}"
             : string.Empty;
 
         return (
             tenant?.PreferredNotificationChannel ?? NotificationChannel.WhatsApp,
             tenant?.Name ?? string.Empty,
-            mapsUrl
+            mapsUrl,
+            bookingUrl
         );
     }
 }

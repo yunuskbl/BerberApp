@@ -25,13 +25,13 @@ public class WhatsAppService : IWhatsAppService
 
     public async Task SendAppointmentConfirmedAsync(
         string phone, string customerName, string serviceName,
-        string staffName, DateTime startTime, string salonName = "", string mapsUrl = "")
+        string staffName, DateTime startTime, string salonName = "", string mapsUrl = "", string bookingUrl = "")
     {
-        var turkeyTime = ToTurkeyTime(startTime);
-        var culture    = new System.Globalization.CultureInfo("tr-TR");
-        var salonLine  = string.IsNullOrWhiteSpace(salonName) ? "" : $"\n🏪 Salon: {salonName}";
-        var mapsLine   = string.IsNullOrWhiteSpace(mapsUrl)   ? "" :
-            $"\n\n📍 *Yol Tarifi için tıklayın:*\n{mapsUrl}";
+        var turkeyTime  = ToTurkeyTime(startTime);
+        var culture     = new System.Globalization.CultureInfo("tr-TR");
+        var salonLine   = string.IsNullOrWhiteSpace(salonName)  ? "" : $"\n🏪 Salon: {salonName}";
+        var mapsLine    = string.IsNullOrWhiteSpace(mapsUrl)    ? "" : $"\n\n📍 *Yol Tarifi için tıklayın:*\n{mapsUrl}";
+        var bookingLine = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $"\n\n🔗 *Yeni randevu almak için:*\n{bookingUrl}";
 
         var message = $"""
         ✂ *ayarlıyo - Randevu Onayı*
@@ -43,7 +43,7 @@ public class WhatsAppService : IWhatsAppService
         📅 Tarih: {turkeyTime.ToString("dd MMMM yyyy", culture)}
         ⏰ Saat: {turkeyTime:HH:mm}
         💈 Hizmet: {serviceName}
-        👤 Personel: {staffName}{salonLine}{mapsLine}
+        👤 Personel: {staffName}{salonLine}{mapsLine}{bookingLine}
 
         Randevunuzu iptal etmek için salonumuzu arayabilirsiniz.
         """;
@@ -53,13 +53,13 @@ public class WhatsAppService : IWhatsAppService
 
     public async Task SendAppointmentReminderAsync(
         string phone, string customerName,
-        string serviceName, DateTime startTime, string salonName = "", string mapsUrl = "")
+        string serviceName, DateTime startTime, string salonName = "", string mapsUrl = "", string bookingUrl = "")
     {
-        var turkeyTime = ToTurkeyTime(startTime);
-        var culture    = new System.Globalization.CultureInfo("tr-TR");
-        var salonLine  = string.IsNullOrWhiteSpace(salonName) ? "" : $"\n🏪 Salon: {salonName}";
-        var mapsLine   = string.IsNullOrWhiteSpace(mapsUrl)   ? "" :
-            $"\n\n📍 *Yol Tarifi için tıklayın:*\n{mapsUrl}";
+        var turkeyTime  = ToTurkeyTime(startTime);
+        var culture     = new System.Globalization.CultureInfo("tr-TR");
+        var salonLine   = string.IsNullOrWhiteSpace(salonName)  ? "" : $"\n🏪 Salon: {salonName}";
+        var mapsLine    = string.IsNullOrWhiteSpace(mapsUrl)    ? "" : $"\n\n📍 *Yol Tarifi için tıklayın:*\n{mapsUrl}";
+        var bookingLine = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $"\n\n🔗 *Yeni randevu almak için:*\n{bookingUrl}";
 
         var message = $"""
         ✂ *ayarlıyo - Randevu Hatırlatması*
@@ -70,7 +70,7 @@ public class WhatsAppService : IWhatsAppService
 
         📅 Tarih: {turkeyTime.ToString("dd MMMM yyyy", culture)}
         ⏰ Saat: {turkeyTime:HH:mm}
-        💈 Hizmet: {serviceName}{salonLine}{mapsLine}
+        💈 Hizmet: {serviceName}{salonLine}{mapsLine}{bookingLine}
 
         Sizi bekliyoruz! 😊
         """;
@@ -79,20 +79,19 @@ public class WhatsAppService : IWhatsAppService
     }
 
     public async Task SendAppointmentCancelledAsync(
-        string phone, string customerName, DateTime startTime, string salonName = "")
+        string phone, string customerName, DateTime startTime, string salonName = "", string bookingUrl = "")
     {
-        var turkeyTime = ToTurkeyTime(startTime);
-        var culture = new System.Globalization.CultureInfo("tr-TR");
-        var salonLine = string.IsNullOrWhiteSpace(salonName) ? "" : $"\n🏪 Salon: {salonName}";
+        var turkeyTime  = ToTurkeyTime(startTime);
+        var culture     = new System.Globalization.CultureInfo("tr-TR");
+        var salonLine   = string.IsNullOrWhiteSpace(salonName)  ? "" : $"\n🏪 Salon: {salonName}";
+        var bookingLine = string.IsNullOrWhiteSpace(bookingUrl) ? " Yeni randevu için salonumuzu arayabilirsiniz." : $"\n\n🔗 *Yeni randevu almak için:*\n{bookingUrl}";
 
         var message = $"""
         ✂ *ayarlıyo - Randevu İptali*
 
         Merhaba {customerName},{salonLine}
 
-        {turkeyTime.ToString("dd MMMM yyyy", culture)} tarihli {turkeyTime:HH:mm} saatindeki randevunuz iptal edilmiştir.
-
-        Yeni randevu almak için salonumuzu arayabilirsiniz.
+        {turkeyTime.ToString("dd MMMM yyyy", culture)} tarihli {turkeyTime:HH:mm} saatindeki randevunuz iptal edilmiştir.{bookingLine}
         """;
 
         await SendMessageAsync(phone, message);
@@ -100,11 +99,12 @@ public class WhatsAppService : IWhatsAppService
 
     public async Task SendAppointmentUpdatedAsync(
         string phone, string customerName, string serviceName,
-        string staffName, DateTime startTime, string salonName = "")
+        string staffName, DateTime startTime, string salonName = "", string bookingUrl = "")
     {
-        var turkeyTime = ToTurkeyTime(startTime);
-        var culture    = new System.Globalization.CultureInfo("tr-TR");
-        var salonLine  = string.IsNullOrWhiteSpace(salonName) ? "" : $"\n🏪 Salon: {salonName}";
+        var turkeyTime  = ToTurkeyTime(startTime);
+        var culture     = new System.Globalization.CultureInfo("tr-TR");
+        var salonLine   = string.IsNullOrWhiteSpace(salonName)  ? "" : $"\n🏪 Salon: {salonName}";
+        var bookingLine = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $"\n\n🔗 *Yeni randevu almak için:*\n{bookingUrl}";
 
         var message = $"""
         ✂ *ayarlıyo - Randevu Güncellendi*
@@ -116,7 +116,7 @@ public class WhatsAppService : IWhatsAppService
         📅 Tarih: {turkeyTime.ToString("dd MMMM yyyy", culture)}
         ⏰ Saat: {turkeyTime:HH:mm}
         💈 Hizmet: {serviceName}
-        👤 Personel: {staffName}{salonLine}
+        👤 Personel: {staffName}{salonLine}{bookingLine}
 
         Sorularınız için salonumuzu arayabilirsiniz.
         """;
