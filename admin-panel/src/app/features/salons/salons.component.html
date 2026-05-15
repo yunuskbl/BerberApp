@@ -115,14 +115,15 @@
                 </svg>
               }
 
-              <!-- Logo — her zaman en önde -->
-              <div class="card-logo">
-                @if (salon.logoUrl) {
-                  <img [src]="salon.logoUrl" [alt]="salon.name" />
-                } @else {
-                  {{ getInitials(salon.name) }}
-                }
-              </div>
+            </div>
+
+            <!-- Logo — card-header dışında, salon-card'a göre konumlanır -->
+            <div class="card-logo">
+              @if (salon.logoUrl) {
+                <img [src]="salon.logoUrl" [alt]="salon.name" />
+              } @else {
+                {{ getInitials(salon.name) }}
+              }
             </div>
 
             <!-- Card Body -->
@@ -148,7 +149,7 @@
                 </p>
               }
               <div class="card-footer">
-                <div class="card-cta" [style.background]="salon.themeColor || '#111111'">
+                <div class="card-cta">
                   {{ 'salons.bookBtn' | translate }}
                 </div>
               </div>

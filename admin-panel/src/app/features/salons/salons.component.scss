@@ -163,10 +163,11 @@ app-language-switcher {
   background: white;
   border-radius: 16px;
   border: 1px solid #ebebeb;
-  overflow: visible; /* logo taşmasın diye hidden kaldırıldı */
+  overflow: visible;
   text-decoration: none;
   display: flex;
   flex-direction: column;
+  position: relative;
   transition: transform 0.15s, box-shadow 0.15s;
 
   &:hover {
@@ -329,6 +330,7 @@ app-language-switcher {
 .card-cta {
   padding: 8px 16px;
   border-radius: 8px;
+  background: #111111;
   color: white;
   font-size: 13px;
   font-weight: 600;
