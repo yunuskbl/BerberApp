@@ -16,6 +16,7 @@ export class SuperAdminTenantsComponent implements OnInit {
   isLoading = true;
   isDrawerOpen = false;
   isSubmitting = false;
+  isResetting: string | null = null; // reset işlemi yapılan tenant id
   errorMessage = '';
   successMessage = '';
 
@@ -95,19 +96,28 @@ export class SuperAdminTenantsComponent implements OnInit {
   }
 
   resetTenantData(tenantId: string, tenantName: string): void {
-    if (!confirm(`"${tenantName}" işletmesinin tüm randevu, müşteri ve personel verilerini sıfırlamak istediğinizden emin misiniz?\n\nBu işlem geri alınamaz!`)) return;
+    if (!confirm(`"${tenantName}" işletmesinin tüm randevu, müşteri, personel ve yorum verilerini sıfırlamak istediğinizden emin misiniz?\n\nBu işlem geri alınamaz!`)) return;
+
+    this.isResetting = tenantId;
+    this.errorMessage = '';
+    this.successMessage = '';
 
     this.superAdminService.resetTenantData(tenantId).subscribe({
       next: (res) => {
         if (res.success) {
           this.successMessage = `"${tenantName}" verileri sıfırlandı.`;
           this.loadTenants();
-          setTimeout(() => this.successMessage = '', 3000);
+          setTimeout(() => this.successMessage = '', 4000);
+        } else {
+          this.errorMessage = res.message || 'Sıfırlama işlemi başarısız.';
+          setTimeout(() => this.errorMessage = '', 4000);
         }
+        this.isResetting = null;
       },
-      error: () => {
-        this.errorMessage = 'Sıfırlama işlemi başarısız.';
-        setTimeout(() => this.errorMessage = '', 3000);
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'Sıfırlama işlemi başarısız.';
+        setTimeout(() => this.errorMessage = '', 4000);
+        this.isResetting = null;
       }
     });
   }

@@ -413,25 +413,37 @@ public class SuperAdminController : ControllerBase
             if (!tenantExists)
                 return NotFound(new { success = false, message = "İşletme bulunamadı." });
 
-            // ExecuteDeleteAsync → direkt SQL DELETE, change tracker bypass, FK sırası önemli
+            // ExecuteDeleteAsync → direkt SQL DELETE, change tracker bypass
+            // FK sırası kritik: Restrict constraint'leri olan tablolar önce silinmeli
+            // Reviews → Appointments (Restrict), Notifications → Appointments (Cascade), AppointmentServices → Appointments (Cascade)
+
+            // 1) Reviews: AppointmentId üzerinde Restrict FK var, önce sil
+            var deletedReviews = await _context.Reviews
+                .IgnoreQueryFilters()
+                .Where(r => r.TenantId == id)
+                .ExecuteDeleteAsync();
+
+            // 2) Randevular (Notifications ve AppointmentServices DB cascade ile otomatik silinir)
             var deletedAppointments = await _context.Appointments
                 .IgnoreQueryFilters()
                 .Where(a => a.TenantId == id)
                 .ExecuteDeleteAsync();
 
+            // 3) Müşteriler
             var deletedCustomers = await _context.Customers
                 .IgnoreQueryFilters()
                 .Where(c => c.TenantId == id)
                 .ExecuteDeleteAsync();
 
+            // 4) Personel (WorkingHours ve StaffServices DB cascade ile otomatik silinir)
             var deletedStaff = await _context.Staff
                 .IgnoreQueryFilters()
                 .Where(s => s.TenantId == id)
                 .ExecuteDeleteAsync();
 
             _logger.LogInformation(
-                "Tenant {TenantId} reset: {A} appointments, {C} customers, {S} staff deleted",
-                id, deletedAppointments, deletedCustomers, deletedStaff);
+                "Tenant {TenantId} reset: {R} reviews, {A} appointments, {C} customers, {S} staff deleted",
+                id, deletedReviews, deletedAppointments, deletedCustomers, deletedStaff);
 
             return Ok(new { success = true, message = "Veriler sıfırlandı." });
         }

@@ -135,8 +135,12 @@
                   <a [routerLink]="['/superadmin/tenants', tenant.id]" class="btn-action detail" title="Detay">🔍</a>
                   <button class="btn-action toggle" (click)="toggleTenantActive(tenant.id, tenant.isActive)"
                     title="Durumunu Değiştir">{{ tenant.isActive ? '⊘' : '✓' }}</button>
-                  <button class="btn-action reset" (click)="resetTenantData(tenant.id, tenant.name)"
-                    title="Verileri Sıfırla">🔄</button>
+                  <button class="btn-action reset"
+                    (click)="resetTenantData(tenant.id, tenant.name)"
+                    [disabled]="isResetting === tenant.id"
+                    [title]="isResetting === tenant.id ? 'Sıfırlanıyor...' : 'Verileri Sıfırla'">
+                    {{ isResetting === tenant.id ? '⏳' : '🔄' }}
+                  </button>
                 </td>
               </tr>
             }
