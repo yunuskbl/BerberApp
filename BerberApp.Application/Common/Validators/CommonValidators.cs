@@ -41,8 +41,8 @@ public static class CommonValidators
         return rule
             .NotEmpty().WithMessage("Şifre gereklidir")
             .MinimumLength(8).WithMessage("Şifre en az 8 karakter olmalıdır")
-            .Matches("[A-Z]").WithMessage("Şifre en az bir büyük harf içermeli")
-            .Matches("[a-z]").WithMessage("Şifre en az bir küçük harf içermeli")
+            .Matches("[A-ZÇĞİÖŞÜ]").WithMessage("Şifre en az bir büyük harf içermeli")
+            .Matches("[a-zçğışöü]").WithMessage("Şifre en az bir küçük harf içermeli")
             .Matches("[0-9]").WithMessage("Şifre en az bir rakam içermeli")
             .Matches("[^a-zA-Z0-9]").WithMessage("Şifre en az bir özel karakter içermeli");
     }
