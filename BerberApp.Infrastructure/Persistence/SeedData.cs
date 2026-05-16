@@ -280,7 +280,7 @@ public static class SeedData
             systemTenant = new Tenant
             {
                 Id = SYSTEM_TENANT_ID,
-                Name = "BerberApp System",
+                Name = "ayarlıyo System",
                 Subdomain = "system",
                 IsActive = false // Listelemede görünmeyecek
             };

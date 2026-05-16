@@ -17,12 +17,12 @@ public class IletimerkeziSmsService : ISmsService
         _http   = http;
         _apiKey = config["IletiMerkezi:ApiKey"]!;
         _hash   = config["IletiMerkezi:Hash"]!;
-        _sender = config["IletiMerkezi:Sender"] ?? "BerberApp";
+        _sender = config["IletiMerkezi:Sender"] ?? "ayarliyo";
     }
 
     public Task SendOtpAsync(string phone, string otp)
     {
-        var text = $"BerberApp dogrulama kodunuz: {otp}. Bu kod 5 dakika gecerlidir.";
+        var text = $"ayarlıyo dogrulama kodunuz: {otp}. Bu kod 5 dakika gecerlidir.";
         return SendAsync(phone, text);
     }
 

@@ -20,7 +20,7 @@ public class SmsService : ISmsService
 
     public async Task SendOtpAsync(string phone, string otp)
     {
-        var message = $"BerberApp dogrulama kodunuz: {otp}. Bu kod 5 dakika gecerlidir.";
+        var message = $"ayarlıyo dogrulama kodunuz: {otp}. Bu kod 5 dakika gecerlidir.";
         await SendSmsAsync(phone, message);
     }
 
