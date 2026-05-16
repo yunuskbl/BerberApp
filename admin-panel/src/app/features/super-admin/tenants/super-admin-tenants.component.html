@@ -5,7 +5,13 @@
       <h2>İşletmeler</h2>
       <p>{{ totalTenants }} işletme · {{ activeTenants }} aktif · {{ trialTenants }} deneme</p>
     </div>
-    <button class="btn btn-primary" (click)="openDrawer()">+ Yeni İşletme</button>
+    <div class="header-actions">
+      <button class="btn" [class.btn-outline]="!showDeleted" [class.btn-warning]="showDeleted"
+        (click)="toggleShowDeleted()" title="Pasif silinmiş işletmeleri göster/gizle">
+        {{ showDeleted ? '👁 Silinenleri Gizle' : '🗑 Silinenleri Göster' }}
+      </button>
+      <button class="btn btn-primary" (click)="openDrawer()">+ Yeni İşletme</button>
+    </div>
   </div>
 
   @if (isLoading) {
@@ -88,9 +94,12 @@
           </thead>
           <tbody>
             @for (tenant of filteredTenants; track tenant.id) {
-              <tr [class.inactive]="!tenant.isActive">
+              <tr [class.inactive]="!tenant.isActive" [class.deleted]="tenant.isDeleted">
                 <td class="name-cell" data-label="İşletme">
-                  <div class="tenant-name">{{ tenant.name }}</div>
+                  <div class="tenant-name">
+                    {{ tenant.name }}
+                    @if (tenant.isDeleted) { <span class="deleted-badge">Silinmiş</span> }
+                  </div>
                   @if (tenant.phone) {
                     <div class="tenant-meta">📞 {{ tenant.phone }}</div>
                   }
@@ -132,15 +141,24 @@
                   </span>
                 </td>
                 <td class="actions-cell" data-label="İşlem">
-                  <a [routerLink]="['/superadmin/tenants', tenant.id]" class="btn-action detail" title="Detay">🔍</a>
-                  <button class="btn-action toggle" (click)="toggleTenantActive(tenant.id, tenant.isActive)"
-                    title="Durumunu Değiştir">{{ tenant.isActive ? '⊘' : '✓' }}</button>
-                  <button class="btn-action reset"
-                    (click)="resetTenantData(tenant.id, tenant.name)"
-                    [disabled]="isResetting === tenant.id"
-                    [title]="isResetting === tenant.id ? 'Sıfırlanıyor...' : 'Verileri Sıfırla'">
-                    {{ isResetting === tenant.id ? '⏳' : '🔄' }}
-                  </button>
+                  @if (tenant.isDeleted) {
+                    <button class="btn-action restore"
+                      (click)="restoreTenant(tenant.id, tenant.name)"
+                      [disabled]="isRestoring === tenant.id"
+                      [title]="isRestoring === tenant.id ? 'Geri yükleniyor...' : 'Geri Yükle'">
+                      {{ isRestoring === tenant.id ? '⏳' : '♻️' }}
+                    </button>
+                  } @else {
+                    <a [routerLink]="['/superadmin/tenants', tenant.id]" class="btn-action detail" title="Detay">🔍</a>
+                    <button class="btn-action toggle" (click)="toggleTenantActive(tenant.id, tenant.isActive)"
+                      title="Durumunu Değiştir">{{ tenant.isActive ? '⊘' : '✓' }}</button>
+                    <button class="btn-action reset"
+                      (click)="resetTenantData(tenant.id, tenant.name)"
+                      [disabled]="isResetting === tenant.id"
+                      [title]="isResetting === tenant.id ? 'Sıfırlanıyor...' : 'Verileri Sıfırla'">
+                      {{ isResetting === tenant.id ? '⏳' : '🔄' }}
+                    </button>
+                  }
                 </td>
               </tr>
             }

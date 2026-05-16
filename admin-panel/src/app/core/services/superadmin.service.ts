@@ -12,6 +12,7 @@ export interface SuperAdminTenant {
   phone?: string;
   address?: string;
   isActive: boolean;
+  isDeleted: boolean;
   createdAt: string;
   adminEmail?: string;
   adminName?: string;
@@ -99,8 +100,9 @@ export class SuperAdminService {
 
   constructor(private http: HttpClient) {}
 
-  getAllTenants(): Observable<ApiResponse<SuperAdminTenant[]>> {
-    return this.http.get<ApiResponse<SuperAdminTenant[]>>(`${this.apiUrl}/tenants`);
+  getAllTenants(includeDeleted = false): Observable<ApiResponse<SuperAdminTenant[]>> {
+    const params = includeDeleted ? new HttpParams().set('includeDeleted', 'true') : new HttpParams();
+    return this.http.get<ApiResponse<SuperAdminTenant[]>>(`${this.apiUrl}/tenants`, { params });
   }
 
   createTenant(request: CreateTenantRequest): Observable<ApiResponse<any>> {
@@ -129,6 +131,10 @@ export class SuperAdminService {
 
   resetTenantData(tenantId: string): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}/reset`, {});
+  }
+
+  restoreTenant(tenantId: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}/restore`, {});
   }
 
   getReports(): Observable<ApiResponse<SuperAdminReports>> {

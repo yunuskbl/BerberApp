@@ -33,14 +33,14 @@ public class SuperAdminController : ControllerBase
     /// Tüm işletmeleri istatistikleri ile listele
     /// </summary>
     [HttpGet("tenants")]
-    public async Task<IActionResult> GetAllTenantsWithStats()
+    public async Task<IActionResult> GetAllTenantsWithStats([FromQuery] bool includeDeleted = false)
     {
         try
         {
             var now = DateTime.UtcNow;
             var tenants = await _context.Tenants
                 .IgnoreQueryFilters()
-                .Where(t => t.Id != SYSTEM_TENANT_ID && !t.IsDeleted)
+                .Where(t => t.Id != SYSTEM_TENANT_ID && (includeDeleted || !t.IsDeleted))
                 .AsNoTracking()
                 .Select(t => new SuperAdminTenantDto
                 {
@@ -51,6 +51,7 @@ public class SuperAdminController : ControllerBase
                     Phone = t.Phone,
                     Address = t.Address,
                     IsActive = t.IsActive,
+                    IsDeleted = t.IsDeleted,
                     CreatedAt = t.CreatedAt,
                     AdminEmail = t.Users
                         .Where(u => u.Role == UserRole.Admin)
@@ -396,6 +397,31 @@ public class SuperAdminController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok(new { success = true, message = "İşletme silindi (geri alınabilir)." });
+    }
+
+    /// <summary>
+    /// Soft delete geri al — pasif silinmiş işletmeyi yeniden aktif et
+    /// </summary>
+    [HttpPost("tenants/{id}/restore")]
+    public async Task<IActionResult> RestoreTenant(Guid id)
+    {
+        var tenant = await _context.Tenants
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
+
+        if (tenant == null)
+            return NotFound(new { success = false, message = "İşletme bulunamadı." });
+
+        if (!tenant.IsDeleted)
+            return BadRequest(new { success = false, message = "Bu işletme zaten aktif durumda." });
+
+        tenant.IsDeleted = false;
+        tenant.IsActive = true;
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Tenant {TenantId} ({Name}) restored by SuperAdmin", id, tenant.Name);
+
+        return Ok(new { success = true, message = $"\"{tenant.Name}\" işletmesi geri yüklendi." });
     }
 
     /// <summary>

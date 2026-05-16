@@ -16,7 +16,9 @@ export class SuperAdminTenantsComponent implements OnInit {
   isLoading = true;
   isDrawerOpen = false;
   isSubmitting = false;
-  isResetting: string | null = null; // reset işlemi yapılan tenant id
+  isResetting: string | null = null;
+  isRestoring: string | null = null;
+  showDeleted = false;
   errorMessage = '';
   successMessage = '';
 
@@ -44,7 +46,7 @@ export class SuperAdminTenantsComponent implements OnInit {
 
   loadTenants(): void {
     this.isLoading = true;
-    this.superAdminService.getAllTenants().subscribe({
+    this.superAdminService.getAllTenants(this.showDeleted).subscribe({
       next: (res) => {
         if (res.success) {
           this.tenants = res.data;
@@ -56,6 +58,11 @@ export class SuperAdminTenantsComponent implements OnInit {
         this.errorMessage = 'Tenant\'lar yüklenemedi.';
       }
     });
+  }
+
+  toggleShowDeleted(): void {
+    this.showDeleted = !this.showDeleted;
+    this.loadTenants();
   }
 
   openDrawer(): void {
@@ -118,6 +125,33 @@ export class SuperAdminTenantsComponent implements OnInit {
         this.errorMessage = err.error?.message || 'Sıfırlama işlemi başarısız.';
         setTimeout(() => this.errorMessage = '', 4000);
         this.isResetting = null;
+      }
+    });
+  }
+
+  restoreTenant(tenantId: string, tenantName: string): void {
+    if (!confirm(`"${tenantName}" işletmesini geri yüklemek istediğinizden emin misiniz?`)) return;
+
+    this.isRestoring = tenantId;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.superAdminService.restoreTenant(tenantId).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.successMessage = res.message || `"${tenantName}" geri yüklendi.`;
+          this.loadTenants();
+          setTimeout(() => this.successMessage = '', 4000);
+        } else {
+          this.errorMessage = res.message || 'Geri yükleme başarısız.';
+          setTimeout(() => this.errorMessage = '', 4000);
+        }
+        this.isRestoring = null;
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'Geri yükleme başarısız.';
+        setTimeout(() => this.errorMessage = '', 4000);
+        this.isRestoring = null;
       }
     });
   }

@@ -9,6 +9,7 @@ public class SuperAdminTenantDto
     public string? Phone { get; set; }
     public string? Address { get; set; }
     public bool IsActive { get; set; }
+    public bool IsDeleted { get; set; }
     public DateTime CreatedAt { get; set; }
 
     // Admin bilgisi
