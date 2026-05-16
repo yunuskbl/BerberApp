@@ -6,6 +6,7 @@ obj/
 .vs/
 *.log
 appsettings.Development.json
+appsettings.Production.json
 
 # Angular
 admin-panel/node_modules/
