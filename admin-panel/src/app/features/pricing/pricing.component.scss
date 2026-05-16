@@ -757,7 +757,7 @@ $green:        #059669;
     background: $purple-light;
     color: $purple-dark;
     border-color: $purple-light;
-    &:hover { background: darken($purple-light, 5%); border-color: darken($purple-light, 5%); }
+    &:hover { background: #ddd6fe; border-color: #ddd6fe; }
   }
 
   &.btn-outline {

@@ -19,7 +19,7 @@
         <div class="order-card">
           <p class="order-label">Sipariş Özeti</p>
           <div class="order-plan">
-            <span class="plan-icon">{{ planMap[plan]?.icon }}</span>
+            <span class="plan-icon">{{ planMap[plan] ? planMap[plan].icon : '' }}</span>
             <div>
               <span class="plan-name">{{ planLabel }} Planı</span>
               <span class="plan-period">1 Yıllık Abonelik</span>

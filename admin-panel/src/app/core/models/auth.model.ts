@@ -15,4 +15,5 @@ export interface LoginResponse {
   isOnTrial?: boolean;
   trialEndsAt?: string;
   subscriptionExpired?: boolean;
+  isEmailVerified?: boolean;
 }
