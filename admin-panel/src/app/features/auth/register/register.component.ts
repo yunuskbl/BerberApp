@@ -69,7 +69,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
       password:        ['', [
         Validators.required,
         Validators.minLength(6),
-        Validators.pattern(/(?=.*[A-Z])(?=.*[0-9])/),
+        Validators.pattern(/(?=.*[A-ZÇĞİÖŞÜ])(?=.*[0-9])/),
       ]],
       confirmPassword: ['', Validators.required],
     }, { validators: passwordMatchValidator });
