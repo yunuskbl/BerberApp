@@ -23,6 +23,7 @@ export class AuthService {
           localStorage.setItem('isOnTrial', response.data.isOnTrial ? 'true' : 'false');
           localStorage.setItem('trialEndsAt', response.data.trialEndsAt ?? '');
           localStorage.setItem('subscriptionExpired', response.data.subscriptionExpired ? 'true' : 'false');
+          localStorage.setItem('isEmailVerified', response.data.isEmailVerified !== false ? 'true' : 'false');
 
           try {
             const decoded: any = jwtDecode(response.data.accessToken);
@@ -46,6 +47,7 @@ export class AuthService {
           localStorage.setItem('isOnTrial', response.data.isOnTrial ? 'true' : 'false');
           localStorage.setItem('trialEndsAt', response.data.trialEndsAt ?? '');
           localStorage.setItem('subscriptionExpired', response.data.subscriptionExpired ? 'true' : 'false');
+          localStorage.setItem('isEmailVerified', response.data.isEmailVerified ? 'true' : 'false');
           try {
             const decoded: any = jwtDecode(response.data.accessToken);
             localStorage.setItem('userPlan', decoded.plan_type || 'Baslangic');
@@ -55,6 +57,22 @@ export class AuthService {
         }
       })
     );
+  }
+
+  sendRegistrationOtp(phone: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/otp/send`, { phone });
+  }
+
+  verifyRegistrationOtp(phone: string, code: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/otp/verify`, { phone, code });
+  }
+
+  isEmailVerified(): boolean {
+    return localStorage.getItem('isEmailVerified') !== 'false';
+  }
+
+  setEmailVerified(): void {
+    localStorage.setItem('isEmailVerified', 'true');
   }
 
   logout(): void {

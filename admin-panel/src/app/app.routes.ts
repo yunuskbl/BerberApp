@@ -37,6 +37,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'email-dogrula',
+    loadComponent: () =>
+      import('./features/auth/verify-email/verify-email.component').then(
+        (m) => m.VerifyEmailComponent,
+      ),
+  },
+  {
     path: 'forgot-password',
     loadComponent: () =>
       import('./features/auth/forgot-password/forgot-password.component').then(

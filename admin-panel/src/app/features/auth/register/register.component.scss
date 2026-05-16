@@ -309,6 +309,121 @@
   }
 }
 
+/* ── OTP Adım 3 ─────────────────────────────── */
+.otp-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.otp-phone-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f9fafb;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 9px;
+  padding: 11px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+
+  svg { flex-shrink: 0; }
+}
+
+.otp-hint {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0 0 18px;
+  line-height: 1.5;
+}
+
+.otp-input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.otp-input {
+  flex: 1;
+  padding: 11px 14px;
+  background: #f9fafb;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 9px;
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: #111827;
+  text-align: center;
+  outline: none;
+  transition: all 0.18s;
+
+  &::placeholder { letter-spacing: 1px; font-size: 13px; font-weight: 400; color: #d1d5db; }
+  &:focus {
+    border-color: #111827;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(17,24,39,0.08);
+  }
+}
+
+.btn-verify {
+  padding: 11px 20px;
+  background: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) { background: #1f2937; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.otp-timer-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.otp-timer {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.btn-resend {
+  font-size: 12px;
+  color: #111827;
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.otp-success {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+  padding: 10px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+
+  svg { flex-shrink: 0; }
+}
+
 @media (max-width: 520px) {
   .register-card { padding: 36px 24px; }
   .field-row { grid-template-columns: 1fr; }

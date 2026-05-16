@@ -19,4 +19,5 @@ public class LoginResponse
     public bool IsOnTrial { get; set; }
     public DateTime? TrialEndsAt { get; set; }
     public bool SubscriptionExpired { get; set; }
+    public bool IsEmailVerified { get; set; } = true;
 }

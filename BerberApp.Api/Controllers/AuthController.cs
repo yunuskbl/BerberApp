@@ -90,6 +90,34 @@ public class AuthController : ControllerBase
     /// KVKK/GDPR — Hesabı kalıcı olarak sil ve kişisel verileri anonimleştir.
     /// Bu işlem geri alınamaz. Şifre ile doğrulama zorunludur.
     /// </summary>
+    [HttpPost("resend-verification")]
+    [Authorize]
+    public async Task<IActionResult> ResendVerification()
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                      ?? User.FindFirst("sub");
+
+        if (userIdClaim is null) return Unauthorized();
+
+        await _mediator.Send(new ResendEmailVerificationCommand { UserId = Guid.Parse(userIdClaim.Value) });
+        return Ok(new { success = true, message = "Doğrulama e-postası gönderildi." });
+    }
+
+    [HttpGet("verify-email")]
+    [AllowAnonymous]
+    public async Task<IActionResult> VerifyEmail([FromQuery] string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+            return BadRequest(new { success = false, message = "Geçersiz doğrulama bağlantısı." });
+
+        var result = await _mediator.Send(new VerifyEmailCommand { Token = token });
+
+        if (!result)
+            return BadRequest(new { success = false, message = "Bağlantı geçersiz veya süresi dolmuş." });
+
+        return Ok(new { success = true, message = "E-posta adresiniz başarıyla doğrulandı." });
+    }
+
     [HttpDelete("delete-account")]
     [Authorize]
     public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountCommand command)

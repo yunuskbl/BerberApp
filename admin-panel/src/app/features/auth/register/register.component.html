@@ -18,12 +18,18 @@
         <span>1</span>
       </div>
       <div class="step-line" [class.done]="step > 1"></div>
-      <div class="step-dot" [class.active]="step >= 2">
+      <div class="step-dot" [class.active]="step >= 2" [class.done]="step > 2">
         <span>2</span>
+      </div>
+      <div class="step-line" [class.done]="step > 2"></div>
+      <div class="step-dot" [class.active]="step >= 3">
+        <span>3</span>
       </div>
     </div>
     <p class="step-label">
-      {{ step === 1 ? 'İşletme Bilgileri' : 'Hesap Bilgileri' }}
+      @if (step === 1) { İşletme Bilgileri }
+      @else if (step === 2) { Hesap Bilgileri }
+      @else { Telefon Doğrulama }
     </p>
 
     <!-- ── ADIM 1 ─────────────────────────────── -->
@@ -91,7 +97,7 @@
 
     <!-- ── ADIM 2 ─────────────────────────────── -->
     @if (step === 2) {
-      <form [formGroup]="step2Form" (ngSubmit)="onSubmit()">
+      <form [formGroup]="step2Form" (ngSubmit)="nextStep()">
 
         <div class="field-row">
           <div class="field">
@@ -173,10 +179,6 @@
           }
         </div>
 
-        @if (errorMessage) {
-          <div class="error-message">{{ errorMessage }}</div>
-        }
-
         <div class="btn-row">
           <button type="button" class="btn-back" (click)="prevStep()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -184,20 +186,111 @@
             </svg>
             Geri
           </button>
-          <button type="submit" class="btn-primary btn-submit" [disabled]="isLoading">
+          <button type="submit" class="btn-primary btn-submit">
+            Devam Et
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+      </form>
+    }
+
+    <!-- ── ADIM 3: TELEFON DOĞRULAMA ─────────── -->
+    @if (step === 3) {
+      <div class="otp-step">
+
+        <div class="otp-phone-info">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.41 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.61a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16h.27z" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>{{ step1Form.get('phone')?.value }}</span>
+        </div>
+
+        <p class="otp-hint">
+          WhatsApp üzerinden doğrulama kodu alarak telefon numaranızı onaylayın.
+        </p>
+
+        @if (!otpVerified) {
+          @if (!otpSent) {
+            <button class="btn-primary" [disabled]="isSendingOtp" (click)="sendOtp()">
+              @if (!isSendingOtp) {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                WhatsApp Kodu Gönder
+              } @else {
+                <span class="loading">
+                  <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                </span>
+              }
+            </button>
+          } @else {
+            <div class="otp-input-group">
+              <input
+                type="text"
+                [(ngModel)]="otpCode"
+                placeholder="6 haneli kodu girin"
+                maxlength="6"
+                class="otp-input"
+                (keyup.enter)="verifyOtp()" />
+              <button class="btn-verify" [disabled]="isVerifyingOtp || otpCode.length < 6" (click)="verifyOtp()">
+                @if (!isVerifyingOtp) { Doğrula } @else {
+                  <span class="loading">
+                    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                  </span>
+                }
+              </button>
+            </div>
+
+            <div class="otp-timer-row">
+              @if (otpTimer > 0) {
+                <span class="otp-timer">Kod geçerliliği: {{ timerDisplay }}</span>
+              } @else {
+                <button class="btn-resend" (click)="sendOtp()">Tekrar Gönder</button>
+              }
+            </div>
+          }
+        }
+
+        @if (otpSuccess) {
+          <div class="otp-success">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {{ otpSuccess }}
+          </div>
+        }
+        @if (otpError) {
+          <div class="error-message">{{ otpError }}</div>
+        }
+        @if (errorMessage) {
+          <div class="error-message">{{ errorMessage }}</div>
+        }
+
+        <div class="btn-row" style="margin-top: 20px;">
+          <button type="button" class="btn-back" (click)="prevStep()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Geri
+          </button>
+          <button
+            class="btn-primary btn-submit"
+            [disabled]="!otpVerified || isLoading"
+            (click)="onSubmit()">
             @if (!isLoading) {
               Hesap Oluştur
             } @else {
               <span class="loading">
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
               </span>
             }
           </button>
         </div>
 
-      </form>
+      </div>
     }
 
     <p class="footer-text">

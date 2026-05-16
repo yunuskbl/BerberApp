@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors
+  FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, FormsModule
 } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -17,17 +17,28 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, LogoComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, LogoComponent],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss',
 })
-export class RegisterComponent implements OnInit {
+export class RegisterComponent implements OnInit, OnDestroy {
   step = 1;
   isLoading = false;
   errorMessage = '';
   showPassword = false;
   selectedPlan = '';
   buyMode = false;
+
+  // OTP state
+  otpSent = false;
+  otpVerified = false;
+  otpCode = '';
+  isSendingOtp = false;
+  isVerifyingOtp = false;
+  otpError = '';
+  otpSuccess = '';
+  otpTimer = 0;
+  private timerInterval: any;
 
   step1Form: FormGroup;
   step2Form: FormGroup;
@@ -72,6 +83,10 @@ export class RegisterComponent implements OnInit {
     }
   }
 
+  ngOnDestroy(): void {
+    if (this.timerInterval) clearInterval(this.timerInterval);
+  }
+
   onTenantNameChange(): void {
     const name: string = this.step1Form.get('tenantName')?.value || '';
     const slug = name
@@ -87,22 +102,101 @@ export class RegisterComponent implements OnInit {
   }
 
   nextStep(): void {
-    if (this.step1Form.invalid) {
-      this.step1Form.markAllAsTouched();
-      return;
+    if (this.step === 1) {
+      if (this.step1Form.invalid) { this.step1Form.markAllAsTouched(); return; }
+      this.step = 2;
+    } else if (this.step === 2) {
+      if (this.step2Form.invalid) { this.step2Form.markAllAsTouched(); return; }
+      this.step = 3;
+      // OTP durumunu sıfırla (kullanıcı adım 2'ye geri dönüp ilerlerse)
+      this.otpSent = false;
+      this.otpVerified = false;
+      this.otpCode = '';
+      this.otpError = '';
+      this.otpSuccess = '';
     }
-    this.step = 2;
     this.errorMessage = '';
   }
 
   prevStep(): void {
-    this.step = 1;
+    this.step = this.step > 1 ? this.step - 1 : 1;
     this.errorMessage = '';
   }
 
+  sendOtp(): void {
+    const phone = this.step1Form.get('phone')?.value;
+    if (!phone) return;
+
+    this.isSendingOtp = true;
+    this.otpError = '';
+    this.otpSuccess = '';
+
+    this.authService.sendRegistrationOtp(phone).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.otpSent = true;
+          this.otpSuccess = 'Doğrulama kodu WhatsApp ile gönderildi.';
+          this.startTimer();
+        } else {
+          this.otpError = res.message || 'Kod gönderilemedi.';
+        }
+        this.isSendingOtp = false;
+      },
+      error: (err) => {
+        this.otpError = err.status < 500 && err.error?.message
+          ? err.error.message : 'Bir hata oluştu. Lütfen tekrar deneyin.';
+        this.isSendingOtp = false;
+      },
+    });
+  }
+
+  verifyOtp(): void {
+    const phone = this.step1Form.get('phone')?.value;
+    if (!phone || !this.otpCode) return;
+
+    this.isVerifyingOtp = true;
+    this.otpError = '';
+
+    this.authService.verifyRegistrationOtp(phone, this.otpCode).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.otpVerified = true;
+          this.otpSuccess = 'Telefon numaranız doğrulandı! ✓';
+          clearInterval(this.timerInterval);
+        } else {
+          this.otpError = res.message || 'Kod hatalı.';
+        }
+        this.isVerifyingOtp = false;
+      },
+      error: (err) => {
+        this.otpError = err.status < 500 && err.error?.message
+          ? err.error.message : 'Bir hata oluştu. Lütfen tekrar deneyin.';
+        this.isVerifyingOtp = false;
+      },
+    });
+  }
+
+  startTimer(): void {
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    this.otpTimer = 120;
+    this.timerInterval = setInterval(() => {
+      this.otpTimer--;
+      if (this.otpTimer <= 0) {
+        clearInterval(this.timerInterval);
+        this.otpSent = false;
+      }
+    }, 1000);
+  }
+
+  get timerDisplay(): string {
+    const m = Math.floor(this.otpTimer / 60);
+    const s = this.otpTimer % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
   onSubmit(): void {
-    if (this.step2Form.invalid) {
-      this.step2Form.markAllAsTouched();
+    if (!this.otpVerified) {
+      this.errorMessage = 'Lütfen telefon numaranızı doğrulayın.';
       return;
     }
 

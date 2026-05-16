@@ -100,6 +100,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResponse>
             IsOnTrial = subscription?.Status == SubscriptionStatus.Trial,
             TrialEndsAt = subscription?.Status == SubscriptionStatus.Trial ? subscription.ExpiryDate : null,
             SubscriptionExpired = subscription == null || subscription.ExpiryDate <= DateTime.UtcNow,
+            IsEmailVerified = user.EmailVerificationToken == null,
         };
     }
 

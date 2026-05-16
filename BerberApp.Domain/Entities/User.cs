@@ -22,6 +22,8 @@ public class User : BaseEntity
     public DateTime? RefreshTokenExpiry { get; set; }
     public string? PasswordResetOtp { get; set; }
     public DateTime? PasswordResetOtpExpiry { get; set; }
+    public string? EmailVerificationToken { get; set; }
+    public DateTime? EmailVerificationTokenExpiry { get; set; }
 
     // Navigation
     public Tenant Tenant { get; set; } = null!;

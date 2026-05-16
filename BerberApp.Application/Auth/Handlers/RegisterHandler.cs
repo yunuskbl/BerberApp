@@ -1,4 +1,4 @@
-﻿using BerberApp.Application.Auth.Commands;
+using BerberApp.Application.Auth.Commands;
 using BerberApp.Application.Auth.DTOs;
 using BerberApp.Application.Common.Exceptions;
 using BerberApp.Application.Common.Interfaces;
@@ -6,11 +6,6 @@ using BerberApp.Domain.Entities;
 using BerberApp.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BerberApp.Application.Auth.Handlers;
 
@@ -18,15 +13,34 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
 {
     private readonly IAppDbContext _context;
     private readonly IJwtTokenService _jwtService;
+    private readonly IEmailService _emailService;
+    private readonly IAppSettings _appSettings;
 
-    public RegisterHandler(IAppDbContext context, IJwtTokenService jwtService)
+    public RegisterHandler(
+        IAppDbContext context,
+        IJwtTokenService jwtService,
+        IEmailService emailService,
+        IAppSettings appSettings)
     {
         _context = context;
         _jwtService = jwtService;
+        _emailService = emailService;
+        _appSettings = appSettings;
     }
 
     public async Task<LoginResponse> Handle(RegisterCommand request, CancellationToken ct)
     {
+        // Telefon OTP doğrulaması kontrolü
+        var verifiedOtp = await _context.OtpRecords
+            .Where(x => x.Phone == request.Phone &&
+                        x.IsVerified &&
+                        x.VerifiedAt != null &&
+                        x.VerifiedAt > DateTime.UtcNow.AddMinutes(-30))
+            .FirstOrDefaultAsync(ct);
+
+        if (verifiedOtp is null)
+            throw new BadRequestException("Lütfen önce telefon numaranızı doğrulayın.");
+
         // Subdomain kontrolü
         var subdomainExists = await _context.Tenants
             .AnyAsync(x => x.Subdomain == request.Subdomain, ct);
@@ -41,6 +55,16 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
         if (emailExists)
             throw new ConflictException($"'{request.Email}' email adresi zaten kayıtlı.");
 
+        // Telefon kontrolü (zaten doğrulandıysa kayıtlı olmamalı)
+        var phoneExists = await _context.Users
+            .AnyAsync(x => x.Phone == request.Phone, ct);
+
+        if (phoneExists)
+            throw new ConflictException("Bu telefon numarasıyla zaten bir hesap mevcut.");
+
+        // OTP kaydını kullanıldı olarak işaretle ve sil
+        _context.OtpRecords.Remove(verifiedOtp);
+
         // Tenant oluştur
         var tenant = new TenantEntity
         {
@@ -50,8 +74,10 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
             Address = request.Address,
             IsActive = true
         };
-
         _context.Tenants.Add(tenant);
+
+        // Email doğrulama token'ı oluştur
+        var emailToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
 
         // Admin kullanıcı oluştur
         var user = new User
@@ -62,13 +88,14 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
             LastName = request.LastName,
             Phone = request.Phone,
             Role = UserRole.Admin,
-            IsVerified = true,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
+            IsVerified = true, // telefon doğrulandı
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+            EmailVerificationToken = emailToken,
+            EmailVerificationTokenExpiry = DateTime.UtcNow.AddHours(24)
         };
-
         _context.Users.Add(user);
 
-        // 14 günlük ücretsiz deneme aboneliği oluştur
+        // 14 günlük ücretsiz deneme aboneliği
         var trialEnd = DateTime.UtcNow.AddDays(14);
         var trial = new BerberApp.Domain.Entities.Subscription
         {
@@ -83,17 +110,22 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
         _context.Subscriptions.Add(trial);
         await _context.SaveChangesAsync(ct);
 
-        // Yeni user'a default plan ver (Basic)
-        var userPlan = BerberApp.Domain.Enums.PlanType.Baslangic;
-
         // Token üret
+        var userPlan = PlanType.Baslangic;
         var accessToken = _jwtService.GenerateAccessToken(user, userPlan);
         var refreshToken = _jwtService.GenerateRefreshToken();
 
-        // Refresh token kaydet
         user.RefreshToken = refreshToken;
         user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
         await _context.SaveChangesAsync(ct);
+
+        // Email doğrulama ve hoşgeldin emaili gönder (arka planda, başarısız olursa kayıt engelleme)
+        var verificationUrl = $"{_appSettings.FrontendBaseUrl}/email-dogrula?token={emailToken}";
+        var fullName = $"{request.FirstName} {request.LastName}";
+        _ = Task.WhenAll(
+            _emailService.SendEmailVerificationAsync(request.Email, fullName, verificationUrl),
+            _emailService.SendWelcomeEmailAsync(request.Email, fullName, request.TenantName)
+        );
 
         return new LoginResponse
         {
@@ -101,13 +133,14 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
             RefreshToken = refreshToken,
             AccessTokenExpiry = DateTime.UtcNow.AddMinutes(15),
             Email = user.Email,
-            FullName = $"{user.FirstName} {user.LastName}",
+            FullName = fullName,
             Role = user.Role.ToString(),
             TenantId = user.TenantId,
             Subdomain = tenant.Subdomain,
             IsOnTrial = true,
             TrialEndsAt = trialEnd,
             SubscriptionExpired = false,
+            IsEmailVerified = false,
         };
     }
 }

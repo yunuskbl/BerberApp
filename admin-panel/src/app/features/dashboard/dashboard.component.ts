@@ -9,6 +9,9 @@ import { Appointment, AppointmentStatus } from '../../core/models/appointment.mo
 import { EarningsDto, EarningsService } from '../../core/services/earnings.service';
 import { LanguageService } from '../../core/services/language.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { AuthService } from '../../core/services/auth.service';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 interface Stat {
   value: string | number;
@@ -31,6 +34,9 @@ export class DashboardComponent implements OnInit {
   isLoading = true;
   isPendingLoading = true;
   earnings: EarningsDto | null = null;
+  showEmailBanner = false;
+  isResendingEmail = false;
+  resendSuccess = false;
 
   AppointmentStatus = AppointmentStatus;
 
@@ -49,10 +55,30 @@ export class DashboardComponent implements OnInit {
     private serviceService: ServiceService,
     private earningsService: EarningsService,
     public langService: LanguageService,
+    private authService: AuthService,
+    private http: HttpClient,
   ) {}
 
   ngOnInit(): void {
+    this.showEmailBanner = !this.authService.isEmailVerified();
     this.loadDashboard();
+  }
+
+  resendVerificationEmail(): void {
+    this.isResendingEmail = true;
+    this.http.post<any>(`${environment.apiUrl}/auth/resend-verification`, {}).subscribe({
+      next: () => {
+        this.resendSuccess = true;
+        this.isResendingEmail = false;
+      },
+      error: () => {
+        this.isResendingEmail = false;
+      }
+    });
+  }
+
+  dismissEmailBanner(): void {
+    this.showEmailBanner = false;
   }
 
   loadDashboard(): void {

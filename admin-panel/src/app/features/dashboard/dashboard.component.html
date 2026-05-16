@@ -1,5 +1,31 @@
 <div class="dashboard">
 
+  <!-- ── Email Doğrulama Banner ── -->
+  @if (showEmailBanner) {
+    <div class="email-banner">
+      <div class="email-banner-content">
+        <span class="email-banner-icon">📧</span>
+        <div class="email-banner-text">
+          @if (!resendSuccess) {
+            <strong>E-posta adresinizi doğrulayın</strong>
+            <span>Hesabınıza gönderilen doğrulama bağlantısına tıklayın.</span>
+          } @else {
+            <strong>Doğrulama e-postası gönderildi!</strong>
+            <span>Gelen kutunuzu kontrol edin.</span>
+          }
+        </div>
+        <div class="email-banner-actions">
+          @if (!resendSuccess) {
+            <button class="banner-btn" [disabled]="isResendingEmail" (click)="resendVerificationEmail()">
+              @if (!isResendingEmail) { Tekrar Gönder } @else { Gönderiliyor... }
+            </button>
+          }
+          <button class="banner-close" (click)="dismissEmailBanner()">✕</button>
+        </div>
+      </div>
+    </div>
+  }
+
   <!-- ── Hero Card ── -->
   <div class="hero-card">
     <div class="hero-eyebrow">{{ 'dashboard.subtitle' | translate }}</div>
