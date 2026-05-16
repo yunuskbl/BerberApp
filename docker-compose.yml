@@ -29,8 +29,8 @@ services:
     - ASPNETCORE_URLS=http://+:8080
     - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=BerberAppDb;Username=postgres;Password=${DB_PASSWORD}
     - Jwt__Key=${JWT_KEY}
-    - Jwt__Issuer=BerberApp
-    - Jwt__Audience=BerberApp
+    - Jwt__Issuer=ayarliyo.com
+    - Jwt__Audience=ayarliyo.com
     - Twilio__AccountSid=${TWILIO_ACCOUNT_SID}
     - Twilio__AuthToken=${TWILIO_AUTH_TOKEN}
     - Twilio__FromNumber=whatsapp:+14155238886
@@ -39,6 +39,11 @@ services:
     - IletiMerkezi__Hash=${ILETIMERKEZI_HASH}
     - IletiMerkezi__Sender=${ILETIMERKEZI_SENDER}
     - SUPERADMIN_PASSWORD=${SUPERADMIN_PASSWORD}
+    - Email__SmtpUsername=${EMAIL_SMTP_USERNAME}
+    - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD}
+    - Email__FromAddress=${EMAIL_SMTP_USERNAME}
+    - AppSettings__FrontendBaseUrl=${APP_BASE_URL}
+    - AppSettings__BaseUrl=${APP_BASE_URL}
     - AllowedHosts=*
     ports:
       - "8080:8080"
