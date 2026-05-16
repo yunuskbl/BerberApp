@@ -366,6 +366,29 @@
                 <textarea class="form-textarea" formControlName="notes" [placeholder]="'booking.notePh' | translate" rows="3" maxlength="200"></textarea>
               </div>
 
+              <!-- Bilgilerimi Hatırla -->
+              <div class="check-row">
+                <label class="check-label">
+                  <input type="checkbox" class="check-input" [(ngModel)]="rememberMe" [ngModelOptions]="{standalone: true}" />
+                  <span class="check-box"></span>
+                  <span class="check-text">Bilgilerimi hatırla</span>
+                </label>
+              </div>
+
+              <!-- KVKK Onayı -->
+              <div class="check-row">
+                <label class="check-label" [class.check-error]="customerForm.get('kvkkAccepted')?.invalid && customerForm.get('kvkkAccepted')?.touched">
+                  <input type="checkbox" class="check-input" formControlName="kvkkAccepted" />
+                  <span class="check-box"></span>
+                  <span class="check-text">
+                    <a href="/kvkk" target="_blank" rel="noopener" class="kvkk-link">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin işlenmesine onay veriyorum.
+                  </span>
+                </label>
+                @if (customerForm.get('kvkkAccepted')?.invalid && customerForm.get('kvkkAccepted')?.touched) {
+                  <span class="field-error" style="margin-top: 4px;">Devam etmek için KVKK metnini onaylamanız gerekiyor.</span>
+                }
+              </div>
+
               @if (otpError) {
                 <p class="otp-error" style="margin: 4px 0 8px;">{{ otpError }}</p>
               }

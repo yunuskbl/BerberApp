@@ -83,10 +83,14 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.lightboxPhoto = photos[this.lightboxIndex].url;
   }
 
+  rememberMe = false;
+
   customerFound = false;
   isLookingUp = false;
   private phoneSubject$ = new Subject<string>();
   private destroy$ = new Subject<void>();
+
+  private readonly STORAGE_KEY = 'ayarliyo_customer';
 
   otpSent = false;
   otpVerified = false;
@@ -132,13 +136,40 @@ export class BookingComponent implements OnInit, OnDestroy {
       ],
       email: ['', [Validators.email, Validators.maxLength(80)]],
       notes: ['', [Validators.maxLength(200)]],
+      kvkkAccepted: [false, [Validators.requiredTrue]],
     });
   }
 
   ngOnInit(): void {
     this.subdomain = this.route.snapshot.paramMap.get('subdomain') || '';
+    this.loadSavedCustomer();
     this.loadSalon();
     this.initPhoneLookup();
+  }
+
+  private loadSavedCustomer(): void {
+    try {
+      const raw = localStorage.getItem(this.STORAGE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { fullName?: string; phone?: string; email?: string };
+      this.rememberMe = true;
+      this.customerForm.patchValue({
+        fullName: saved.fullName ?? '',
+        phone:    saved.phone    ?? '',
+        email:    saved.email    ?? '',
+      });
+    } catch { /* localStorage erişilemezse sessizce geç */ }
+  }
+
+  private saveCustomerIfRemembered(): void {
+    try {
+      if (this.rememberMe) {
+        const { fullName, phone, email } = this.customerForm.value;
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify({ fullName, phone, email }));
+      } else {
+        localStorage.removeItem(this.STORAGE_KEY);
+      }
+    } catch { /* ignore */ }
   }
 
   ngOnDestroy(): void {
@@ -192,7 +223,7 @@ export class BookingComponent implements OnInit, OnDestroy {
       next: (res) => {
         if (res.success) {
           this.salon = res.data;
-          this.titleService.setTitle(this.salon!.name + ' - BerberApp');
+          this.titleService.setTitle(this.salon!.name + ' - ayarlıyo');
           const color = this.salon!.themeColor || '#111111';
           (this.el.nativeElement as HTMLElement).style.setProperty('--accent', color);
           this.loadStaff();
@@ -347,6 +378,7 @@ export class BookingComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           if (res.success) {
+            this.saveCustomerIfRemembered();
             this.router.navigate(
               ['/randevu', this.subdomain, res.appointmentId],
               { queryParams: { phone } }
