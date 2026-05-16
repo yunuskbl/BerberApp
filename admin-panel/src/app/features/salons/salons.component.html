@@ -35,8 +35,24 @@
     @if (isLoading) {
       <div class="state-center">
         <div class="spinner"></div>
-        <p>{{ 'salons.loading' | translate }}</p>
+        @if (locationStatus === 'requesting') {
+          <p>Konumunuz alınıyor…</p>
+        } @else {
+          <p>{{ 'salons.loading' | translate }}</p>
+        }
       </div>
+
+    } @else if (locationMode === 'notFound') {
+      <!-- Çevrede hiç salon yok -->
+      <div class="state-center">
+        <div class="empty-icon location-icon">📍</div>
+        <h3>Çevrenizde uygun işletme bulunamadı</h3>
+        <p>{{ formatDistance(75) }} yarıçap içinde aktif salon bulunmuyor.</p>
+        <button class="btn-show-all" (click)="userLat = null; userLon = null; sortBy = 'rating'; loadSalons()">
+          Tüm Salonları Göster
+        </button>
+      </div>
+
     } @else if (salons.length === 0) {
       <div class="state-center">
         <div class="empty-icon">
@@ -48,19 +64,46 @@
         <h3>{{ 'salons.notFound' | translate }}</h3>
         <p>{{ 'salons.tryAnother' | translate }}</p>
       </div>
+
     } @else {
+
+      <!-- Sonuç çubuğu + sıralama -->
       <div class="results-bar">
-        <span class="results-count">{{ salons.length }} {{ 'salons.count' | translate }}</span>
+        <div class="results-left">
+          @if (locationBannerText) {
+            <span class="location-badge">{{ locationBannerText }}</span>
+          }
+          <span class="results-count">{{ salons.length }} {{ 'salons.count' | translate }}</span>
+        </div>
+
+        <!-- Sıralama seçenekleri -->
+        <div class="sort-bar">
+          @for (opt of sortOptions; track opt.value) {
+            @if (opt.value !== 'distance' || locationStatus === 'granted') {
+              <button
+                class="sort-btn"
+                [class.active]="sortBy === opt.value"
+                (click)="onSortChange(opt.value)">
+                <span class="sort-icon">{{ opt.icon }}</span>
+                <span class="sort-label">{{ opt.label }}</span>
+              </button>
+            }
+          }
+          @if (locationStatus === 'denied' || locationStatus === 'unsupported') {
+            <button class="sort-btn location-denied" (click)="requestLocation()" title="Konumu tekrar dene">
+              📍 Konum Al
+            </button>
+          }
+        </div>
       </div>
 
       <div class="salons-grid">
         @for (salon of salons; track salon.id) {
           <a [routerLink]="['/book', salon.subdomain]" class="salon-card">
-            <!-- Card Header: fotoğraf varsa carousel, yoksa SVG illüstrasyon -->
+            <!-- Card Header -->
             <div class="card-header" [style.background]="salon.themeColor || '#111111'">
 
               @if (salon.photos && salon.photos.length > 0) {
-                <!-- Carousel -->
                 <div class="carousel"
                      (touchstart)="onTouchStart(salon.id, $event)"
                      (touchend)="onTouchEnd(salon.id, salon.photos!, $event)">
@@ -71,13 +114,10 @@
                       [src]="photo.url"
                       [alt]="salon.name" />
                   }
-                  <!-- Gradient overlay -->
                   <div class="carousel-overlay"></div>
-                  <!-- Oklar (birden fazla fotoğraf varsa) -->
                   @if (salon.photos.length > 1) {
                     <button class="carousel-btn prev" (click)="prevPhoto(salon.id, salon.photos!, $event)">‹</button>
                     <button class="carousel-btn next" (click)="nextPhoto(salon.id, salon.photos!, $event)">›</button>
-                    <!-- Noktalar -->
                     <div class="carousel-dots">
                       @for (photo of salon.photos; track photo.id; let i = $index) {
                         <span
@@ -90,7 +130,6 @@
                   }
                 </div>
               } @else {
-                <!-- SVG illüstrasyon (fotoğraf yoksa) -->
                 <svg width="100%" height="100%" viewBox="0 0 340 140" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
                   <g transform="translate(220, 30)" opacity="0.18">
                     <circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5" fill="none"/>
@@ -117,11 +156,15 @@
                 </svg>
               }
 
+              <!-- Mesafe etiketi -->
+              @if (salon.distance != null) {
+                <div class="distance-badge">📍 {{ formatDistance(salon.distance) }}</div>
+              }
+
             </div>
 
             <!-- Card Body -->
             <div class="card-body">
-              <!-- Logo sol üst köşe -->
               <div class="card-logo">
                 @if (salon.logoUrl) {
                   <img [src]="salon.logoUrl" [alt]="salon.name" />
@@ -131,7 +174,6 @@
               </div>
               <h3 class="card-name">{{ salon.name }}</h3>
 
-              <!-- Rating -->
               @if ((salon.totalReviews ?? 0) > 0) {
                 <div class="card-rating">
                   <span class="rating-star">★</span>
@@ -150,9 +192,7 @@
                 </p>
               }
               <div class="card-footer">
-                <div class="card-cta">
-                  {{ 'salons.bookBtn' | translate }}
-                </div>
+                <div class="card-cta">{{ 'salons.bookBtn' | translate }}</div>
               </div>
             </div>
           </a>

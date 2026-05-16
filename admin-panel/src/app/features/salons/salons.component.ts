@@ -18,27 +18,52 @@ interface Salon {
   subdomain:      string;
   phone?:         string;
   address?:       string;
+  city?:          string;
   logoUrl?:       string;
   themeColor?:    string;
   averageRating?: number;
   totalReviews?:  number;
   photos?:        SalonPhoto[];
+  distance?:      number; // km
 }
+
+export type SortOption = 'rating' | 'reviews' | 'newest' | 'name' | 'distance';
+export type LocationMode = 'nearby' | 'city' | 'all' | 'notFound' | null;
 
 @Component({
   selector: 'app-salons',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, LanguageSwitcherComponent, TranslatePipe, DecorativeBgComponent, LogoComponent],
+  imports: [CommonModule, RouterModule, FormsModule,
+            LanguageSwitcherComponent, TranslatePipe,
+            DecorativeBgComponent, LogoComponent],
   templateUrl: './salons.component.html',
   styleUrl: './salons.component.scss'
 })
 export class SalonsComponent implements OnInit {
-  salons:        Salon[] = [];
-  isLoading      = true;
-  searchQuery    = '';
-  errorMessage   = '';
-  carouselIndex  = new Map<string, number>();
-  touchStartX    = new Map<string, number>();
+  salons:       Salon[]       = [];
+  isLoading     = true;
+  searchQuery   = '';
+  errorMessage  = '';
+  locationMode: LocationMode  = null;
+
+  // Konum
+  userLat: number | null = null;
+  userLon: number | null = null;
+  locationStatus: 'idle' | 'requesting' | 'granted' | 'denied' | 'unsupported' = 'idle';
+
+  // Sıralama
+  sortBy: SortOption = 'rating';
+  readonly sortOptions: { value: SortOption; label: string; icon: string }[] = [
+    { value: 'rating',   label: 'En Yüksek Puan',        icon: '⭐' },
+    { value: 'reviews',  label: 'En Fazla Değerlendirme', icon: '💬' },
+    { value: 'distance', label: 'Yakınımdakiler',         icon: '📍' },
+    { value: 'newest',   label: 'Yeni Eklenenler',        icon: '🆕' },
+    { value: 'name',     label: 'A-Z',                    icon: '🔤' },
+  ];
+
+  // Carousel
+  carouselIndex = new Map<string, number>();
+  touchStartX   = new Map<string, number>();
 
   getIdx(id: string): number { return this.carouselIndex.get(id) ?? 0; }
 
@@ -76,17 +101,48 @@ export class SalonsComponent implements OnInit {
 
   ngOnInit(): void {
     this.titleService.setTitle('Salonlar - ayarlıyo');
-    this.loadSalons();
+    this.requestLocation();
   }
 
+  // ── Konum izni ────────────────────────────────────────────────────────────
+  requestLocation(): void {
+    if (!navigator.geolocation) {
+      this.locationStatus = 'unsupported';
+      this.loadSalons();
+      return;
+    }
+    this.locationStatus = 'requesting';
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        this.userLat       = pos.coords.latitude;
+        this.userLon       = pos.coords.longitude;
+        this.locationStatus = 'granted';
+        // Konum alındıysa varsayılan sıralama mesafeye göre olsun
+        if (this.sortBy === 'rating') this.sortBy = 'distance';
+        this.loadSalons();
+      },
+      () => {
+        this.locationStatus = 'denied';
+        this.loadSalons();
+      },
+      { timeout: 8000, maximumAge: 300_000 }
+    );
+  }
+
+  // ── Salon yükle ───────────────────────────────────────────────────────────
   loadSalons(): void {
     this.isLoading = true;
-    let params = new HttpParams();
+    let params = new HttpParams().set('sortBy', this.sortBy);
     if (this.searchQuery) params = params.set('search', this.searchQuery);
+    if (this.userLat !== null) params = params.set('userLat', this.userLat.toString());
+    if (this.userLon !== null) params = params.set('userLon', this.userLon.toString());
 
     this.http.get<any>(`${environment.apiUrl}/salons`, { params }).subscribe({
       next: (res) => {
-        if (res.success) this.salons = res.data;
+        if (res.success) {
+          this.salons       = res.data;
+          this.locationMode = res.locationMode ?? 'all';
+        }
         this.isLoading = false;
       },
       error: () => {
@@ -96,16 +152,41 @@ export class SalonsComponent implements OnInit {
     });
   }
 
-  onSearch(): void {
-    this.loadSalons();
-  }
+  onSearch(): void { this.loadSalons(); }
 
   resetSearch(): void {
     this.searchQuery = '';
     this.loadSalons();
   }
 
+  onSortChange(val: SortOption): void {
+    this.sortBy = val;
+    // Mesafe seçildi ama konum yok → izin iste
+    if (val === 'distance' && this.userLat === null) {
+      this.requestLocation();
+      return;
+    }
+    this.loadSalons();
+  }
+
+  get locationBannerText(): string {
+    switch (this.locationMode) {
+      case 'nearby': return '📍 Yakınınizdaki salonlar';
+      case 'city':   return '🏙 Şehrinizdeki salonlar';
+      default:       return '';
+    }
+  }
+
+  formatDistance(km: number): string {
+    if (km < 1) return `${Math.round(km * 1000)} m`;
+    return `${km.toFixed(1)} km`;
+  }
+
   getInitials(name: string): string {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  get activeSortLabel(): string {
+    return this.sortOptions.find(o => o.value === this.sortBy)?.label ?? '';
   }
 }

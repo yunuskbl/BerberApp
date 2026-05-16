@@ -147,7 +147,19 @@ app-language-switcher {
 
 /* Results bar */
 .results-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.results-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .results-count {
@@ -156,6 +168,100 @@ app-language-switcher {
   color: #bbb;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+}
+
+.location-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+/* Sıralama butonları */
+.sort-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #e5e5e5;
+  background: white;
+  font-size: 12px;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: #111;
+    color: #111;
+  }
+
+  &.active {
+    background: #111;
+    border-color: #111;
+    color: white;
+  }
+
+  &.location-denied {
+    border-color: #f59e0b;
+    color: #f59e0b;
+    &:hover { background: #fffbeb; }
+  }
+
+  .sort-icon { font-size: 13px; }
+}
+
+/* Mesafe etiketi (kart üstünde) */
+.distance-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 3px 9px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* "Bulunamadı" özel boş durum */
+.location-icon {
+  font-size: 36px;
+  background: none !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+.btn-show-all {
+  margin-top: 8px;
+  padding: 10px 22px;
+  border-radius: 10px;
+  background: #111;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.8; }
 }
 
 /* Grid */
@@ -386,6 +492,12 @@ app-language-switcher {
     max-width: none;
     width: 100%;
   }
+
+  /* Sıralama */
+  .results-bar { flex-direction: column; align-items: stretch; }
+  .sort-bar { justify-content: flex-start; }
+  .sort-btn .sort-label { display: none; }
+  .sort-btn { padding: 6px 10px; }
 
   /* Grid */
   .salons-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }

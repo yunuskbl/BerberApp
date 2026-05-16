@@ -17,6 +17,9 @@ namespace BerberApp.Domain.Entities
         public string? Phone { get; set; }
         public string? NotificationPhone { get; set; }
         public string? Address { get; set; }
+        public string? City { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
         public bool IsActive { get; set; } = true;
         public string? ThemeColor { get; set; }
         public NotificationChannel PreferredNotificationChannel { get; set; } = NotificationChannel.WhatsApp;
