@@ -1,4 +1,6 @@
 services:
+
+  # ── PostgreSQL Veritabanı ───────────────────────────────────────────────
   db:
     image: postgres:16
     container_name: berberapp-db
@@ -19,32 +21,52 @@ services:
       timeout: 5s
       retries: 5
 
+  # ── .NET API ────────────────────────────────────────────────────────────
   api:
     build:
       context: .
       dockerfile: BerberApp.Api/Dockerfile
     container_name: berberapp-api
     environment:
-    - ASPNETCORE_ENVIRONMENT=Production
-    - ASPNETCORE_URLS=http://+:8080
-    - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=BerberAppDb;Username=postgres;Password=${DB_PASSWORD}
-    - Jwt__Key=${JWT_KEY}
-    - Jwt__Issuer=ayarliyo.com
-    - Jwt__Audience=ayarliyo.com
-    - Twilio__AccountSid=${TWILIO_ACCOUNT_SID}
-    - Twilio__AuthToken=${TWILIO_AUTH_TOKEN}
-    - Twilio__FromNumber=whatsapp:+14155238886
-    - Twilio__SmsFromNumber=${TWILIO_SMS_FROM_NUMBER}
-    - IletiMerkezi__ApiKey=${ILETIMERKEZI_API_KEY}
-    - IletiMerkezi__Hash=${ILETIMERKEZI_HASH}
-    - IletiMerkezi__Sender=${ILETIMERKEZI_SENDER}
-    - SUPERADMIN_PASSWORD=${SUPERADMIN_PASSWORD}
-    - Email__SmtpUsername=${EMAIL_SMTP_USERNAME}
-    - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD}
-    - Email__FromAddress=${EMAIL_SMTP_USERNAME}
-    - AppSettings__FrontendBaseUrl=${APP_BASE_URL}
-    - AppSettings__BaseUrl=${APP_BASE_URL}
-    - AllowedHosts=*
+      # ASP.NET Core
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+
+      # Veritabanı
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=BerberAppDb;Username=postgres;Password=${DB_PASSWORD}
+
+      # JWT
+      - Jwt__Key=${JWT_KEY}
+      - Jwt__Issuer=ayarliyo.com
+      - Jwt__Audience=ayarliyo.com
+
+      # Twilio (WhatsApp)
+      - Twilio__AccountSid=${TWILIO_ACCOUNT_SID}
+      - Twilio__AuthToken=${TWILIO_AUTH_TOKEN}
+      - Twilio__FromNumber=whatsapp:+14155238886
+      - Twilio__SmsFromNumber=${TWILIO_SMS_FROM_NUMBER}
+
+      # İleti Merkezi (SMS)
+      - IletiMerkezi__ApiKey=${ILETIMERKEZI_API_KEY}
+      - IletiMerkezi__Hash=${ILETIMERKEZI_HASH}
+      - IletiMerkezi__Sender=${ILETIMERKEZI_SENDER}
+
+      # Email (Gmail SMTP)
+      - Email__SmtpHost=smtp.gmail.com
+      - Email__SmtpPort=587
+      - Email__SmtpUsername=${EMAIL_SMTP_USERNAME}
+      - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD}
+      - Email__FromAddress=${EMAIL_SMTP_USERNAME}
+      - Email__FromName=ayarlıyo
+
+      # Uygulama URL
+      - AppSettings__BaseUrl=${APP_BASE_URL}
+      - AppSettings__FrontendBaseUrl=${APP_BASE_URL}
+
+      # SuperAdmin
+      - SUPERADMIN_PASSWORD=${SUPERADMIN_PASSWORD}
+
+      - AllowedHosts=*
     ports:
       - "8080:8080"
     volumes:
@@ -56,6 +78,7 @@ services:
       - berberapp-network
     restart: always
 
+  # ── Angular Admin Panel ─────────────────────────────────────────────────
   admin-panel:
     build:
       context: ./admin-panel
@@ -69,8 +92,8 @@ services:
       - berberapp-network
     restart: always
 
-  # ── Otomatik veritabanı yedekleme servisi ──────────────────────────────
-  # Günlük saat 03:00'de pg_dump çalıştırır, 7 gün saklar.
+  # ── Otomatik Veritabanı Yedekleme ──────────────────────────────────────
+  # Her gün saat 03:00'de pg_dump çalıştırır, 7 günden eski yedekleri siler.
   db-backup:
     image: postgres:16
     container_name: berberapp-db-backup
@@ -95,8 +118,6 @@ services:
 volumes:
   postgres_data:
   uploads_data:
-  
-
 
 networks:
   berberapp-network:
