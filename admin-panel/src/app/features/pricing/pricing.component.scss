@@ -573,7 +573,15 @@ $green:        #059669;
   display: flex; align-items: center; justify-content: center;
   color: $purple;
   margin-bottom: 20px;
-  svg { width: 24px; height: 24px; }
+  flex-shrink: 0;
+
+  // ::ng-deep needed: SVG injected via innerHTML has no Angular scope attr
+  ::ng-deep svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+    stroke: currentColor;
+  }
 }
 
 .feat-title { font-size: 17px; font-weight: 700; color: $text; margin: 0 0 10px; }
