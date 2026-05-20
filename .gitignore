@@ -15,9 +15,8 @@ admin-panel/.angular/
 
 # Instagram content araçları
 instagram-content/node_modules/
-instagram-content/export/*.png
-instagram-content/export/*.mp4
-instagram-content/export/_tmp/
+instagram-content/package-lock.json
+instagram-content/export/
 instagram-content/screenshots/
 
 # Docker
