@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>ayarlıyo — App Mockups</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family:'Inter',sans-serif;
+    background:#0a0a0a;
+    padding:60px 40px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:60px;
+    justify-content:center;
+    align-items:flex-start;
+  }
+
+  .scene { display:flex; flex-direction:column; align-items:center; gap:16px; }
+  .scene-label {
+    font-size:10px; letter-spacing:3px; text-transform:uppercase;
+    color:rgba(255,255,255,0.2); font-weight:600;
+  }
+
+  /* ── iPhone 17 ── */
+  .iphone {
+    width:320px; height:692px;
+    background:linear-gradient(160deg,#2c2c2e,#1c1c1e,#111);
+    border-radius:52px;
+    position:relative;
+    box-shadow:
+      0 0 0 1.5px #3a3a3c,
+      0 0 0 3px #1c1c1e,
+      0 50px 100px rgba(0,0,0,0.95),
+      inset 0 0 0 1px rgba(255,255,255,0.07);
+  }
+  /* Volume butonlar sol */
+  .iphone::before {
+    content:'';
+    position:absolute; left:-3px; top:110px;
+    width:3px; height:30px;
+    background:#2c2c2e; border-radius:2px 0 0 2px;
+    box-shadow:0 42px 0 #2c2c2e, 0 84px 0 #2c2c2e;
+  }
+  /* Güç butonu sağ */
+  .iphone::after {
+    content:'';
+    position:absolute; right:-3px; top:150px;
+    width:3px; height:58px;
+    background:#2c2c2e; border-radius:0 2px 2px 0;
+  }
+
+  /* Ekran */
+  .screen {
+    position:absolute; inset:10px;
+    border-radius:44px; overflow:hidden; background:#000;
+  }
+
+  /* Dynamic Island */
+  .di {
+    position:absolute; top:11px; left:50%; transform:translateX(-50%);
+    width:106px; height:32px;
+    background:#000; border-radius:18px; z-index:100;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.04);
+  }
+
+  /* Screenshot */
+  .screen img {
+    width:100%; height:100%; object-fit:contain; object-position:top;
+    display:block; background:#f5f5f5;
+  }
+
+  /* Status bar */
+  .sb {
+    position:absolute; top:0; left:0; right:0; height:52px;
+    display:flex; align-items:flex-start; padding:13px 24px 0;
+    justify-content:space-between; z-index:50;
+    background:linear-gradient(to bottom,rgba(0,0,0,0.35),transparent);
+  }
+  .sb-time { font-size:15px; font-weight:600; color:white; letter-spacing:-0.3px; }
+  .sb-icons { display:flex; gap:5px; align-items:center; font-size:11px; color:white; }
+
+  /* ── WhatsApp bildirim overlay ── */
+  .wa-notif {
+    position:absolute; top:62px; left:14px; right:14px;
+    background:rgba(28,28,30,0.94);
+    backdrop-filter:blur(24px) saturate(1.8);
+    -webkit-backdrop-filter:blur(24px) saturate(1.8);
+    border-radius:16px; padding:11px 13px;
+    z-index:200; border:1px solid rgba(255,255,255,0.09);
+    box-shadow:0 8px 32px rgba(0,0,0,0.6);
+    animation:drop .45s cubic-bezier(.34,1.56,.64,1) forwards;
+  }
+  @keyframes drop {
+    from { opacity:0; transform:translateY(-18px) scale(.96); }
+    to   { opacity:1; transform:none; }
+  }
+  .wa-head { display:flex; align-items:center; gap:7px; margin-bottom:5px; }
+  .wa-wicon {
+    width:18px; height:18px; background:#25D366; border-radius:4px;
+    display:flex; align-items:center; justify-content:center; font-size:10px; flex-shrink:0;
+  }
+  .wa-app  { font-size:10px; font-weight:700; color:rgba(255,255,255,.45); letter-spacing:.6px; text-transform:uppercase; }
+  .wa-ts   { font-size:10px; color:rgba(255,255,255,.25); margin-left:auto; }
+  .wa-row  { display:flex; gap:8px; align-items:center; margin-bottom:3px; }
+  .wa-av   {
+    width:30px; height:30px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg,#D4A84B,#FF8C61);
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:700; color:white;
+  }
+  .wa-name { font-size:13px; font-weight:600; color:white; line-height:1.2; }
+  .wa-sub  { font-size:10px; color:rgba(255,255,255,.3); }
+  .wa-msg  { font-size:12.5px; color:rgba(255,255,255,.8); line-height:1.5; padding-left:38px; }
+
+  /* ── WhatsApp full screen ── */
+  .wa-screen { width:100%; height:100%; background:#0B141A; display:flex; flex-direction:column; }
+  .wa-bar {
+    background:#1F2C34; padding:50px 12px 10px;
+    display:flex; align-items:center; gap:9px; flex-shrink:0;
+  }
+  .wa-back { font-size:22px; color:#25D366; }
+  .wa-cav  {
+    width:34px; height:34px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg,#D4A84B,#FF8C61);
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:700; color:white;
+  }
+  .wa-ci   { flex:1; }
+  .wa-cn   { font-size:14px; font-weight:600; color:#E9EDEF; }
+  .wa-cs   { font-size:11px; color:#8696A0; }
+  .wa-bicons { display:flex; gap:18px; color:#8696A0; font-size:17px; }
+  .wa-msgs { flex:1; overflow:hidden; padding:10px 12px; display:flex; flex-direction:column; gap:3px; background:#0B141A; }
+  .wa-date { text-align:center; margin:6px 0; }
+  .wa-date span { background:rgba(17,27,33,.9); color:#8696A0; font-size:10px; padding:3px 9px; border-radius:7px; }
+  .bbl {
+    max-width:80%; padding:7px 10px 5px; border-radius:0 8px 8px 8px;
+    background:#1F2C34; align-self:flex-start; margin-bottom:1px;
+  }
+  .bbl.last { border-radius:8px 8px 8px 0; }
+  .bbl-txt { font-size:12.5px; color:#E9EDEF; line-height:1.5; white-space:pre-wrap; }
+  .bbl-txt strong { font-weight:600; }
+  .bbl-meta { display:flex; justify-content:flex-end; margin-top:2px; }
+  .bbl-t { font-size:10px; color:#8696A0; }
+  .wa-in {
+    background:#1F2C34; padding:8px 12px 28px;
+    display:flex; align-items:center; gap:9px; flex-shrink:0;
+  }
+  .wa-inp { flex:1; background:#2A3942; border-radius:20px; padding:8px 13px; font-size:13px; color:#8696A0; }
+  .wa-send {
+    width:38px; height:38px; background:#00A884; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:16px; color:white; flex-shrink:0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── SAHNE 1: Salon Listesi + Bildirim ── -->
+<div class="scene">
+  <div class="scene-label">Salon Listesi — Bildirim</div>
+  <div class="iphone">
+    <div class="screen">
+      <div class="di"></div>
+      <img src="screenshots/s4-salonlar.png" alt="">
+      <div class="sb">
+        <span class="sb-time">9:41</span>
+        <div class="sb-icons"><span>●●●</span><span>📶</span><span>🔋</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SAHNE 2: Hizmet Seçimi + Bildirim ── -->
+<div class="scene">
+  <div class="scene-label">Hizmet Seçimi — Bildirim</div>
+  <div class="iphone">
+    <div class="screen">
+      <div class="di"></div>
+      <img src="screenshots/s5-hizmet.png" alt="">
+      <div class="sb">
+        <span class="sb-time">9:41</span>
+        <div class="sb-icons"><span>●●●</span><span>📶</span><span>🔋</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SAHNE 3: Takvim + Bildirim ── -->
+<div class="scene">
+  <div class="scene-label">Tarih Seçimi — Bildirim</div>
+  <div class="iphone">
+    <div class="screen">
+      <div class="di"></div>
+      <img src="screenshots/s3-takvim.png" alt="">
+      <div class="sb">
+        <span class="sb-time">9:41</span>
+        <div class="sb-icons"><span>●●●</span><span>📶</span><span>🔋</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SAHNE 4: Form + Bildirim ── -->
+<div class="scene">
+  <div class="scene-label">Bilgi Formu — Bildirim</div>
+  <div class="iphone">
+    <div class="screen">
+      <div class="di"></div>
+      <img src="screenshots/s2-form.png" alt="">
+      <div class="sb">
+        <span class="sb-time">9:41</span>
+        <div class="sb-icons"><span>●●●</span><span>📶</span><span>🔋</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SAHNE 5: Randevu Onay Ekranı (tam ekran, bildirim yok) ── -->
+<div class="scene">
+  <div class="scene-label">Onay Ekranı</div>
+  <div class="iphone">
+    <div class="screen">
+      <div class="di"></div>
+      <img src="screenshots/s1-onay.png" alt="">
+      <div class="sb">
+        <span class="sb-time">9:41</span>
+        <div class="sb-icons"><span>●●●</span><span>📶</span><span>🔋</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SAHNE 6: Değerlendirme Ekranı ── -->
+<div class="scene">
+  <div class="scene-label">Değerlendirme Ekranı</div>
+  <div class="iphone">
+    <div class="screen">
+      <div class="di"></div>
+      <img src="screenshots/s6-degerlendirme.png" alt="">
+      <div class="sb">
+        <span class="sb-time">9:41</span>
+        <div class="sb-icons"><span>●●●</span><span>📶</span><span>🔋</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SAHNE 7: WhatsApp Konuşma Ekranı ── -->
+<div class="scene">
+  <div class="scene-label">WhatsApp Konuşması</div>
+  <div class="iphone">
+    <div class="screen">
+      <div class="di"></div>
+      <div class="wa-screen">
+        <div class="wa-bar">
+          <span class="wa-back">‹</span>
+          <div class="wa-cav">A</div>
+          <div class="wa-ci">
+            <div class="wa-cn">ayarlıyo</div>
+            <div class="wa-cs">İş Hesabı · çevrimiçi</div>
+          </div>
+          <div class="wa-bicons"><span>📹</span><span>📞</span><span>⋮</span></div>
+        </div>
+        <div class="wa-msgs">
+          <div class="wa-date"><span>Bugün</span></div>
+          <div class="bbl">
+            <div class="bbl-txt">✂ <strong>ayarlıyo - Randevu Onayı</strong>
+
+Merhaba Yunus! 👋
+
+Randevunuz başarıyla oluşturuldu.
+
+📅 Tarih: 30 Mayıs 2026 Cumartesi
+⏰ Saat: 13:00
+💈 Hizmet: Özel Seçim Protez Tırnak
+👤 Personel: Perihan KARA
+🏪 Salon: Peri Güzellik Ve Estetik</div>
+            <div class="bbl-meta"><span class="bbl-t">13:02</span></div>
+          </div>
+          <div class="bbl last">
+            <div class="bbl-txt">📍 <strong>Yol Tarifi için tıklayın:</strong>
+ayarliyo.com/api/map/peri-guzellik
+
+🔗 <strong>Yeni randevu almak için:</strong>
+ayarliyo.com/peri-guzellik</div>
+            <div class="bbl-meta"><span class="bbl-t">13:02</span></div>
+          </div>
+        </div>
+        <div class="wa-in">
+          <div class="wa-inp">Mesaj</div>
+          <div class="wa-send">➤</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

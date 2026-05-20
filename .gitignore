@@ -13,6 +13,13 @@ admin-panel/node_modules/
 admin-panel/dist/
 admin-panel/.angular/
 
+# Instagram content araçları
+instagram-content/node_modules/
+instagram-content/export/*.png
+instagram-content/export/*.mp4
+instagram-content/export/_tmp/
+instagram-content/screenshots/
+
 # Docker
 postgres_data/
 

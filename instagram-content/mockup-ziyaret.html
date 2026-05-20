@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>ayarlıyo — Ziyaret Tamamlandı Mockup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family:'Inter',sans-serif;
+    background:#0a0a0a;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    padding:60px 40px;
+    gap:16px;
+  }
+
+  .scene-label {
+    font-size:10px; letter-spacing:3px; text-transform:uppercase;
+    color:rgba(255,255,255,0.2); font-weight:600;
+  }
+
+  /* iPhone 17 */
+  .iphone {
+    width:320px; height:692px;
+    background:linear-gradient(160deg,#2c2c2e,#1c1c1e,#111);
+    border-radius:52px;
+    position:relative;
+    box-shadow:
+      0 0 0 1.5px #3a3a3c,
+      0 0 0 3px #1c1c1e,
+      0 50px 100px rgba(0,0,0,0.95),
+      inset 0 0 0 1px rgba(255,255,255,0.07);
+  }
+  .iphone::before {
+    content:''; position:absolute; left:-3px; top:110px;
+    width:3px; height:30px; background:#2c2c2e; border-radius:2px 0 0 2px;
+    box-shadow:0 42px 0 #2c2c2e, 0 84px 0 #2c2c2e;
+  }
+  .iphone::after {
+    content:''; position:absolute; right:-3px; top:150px;
+    width:3px; height:58px; background:#2c2c2e; border-radius:0 2px 2px 0;
+  }
+
+  /* Ekran */
+  .screen {
+    position:absolute; inset:10px;
+    border-radius:44px; overflow:hidden; background:#000;
+  }
+
+  /* Dynamic Island */
+  .di {
+    position:absolute; top:11px; left:50%; transform:translateX(-50%);
+    width:106px; height:32px; background:#000; border-radius:18px; z-index:100;
+  }
+
+  /* WhatsApp Ekranı */
+  .wa-screen { width:100%; height:100%; background:#0B141A; display:flex; flex-direction:column; }
+
+  /* Header */
+  .wa-bar {
+    background:#1F2C34; padding:50px 12px 10px;
+    display:flex; align-items:center; gap:9px; flex-shrink:0;
+  }
+  .wa-back { font-size:22px; color:#25D366; }
+  .wa-cav {
+    width:34px; height:34px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg,#D4A84B,#FF8C61);
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:700; color:white;
+  }
+  .wa-ci { flex:1; }
+  .wa-cn { font-size:14px; font-weight:600; color:#E9EDEF; }
+  .wa-cs { font-size:11px; color:#8696A0; }
+  .wa-bicons { display:flex; gap:18px; color:#8696A0; font-size:17px; }
+
+  /* Mesajlar */
+  .wa-msgs {
+    flex:1; overflow:hidden; padding:10px 12px;
+    display:flex; flex-direction:column; gap:4px; background:#0B141A;
+  }
+  .wa-date { text-align:center; margin:6px 0; }
+  .wa-date span {
+    background:rgba(17,27,33,.9); color:#8696A0;
+    font-size:10px; padding:3px 9px; border-radius:7px;
+  }
+
+  /* Mesaj balonları */
+  .bbl {
+    max-width:82%; padding:7px 10px 5px;
+    border-radius:0 8px 8px 8px;
+    background:#1F2C34; align-self:flex-start; margin-bottom:2px;
+  }
+  .bbl.last { border-radius:8px 8px 8px 0; }
+  .bbl-txt {
+    font-size:11.5px; color:#E9EDEF; line-height:1.55; white-space:pre-wrap;
+  }
+  .bbl-txt strong { font-weight:600; }
+  .bbl-txt a { color:#53BDEB; text-decoration:none; font-size:10.5px; }
+  .bbl-meta { display:flex; justify-content:flex-end; margin-top:3px; }
+  .bbl-t { font-size:10px; color:#8696A0; }
+
+  /* Input */
+  .wa-in {
+    background:#1F2C34; padding:8px 12px 28px;
+    display:flex; align-items:center; gap:9px; flex-shrink:0;
+  }
+  .wa-inp { flex:1; background:#2A3942; border-radius:20px; padding:8px 13px; font-size:13px; color:#8696A0; }
+  .wa-send {
+    width:38px; height:38px; background:#00A884; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:16px; color:white;
+  }
+</style>
+</head>
+<body>
+
+<div class="scene-label">Ziyaret Tamamlandı — WhatsApp</div>
+
+<div class="iphone">
+  <div class="screen">
+    <div class="di"></div>
+    <div class="wa-screen">
+
+      <div class="wa-bar">
+        <span class="wa-back">‹</span>
+        <div class="wa-cav">A</div>
+        <div class="wa-ci">
+          <div class="wa-cn">ayarlıyo</div>
+          <div class="wa-cs">İş Hesabı · çevrimiçi</div>
+        </div>
+        <div class="wa-bicons"><span>📹</span><span>📞</span><span>⋮</span></div>
+      </div>
+
+      <div class="wa-msgs">
+        <div class="wa-date"><span>Bugün</span></div>
+
+        <!-- İptal mesajı -->
+        <div class="bbl last">
+          <div class="bbl-txt">Randevunuzu iptal etmek için salonunuzu arayabilirsiniz.</div>
+          <div class="bbl-meta"><span class="bbl-t">09:49</span></div>
+        </div>
+
+        <!-- Ziyaret tamamlandı -->
+        <div class="bbl last" style="margin-top:6px">
+          <div class="bbl-txt">✂ <strong>ayarlıyo - Ziyaretiniz Tamamlandı!</strong>
+
+Merhaba Yunus Kobal! 👋
+
+Saç Kesimi hizmetinden
+yararlandığınız için teşekkürler! 😊
+🏪 Salon: Peri Güzellik Ve Estetik
+
+Deneyiminizi değerlendirir misiniz?
+Görüşleriniz bizim için çok önemli.
+
+⭐ <strong>Puan vermek için tıklayın:</strong>
+<a>ayarliyo.com/rate/peri-guzellik-ve-estetik/...</a>
+
+Teşekkürler! 🙏</div>
+          <div class="bbl-meta"><span class="bbl-t">09:57</span></div>
+        </div>
+      </div>
+
+      <div class="wa-in">
+        <div class="wa-inp">Mesaj</div>
+        <div class="wa-send">➤</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
