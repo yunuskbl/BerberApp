@@ -26,6 +26,14 @@
 
   <!-- ══ HERO ════════════════════════════════════════════════════════════════ -->
   <section class="hero">
+
+    <!-- Aurora background blobs -->
+    <div class="hero-aurora" aria-hidden="true">
+      <div class="aurora-blob blob-1"></div>
+      <div class="aurora-blob blob-2"></div>
+      <div class="aurora-blob blob-3"></div>
+    </div>
+
     <div class="hero-inner">
       <div class="hero-content">
         <div class="hero-badge">
@@ -139,9 +147,9 @@
   <!-- ══ STATS ═══════════════════════════════════════════════════════════════ -->
   <section class="stats-section">
     <div class="stats-inner">
-      @for (stat of stats; track stat.label) {
+      @for (stat of stats; let i = $index; track stat.label) {
         <div class="stat-item">
-          <span class="stat-value">{{ stat.value }}</span>
+          <span class="stat-value">{{ animatedStats[i] }}</span>
           <span class="stat-label">{{ stat.label }}</span>
         </div>
       }
@@ -203,6 +211,7 @@
 
   <!-- ══ PRICING ═════════════════════════════════════════════════════════════ -->
   <section class="plans-section" id="pricing">
+    <div class="plans-bg-glow" aria-hidden="true"></div>
     <div class="section-inner">
       <div class="section-header">
         <p class="section-eyebrow">Fiyatlandırma</p>
@@ -210,53 +219,76 @@
         <p class="section-sub">Tüm planlarda kurulum ücreti yok. İstediğiniz zaman plan değiştirebilirsiniz.</p>
       </div>
 
+      <!-- Billing toggle -->
+      <div class="billing-toggle">
+        <span class="toggle-label" [class.active]="!billingYearly">Aylık</span>
+        <button
+          class="toggle-switch"
+          [class.on]="billingYearly"
+          (click)="toggleBilling()"
+          aria-label="Faturalama dönemini değiştir">
+          <span class="toggle-knob"></span>
+        </button>
+        <span class="toggle-label" [class.active]="billingYearly">
+          Yıllık
+          <span class="discount-chip">%20 Tasarruf</span>
+        </span>
+      </div>
+
       <div class="plans-grid">
-        @for (plan of plans; track plan.name) {
-          <div class="plan-card" [class.featured]="plan.featured">
-            @if (plan.featured) {
-              <div class="popular-badge">En Popüler</div>
-            }
-            <div class="plan-top">
-              <span class="plan-icon">{{ plan.icon }}</span>
-              <h2 class="plan-name">{{ plan.label }}</h2>
-              <p class="plan-desc">{{ plan.description }}</p>
-            </div>
-            <div class="plan-price">
-              <span class="price-amount">₺{{ plan.price }}</span>
-              <span class="price-period">/ay</span>
-            </div>
-            <div class="plan-limits">
-              <span class="plan-limit-badge">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                {{ plan.limits.staff }}
-              </span>
-              <span class="plan-limit-badge">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                {{ plan.limits.appointments }}
-              </span>
-            </div>
-            <div class="plan-btn-group">
-              <button
-                class="plan-btn btn-buy"
-                [class.btn-primary]="plan.featured"
-                [class.btn-primary-light]="!plan.featured"
-                (click)="buyPlan(plan.name)">
-                Hemen Satın Al
-              </button>
-              <button
-                class="plan-btn btn-trial btn-outline"
-                (click)="selectPlan(plan.name)">
-                Ücretsiz Dene
-              </button>
-            </div>
-            <ul class="feature-list">
-              @for (feature of plan.features; track feature.name) {
-                <li [class.off]="!feature.included">
-                  <span class="feat-check">{{ feature.included ? '✓' : '—' }}</span>
-                  {{ feature.name }}
-                </li>
+        @for (plan of plans; let i = $index; track plan.name) {
+          <div class="plan-card-wrapper" [class.visible]="cardVisible[i]" [attr.data-index]="i">
+            <div class="plan-card" [class.featured]="plan.featured"
+                 (mousemove)="onCardMouseMove($event)"
+                 (mouseleave)="onCardMouseLeave($event)">
+              @if (plan.featured) {
+                <div class="popular-badge">En Popüler</div>
               }
-            </ul>
+              <div class="plan-top">
+                <span class="plan-icon">{{ plan.icon }}</span>
+                <h2 class="plan-name">{{ plan.label }}</h2>
+                <p class="plan-desc">{{ plan.description }}</p>
+              </div>
+              <div class="plan-price">
+                <span class="price-amount" [class.fading]="priceAnimating">₺{{ getDisplayPrice(plan.price) }}</span>
+                <span class="price-period">/ay{{ billingYearly ? ' (yıllık)' : '' }}</span>
+                @if (billingYearly) {
+                  <div class="price-original">₺{{ plan.price }}/ay yerine</div>
+                }
+              </div>
+              <div class="plan-limits">
+                <span class="plan-limit-badge">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  {{ plan.limits.staff }}
+                </span>
+                <span class="plan-limit-badge">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  {{ plan.limits.appointments }}
+                </span>
+              </div>
+              <div class="plan-btn-group">
+                <button
+                  class="plan-btn btn-buy"
+                  [class.btn-primary]="plan.featured"
+                  [class.btn-primary-light]="!plan.featured"
+                  (click)="buyPlan(plan.name)">
+                  Hemen Satın Al
+                </button>
+                <button
+                  class="plan-btn btn-trial btn-outline"
+                  (click)="selectPlan(plan.name)">
+                  Ücretsiz Dene
+                </button>
+              </div>
+              <ul class="feature-list">
+                @for (feature of plan.features; track feature.name) {
+                  <li [class.off]="!feature.included">
+                    <span class="feat-check">{{ feature.included ? '✓' : '—' }}</span>
+                    {{ feature.name }}
+                  </li>
+                }
+              </ul>
+            </div>
           </div>
         }
       </div>
