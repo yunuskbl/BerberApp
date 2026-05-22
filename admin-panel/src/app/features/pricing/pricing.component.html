@@ -12,6 +12,7 @@
         <button class="nav-link" (click)="scrollTo('features')">Özellikler</button>
         <button class="nav-link" (click)="scrollTo('pricing')">Fiyatlar</button>
         <button class="nav-link" (click)="scrollTo('faq')">SSS</button>
+        <button class="nav-link" (click)="scrollTo('contact')">İletişim</button>
       </nav>
       <div class="nav-actions">
         <button class="btn-nav-login" (click)="goToApp()">
@@ -351,6 +352,43 @@
     </div>
   </section>
 
+  <!-- ══ CONTACT ═══════════════════════════════════════════════════════════ -->
+  <section class="contact-section" id="contact">
+    <div class="section-inner">
+      <div class="section-header">
+        <p class="section-eyebrow">İletişim</p>
+        <h2 class="section-title">Bize Ulaşın</h2>
+        <p class="section-sub">Herhangi bir sorunuz mu var? Size en kısa sürede yanıt veririz.</p>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-card">
+          <div class="contact-icon-wrap">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <h3 class="contact-card-title">E-posta</h3>
+          <p class="contact-card-desc">Sorularınızı mail olarak gönderin, en geç 24 saat içinde yanıtlayalım.</p>
+          <a class="contact-card-link" href="mailto:ayarliyoinfo@gmail.com">ayarliyoinfo&#64;gmail.com</a>
+        </div>
+        <div class="contact-card contact-card-highlight">
+          <div class="contact-icon-wrap">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M20.52 3.48A11.94 11.94 0 0012 0C5.37 0 0 5.37 0 12c0 2.12.55 4.1 1.52 5.82L0 24l6.35-1.66A11.94 11.94 0 0024 12c0-3.2-1.25-6.21-3.48-8.52z" fill="#25d366"/></svg>
+          </div>
+          <h3 class="contact-card-title">WhatsApp</h3>
+          <p class="contact-card-desc">Hızlı destek için WhatsApp üzerinden yazın, anında yanıt verelim.</p>
+          <a class="contact-card-link contact-card-link-wa" href="https://wa.me/905000000000" target="_blank" rel="noopener">WhatsApp ile Yaz →</a>
+        </div>
+        <div class="contact-card">
+          <div class="contact-icon-wrap">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <h3 class="contact-card-title">Destek Saatleri</h3>
+          <p class="contact-card-desc">Hafta içi 09:00–18:00 saatleri arasında telefon ve e-posta ile ulaşabilirsiniz.</p>
+          <span class="contact-card-badge">Hafta içi 09:00 – 18:00</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ══ CTA ═════════════════════════════════════════════════════════════════ -->
   <section class="cta-section">
     <div class="cta-inner">
@@ -361,11 +399,11 @@
         <button class="cta-btn-primary" (click)="isLoggedIn ? goToApp() : goToRegister()">
           Ücretsiz Başla
         </button>
-        <a class="cta-btn-contact" href="mailto:destek@ayarliyo.com">
+        <a class="cta-btn-contact" href="mailto:ayarliyoinfo@gmail.com">
           Bize Yazın →
         </a>
       </div>
-      <p class="cta-email">Sorularınız için: <strong>destek&#64;ayarliyo.com</strong></p>
+      <p class="cta-email">Sorularınız için: <strong>ayarliyoinfo&#64;gmail.com</strong></p>
     </div>
   </section>
 
@@ -379,7 +417,7 @@
       </div>
       <div class="footer-links">
         <a routerLink="/gizlilik-politikasi">Gizlilik Politikası</a>
-        <a href="mailto:destek@ayarliyo.com">destek&#64;ayarliyo.com</a>
+        <a href="mailto:ayarliyoinfo@gmail.com">ayarliyoinfo&#64;gmail.com</a>
         <button (click)="goToApp()">{{ isLoggedIn ? 'Panele Git' : 'Giriş Yap' }}</button>
       </div>
       <p class="footer-copy">© 2026 ayarlıyo. Tüm hakları saklıdır.</p>
