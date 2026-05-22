@@ -1092,9 +1092,15 @@ $green:        #059669;
   font-weight: 600;
   color: $purple;
   text-decoration: none;
+  background: none;
+  border: none;
   border-bottom: 1.5px solid transparent;
+  padding: 0;
+  cursor: pointer;
   transition: border-color .15s;
   word-break: break-all;
+  font-family: inherit;
+  text-align: left;
 
   &:hover { border-bottom-color: $purple; }
 

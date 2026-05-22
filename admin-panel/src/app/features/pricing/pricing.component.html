@@ -367,7 +367,7 @@
           </div>
           <h3 class="contact-card-title">E-posta</h3>
           <p class="contact-card-desc">Sorularınızı mail olarak gönderin, en geç 24 saat içinde yanıtlayalım.</p>
-          <a class="contact-card-link" href="mailto:ayarliyoinfo@gmail.com">ayarliyoinfo&#64;gmail.com</a>
+          <button class="contact-card-link" (click)="openMail()">ayarliyoinfo&#64;gmail.com</button>
         </div>
         <div class="contact-card contact-card-highlight">
           <div class="contact-icon-wrap">
@@ -375,7 +375,7 @@
           </div>
           <h3 class="contact-card-title">WhatsApp</h3>
           <p class="contact-card-desc">Hızlı destek için WhatsApp üzerinden yazın, anında yanıt verelim.</p>
-          <a class="contact-card-link contact-card-link-wa" href="https://wa.me/905000000000" target="_blank" rel="noopener">WhatsApp ile Yaz →</a>
+          <button class="contact-card-link contact-card-link-wa" (click)="openWhatsApp()">WhatsApp ile Yaz →</button>
         </div>
         <div class="contact-card">
           <div class="contact-icon-wrap">
@@ -399,9 +399,9 @@
         <button class="cta-btn-primary" (click)="isLoggedIn ? goToApp() : goToRegister()">
           Ücretsiz Başla
         </button>
-        <a class="cta-btn-contact" href="mailto:ayarliyoinfo@gmail.com">
+        <button class="cta-btn-contact" (click)="openMail()">
           Bize Yazın →
-        </a>
+        </button>
       </div>
       <p class="cta-email">Sorularınız için: <strong>ayarliyoinfo&#64;gmail.com</strong></p>
     </div>
@@ -417,7 +417,7 @@
       </div>
       <div class="footer-links">
         <a routerLink="/gizlilik-politikasi">Gizlilik Politikası</a>
-        <a href="mailto:ayarliyoinfo@gmail.com">ayarliyoinfo&#64;gmail.com</a>
+        <button class="footer-mail-btn" (click)="openMail()">ayarliyoinfo&#64;gmail.com</button>
         <button (click)="goToApp()">{{ isLoggedIn ? 'Panele Git' : 'Giriş Yap' }}</button>
       </div>
       <p class="footer-copy">© 2026 ayarlıyo. Tüm hakları saklıdır.</p>

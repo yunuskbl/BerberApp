@@ -357,4 +357,12 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   planHas(plan: Plan, featureName: string): boolean {
     return plan.features.find(f => f.name === featureName)?.included ?? false;
   }
+
+  openMail(): void {
+    window.open('mailto:ayarliyoinfo@gmail.com?subject=Bilgi%20Talebi', '_blank');
+  }
+
+  openWhatsApp(): void {
+    window.open('https://wa.me/905000000000', '_blank');
+  }
 }
