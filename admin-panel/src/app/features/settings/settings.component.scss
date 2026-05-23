@@ -705,6 +705,108 @@
   color: #cbd5e1;
 }
 
+/* QR Kod */
+.qr-code-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #f9fafb;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  margin-top: 4px;
+}
+
+.qr-code-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.qr-code-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.qr-code-label {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.qr-download-btn {
+  width: fit-content;
+  padding: 7px 14px;
+  font-size: 12px;
+}
+
+/* Salon Kapalı Günler */
+.closure-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+
+  .closure-date-input, .closure-reason-select {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #111827;
+    background: white;
+    outline: none;
+    min-width: 0;
+    box-sizing: border-box;
+    &:focus { border-color: var(--theme-color); }
+  }
+  .closure-reason-select { flex: 0 1 130px; cursor: pointer; }
+  .closure-add-btn { flex-shrink: 0; font-size: 13px; padding: 9px 14px; white-space: nowrap; }
+}
+
+.closure-divider { height: 1px; background: #f0f0f0; margin: 16px 0; }
+
+.closure-empty { font-size: 13px; color: #9ca3af; text-align: center; padding: 12px 0; }
+
+.closure-list { display: flex; flex-direction: column; gap: 8px; }
+
+.closure-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #f0f0f0;
+}
+
+.closure-info { display: flex; align-items: center; gap: 10px; }
+
+.closure-date-text { font-size: 14px; font-weight: 500; color: #111827; }
+
+.closure-reason-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.closure-delete-btn {
+  width: 26px; height: 26px;
+  border-radius: 6px; border: none;
+  background: #fef2f2; color: #dc2626;
+  cursor: pointer; font-size: 11px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+  &:hover { background: #fecaca; }
+}
+
 @media (max-width: 768px) {
   .settings-grid {
     grid-template-columns: 1fr;
