@@ -5,7 +5,8 @@ import { environment } from '../../../environments/environment';
 
 export interface SalonClosure {
   id?: string;
-  date: string;
+  startDate: string;
+  endDate: string;
   reason?: string;
 }
 
@@ -19,7 +20,7 @@ export class SalonClosureService {
     return this.http.get(this.apiUrl);
   }
 
-  create(data: { date: string; reason?: string }): Observable<any> {
+  create(data: { startDate: string; endDate: string; reason?: string }): Observable<any> {
     return this.http.post(this.apiUrl, data);
   }
 

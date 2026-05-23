@@ -15,6 +15,7 @@ import { Router, RouterModule } from '@angular/router';
 import { LanguageService } from '../../core/services/language.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { SalonClosureService, SalonClosure } from '../../core/services/salon-closure.service';
+import { CustomCalendarComponent } from '../../shared/components/custom-calendar/custom-calendar.component';
 import { catchError, of } from 'rxjs';
 import QRCode from 'qrcode';
 
@@ -37,7 +38,7 @@ function numberValidator(ctrl: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, DatePipe, ReactiveFormsModule, RouterModule, TranslatePipe],
+  imports: [CommonModule, DatePipe, ReactiveFormsModule, RouterModule, TranslatePipe, CustomCalendarComponent],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })
@@ -111,8 +112,9 @@ export class SettingsComponent implements OnInit {
     });
 
     this.closureForm = this.fb.group({
-      date: ['', Validators.required],
-      reason: [''],
+      startDate: ['', Validators.required],
+      endDate:   [''],
+      reason:    [''],
     });
 
     this.passwordForm = this.fb.group(
@@ -185,8 +187,12 @@ export class SettingsComponent implements OnInit {
     if (!this.closureForm.valid) return;
     this.isSavingClosure = true;
     this.closureError = '';
-    const { date, reason } = this.closureForm.value;
-    this.salonClosureService.create({ date, reason: reason || undefined }).pipe(
+    const { startDate, endDate, reason } = this.closureForm.value;
+    this.salonClosureService.create({
+      startDate,
+      endDate: endDate || startDate,
+      reason: reason || undefined
+    }).pipe(
       catchError((err) => {
         this.closureError = err?.error?.message || 'Kapalı gün eklenemedi.';
         this.isSavingClosure = false;
@@ -196,10 +202,21 @@ export class SettingsComponent implements OnInit {
       next: (res) => {
         if (!res) return;
         this.isSavingClosure = false;
-        this.closureForm.patchValue({ date: '', reason: '' });
+        this.closureForm.patchValue({ startDate: '', endDate: '', reason: '' });
         this.loadClosures();
       },
     });
+  }
+
+  formatClosureDate(c: SalonClosure): string {
+    if (!c.startDate) return '';
+    const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long' };
+    const start = new Date(c.startDate + 'T12:00:00');
+    if (!c.endDate || c.startDate === c.endDate) {
+      return start.toLocaleDateString('tr-TR', { ...opts, year: 'numeric' });
+    }
+    const end = new Date(c.endDate + 'T12:00:00');
+    return `${start.toLocaleDateString('tr-TR', opts)} – ${end.toLocaleDateString('tr-TR', { ...opts, year: 'numeric' })}`;
   }
 
   removeClosure(id: string): void {

@@ -10,11 +10,18 @@ import { LanguageService } from '../../../core/services/language.service';
   styleUrl: './custom-calendar.component.scss'
 })
 export class CustomCalendarComponent implements OnInit {
+  @Input() mode:        'single' | 'range' = 'single';
   @Input() minDate:     string   = '';
   @Input() maxDate:     string   = '';
   @Input() value:       string   = '';
   @Input() markedDates: string[] = [];
-  @Output() valueChange = new EventEmitter<string>();
+  @Input() startDate:   string   = '';
+  @Input() endDate:     string   = '';
+  @Output() valueChange      = new EventEmitter<string>();
+  @Output() startDateChange  = new EventEmitter<string>();
+  @Output() endDateChange    = new EventEmitter<string>();
+
+  hoverDate: string = '';
 
   currentYear:  number = 0;
   currentMonth: number = 0;
@@ -74,20 +81,71 @@ export class CustomCalendarComponent implements OnInit {
     this.buildCalendar();
   }
 
-  selectDay(day: number | null): void {
-    if (!day || this.isDisabled(day)) return;
+  buildDateStr(day: number): string {
     const month = String(this.currentMonth + 1).padStart(2, '0');
     const d     = String(day).padStart(2, '0');
-    const value = `${this.currentYear}-${month}-${d}`;
-    this.value  = value;
-    this.valueChange.emit(value);
+    return `${this.currentYear}-${month}-${d}`;
+  }
+
+  selectDay(day: number | null): void {
+    if (!day || this.isDisabled(day)) return;
+    const date = this.buildDateStr(day);
+
+    if (this.mode === 'single') {
+      this.value = date;
+      this.valueChange.emit(date);
+      return;
+    }
+
+    // Range mode
+    if (!this.startDate || (this.startDate && this.endDate)) {
+      this.startDate = date;
+      this.endDate   = '';
+      this.startDateChange.emit(date);
+      this.endDateChange.emit('');
+    } else {
+      if (date >= this.startDate) {
+        this.endDate = date;
+        this.hoverDate = '';
+        this.endDateChange.emit(date);
+      } else {
+        this.startDate = date;
+        this.endDate   = '';
+        this.startDateChange.emit(date);
+        this.endDateChange.emit('');
+      }
+    }
+  }
+
+  onDayHover(day: number | null): void {
+    if (this.mode !== 'range' || !this.startDate || this.endDate || !day) {
+      this.hoverDate = '';
+      return;
+    }
+    this.hoverDate = this.buildDateStr(day);
   }
 
   isSelected(day: number | null): boolean {
-    if (!day) return false;
-    const month = String(this.currentMonth + 1).padStart(2, '0');
-    const d     = String(day).padStart(2, '0');
-    return this.value === `${this.currentYear}-${month}-${d}`;
+    if (!day || this.mode !== 'single') return false;
+    return this.value === this.buildDateStr(day);
+  }
+
+  isRangeStart(day: number | null): boolean {
+    if (!day || this.mode !== 'range') return false;
+    return this.startDate === this.buildDateStr(day);
+  }
+
+  isRangeEnd(day: number | null): boolean {
+    if (!day || this.mode !== 'range') return false;
+    return !!this.endDate && this.endDate === this.buildDateStr(day);
+  }
+
+  isInRange(day: number | null): boolean {
+    if (!day || this.mode !== 'range' || !this.startDate) return false;
+    const date = this.buildDateStr(day);
+    const end  = this.endDate || this.hoverDate;
+    if (!end || end < this.startDate) return false;
+    return date > this.startDate && date < end;
   }
 
   isToday(day: number | null): boolean {
@@ -100,16 +158,12 @@ export class CustomCalendarComponent implements OnInit {
 
   isMarked(day: number | null): boolean {
     if (!day) return false;
-    const month = String(this.currentMonth + 1).padStart(2, '0');
-    const d     = String(day).padStart(2, '0');
-    return this.markedDates.includes(`${this.currentYear}-${month}-${d}`);
+    return this.markedDates.includes(this.buildDateStr(day));
   }
 
   isDisabled(day: number | null): boolean {
     if (!day) return true;
-    const month = String(this.currentMonth + 1).padStart(2, '0');
-    const d     = String(day).padStart(2, '0');
-    const date  = `${this.currentYear}-${month}-${d}`;
+    const date = this.buildDateStr(day);
     if (this.minDate && date < this.minDate) return true;
     if (this.maxDate && date > this.maxDate) return true;
     return false;
@@ -127,6 +181,18 @@ export class CustomCalendarComponent implements OnInit {
     if (!max) return true;
     return this.currentYear < max.getFullYear() ||
            (this.currentYear === max.getFullYear() && this.currentMonth < max.getMonth());
+  }
+
+  get rangeDisplayDate(): string {
+    if (!this.startDate) return '';
+    const locale = this.langService.dateLocale;
+    const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long' };
+    const start = new Date(this.startDate + 'T12:00:00');
+    if (!this.endDate || this.startDate === this.endDate) {
+      return start.toLocaleDateString(locale, { ...opts, year: 'numeric' });
+    }
+    const end = new Date(this.endDate + 'T12:00:00');
+    return `${start.toLocaleDateString(locale, opts)} – ${end.toLocaleDateString(locale, { ...opts, year: 'numeric' })}`;
   }
 
   get selectedDisplayDate(): string {

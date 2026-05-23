@@ -150,4 +150,70 @@ public class TenantsController : BaseApiController
 
         return Success(new { message = "Fotoğraf silindi." });
     }
+
+    // ── Salon Kapalı Günler ──────────────────────────────────────────────────
+
+    [HttpGet("closures")]
+    public async Task<IActionResult> GetClosures()
+    {
+        var closures = await _context.TenantClosures
+            .Where(c => c.TenantId == TenantId && !c.IsDeleted)
+            .OrderBy(c => c.StartDate)
+            .Select(c => new {
+                c.Id,
+                StartDate = c.StartDate.ToString("yyyy-MM-dd"),
+                EndDate   = c.EndDate.ToString("yyyy-MM-dd"),
+                c.Reason
+            })
+            .ToListAsync();
+
+        return Success(closures);
+    }
+
+    [HttpPost("closures")]
+    public async Task<IActionResult> AddClosure([FromBody] AddClosureRequest request)
+    {
+        if (!DateOnly.TryParse(request.StartDate, out var start))
+            return BadRequest(new { success = false, message = "Geçersiz başlangıç tarihi." });
+
+        if (!DateOnly.TryParse(request.EndDate, out var end))
+            end = start;
+
+        if (end < start)
+            return BadRequest(new { success = false, message = "Bitiş tarihi başlangıç tarihinden önce olamaz." });
+
+        var closure = new BerberApp.Domain.Entities.TenantClosure
+        {
+            TenantId  = TenantId,
+            StartDate = start,
+            EndDate   = end,
+            Reason    = request.Reason,
+        };
+
+        _context.TenantClosures.Add(closure);
+        await _context.SaveChangesAsync();
+
+        return Created(new {
+            closure.Id,
+            StartDate = closure.StartDate.ToString("yyyy-MM-dd"),
+            EndDate   = closure.EndDate.ToString("yyyy-MM-dd"),
+            closure.Reason
+        });
+    }
+
+    [HttpDelete("closures/{id}")]
+    public async Task<IActionResult> DeleteClosure(Guid id)
+    {
+        var closure = await _context.TenantClosures
+            .FirstOrDefaultAsync(c => c.Id == id && c.TenantId == TenantId && !c.IsDeleted);
+
+        if (closure is null)
+            return NotFound(new { success = false, message = "Kapalı gün bulunamadı." });
+
+        _context.TenantClosures.Remove(closure);
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    public record AddClosureRequest(string StartDate, string EndDate, string? Reason);
 }

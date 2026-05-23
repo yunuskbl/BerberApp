@@ -25,16 +25,20 @@
   </div>
 
   <!-- Days -->
-  <div class="cal-days">
+  <div class="cal-days" (mouseleave)="hoverDate=''">
     @for (day of days; track $index) {
       <div
         class="cal-day"
         [class.empty]="!day"
         [class.today]="isToday(day)"
         [class.selected]="isSelected(day)"
-        [class.marked]="isMarked(day) && !isSelected(day)"
+        [class.marked]="isMarked(day) && !isSelected(day) && !isRangeStart(day) && !isRangeEnd(day)"
+        [class.range-start]="isRangeStart(day)"
+        [class.range-end]="isRangeEnd(day)"
+        [class.in-range]="isInRange(day)"
         [class.disabled]="isDisabled(day)"
-        (click)="selectDay(day)">
+        (click)="selectDay(day)"
+        (mouseenter)="onDayHover(day)">
         @if (day) {
           <span>{{ day }}</span>
         }
@@ -42,11 +46,25 @@
     }
   </div>
 
-  <!-- Selected Date -->
-  @if (value) {
+  <!-- Footer: single mode seçili tarih -->
+  @if (mode === 'single' && value) {
     <div class="cal-footer">
       <span class="selected-label">{{ selectedLabel }}:</span>
       <span class="selected-date">{{ selectedDisplayDate }}</span>
+    </div>
+  }
+
+  <!-- Footer: range mode -->
+  @if (mode === 'range') {
+    <div class="cal-footer">
+      @if (startDate && endDate) {
+        <span class="selected-label">Seçili:</span>
+        <span class="selected-date">{{ rangeDisplayDate }}</span>
+      } @else if (startDate) {
+        <span class="selected-label" style="color:#7c3aed">Bitiş tarihini seçin</span>
+      } @else {
+        <span class="selected-label">Başlangıç tarihini seçin</span>
+      }
     </div>
   }
 

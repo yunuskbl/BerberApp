@@ -213,6 +213,24 @@ using (var scope = app.Services.CreateScope())
         CREATE INDEX IF NOT EXISTS ""IX_StaffDaysOff_StaffId"" ON ""StaffDaysOff"" (""StaffId"");
     ");
 
+    // TenantClosures tablosu yoksa oluştur
+    db.Database.ExecuteSqlRaw(@"
+        CREATE TABLE IF NOT EXISTS ""TenantClosures"" (
+            ""Id""        uuid NOT NULL,
+            ""TenantId""  uuid NOT NULL,
+            ""StartDate"" date NOT NULL,
+            ""EndDate""   date NOT NULL,
+            ""Reason""    text,
+            ""CreatedAt"" timestamp without time zone NOT NULL DEFAULT now(),
+            ""UpdatedAt"" timestamp without time zone,
+            ""IsDeleted"" boolean NOT NULL DEFAULT false,
+            CONSTRAINT ""PK_TenantClosures"" PRIMARY KEY (""Id""),
+            CONSTRAINT ""FK_TenantClosures_Tenants_TenantId"" FOREIGN KEY (""TenantId"")
+                REFERENCES ""Tenants"" (""Id"") ON DELETE CASCADE
+        );
+        CREATE INDEX IF NOT EXISTS ""IX_TenantClosures_TenantId"" ON ""TenantClosures"" (""TenantId"");
+    ");
+
     await SeedData.SeedAsync(db, env);
     await SeedData.SeedSuperAdminAsync(db);
 }

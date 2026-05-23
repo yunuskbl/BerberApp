@@ -26,6 +26,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
     public DbSet<OtpRecord> OtpRecords => Set<OtpRecord>();
     public DbSet<StaffDayOff> StaffDaysOff => Set<StaffDayOff>();
+    public DbSet<TenantClosure> TenantClosures => Set<TenantClosure>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -420,18 +420,27 @@
 
         <form [formGroup]="closureForm" (ngSubmit)="addClosure()">
           <div class="closure-inputs">
-            <input type="date" formControlName="date" [min]="todayDate" class="closure-date-input"/>
-            <select formControlName="reason" class="closure-reason-select">
-              <option value="">Sebep (opsiyonel)</option>
-              <option value="Bayram">Bayram</option>
-              <option value="Tatil">Tatil</option>
-              <option value="Tadilat">Tadilat</option>
-              <option value="Diğer">Diğer</option>
-            </select>
-            <button type="submit" class="btn btn-primary closure-add-btn"
-                    [disabled]="closureForm.invalid || isSavingClosure">
-              {{ isSavingClosure ? '...' : '+ Ekle' }}
-            </button>
+            <app-custom-calendar
+              mode="range"
+              [minDate]="todayDate"
+              [startDate]="closureForm.get('startDate')?.value || ''"
+              [endDate]="closureForm.get('endDate')?.value || ''"
+              (startDateChange)="closureForm.patchValue({ startDate: $event })"
+              (endDateChange)="closureForm.patchValue({ endDate: $event })">
+            </app-custom-calendar>
+            <div class="closure-bottom-row">
+              <select formControlName="reason" class="closure-reason-select">
+                <option value="">Sebep (opsiyonel)</option>
+                <option value="Bayram">Bayram</option>
+                <option value="Tatil">Tatil</option>
+                <option value="Tadilat">Tadilat</option>
+                <option value="Diğer">Diğer</option>
+              </select>
+              <button type="submit" class="btn btn-primary closure-add-btn"
+                      [disabled]="closureForm.invalid || isSavingClosure">
+                {{ isSavingClosure ? '...' : '+ Ekle' }}
+              </button>
+            </div>
           </div>
           @if (closureError) {
             <div class="alert alert-error" style="margin-top:10px">{{ closureError }}</div>
@@ -447,7 +456,7 @@
             @for (c of closures; track c.id) {
               <div class="closure-item">
                 <div class="closure-info">
-                  <span class="closure-date-text">{{ c.date | date: 'dd MMM yyyy' : '' : 'tr' }}</span>
+                  <span class="closure-date-text">{{ formatClosureDate(c) }}</span>
                   @if (c.reason) {
                     <span class="closure-reason-badge">{{ c.reason }}</span>
                   }

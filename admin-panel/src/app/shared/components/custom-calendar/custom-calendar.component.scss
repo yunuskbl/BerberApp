@@ -93,6 +93,21 @@
     box-shadow: 0 6px 14px rgba(124,58,237,0.35);
   }
 
+  &.range-start, &.range-end {
+    background: linear-gradient(135deg, #7c3aed, #4c1d95);
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(124,58,237,0.35);
+    position: relative;
+    z-index: 1;
+  }
+
+  &.in-range {
+    background: #ede9fe;
+    color: #5b21b6;
+    border-radius: 0;
+  }
+
   &.marked {
     background: #fee2e2;
     color: #dc2626;
