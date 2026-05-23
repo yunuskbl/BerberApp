@@ -32,6 +32,7 @@
         [class.empty]="!day"
         [class.today]="isToday(day)"
         [class.selected]="isSelected(day)"
+        [class.marked]="isMarked(day) && !isSelected(day)"
         [class.disabled]="isDisabled(day)"
         (click)="selectDay(day)">
         @if (day) {

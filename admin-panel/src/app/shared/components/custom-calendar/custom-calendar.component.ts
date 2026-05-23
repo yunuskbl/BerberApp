@@ -10,9 +10,10 @@ import { LanguageService } from '../../../core/services/language.service';
   styleUrl: './custom-calendar.component.scss'
 })
 export class CustomCalendarComponent implements OnInit {
-  @Input() minDate: string = '';
-  @Input() maxDate: string = '';
-  @Input() value:   string = '';
+  @Input() minDate:     string   = '';
+  @Input() maxDate:     string   = '';
+  @Input() value:       string   = '';
+  @Input() markedDates: string[] = [];
   @Output() valueChange = new EventEmitter<string>();
 
   currentYear:  number = 0;
@@ -95,6 +96,13 @@ export class CustomCalendarComponent implements OnInit {
     return day === today.getDate() &&
            this.currentMonth === today.getMonth() &&
            this.currentYear  === today.getFullYear();
+  }
+
+  isMarked(day: number | null): boolean {
+    if (!day) return false;
+    const month = String(this.currentMonth + 1).padStart(2, '0');
+    const d     = String(day).padStart(2, '0');
+    return this.markedDates.includes(`${this.currentYear}-${month}-${d}`);
   }
 
   isDisabled(day: number | null): boolean {

@@ -11,7 +11,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  background: linear-gradient(135deg, var(--accent), #1e293b, #334155);
+  background: linear-gradient(135deg, #111827, #1e293b, #334155);
 }
 
 .month-label {
@@ -91,6 +91,27 @@
     color: white;
     font-weight: 700;
     box-shadow: 0 6px 14px rgba(124,58,237,0.35);
+  }
+
+  &.marked {
+    background: #fee2e2;
+    color: #dc2626;
+    font-weight: 700;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 3px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #dc2626;
+    }
+
+    &:hover:not(.disabled) { background: #fecaca; }
   }
 
   &.disabled {

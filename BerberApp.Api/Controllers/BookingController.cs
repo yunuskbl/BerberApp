@@ -197,6 +197,13 @@ public class BookingController : ControllerBase
             });
         }
 
+        // İzin günü kontrolü — personel o gün izinliyse boş liste döndür
+        var requestDate = DateOnly.FromDateTime(date.ToUniversalTime());
+        var isDayOff = await _context.StaffDaysOff
+            .AnyAsync(d => d.StaffId == staffId && d.Date == requestDate && !d.IsDeleted);
+        if (isDayOff)
+            return Ok(new { success = true, data = Array.Empty<object>() });
+
         var result = await _mediator.Send(new GetAvailableSlotsQuery
         {
             TenantId = tenant.Id,
@@ -224,6 +231,13 @@ public class BookingController : ControllerBase
         var (monthlyCount, monthlyLimit) = await GetMonthlyAppointmentUsageAsync(tenant.Id);
         if (monthlyLimit < int.MaxValue && monthlyCount >= monthlyLimit)
             return BadRequest(new { success = false, message = "Bu salon bu ay için randevu kapasitesine ulaştı." });
+
+        // İzin günü kontrolü
+        var apptDate = DateOnly.FromDateTime(DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc));
+        var isStaffDayOff = await _context.StaffDaysOff
+            .AnyAsync(d => d.StaffId == request.StaffId && d.Date == apptDate && !d.IsDeleted);
+        if (isStaffDayOff)
+            return BadRequest(new { success = false, message = "Seçilen personel bu tarihte izinlidir." });
 
         // Telefon doğrulanmış mı kontrol et (son 30 dakika içinde doğrulanmış OTP)
         var verifiedOtp = await _context.OtpRecords

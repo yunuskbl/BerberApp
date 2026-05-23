@@ -183,6 +183,7 @@
       <div class="daysoff-inputs">
         <app-custom-calendar
           [minDate]="todayDate"
+          [markedDates]="markedDayOffDates"
           [value]="daysOffForm.get('date')?.value || ''"
           (valueChange)="daysOffForm.patchValue({ date: $event })">
         </app-custom-calendar>
@@ -217,7 +218,7 @@
         @for (item of staffDaysOff; track item.id) {
           <div class="daysoff-item">
             <div class="daysoff-info">
-              <span class="daysoff-date-text">{{ item.date | date: 'dd MMM yyyy' : '' : 'tr' }}</span>
+              <span class="daysoff-date-text">{{ formatDayOffDate(item.date) }}</span>
               @if (item.reason) {
                 <span class="daysoff-reason-badge">{{ item.reason }}</span>
               }

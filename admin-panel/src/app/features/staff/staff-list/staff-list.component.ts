@@ -69,6 +69,16 @@ export class StaffListComponent implements OnInit {
     return new Date().toISOString().split('T')[0];
   }
 
+  get markedDayOffDates(): string[] {
+    return this.staffDaysOff.map(d => d.date);
+  }
+
+  formatDayOffDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
   constructor(
     private workingHoursService: WorkingHoursService,
     private staffService: StaffService,
