@@ -502,6 +502,37 @@ namespace BerberApp.Infrastructure.Migrations
                     b.ToTable("StaffServices", (string)null);
                 });
 
+            modelBuilder.Entity("BerberApp.Domain.Entities.StaffDayOff", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("StaffId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StaffId");
+
+                    b.ToTable("StaffDaysOff", (string)null);
+                });
+
             modelBuilder.Entity("BerberApp.Domain.Entities.Subscription", b =>
                 {
                     b.Property<Guid>("Id")
@@ -878,6 +909,17 @@ namespace BerberApp.Infrastructure.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("BerberApp.Domain.Entities.StaffDayOff", b =>
+                {
+                    b.HasOne("BerberApp.Domain.Entities.Staff", "Staff")
+                        .WithMany("DaysOff")
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Staff");
+                });
+
             modelBuilder.Entity("BerberApp.Domain.Entities.StaffService", b =>
                 {
                     b.HasOne("BerberApp.Domain.Entities.Service", "Service")
@@ -961,6 +1003,8 @@ namespace BerberApp.Infrastructure.Migrations
             modelBuilder.Entity("BerberApp.Domain.Entities.Staff", b =>
                 {
                     b.Navigation("Appointments");
+
+                    b.Navigation("DaysOff");
 
                     b.Navigation("StaffServices");
 

@@ -21,4 +21,5 @@ public class Staff : BaseEntity
     public ICollection<StaffService> StaffServices { get; set; } = new List<StaffService>();
     public ICollection<WorkingHour> WorkingHours { get; set; } = new List<WorkingHour>();
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+    public ICollection<StaffDayOff> DaysOff { get; set; } = new List<StaffDayOff>();
 }
