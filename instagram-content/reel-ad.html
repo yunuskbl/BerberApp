@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Ayarlıyo Reel 9:16</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #fff;
+    overflow: hidden;
+    width: 1080px;
+    height: 1920px;
+  }
+
+  .stage {
+    width: 1080px;
+    height: 1920px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ═══ BACKGROUND ═══ */
+  .bg {
+    position: absolute; inset: 0; z-index: 0;
+    background: linear-gradient(160deg, #f0eaff 0%, #faf8ff 35%, #ebe4ff 70%, #f5f0ff 100%);
+  }
+
+  .blob {
+    position: absolute; border-radius: 50%;
+    filter: blur(80px); z-index: 0;
+  }
+  .blob-1 {
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%);
+    top: -200px; right: -200px;
+    animation: blobMove1 9s ease-in-out infinite alternate;
+  }
+  .blob-2 {
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(167,139,250,0.20) 0%, transparent 70%);
+    bottom: -150px; left: -150px;
+    animation: blobMove2 11s ease-in-out infinite alternate;
+  }
+  .blob-3 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(196,181,253,0.18) 0%, transparent 70%);
+    top: 45%; left: 10%;
+    animation: blobMove3 8s ease-in-out infinite alternate;
+  }
+  .blob-4 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(109,40,217,0.12) 0%, transparent 70%);
+    top: 25%; right: 5%;
+    animation: blobMove4 10s ease-in-out infinite alternate;
+  }
+  @keyframes blobMove1 { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(-80px,60px) scale(1.1)} }
+  @keyframes blobMove2 { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(70px,-70px) scale(1.12)} }
+  @keyframes blobMove3 { 0%{transform:translate(0,0) scale(1);opacity:.8} 100%{transform:translate(-50px,80px) scale(1.15);opacity:1} }
+  @keyframes blobMove4 { 0%{transform:translate(0,0) scale(.9)} 100%{transform:translate(40px,-40px) scale(1.1)} }
+
+  .dot-grid {
+    position: absolute; inset: 0; z-index: 0;
+    background-image: radial-gradient(circle, rgba(124,58,237,0.15) 1.5px, transparent 1.5px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 20%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 20%, transparent 100%);
+    opacity: 0.6;
+  }
+
+  .ring {
+    position: absolute; border-radius: 50%;
+    border: 1.5px solid rgba(124,58,237,0.10);
+    animation: ringPulse 7s ease-in-out infinite; z-index: 0;
+  }
+  .ring-1 { width:400px;height:400px; top:-100px; left:200px; animation-delay:0s; }
+  .ring-2 { width:260px;height:260px; top:800px; left:-60px; border-color:rgba(124,58,237,0.07); animation-delay:2.5s; }
+  .ring-3 { width:180px;height:180px; bottom:300px; right:500px; border-color:rgba(167,139,250,0.14); animation-delay:1s; }
+  @keyframes ringPulse { 0%,100%{transform:scale(1);opacity:.5} 50%{transform:scale(1.05);opacity:1} }
+
+  .accent-line {
+    position: absolute; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(124,58,237,0.25), transparent);
+    border-radius: 2px; z-index: 0;
+  }
+  .accent-line-1 { width:280px; top:500px; left:0; transform:rotate(-6deg); }
+  .accent-line-2 { width:220px; bottom:500px; left:40px; transform:rotate(4deg); }
+  .accent-line-3 { width:200px; top:1100px; right:0; transform:rotate(8deg); }
+
+  /* ═══ PHONE MOCKUP ═══ */
+  .phone-wrap {
+    position: absolute;
+    right: 56px;
+    top: 200px;
+    width: 440px;
+    height: 900px;
+    z-index: 10;
+    opacity: 0;
+    transform: translateY(60px) rotate(3deg);
+  }
+  .phone { position:relative; width:100%; height:100%; }
+  .phone-shell {
+    position:absolute; inset:0;
+    background: linear-gradient(160deg,#1c1c1e 0%,#111 60%,#1a1a1c 100%);
+    border-radius: 58px;
+    box-shadow: 0 0 0 2px #2a2a2c, 0 50px 100px rgba(0,0,0,0.50), 0 24px 48px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .phone-screen {
+    position:absolute; top:16px;left:16px;right:16px;bottom:16px;
+    background:#0d0d18; border-radius:44px; overflow:hidden;
+  }
+  .phone-notch {
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    width:110px; height:30px; background:#1c1c1e; border-radius:20px; z-index:20;
+  }
+
+  .app-ui {
+    position:absolute; inset:0; padding:58px 22px 22px;
+    opacity:0; pointer-events:none;
+  }
+  .app-ui.active { opacity:1; pointer-events:all; }
+  .app-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:22px; }
+  .app-title  { font-size:22px; font-weight:700; color:#fff; }
+  .app-date   { font-size:13px; color:rgba(255,255,255,0.35); }
+
+  .stat-cards { display:flex; gap:10px; margin-bottom:22px; }
+  .stat-card  { flex:1; background:rgba(124,58,237,0.20); border:1px solid rgba(139,92,246,0.25); border-radius:14px; padding:16px 10px; text-align:center; }
+  .stat-card-num   { font-size:28px; font-weight:800; color:#a78bfa; }
+  .stat-card-label { font-size:11px; color:rgba(255,255,255,0.40); margin-top:2px; }
+
+  .appt-list { display:flex; flex-direction:column; gap:10px; }
+  .appt-item { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:13px 14px; display:flex; align-items:center; gap:12px; }
+  .appt-time  { font-size:12px; color:rgba(255,255,255,0.40); min-width:38px; }
+  .appt-info  { flex:1; }
+  .appt-name  { font-size:14px; font-weight:600; color:#fff; }
+  .appt-svc   { font-size:11px; color:rgba(255,255,255,0.35); margin-top:1px; }
+  .appt-badge { font-size:10px; font-weight:600; padding:3px 9px; border-radius:20px; }
+  .badge-onay { background:rgba(34,197,94,0.18); color:#4ade80; }
+  .badge-bek  { background:rgba(234,179,8,0.18); color:#fbbf24; }
+
+  .wa-notif {
+    position:absolute; bottom:26px; left:18px; right:18px;
+    background:rgba(37,211,102,0.12); border:1px solid rgba(37,211,102,0.25);
+    border-radius:14px; padding:13px 14px; display:flex; align-items:center; gap:10px;
+  }
+  .wa-dot    { width:8px;height:8px; border-radius:50%; background:#25d366; flex-shrink:0; }
+  .wa-text   { font-size:11px; color:rgba(255,255,255,0.65); line-height:1.4; flex:1; }
+  .notif-dot { width:8px;height:8px; border-radius:50%; background:#25d366; flex-shrink:0; animation:dotBlink 1.5s infinite; }
+
+  /* Revenue UI */
+  .rev-total-label { font-size:14px; color:rgba(255,255,255,0.40); margin-bottom:4px; }
+  .rev-total-num   { font-size:40px; font-weight:900; color:#a78bfa; letter-spacing:-1px; margin-bottom:4px; }
+  .rev-sub         { font-size:12px; color:rgba(255,255,255,0.30); margin-bottom:22px; }
+  .bar-chart { display:flex; align-items:flex-end; gap:9px; height:140px; margin-bottom:22px; }
+  .bar       { flex:1; border-radius:6px 6px 0 0; background:rgba(124,58,237,0.30); }
+  .bar.active{ background:#7c3aed; }
+  .rev-rows  { display:flex; flex-direction:column; gap:10px; }
+  .rev-row   { display:flex; align-items:center; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:11px 14px; gap:10px; }
+  .rev-row-label { font-size:12px; color:rgba(255,255,255,0.50); flex:1; }
+  .rev-row-val   { font-size:14px; font-weight:700; color:#4ade80; }
+
+  /* ═══ SLIDES ═══ */
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    padding: 90px 0 100px 72px;
+    z-index: 5; opacity: 0; pointer-events: none;
+  }
+  .slide.active { pointer-events: all; }
+
+  .logo { font-size:28px; font-weight:800; color:#1a1a2e; letter-spacing:-0.3px; }
+  .logo span { color:#7c3aed; }
+
+  /* ── Slide 1 ── */
+  .s1-inner { margin-top: auto; padding-bottom: 80px; max-width: 520px; }
+  .s1-eyebrow {
+    display: inline-block;
+    font-size: 18px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    color: #7c3aed; margin-bottom: 24px;
+    opacity: 0; transform: translateY(20px);
+  }
+  .s1-heading {
+    font-size: 96px; font-weight: 900; line-height: 1.0;
+    color: #0f0f1a; letter-spacing: -3px; margin-bottom: 28px;
+    opacity: 0; transform: translateY(30px);
+  }
+  .s1-heading em { font-style: normal; color: #7c3aed; }
+  .s1-sub {
+    font-size: 26px; color: rgba(15,15,26,0.50); line-height: 1.5; font-weight: 400;
+    opacity: 0; transform: translateY(20px);
+  }
+
+  /* ── Slide 2 ── */
+  .s2-inner { margin-top: auto; padding-bottom: 80px; max-width: 520px; }
+  .s2-heading {
+    font-size: 88px; font-weight: 900; line-height: 1.0;
+    color: #0f0f1a; letter-spacing: -3px; margin-bottom: 48px;
+    opacity: 0; transform: translateY(30px);
+  }
+  .feature-list { display: flex; flex-direction: column; gap: 26px; }
+  .feature-item { display: flex; align-items: center; gap: 20px; opacity: 0; transform: translateX(-30px); }
+  .feature-icon { width:58px;height:58px; border-radius:16px; background:rgba(124,58,237,0.10); border:1px solid rgba(124,58,237,0.20); display:flex;align-items:center;justify-content:center; flex-shrink:0; }
+  .feature-icon svg { width:26px;height:26px; }
+  .ft { font-size:22px; font-weight:700; color:#0f0f1a; }
+  .fs { font-size:15px; color:rgba(15,15,26,0.45); margin-top:3px; }
+
+  /* ── Slide 3 ── */
+  .s3-inner {
+    display: flex; flex-direction: column;
+    justify-content: flex-end; flex: 1;
+    padding-bottom: 100px; max-width: 560px;
+  }
+  .s3-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(124,58,237,0.10); border: 1px solid rgba(124,58,237,0.25);
+    border-radius: 100px; padding: 10px 24px;
+    font-size: 18px; font-weight: 600; color: #7c3aed;
+    margin-bottom: 32px; width: fit-content;
+    opacity: 0; transform: translateY(20px);
+  }
+  .s3-heading {
+    font-size: 100px; font-weight: 900; line-height: 0.95;
+    color: #0f0f1a; letter-spacing: -4px; margin-bottom: 24px;
+    opacity: 0; transform: translateY(30px);
+  }
+  .s3-heading em { font-style: normal; color: #7c3aed; }
+  .s3-sub {
+    font-size: 22px; color: rgba(15,15,26,0.45); font-weight: 400; margin-bottom: 44px;
+    opacity: 0; transform: translateY(20px);
+  }
+  .s3-cta {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: #7c3aed; color: #fff; font-size: 26px; font-weight: 700;
+    padding: 24px 48px; border-radius: 100px; width: fit-content;
+    box-shadow: 0 12px 40px rgba(124,58,237,0.40);
+    opacity: 0; transform: translateY(20px);
+  }
+
+  @keyframes dotBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+
+  <div class="bg"></div>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="blob blob-4"></div>
+  <div class="dot-grid"></div>
+  <div class="ring ring-1"></div>
+  <div class="ring ring-2"></div>
+  <div class="ring ring-3"></div>
+  <div class="accent-line accent-line-1"></div>
+  <div class="accent-line accent-line-2"></div>
+  <div class="accent-line accent-line-3"></div>
+
+  <!-- PHONE -->
+  <div class="phone-wrap" id="phoneWrap">
+    <div class="phone">
+      <div class="phone-shell"></div>
+      <div class="phone-screen">
+        <div class="phone-notch"></div>
+
+        <!-- UI 1: Randevular -->
+        <div class="app-ui active" id="ui1">
+          <div class="app-header">
+            <div class="app-title">Randevularım</div>
+            <div class="app-date">Bugün, 20 May</div>
+          </div>
+          <div class="stat-cards">
+            <div class="stat-card"><div class="stat-card-num">12</div><div class="stat-card-label">Bugün</div></div>
+            <div class="stat-card"><div class="stat-card-num">3</div><div class="stat-card-label">Bekleyen</div></div>
+            <div class="stat-card"><div class="stat-card-num">%91</div><div class="stat-card-label">Doluluk</div></div>
+          </div>
+          <div class="appt-list">
+            <div class="appt-item">
+              <div class="appt-time">09:00</div>
+              <div class="appt-info"><div class="appt-name">Ayşe K.</div><div class="appt-svc">Saç Boyama</div></div>
+              <div class="appt-badge badge-onay">Onaylı</div>
+            </div>
+            <div class="appt-item">
+              <div class="appt-time">10:30</div>
+              <div class="appt-info"><div class="appt-name">Fatma Y.</div><div class="appt-svc">Manikür · Pedikür</div></div>
+              <div class="appt-badge badge-onay">Onaylı</div>
+            </div>
+            <div class="appt-item">
+              <div class="appt-time">12:00</div>
+              <div class="appt-info"><div class="appt-name">Selin A.</div><div class="appt-svc">Saç Kesimi</div></div>
+              <div class="appt-badge badge-bek">Bekliyor</div>
+            </div>
+            <div class="appt-item">
+              <div class="appt-time">14:00</div>
+              <div class="appt-info"><div class="appt-name">Merve D.</div><div class="appt-svc">Cilt Bakımı</div></div>
+              <div class="appt-badge badge-onay">Onaylı</div>
+            </div>
+          </div>
+          <div class="wa-notif">
+            <div class="wa-dot"></div>
+            <div class="wa-text">WhatsApp: "Ayşe K, yarınki randevunuzu onaylıyor 🗓"</div>
+            <div class="notif-dot"></div>
+          </div>
+        </div>
+
+        <!-- UI 2: Gelir -->
+        <div class="app-ui" id="ui2">
+          <div class="app-header">
+            <div class="app-title">Gelir Takibi</div>
+            <div class="app-date">Mayıs 2026</div>
+          </div>
+          <div class="rev-total-label">Bu ay toplam gelir</div>
+          <div class="rev-total-num">₺48.250</div>
+          <div class="rev-sub">Geçen aya göre +%23</div>
+          <div class="bar-chart">
+            <div class="bar" style="height:45%"></div>
+            <div class="bar" style="height:60%"></div>
+            <div class="bar" style="height:40%"></div>
+            <div class="bar" style="height:75%"></div>
+            <div class="bar" style="height:55%"></div>
+            <div class="bar" style="height:85%"></div>
+            <div class="bar active" style="height:100%"></div>
+          </div>
+          <div class="rev-rows">
+            <div class="rev-row"><div class="rev-row-label">Pazartesi · 23 randevu</div><div class="rev-row-val">₺6.900</div></div>
+            <div class="rev-row"><div class="rev-row-label">Salı · 18 randevu</div><div class="rev-row-val">₺5.400</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 1 -->
+  <div class="slide active" id="slide1">
+    <div class="logo">ayarl<span>ı</span>yo</div>
+    <div class="s1-inner">
+      <div class="s1-eyebrow" id="s1ey">Güzellik salonları için</div>
+      <div class="s1-heading" id="s1h">Salonun<br>hâlâ <em>telefon</em><br>mu bekliyor?</div>
+      <div class="s1-sub" id="s1s">Randevular kaçıyor,<br>saatler boş geçiyor.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 -->
+  <div class="slide" id="slide2">
+    <div class="logo">ayarl<span>ı</span>yo</div>
+    <div class="s2-inner">
+      <div class="s2-heading" id="s2h">Her şey<br><em style="color:#7c3aed;">otomatik</em><br>çalışır.</div>
+      <div class="feature-list">
+        <div class="feature-item" id="f1">
+          <div class="feature-icon">
+            <svg fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/>
+            </svg>
+          </div>
+          <div><div class="ft">Online randevu 24/7</div><div class="fs">Müşteri telefon açmadan randevu alır</div></div>
+        </div>
+        <div class="feature-item" id="f2">
+          <div class="feature-icon">
+            <svg fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <div><div class="ft">WhatsApp hatırlatma</div><div class="fs">İptal oranı ciddi ölçüde düşer</div></div>
+        </div>
+        <div class="feature-item" id="f3">
+          <div class="feature-icon">
+            <svg fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+          </div>
+          <div><div class="ft">Gelir ve doluluk takibi</div><div class="fs">Günlük, haftalık, aylık raporlar</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 -->
+  <div class="slide" id="slide3">
+    <div class="logo">ayarl<span>ı</span>yo</div>
+    <div class="s3-inner">
+      <div class="s3-badge" id="s3b">✨ Kurulum 3 dakika</div>
+      <div class="s3-heading" id="s3h">14 gün<br><em>ücretsiz</em><br>dene.</div>
+      <div class="s3-sub" id="s3s">Kredi kartı yok · İstersen iptal et</div>
+      <div class="s3-cta" id="s3cta">ayarliyo.com →</div>
+    </div>
+  </div>
+
+</div>
+<script>
+// ═══ VIRTUAL CLOCK ═══
+;(function(){
+  const _timers = [];
+  let _vt = 0;
+  window.setTimeout = function(fn, ms){ _timers.push({fn:fn, at:_vt+(ms||0)}); return _timers.length; };
+  window.clearTimeout = function(){};
+  window.setInterval  = function(){ return 0; };
+  window._vt = 0;
+  window._vTick = function(ms){
+    _vt += ms; window._vt = _vt;
+
+    // Phone sway from 2200ms
+    if (_vt >= 2200){
+      var sw = (_vt-2200)/1000;
+      var angle = Math.sin(sw*Math.PI*2/5)*1.2;
+      var dy    = Math.sin(sw*Math.PI*2/5)*-12;
+      var pw = document.getElementById('phoneWrap');
+      if(pw) pw.style.transform = 'rotate('+angle+'deg) translateY('+dy+'px)';
+    }
+
+    // CTA glow from SLIDE1+SLIDE2+1900
+    var ctaStart = 5500+5500+1900;
+    if(_vt >= ctaStart){
+      var gt = (_vt-ctaStart)/1000;
+      var gp = (Math.sin(gt*Math.PI*2/2.5)+1)/2;
+      var cta = document.getElementById('s3cta');
+      if(cta && parseFloat(cta.style.opacity||0)>0.5){
+        var sz = 40+gp*24; var op = (0.40+gp*0.30).toFixed(2);
+        cta.style.boxShadow = '0 12px '+sz+'px rgba(124,58,237,'+op+')';
+      }
+    }
+
+    // Fire due timers
+    var due = [], i = 0;
+    while(i < _timers.length){
+      if(_timers[i].at <= _vt){ due.push(_timers.splice(i,1)[0]); } else { i++; }
+    }
+    due.sort(function(a,b){ return a.at-b.at; });
+    due.forEach(function(t){ t.fn(); });
+  };
+})();
+
+// ═══ ANIMATION HELPERS ═══
+var FRAME_MS = 1000/30;
+function easeOut(t){ return 1-Math.pow(1-t,3); }
+function easeInOut(t){ return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; }
+
+function animIn(el, delay, dur, dir){
+  var steps = Math.round(dur/FRAME_MS);
+  for(var i=0; i<=steps; i++){
+    (function(s){
+      setTimeout(function(){
+        var p = easeOut(s/steps);
+        el.style.opacity = p;
+        if(dir==='up')    el.style.transform = 'translateY('+(( 1-p)*30)+'px)';
+        if(dir==='right') el.style.transform = 'translateX('+((1-p)*30)+'px)';
+        if(dir==='none')  el.style.transform = 'none';
+      }, delay+s*FRAME_MS);
+    })(i);
+  }
+}
+
+function animOpacity(el, from, to, delay, dur){
+  var steps = Math.round(dur/FRAME_MS);
+  for(var i=0; i<=steps; i++){
+    (function(s){
+      setTimeout(function(){
+        var p = easeInOut(s/steps);
+        el.style.opacity = from+(to-from)*p;
+      }, delay+s*FRAME_MS);
+    })(i);
+  }
+}
+
+// ═══ TIMELINE ═══
+var S1 = 5500, S2 = 5500;
+var phoneWrap = document.getElementById('phoneWrap');
+var slide1 = document.getElementById('slide1');
+var slide2 = document.getElementById('slide2');
+var slide3 = document.getElementById('slide3');
+var ui1 = document.getElementById('ui1');
+var ui2 = document.getElementById('ui2');
+
+// Slide 1 fade in
+animOpacity(slide1, 0, 1, 0, 400);
+
+// Phone entry
+animIn(phoneWrap, 500, 1400, 'none');
+(function(){
+  var steps = Math.round(1400/FRAME_MS);
+  for(var i=0;i<=steps;i++){
+    (function(s){
+      setTimeout(function(){
+        var p = easeOut(s/steps);
+        phoneWrap.style.transform = 'translateY('+((1-p)*60)+'px) rotate('+((1-p)*3)+'deg)';
+      }, 500+s*FRAME_MS);
+    })(i);
+  }
+})();
+
+// Slide 1 text
+animIn(document.getElementById('s1ey'), 500, 900, 'up');
+animIn(document.getElementById('s1h'), 850, 1100, 'up');
+animIn(document.getElementById('s1s'), 1350, 900, 'up');
+
+// SLIDE 1 → 2
+animOpacity(slide1, 1, 0, S1, 700);
+setTimeout(function(){ slide1.classList.remove('active'); }, S1+700);
+setTimeout(function(){
+  slide2.classList.add('active');
+  animOpacity(slide2, 0, 1, 0, 700);
+}, S1);
+
+// Phone UI switch
+animOpacity(ui1, 1, 0, S1+300, 500);
+setTimeout(function(){
+  ui1.classList.remove('active');
+  ui2.classList.add('active');
+  animOpacity(ui2, 0, 1, 0, 500);
+}, S1+300);
+
+// Slide 2 text
+animIn(document.getElementById('s2h'), S1+400, 1100, 'up');
+animIn(document.getElementById('f1'),  S1+900,  900, 'right');
+animIn(document.getElementById('f2'),  S1+1400, 900, 'right');
+animIn(document.getElementById('f3'),  S1+1900, 900, 'right');
+
+// SLIDE 2 → 3
+animOpacity(slide2, 1, 0, S1+S2, 700);
+setTimeout(function(){ slide2.classList.remove('active'); }, S1+S2+700);
+setTimeout(function(){
+  slide3.classList.add('active');
+  animOpacity(slide3, 0, 1, 0, 700);
+}, S1+S2);
+
+// Slide 3 text
+animIn(document.getElementById('s3b'),   S1+S2+400,  900, 'up');
+animIn(document.getElementById('s3h'),   S1+S2+900,  1100,'up');
+animIn(document.getElementById('s3s'),   S1+S2+1400, 900, 'up');
+animIn(document.getElementById('s3cta'), S1+S2+1900, 900, 'up');
+</script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Highlight Covers</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .cover {
+    width: 1080px;
+    height: 1080px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 36px;
+    background: #0d0d18;
+  }
+
+  /* Background gradient */
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 80% at 50% 30%, rgba(124,58,237,0.40) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 60% at 75% 80%, rgba(109,40,217,0.22) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 50% at 20% 70%, rgba(139,92,246,0.15) 0%, transparent 50%);
+    z-index: 0;
+  }
+
+  /* Subtle circle ring (Instagram circle crop guide) */
+  .cover::after {
+    content: '';
+    position: absolute;
+    width: 900px;
+    height: 900px;
+    border-radius: 50%;
+    border: 1px solid rgba(139,92,246,0.10);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+  }
+
+  .cover > * { position: relative; z-index: 1; }
+
+  /* Icon container */
+  .icon-wrap {
+    width: 280px;
+    height: 280px;
+    border-radius: 70px;
+    background: rgba(124,58,237,0.18);
+    border: 2.5px solid rgba(139,92,246,0.40);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+  }
+
+  .icon-wrap svg {
+    width: 140px;
+    height: 140px;
+  }
+
+  /* Label */
+  .label {
+    font-size: 72px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -2px;
+    text-align: center;
+    line-height: 1.1;
+  }
+
+  /* Dot accent */
+  .dot-accent {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #7c3aed;
+    position: absolute;
+    bottom: 260px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ 1. KURULUM ══ -->
+<div class="cover" id="kurulum">
+  <div class="icon-wrap">
+    <svg fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+  </div>
+  <div class="label">Kurulum</div>
+</div>
+
+<!-- ══ 2. RANDEVU AL ══ -->
+<div class="cover" id="randevu">
+  <div class="icon-wrap">
+    <svg fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+      <line x1="12" y1="14" x2="12" y2="18"/>
+      <line x1="10" y1="16" x2="14" y2="16"/>
+    </svg>
+  </div>
+  <div class="label">Randevu Al</div>
+</div>
+
+<!-- ══ 3. NEDİR? ══ -->
+<div class="cover" id="nedir">
+  <div class="icon-wrap">
+    <svg fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+      <line x1="12" y1="17" x2="12.01" y2="17" stroke-width="3"/>
+    </svg>
+  </div>
+  <div class="label">Nedir?</div>
+</div>
+
+<!-- ══ 4. NASIL ÇALIŞIR? ══ -->
+<div class="cover" id="nasil">
+  <div class="icon-wrap">
+    <svg fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+      <polygon points="5 3 19 12 5 21 5 3" fill="rgba(167,139,250,0.15)"/>
+    </svg>
+  </div>
+  <div class="label" style="font-size:60px;">Nasıl<br>Çalışır?</div>
+</div>
+
+<!-- ══ 5. YORUMLAR ══ -->
+<div class="cover" id="yorumlar">
+  <div class="icon-wrap">
+    <svg fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="rgba(167,139,250,0.15)"/>
+    </svg>
+  </div>
+  <div class="label">Yorumlar</div>
+</div>
+
+</body>
+</html>
