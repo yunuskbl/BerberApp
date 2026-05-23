@@ -22,6 +22,9 @@ instagram-content/screenshots/
 # Docker
 postgres_data/
 
+# Kullanıcı yüklemeleri — sunucuda saklanır, git'e eklenmez
+BerberApp.Api/wwwroot/uploads/
+
 # Yedekler (veritabanı dump dosyaları — asla commit'leme)
 backups/
 *.sql.gz
