@@ -13,11 +13,8 @@ admin-panel/node_modules/
 admin-panel/dist/
 admin-panel/.angular/
 
-# Instagram content araçları
-instagram-content/node_modules/
-instagram-content/package-lock.json
-instagram-content/export/
-instagram-content/screenshots/
+# Instagram content araçları — tamamı git dışında
+instagram-content/
 
 # Docker
 postgres_data/
