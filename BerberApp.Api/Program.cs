@@ -195,6 +195,24 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
     db.Database.Migrate();
+
+    // StaffDaysOff tablosu yoksa oluştur (boş migration'dan kaynaklanan eksiklik)
+    db.Database.ExecuteSqlRaw(@"
+        CREATE TABLE IF NOT EXISTS ""StaffDaysOff"" (
+            ""Id""        uuid NOT NULL,
+            ""StaffId""   uuid NOT NULL,
+            ""Date""      date NOT NULL,
+            ""Reason""    text,
+            ""CreatedAt"" timestamp without time zone NOT NULL DEFAULT now(),
+            ""UpdatedAt"" timestamp without time zone,
+            ""IsDeleted"" boolean NOT NULL DEFAULT false,
+            CONSTRAINT ""PK_StaffDaysOff"" PRIMARY KEY (""Id""),
+            CONSTRAINT ""FK_StaffDaysOff_Staff_StaffId"" FOREIGN KEY (""StaffId"")
+                REFERENCES ""Staff"" (""Id"") ON DELETE CASCADE
+        );
+        CREATE INDEX IF NOT EXISTS ""IX_StaffDaysOff_StaffId"" ON ""StaffDaysOff"" (""StaffId"");
+    ");
+
     await SeedData.SeedAsync(db, env);
     await SeedData.SeedSuperAdminAsync(db);
 }
