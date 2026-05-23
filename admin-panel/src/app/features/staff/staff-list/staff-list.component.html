@@ -178,6 +178,7 @@
   </div>
 
   <div class="drawer-body">
+    @if (daysOffForm) {
     <form [formGroup]="daysOffForm" (ngSubmit)="addDayOff()" class="daysoff-add-form">
       <div class="daysoff-inputs">
         <input type="date" formControlName="date" [min]="todayDate" class="daysoff-date-input"/>
@@ -197,6 +198,7 @@
         <div class="error-message" style="margin-top:10px">{{ daysOffError }}</div>
       }
     </form>
+    } <!-- end @if daysOffForm -->
 
     <div class="daysoff-divider"></div>
 
