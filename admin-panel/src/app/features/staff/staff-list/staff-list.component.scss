@@ -165,16 +165,21 @@
 .daysoff-add-form { margin-bottom: 0; }
 
 .daysoff-inputs {
-  display: flex; gap: 8px; align-items: stretch;
+  display: flex; flex-direction: column; gap: 12px;
 
-  .daysoff-date-input, .daysoff-reason-select {
-    flex: 1; padding: 9px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px;
-    font-family: 'Inter', sans-serif; font-size: 13px; color: #111827;
-    background: white; outline: none; min-width: 0;
-    &:focus { border-color: #111827; }
+  app-custom-calendar { display: block; }
+
+  .daysoff-bottom-row {
+    display: flex; gap: 8px; align-items: stretch;
+
+    .daysoff-reason-select {
+      flex: 1; padding: 9px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px;
+      font-family: 'Inter', sans-serif; font-size: 13px; color: #111827;
+      background: white; outline: none; cursor: pointer;
+      &:focus { border-color: #111827; }
+    }
+    .daysoff-add-btn { flex-shrink: 0; white-space: nowrap; font-size: 13px; padding: 9px 16px; }
   }
-  .daysoff-reason-select { flex: 0 0 130px; cursor: pointer; }
-  .daysoff-add-btn { flex-shrink: 0; white-space: nowrap; font-size: 13px; padding: 9px 16px; }
 }
 
 .daysoff-divider { height: 1px; background: #f0f0f0; margin: 20px 0; }

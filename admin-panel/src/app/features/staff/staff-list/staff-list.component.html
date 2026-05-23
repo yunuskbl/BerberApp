@@ -181,18 +181,24 @@
     @if (daysOffForm) {
     <form [formGroup]="daysOffForm" (ngSubmit)="addDayOff()" class="daysoff-add-form">
       <div class="daysoff-inputs">
-        <input type="date" formControlName="date" [min]="todayDate" class="daysoff-date-input"/>
-        <select formControlName="reason" class="daysoff-reason-select">
-          <option value="">Sebep (opsiyonel)</option>
-          <option value="Tatil">Tatil</option>
-          <option value="Hastalık">Hastalık</option>
-          <option value="Kişisel">Kişisel</option>
-          <option value="Diğer">Diğer</option>
-        </select>
-        <button type="submit" class="btn btn-primary daysoff-add-btn"
-                [disabled]="daysOffForm.invalid || isDaysOffSaving">
-          {{ isDaysOffSaving ? '...' : '+ Ekle' }}
-        </button>
+        <app-custom-calendar
+          [minDate]="todayDate"
+          [value]="daysOffForm.get('date')?.value || ''"
+          (valueChange)="daysOffForm.patchValue({ date: $event })">
+        </app-custom-calendar>
+        <div class="daysoff-bottom-row">
+          <select formControlName="reason" class="daysoff-reason-select">
+            <option value="">Sebep (opsiyonel)</option>
+            <option value="Tatil">Tatil</option>
+            <option value="Hastalık">Hastalık</option>
+            <option value="Kişisel">Kişisel</option>
+            <option value="Diğer">Diğer</option>
+          </select>
+          <button type="submit" class="btn btn-primary daysoff-add-btn"
+                  [disabled]="daysOffForm.invalid || isDaysOffSaving">
+            {{ isDaysOffSaving ? '...' : '+ Ekle' }}
+          </button>
+        </div>
       </div>
       @if (daysOffError) {
         <div class="error-message" style="margin-top:10px">{{ daysOffError }}</div>

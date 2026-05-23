@@ -19,11 +19,12 @@ import { StaffDaysOffService, StaffDayOff } from '../../../core/services/staff-d
 import { Observable, catchError, of } from 'rxjs';
 import { LanguageService } from '../../../core/services/language.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { CustomCalendarComponent } from '../../../shared/components/custom-calendar/custom-calendar.component';
 
 @Component({
   selector: 'app-staff-list',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, CurrencyPipe, DatePipe, ReactiveFormsModule, TranslatePipe, CustomCalendarComponent],
   templateUrl: './staff-list.component.html',
   styleUrl: './staff-list.component.scss',
 })
