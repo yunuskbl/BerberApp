@@ -43,12 +43,12 @@
     </div>
 
     <div class="view-toggle">
-      <button class="toggle-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'">
+      <button class="toggle-btn" [class.active]="viewMode === 'list'" (click)="setViewMode('list')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
           <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
-      <button class="toggle-btn" [class.active]="viewMode === 'calendar'" (click)="viewMode = 'calendar'">
+      <button class="toggle-btn" [class.active]="viewMode === 'calendar'" (click)="setViewMode('calendar')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
           <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -130,44 +130,122 @@
   }
 
   @if (viewMode === 'calendar') {
-  <div class="calendar-card">
+  <div class="mcal-card">
     @if (isLoading) {
       <div class="loading-state"><div class="spinner"></div></div>
     } @else {
-      <div class="calendar-wrapper">
-        <div class="cal-labels">
-          @for (h of calendarHours; track h) {
-            <div class="cal-hour-label" [style.height.px]="hourHeight">{{ h.toString().padStart(2, '0') }}:00</div>
-          }
-        </div>
-        <div class="cal-events-area" [style.height.px]="calendarTotalHeight">
-          @for (h of calendarHours; track h) {
-            <div class="cal-grid-line" [style.height.px]="hourHeight"></div>
-          }
-          @if (appointments.length === 0) {
-            <div class="cal-empty">
-              <span>📅</span>
-              <p>{{ 'appt.emptyCalendar' | translate }}</p>
-            </div>
-          }
-          @for (apt of appointments; track apt.id) {
-            <div class="apt-block" [ngClass]="'status-' + apt.status" [ngStyle]="getAptBlockStyle(apt)">
-              <span class="apt-time">{{ formatTime(apt.startTime) }} – {{ formatTime(apt.endTime) }}</span>
-              <span class="apt-name">{{ apt.customerName }}</span>
-              <span class="apt-service">{{ apt.serviceName }}</span>
-              <div class="apt-actions">
-                @if (apt.status === AppointmentStatus.Pending) {
-                  <button class="apt-action-btn confirm" (click)="confirmAppointment(apt.id)">✓</button>
-                  <button class="apt-action-btn cancel"  (click)="cancelAppointment(apt.id)">✕</button>
-                }
-                @if (apt.status === AppointmentStatus.Confirmed) {
-                  <button class="apt-action-btn complete" (click)="completeAppointment(apt.id)">✓</button>
-                  <button class="apt-action-btn cancel"   (click)="cancelAppointment(apt.id)">✕</button>
+      <div class="mcal-layout">
+
+        <!-- Sol: Aylık grid -->
+        <div class="mcal-grid-panel">
+          <div class="mcal-header">
+            <button class="mcal-nav" (click)="prevCalMonth()">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <span class="mcal-month-title">{{ calendarMonthLabel }}</span>
+            <button class="mcal-nav" (click)="nextCalMonth()">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="mcal-weekdays">
+            @for (wd of calendarWeekDays; track wd) {
+              <div class="mcal-wd">{{ wd }}</div>
+            }
+          </div>
+
+          <div class="mcal-days">
+            @for (day of calendarDays; track $index) {
+              <div class="mcal-day"
+                [class.empty]="!day"
+                [class.today]="isCalToday(day)"
+                [class.selected]="isCalSelected(day)"
+                [class.has-apts]="!!day && getDayApts(day).length > 0"
+                (click)="selectCalDay(day)">
+                @if (day) {
+                  <span class="mcal-day-num">{{ day }}</span>
+                  @if (getDayApts(day).length > 0) {
+                    <span class="mcal-dot-row">
+                      @for (apt of getDayApts(day).slice(0, 3); track apt.id) {
+                        <span class="mcal-dot status-dot-{{ apt.status }}"></span>
+                      }
+                    </span>
+                  }
                 }
               </div>
+            }
+          </div>
+
+          <!-- Renk açıklamaları -->
+          <div class="mcal-legend">
+            <span class="legend-item"><span class="mcal-dot status-dot-0"></span> {{ 'status.pending' | translate }}</span>
+            <span class="legend-item"><span class="mcal-dot status-dot-1"></span> {{ 'status.confirmed' | translate }}</span>
+            <span class="legend-item"><span class="mcal-dot status-dot-2"></span> {{ 'status.completed' | translate }}</span>
+            <span class="legend-item"><span class="mcal-dot status-dot-3"></span> {{ 'status.cancelled' | translate }}</span>
+          </div>
+        </div>
+
+        <!-- Sağ: Seçilen gün detayı -->
+        <div class="mcal-detail-panel">
+          @if (!selectedCalendarDate) {
+            <div class="mcal-no-selection">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="#d1d5db" stroke-width="1.5"/>
+                <path d="M16 2v4M8 2v4M3 10h18" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <p>Bir gün seçin</p>
             </div>
+          } @else {
+            <div class="mcal-detail-header">
+              <div>
+                <h4 class="mcal-detail-date">{{ selectedDayLabel }}</h4>
+                <span class="mcal-detail-count">{{ selectedDayApts.length }} randevu</span>
+              </div>
+              <button class="btn btn-primary btn-sm" (click)="openDrawer()">+ {{ 'appt.new' | translate }}</button>
+            </div>
+
+            @if (selectedDayApts.length === 0) {
+              <div class="mcal-day-empty">
+                <span>Bu gün için randevu yok.</span>
+              </div>
+            } @else {
+              <div class="mcal-apt-list">
+                @for (apt of selectedDayApts; track apt.id) {
+                  <div class="mcal-apt-item status-bg-{{ apt.status }}">
+                    <div class="mcal-apt-time">
+                      <span class="apt-time-start">{{ formatTime(apt.startTime) }}</span>
+                      <span class="apt-time-end">{{ formatTime(apt.endTime) }}</span>
+                    </div>
+                    <div class="mcal-apt-body">
+                      <div class="mcal-apt-customer">{{ apt.customerName }}</div>
+                      <div class="mcal-apt-meta">{{ apt.staffName }} · {{ apt.serviceName }}</div>
+                    </div>
+                    <div class="mcal-apt-right">
+                      <span class="badge {{ getStatusClass(apt.status) }}">{{ getStatusLabel(apt.status) }}</span>
+                      <div class="apt-row-actions">
+                        @if (apt.status === AppointmentStatus.Pending) {
+                          <button class="apt-action-btn confirm" (click)="confirmAppointment(apt.id)" title="Onayla">✓</button>
+                          <button class="apt-action-btn edit"    (click)="openEditModal(apt)"          title="Düzenle">✏</button>
+                          <button class="apt-action-btn cancel"  (click)="cancelAppointment(apt.id)"   title="İptal">✕</button>
+                        }
+                        @if (apt.status === AppointmentStatus.Confirmed) {
+                          <button class="apt-action-btn complete" (click)="completeAppointment(apt.id)" title="Tamamla">✓</button>
+                          <button class="apt-action-btn edit"     (click)="openEditModal(apt)"           title="Düzenle">✏</button>
+                          <button class="apt-action-btn cancel"   (click)="cancelAppointment(apt.id)"    title="İptal">✕</button>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
           }
         </div>
+
       </div>
     }
   </div>

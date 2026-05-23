@@ -56,10 +56,12 @@ export class AppointmentListComponent implements OnInit {
   selectedStaffId = '';
 
   viewMode: 'list' | 'calendar' = 'list';
-  readonly hourHeight = 64;
-  readonly calendarStart = 8;
-  readonly calendarEnd = 21;
-  readonly calendarHours = Array.from({ length: 21 - 8 }, (_, i) => i + 8);
+
+  // ── Aylık takvim ──────────────────────────────────────────
+  calendarYear  = new Date().getFullYear();
+  calendarMonth = new Date().getMonth();
+  monthAppointments: Appointment[] = [];
+  selectedCalendarDate: string | null = null;
 
   AppointmentStatus = AppointmentStatus;
 
@@ -148,6 +150,96 @@ export class AppointmentListComponent implements OnInit {
       },
       error: () => { this.isLoading = false; }
     });
+  }
+
+  setViewMode(mode: 'list' | 'calendar'): void {
+    this.viewMode = mode;
+    if (mode === 'calendar') this.loadMonthAppointments();
+  }
+
+  loadMonthAppointments(): void {
+    this.isLoading = true;
+    this.appointmentService.getAll(this.selectedStaffId || undefined).subscribe({
+      next: (res) => { if (res.success) this.monthAppointments = res.data; this.isLoading = false; },
+      error: () => { this.isLoading = false; },
+    });
+  }
+
+  prevCalMonth(): void {
+    if (this.calendarMonth === 0) { this.calendarMonth = 11; this.calendarYear--; }
+    else this.calendarMonth--;
+    this.selectedCalendarDate = null;
+  }
+
+  nextCalMonth(): void {
+    if (this.calendarMonth === 11) { this.calendarMonth = 0; this.calendarYear++; }
+    else this.calendarMonth++;
+    this.selectedCalendarDate = null;
+  }
+
+  get calendarDays(): (number | null)[] {
+    const firstDay = new Date(this.calendarYear, this.calendarMonth, 1);
+    let startOffset = firstDay.getDay() - 1;
+    if (startOffset < 0) startOffset = 6;
+    const lastDay = new Date(this.calendarYear, this.calendarMonth + 1, 0).getDate();
+    const days: (number | null)[] = [];
+    for (let i = 0; i < startOffset; i++) days.push(null);
+    for (let i = 1; i <= lastDay; i++) days.push(i);
+    return days;
+  }
+
+  get calendarWeekDays(): string[] {
+    const lang = this.langService.lang();
+    const map: Record<string, string[]> = {
+      tr: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+      en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      ru: ['Пн',  'Вт',  'Ср',  'Чт',  'Пт',  'Сб',  'Вс' ],
+    };
+    return map[lang] ?? map['tr'];
+  }
+
+  get calendarMonthLabel(): string {
+    return new Intl.DateTimeFormat(this.langService.dateLocale, { month: 'long', year: 'numeric' })
+      .format(new Date(this.calendarYear, this.calendarMonth, 1));
+  }
+
+  private getDayStr(day: number): string {
+    return `${this.calendarYear}-${String(this.calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  }
+
+  private aptDate(apt: Appointment): string {
+    return new Date(apt.startTime).toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
+  }
+
+  getDayApts(day: number): Appointment[] {
+    const key = this.getDayStr(day);
+    return this.monthAppointments.filter(a => this.aptDate(a) === key);
+  }
+
+  selectCalDay(day: number | null): void {
+    if (!day) return;
+    this.selectedCalendarDate = this.getDayStr(day);
+  }
+
+  isCalToday(day: number | null): boolean {
+    if (!day) return false;
+    const t = new Date();
+    return day === t.getDate() && this.calendarMonth === t.getMonth() && this.calendarYear === t.getFullYear();
+  }
+
+  isCalSelected(day: number | null): boolean {
+    return !!day && this.selectedCalendarDate === this.getDayStr(day);
+  }
+
+  get selectedDayLabel(): string {
+    if (!this.selectedCalendarDate) return '';
+    return new Date(this.selectedCalendarDate + 'T12:00:00').toLocaleDateString(
+      this.langService.dateLocale, { day: 'numeric', month: 'long', weekday: 'long' });
+  }
+
+  get selectedDayApts(): Appointment[] {
+    if (!this.selectedCalendarDate) return [];
+    return this.monthAppointments.filter(a => this.aptDate(a) === this.selectedCalendarDate);
   }
 
   onDateChange(event: Event): void {
@@ -318,27 +410,6 @@ export class AppointmentListComponent implements OnInit {
     return new Date(dateStr).toLocaleTimeString('tr-TR', {
       hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Istanbul',
     }).slice(0, 5);
-  }
-
-  private getTurkeyHM(dateStr: string): { h: number; m: number } {
-    const timeStr = new Date(dateStr).toLocaleTimeString('en-US', {
-      hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Istanbul',
-    });
-    const [h, m] = timeStr.split(':').map(Number);
-    return { h, m };
-  }
-
-  getAptBlockStyle(apt: Appointment): { [key: string]: string } {
-    const { h, m } = this.getTurkeyHM(apt.startTime);
-    const minutesFromStart = (h - this.calendarStart) * 60 + m;
-    return {
-      top: `${(minutesFromStart / 60) * this.hourHeight}px`,
-      height: `${Math.max((apt.durationMinutes / 60) * this.hourHeight, 28)}px`,
-    };
-  }
-
-  get calendarTotalHeight(): number {
-    return (this.calendarEnd - this.calendarStart) * this.hourHeight;
   }
 
   getInitials(name: string): string {

@@ -560,7 +560,313 @@ select {
   }
 }
 
-// ── Takvim ──────────────────────────────────────────────────
+// ── Aylık Takvim ────────────────────────────────────────────
+.mcal-card {
+  background: white;
+  border-radius: 14px;
+  border: 1px solid #f0f0f0;
+  overflow: hidden;
+}
+
+.mcal-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  min-height: 520px;
+}
+
+// Sol panel — grid
+.mcal-grid-panel {
+  border-right: 1px solid #f0f0f0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mcal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.mcal-month-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  text-transform: capitalize;
+}
+
+.mcal-nav {
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: all 0.15s;
+  &:hover { border-color: #111827; color: #111827; background: #f9fafb; }
+}
+
+.mcal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.mcal-wd {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  padding: 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.mcal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.mcal-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  padding: 4px 2px;
+
+  &.empty { cursor: default; pointer-events: none; }
+
+  &:not(.empty):hover { background: #f3f4f6; }
+
+  &.today .mcal-day-num {
+    background: #111827;
+    color: white;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &.selected {
+    background: #f0f9ff;
+    border: 1.5px solid #111827;
+  }
+
+  &.selected.today .mcal-day-num {
+    background: #111827;
+    color: white;
+  }
+}
+
+.mcal-day-num {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  line-height: 1;
+}
+
+.mcal-dot-row {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.mcal-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+
+  &.status-dot-0 { background: #f59e0b; }
+  &.status-dot-1 { background: #3b82f6; }
+  &.status-dot-2 { background: #22c55e; }
+  &.status-dot-3 { background: #ef4444; }
+  &.status-dot-4 { background: #94a3b8; }
+}
+
+.mcal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+// Sağ panel — detay
+.mcal-detail-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.mcal-no-selection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.mcal-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.mcal-detail-date {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px;
+  text-transform: capitalize;
+}
+
+.mcal-detail-count {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.mcal-day-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  font-size: 13px;
+  color: #9ca3af;
+  padding: 40px 0;
+}
+
+.mcal-apt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mcal-apt-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border-left: 3px solid transparent;
+
+  &.status-bg-0 { background: #fffbeb; border-left-color: #f59e0b; }
+  &.status-bg-1 { background: #eff6ff; border-left-color: #3b82f6; }
+  &.status-bg-2 { background: #f0fdf4; border-left-color: #22c55e; }
+  &.status-bg-3 { background: #fef2f2; border-left-color: #ef4444; }
+  &.status-bg-4 { background: #f8fafc; border-left-color: #94a3b8; }
+}
+
+.mcal-apt-time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 46px;
+  flex-shrink: 0;
+
+  .apt-time-start {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.2;
+  }
+
+  .apt-time-end {
+    font-size: 11px;
+    color: #9ca3af;
+  }
+}
+
+.mcal-apt-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.mcal-apt-customer {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mcal-apt-meta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mcal-apt-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.apt-row-actions {
+  display: flex;
+  gap: 4px;
+}
+
+@media (max-width: 900px) {
+  .mcal-layout {
+    grid-template-columns: 1fr;
+  }
+  .mcal-grid-panel {
+    border-right: none;
+    border-bottom: 1px solid #f0f0f0;
+  }
+}
+
+@media (max-width: 480px) {
+  .mcal-day-num { font-size: 12px; }
+  .mcal-grid-panel { padding: 14px; }
+  .mcal-detail-panel { padding: 16px; }
+}
+
+// ── Eski Timeline (kaldırıldı, stiller korunuyor) ───────────
 .calendar-card {
   background: white;
   border-radius: 14px;
