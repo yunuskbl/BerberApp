@@ -104,4 +104,72 @@ public class StaffController : BaseApiController
 
     public record StaffServiceItem(Guid ServiceId, decimal? CustomPrice, string? CustomCurrency, int? CustomDurationMinutes);
     public record SetStaffServicesRequest(List<StaffServiceItem> Items);
+
+    // ── İzin Günleri ──────────────────────────────────────────────────────────
+
+    [HttpGet("{id}/days-off")]
+    public async Task<IActionResult> GetDaysOff(Guid id)
+    {
+        var staff = await _context.Staff
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == TenantId);
+
+        if (staff is null)
+            return NotFound(new { success = false, message = "Personel bulunamadı." });
+
+        var daysOff = await _context.StaffDaysOff
+            .Where(d => d.StaffId == id && !d.IsDeleted)
+            .OrderBy(d => d.Date)
+            .Select(d => new { d.Id, d.StaffId, Date = d.Date.ToString("yyyy-MM-dd"), d.Reason })
+            .ToListAsync();
+
+        return Success(daysOff);
+    }
+
+    [HttpPost("{id}/days-off")]
+    public async Task<IActionResult> AddDayOff(Guid id, [FromBody] AddDayOffRequest request)
+    {
+        var staff = await _context.Staff
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == TenantId);
+
+        if (staff is null)
+            return NotFound(new { success = false, message = "Personel bulunamadı." });
+
+        if (!DateOnly.TryParse(request.Date, out var date))
+            return BadRequest(new { success = false, message = "Geçersiz tarih formatı." });
+
+        var dayOff = new BerberApp.Domain.Entities.StaffDayOff
+        {
+            StaffId = id,
+            Date    = date,
+            Reason  = request.Reason,
+        };
+
+        _context.StaffDaysOff.Add(dayOff);
+        await _context.SaveChangesAsync();
+
+        return Created(new { dayOff.Id, dayOff.StaffId, Date = dayOff.Date.ToString("yyyy-MM-dd"), dayOff.Reason });
+    }
+
+    [HttpDelete("{id}/days-off/{dayOffId}")]
+    public async Task<IActionResult> DeleteDayOff(Guid id, Guid dayOffId)
+    {
+        var dayOff = await _context.StaffDaysOff
+            .FirstOrDefaultAsync(d => d.Id == dayOffId && d.StaffId == id && !d.IsDeleted);
+
+        if (dayOff is null)
+            return NotFound(new { success = false, message = "İzin günü bulunamadı." });
+
+        // TenantId kontrolü — başka tenant'ın personeli değil
+        var staff = await _context.Staff
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == TenantId);
+
+        if (staff is null)
+            return NotFound(new { success = false, message = "Personel bulunamadı." });
+
+        _context.StaffDaysOff.Remove(dayOff);
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    public record AddDayOffRequest(string Date, string? Reason);
 }
