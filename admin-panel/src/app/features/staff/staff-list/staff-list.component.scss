@@ -64,8 +64,9 @@
   width: 32px; height: 32px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; transition: all 0.15s;
   &.edit     { background: #f3f4f6; color: #374151; &:hover { background: #111827; color: white; } }
   &.delete   { background: #fef2f2; color: #dc2626; &:hover { background: #fecaca; } }
-  &.services { background: #f0fdf4; color: #16a34a; &:hover { background: #bbf7d0; } }
-  &.schedule { background: #fffbeb; color: #d97706; &:hover { background: #fde68a; } }
+  &.services  { background: #f0fdf4; color: #16a34a; &:hover { background: #bbf7d0; } }
+  &.schedule  { background: #fffbeb; color: #d97706; &:hover { background: #fde68a; } }
+  &.days-off  { background: #eff6ff; color: #2563eb; &:hover { background: #bfdbfe; } }
 }
 
 .services-hint { font-size: 13px; color: #9ca3af; margin-bottom: 16px; }
@@ -159,6 +160,51 @@
   span { color: #9ca3af; font-size: 14px; flex-shrink: 0; }
 }
 .wh-closed { font-size: 13px; color: #9ca3af; font-style: italic; flex: 1; }
+
+// İzin Günleri
+.daysoff-add-form { margin-bottom: 0; }
+
+.daysoff-inputs {
+  display: flex; gap: 8px; align-items: stretch;
+
+  .daysoff-date-input, .daysoff-reason-select {
+    flex: 1; padding: 9px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px;
+    font-family: 'Inter', sans-serif; font-size: 13px; color: #111827;
+    background: white; outline: none; min-width: 0;
+    &:focus { border-color: #111827; }
+  }
+  .daysoff-reason-select { flex: 0 0 130px; cursor: pointer; }
+  .daysoff-add-btn { flex-shrink: 0; white-space: nowrap; font-size: 13px; padding: 9px 16px; }
+}
+
+.daysoff-divider { height: 1px; background: #f0f0f0; margin: 20px 0; }
+
+.daysoff-empty { font-size: 13px; color: #9ca3af; text-align: center; padding: 20px 0; }
+
+.daysoff-list { display: flex; flex-direction: column; gap: 8px; }
+
+.daysoff-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: #f9fafb; border-radius: 10px;
+  border: 1px solid #f0f0f0;
+}
+
+.daysoff-info { display: flex; align-items: center; gap: 10px; }
+
+.daysoff-date-text { font-size: 14px; font-weight: 500; color: #111827; }
+
+.daysoff-reason-badge {
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+  background: #eff6ff; color: #2563eb;
+}
+
+.daysoff-delete-btn {
+  width: 26px; height: 26px; border-radius: 6px; border: none;
+  background: #fef2f2; color: #dc2626; cursor: pointer; font-size: 11px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+  &:hover { background: #fecaca; }
+}
 
 @media (max-width: 768px) {
   .page-header { flex-direction: column; align-items: flex-start; gap: 12px; .btn { width: 100%; justify-content: center; } }

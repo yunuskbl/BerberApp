@@ -388,7 +388,75 @@
               {{ 'settings.booking.preview' | translate }}
             </a>
           </div>
+
+          @if (qrCodeDataUrl) {
+            <div class="qr-code-box">
+              <img [src]="qrCodeDataUrl" alt="QR Kod" class="qr-code-img"/>
+              <div class="qr-code-meta">
+                <span class="qr-code-label">Müşterileriniz bu kodu telefon kamerasıyla tarayarak randevu alabilir</span>
+                <button class="btn btn-outline qr-download-btn" (click)="downloadQrCode()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  İndir
+                </button>
+              </div>
+            </div>
+          }
         </div>
+      </div>
+
+      <!-- ── Salon Kapalı Günler ── -->
+      <div class="settings-card">
+        <div class="card-header">
+          <div class="card-icon">🗓</div>
+          <div>
+            <h3>Salon Kapalı Günler</h3>
+            <p>Tatil veya özel günlerde randevu almayı kapatın</p>
+          </div>
+        </div>
+
+        <form [formGroup]="closureForm" (ngSubmit)="addClosure()">
+          <div class="closure-inputs">
+            <input type="date" formControlName="date" [min]="todayDate" class="closure-date-input"/>
+            <select formControlName="reason" class="closure-reason-select">
+              <option value="">Sebep (opsiyonel)</option>
+              <option value="Bayram">Bayram</option>
+              <option value="Tatil">Tatil</option>
+              <option value="Tadilat">Tadilat</option>
+              <option value="Diğer">Diğer</option>
+            </select>
+            <button type="submit" class="btn btn-primary closure-add-btn"
+                    [disabled]="closureForm.invalid || isSavingClosure">
+              {{ isSavingClosure ? '...' : '+ Ekle' }}
+            </button>
+          </div>
+          @if (closureError) {
+            <div class="alert alert-error" style="margin-top:10px">{{ closureError }}</div>
+          }
+        </form>
+
+        <div class="closure-divider"></div>
+
+        @if (closures.length === 0) {
+          <p class="closure-empty">Kayıtlı kapalı gün bulunmuyor.</p>
+        } @else {
+          <div class="closure-list">
+            @for (c of closures; track c.id) {
+              <div class="closure-item">
+                <div class="closure-info">
+                  <span class="closure-date-text">{{ c.date | date: 'dd MMM yyyy' : '' : 'tr' }}</span>
+                  @if (c.reason) {
+                    <span class="closure-reason-badge">{{ c.reason }}</span>
+                  }
+                </div>
+                <button class="closure-delete-btn" (click)="removeClosure(c.id!)">✕</button>
+              </div>
+            }
+          </div>
+        }
       </div>
 
     </div>

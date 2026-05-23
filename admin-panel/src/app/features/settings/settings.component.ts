@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -14,6 +14,9 @@ import { AuthService } from '../../core/services/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { LanguageService } from '../../core/services/language.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { SalonClosureService, SalonClosure } from '../../core/services/salon-closure.service';
+import { catchError, of } from 'rxjs';
+import QRCode from 'qrcode';
 
 /* Turkish/generic phone validator */
 function phoneValidator(ctrl: AbstractControl): ValidationErrors | null {
@@ -34,7 +37,7 @@ function numberValidator(ctrl: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslatePipe],
+  imports: [CommonModule, DatePipe, ReactiveFormsModule, RouterModule, TranslatePipe],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })
@@ -54,6 +57,15 @@ export class SettingsComponent implements OnInit {
   salonPhotos: { id: string; url: string }[] = [];
   isUploadingPhoto = false;
   photoUploadError = '';
+
+  // Salon Kapalı Günler
+  closures: SalonClosure[] = [];
+  isSavingClosure = false;
+  closureError = '';
+  closureForm!: FormGroup;
+
+  // QR Kod
+  qrCodeDataUrl = '';
 
   // Bildirim kanalı: 0 = WhatsApp, 1 = Sms
   notificationChannel: 0 | 1 = 0;
@@ -77,11 +89,16 @@ export class SettingsComponent implements OnInit {
   salonForm: FormGroup;
   passwordForm: FormGroup;
 
+  get todayDate(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
     private authService: AuthService,
     private router: Router,
+    private salonClosureService: SalonClosureService,
     public langService: LanguageService,
   ) {
     this.salonForm = this.fb.group({
@@ -91,6 +108,11 @@ export class SettingsComponent implements OnInit {
       address:           [''],
       logoUrl:           [''],
       themeColor:        ['#7c3aed'],
+    });
+
+    this.closureForm = this.fb.group({
+      date: ['', Validators.required],
+      reason: [''],
     });
 
     this.passwordForm = this.fb.group(
@@ -111,6 +133,7 @@ export class SettingsComponent implements OnInit {
   ngOnInit(): void {
     this.loadSalonInfo();
     this.loadPhotos();
+    this.loadClosures();
   }
 
   /* ─── Photos ─── */
@@ -147,6 +170,66 @@ export class SettingsComponent implements OnInit {
     });
   }
 
+  /* ─── Salon Kapalı Günler ─── */
+  loadClosures(): void {
+    this.salonClosureService.getAll().pipe(
+      catchError(() => of({ success: false, data: [] }))
+    ).subscribe({
+      next: (res) => {
+        this.closures = res.success && Array.isArray(res.data) ? res.data : [];
+      },
+    });
+  }
+
+  addClosure(): void {
+    if (!this.closureForm.valid) return;
+    this.isSavingClosure = true;
+    this.closureError = '';
+    const { date, reason } = this.closureForm.value;
+    this.salonClosureService.create({ date, reason: reason || undefined }).pipe(
+      catchError((err) => {
+        this.closureError = err?.error?.message || 'Kapalı gün eklenemedi.';
+        this.isSavingClosure = false;
+        return of(null);
+      })
+    ).subscribe({
+      next: (res) => {
+        if (!res) return;
+        this.isSavingClosure = false;
+        this.closureForm.patchValue({ date: '', reason: '' });
+        this.loadClosures();
+      },
+    });
+  }
+
+  removeClosure(id: string): void {
+    this.salonClosureService.delete(id).pipe(
+      catchError(() => of(null))
+    ).subscribe({
+      next: () => this.loadClosures(),
+    });
+  }
+
+  /* ─── QR Kod ─── */
+  async generateQrCode(): Promise<void> {
+    if (!this.bookingUrl) return;
+    try {
+      this.qrCodeDataUrl = await QRCode.toDataURL(this.bookingUrl, {
+        width: 200,
+        margin: 2,
+        color: { dark: '#111827', light: '#ffffff' },
+      });
+    } catch { /* silently ignore */ }
+  }
+
+  downloadQrCode(): void {
+    if (!this.qrCodeDataUrl) return;
+    const link = document.createElement('a');
+    link.download = 'randevu-qr.png';
+    link.href = this.qrCodeDataUrl;
+    link.click();
+  }
+
   /* ─── Salon ─── */
   loadSalonInfo(): void {
     this.http.get<any>(`${environment.apiUrl}/tenants/me`).subscribe({
@@ -162,6 +245,7 @@ export class SettingsComponent implements OnInit {
           });
           if (res.data.logoUrl) this.logoPreview = res.data.logoUrl;
           this.notificationChannel = res.data.preferredNotificationChannel ?? 0;
+          setTimeout(() => this.generateQrCode(), 0);
           // DB'den gelen planı localStorage ile senkronize et (stale JWT sorunu çözümü)
           if (res.data.planType) {
             localStorage.setItem('userPlan', res.data.planType);

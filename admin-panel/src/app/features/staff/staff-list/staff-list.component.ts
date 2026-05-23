@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -15,14 +15,15 @@ import {
   WorkingHoursService,
   WorkingHour,
 } from '../../../core/services/working-hours.service';
-import { Observable } from 'rxjs';
+import { StaffDaysOffService, StaffDayOff } from '../../../core/services/staff-days-off.service';
+import { Observable, catchError, of } from 'rxjs';
 import { LanguageService } from '../../../core/services/language.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-staff-list',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, CurrencyPipe, DatePipe, ReactiveFormsModule, TranslatePipe],
   templateUrl: './staff-list.component.html',
   styleUrl: './staff-list.component.scss',
 })
@@ -38,6 +39,14 @@ export class StaffListComponent implements OnInit {
   selectedStaffForWH: Staff | null = null;
   workingHoursForm!: FormGroup;
   isSavingWH = false;
+
+  isDaysOffOpen = false;
+  selectedStaffForDaysOff: Staff | null = null;
+  staffDaysOff: StaffDayOff[] = [];
+  isDaysOffLoading = false;
+  isDaysOffSaving = false;
+  daysOffError = '';
+  daysOffForm!: FormGroup;
 
   isServicesOpen = false;
   selectedStaffForSvc: Staff | null = null;
@@ -55,10 +64,15 @@ export class StaffListComponent implements OnInit {
     { value: 5 }, { value: 6 }, { value: 0 },
   ];
 
+  get todayDate(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
   constructor(
     private workingHoursService: WorkingHoursService,
     private staffService: StaffService,
     private serviceService: ServiceService,
+    private staffDaysOffService: StaffDaysOffService,
     private fb: FormBuilder,
     public langService: LanguageService,
   ) {
@@ -153,6 +167,68 @@ export class StaffListComponent implements OnInit {
           .then(() => { this.isSavingWH = false; this.closeWorkingHours(); })
           .catch(() => { this.isSavingWH = false; });
       }
+    });
+  }
+
+  // ── İzin Günleri ──────────────────────────────────────────────────────────
+
+  openDaysOff(staff: Staff): void {
+    this.selectedStaffForDaysOff = staff;
+    this.isDaysOffOpen = true;
+    this.daysOffError = '';
+    this.daysOffForm = this.fb.group({
+      date: ['', Validators.required],
+      reason: [''],
+    });
+    this.loadDaysOff();
+  }
+
+  closeDaysOff(): void {
+    this.isDaysOffOpen = false;
+    this.selectedStaffForDaysOff = null;
+    this.staffDaysOff = [];
+  }
+
+  loadDaysOff(): void {
+    if (!this.selectedStaffForDaysOff) return;
+    this.isDaysOffLoading = true;
+    this.staffDaysOffService.getByStaff(this.selectedStaffForDaysOff.id).pipe(
+      catchError(() => of({ success: false, data: [] }))
+    ).subscribe({
+      next: (res) => {
+        this.staffDaysOff = res.success && Array.isArray(res.data) ? res.data : [];
+        this.isDaysOffLoading = false;
+      },
+    });
+  }
+
+  addDayOff(): void {
+    if (!this.daysOffForm.valid || !this.selectedStaffForDaysOff) return;
+    this.isDaysOffSaving = true;
+    this.daysOffError = '';
+    const { date, reason } = this.daysOffForm.value;
+    this.staffDaysOffService.create(this.selectedStaffForDaysOff.id, { date, reason: reason || undefined }).pipe(
+      catchError((err) => {
+        this.daysOffError = err?.error?.message || 'İzin günü eklenemedi.';
+        this.isDaysOffSaving = false;
+        return of(null);
+      })
+    ).subscribe({
+      next: (res) => {
+        if (!res) return;
+        this.isDaysOffSaving = false;
+        this.daysOffForm.reset();
+        this.loadDaysOff();
+      },
+    });
+  }
+
+  removeDayOff(id: string): void {
+    if (!this.selectedStaffForDaysOff) return;
+    this.staffDaysOffService.delete(this.selectedStaffForDaysOff.id, id).pipe(
+      catchError(() => of(null))
+    ).subscribe({
+      next: () => this.loadDaysOff(),
     });
   }
 
