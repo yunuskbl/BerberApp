@@ -119,9 +119,9 @@ app-language-switcher {
   gap: 5px;
   padding: 6px 14px;
   border-radius: 20px;
-  border: 1.5px solid rgba(255,255,255,0.25);
-  background: rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.8);
+  border: 1.5px solid #e5e7eb;
+  background: #f9fafb;
+  color: #6b7280;
   font-size: 13px;
   font-weight: 500;
   font-family: 'Inter', sans-serif;
@@ -130,15 +130,15 @@ app-language-switcher {
   transition: all 0.15s;
 
   &:hover {
-    background: rgba(255,255,255,0.2);
-    color: #fff;
-    border-color: rgba(255,255,255,0.45);
+    border-color: #111;
+    color: #111;
+    background: #f3f4f6;
   }
 
   &.active {
-    background: #fff;
-    color: #111;
-    border-color: #fff;
+    background: #111;
+    color: #fff;
+    border-color: #111;
     font-weight: 600;
   }
 }
@@ -544,11 +544,21 @@ app-language-switcher {
     width: 100%;
   }
 
+  /* Filtre chip'leri — yatay kaydır, sarılmasın */
+  .filter-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+
   /* Sıralama */
   .results-bar { flex-direction: column; align-items: stretch; }
-  .sort-bar { justify-content: flex-start; }
+  .sort-bar { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; }
   .sort-btn .sort-label { display: none; }
-  .sort-btn { padding: 6px 10px; }
+  .sort-btn { padding: 6px 10px; flex-shrink: 0; }
 
   /* Grid */
   .salons-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -557,7 +567,9 @@ app-language-switcher {
   /* Card */
   .card-header { height: 120px; }
   .card-body { padding: 12px 14px 14px; }
+  .card-name-row { margin-bottom: 4px; }
   .card-name { font-size: 13px; }
+  .business-type-badge { font-size: 14px; }
   .card-logo { width: 36px; height: 36px; font-size: 11px; margin-bottom: 8px; }
   .card-address { font-size: 11px; margin-bottom: 10px; }
   .card-cta { padding: 6px 12px; font-size: 12px; }
