@@ -50,12 +50,31 @@
         </div>
       </div>
 
-      <!-- Sıralama (her zaman görünür) -->
+      <!-- Konum filtresi -->
+      <div class="filter-row">
+        <span class="filter-label">Konum</span>
+        <div class="sort-chips">
+          <button
+            class="sort-chip"
+            [class.active]="locationFilterActive"
+            [class.location-chip]="!locationFilterActive"
+            [disabled]="locationStatus === 'requesting'"
+            (click)="onLocationToggle()">
+            📍
+            <span class="sort-chip-label">
+              @if (locationStatus === 'requesting') { Konum alınıyor… }
+              @else { Yakınımdakiler }
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sıralama -->
       <div class="filter-row">
         <span class="filter-label">Sırala</span>
         <div class="sort-chips">
           @for (opt of sortOptions; track opt.value) {
-            @if (opt.value !== 'distance' || locationStatus === 'granted') {
+            @if (opt.value !== 'distance' || locationFilterActive || locationStatus === 'granted') {
               <button
                 class="sort-chip"
                 [class.active]="sortBy === opt.value"
@@ -64,14 +83,6 @@
                 <span class="sort-chip-label">{{ opt.label }}</span>
               </button>
             }
-          }
-          @if (locationStatus === 'denied' || locationStatus === 'unsupported') {
-            <button class="sort-chip location-chip" (click)="requestLocation()">
-              📍 <span class="sort-chip-label">Konum Al</span>
-            </button>
-          }
-          @if (locationStatus === 'requesting') {
-            <span class="sort-chip disabled">📍 <span class="sort-chip-label">Konum alınıyor…</span></span>
           }
         </div>
       </div>
@@ -93,7 +104,7 @@
         <div class="empty-icon location-icon">📍</div>
         <h3>Çevrenizde uygun işletme bulunamadı</h3>
         <p>{{ formatDistance(75) }} yarıçap içinde aktif salon bulunmuyor.</p>
-        <button class="btn-show-all" (click)="userLat = null; userLon = null; sortBy = 'rating'; loadSalons()">
+        <button class="btn-show-all" (click)="locationFilterActive = false; sortBy = 'rating'; loadSalons()">
           Tüm Salonları Göster
         </button>
       </div>

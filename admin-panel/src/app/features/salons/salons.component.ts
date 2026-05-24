@@ -54,6 +54,7 @@ export class SalonsComponent implements OnInit {
   userLat: number | null = null;
   userLon: number | null = null;
   locationStatus: 'idle' | 'requesting' | 'granted' | 'denied' | 'unsupported' = 'idle';
+  locationFilterActive = false;
 
   // İşletme türü filtresi
   selectedBusinessType: string | null = null;
@@ -117,32 +118,44 @@ export class SalonsComponent implements OnInit {
 
   ngOnInit(): void {
     this.titleService.setTitle('Salonlar - ayarlıyo');
-    this.requestLocation();
+    this.loadSalons();
   }
 
   // ── Konum izni ────────────────────────────────────────────────────────────
   requestLocation(): void {
     if (!navigator.geolocation) {
       this.locationStatus = 'unsupported';
-      this.loadSalons();
       return;
     }
     this.locationStatus = 'requesting';
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        this.userLat       = pos.coords.latitude;
-        this.userLon       = pos.coords.longitude;
-        this.locationStatus = 'granted';
-        // Konum alındıysa varsayılan sıralama mesafeye göre olsun
-        if (this.sortBy === 'rating') this.sortBy = 'distance';
+        this.userLat            = pos.coords.latitude;
+        this.userLon            = pos.coords.longitude;
+        this.locationStatus     = 'granted';
+        this.locationFilterActive = true;
         this.loadSalons();
       },
       () => {
         this.locationStatus = 'denied';
-        this.loadSalons();
       },
       { timeout: 8000, maximumAge: 300_000 }
     );
+  }
+
+  onLocationToggle(): void {
+    if (this.locationFilterActive) {
+      this.locationFilterActive = false;
+      if (this.sortBy === 'distance') this.sortBy = 'rating';
+      this.loadSalons();
+      return;
+    }
+    if (this.userLat !== null) {
+      this.locationFilterActive = true;
+      this.loadSalons();
+    } else {
+      this.requestLocation();
+    }
   }
 
   // ── Salon yükle ───────────────────────────────────────────────────────────
@@ -150,8 +163,7 @@ export class SalonsComponent implements OnInit {
     this.isLoading = true;
     let params = new HttpParams().set('sortBy', this.sortBy);
     if (this.searchQuery) params = params.set('search', this.searchQuery);
-    // Location params only sent when explicitly sorting by distance; otherwise show all salons
-    if (this.sortBy === 'distance' && this.userLat !== null && this.userLon !== null) {
+    if (this.locationFilterActive && this.userLat !== null && this.userLon !== null) {
       params = params.set('userLat', this.userLat.toString());
       params = params.set('userLon', this.userLon.toString());
     }
@@ -181,10 +193,14 @@ export class SalonsComponent implements OnInit {
 
   onSortChange(val: SortOption): void {
     this.sortBy = val;
-    // Mesafe seçildi ama konum yok → izin iste
-    if (val === 'distance' && this.userLat === null) {
-      this.requestLocation();
-      return;
+    if (val === 'distance' && !this.locationFilterActive) {
+      // Mesafe seçildi ama konum filtresi kapalı → aç
+      if (this.userLat !== null) {
+        this.locationFilterActive = true;
+      } else {
+        this.requestLocation();
+        return;
+      }
     }
     this.loadSalons();
   }
