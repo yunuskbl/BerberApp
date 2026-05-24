@@ -150,8 +150,11 @@ export class SalonsComponent implements OnInit {
     this.isLoading = true;
     let params = new HttpParams().set('sortBy', this.sortBy);
     if (this.searchQuery) params = params.set('search', this.searchQuery);
-    if (this.userLat !== null) params = params.set('userLat', this.userLat.toString());
-    if (this.userLon !== null) params = params.set('userLon', this.userLon.toString());
+    // Location params only sent when explicitly sorting by distance; otherwise show all salons
+    if (this.sortBy === 'distance' && this.userLat !== null && this.userLon !== null) {
+      params = params.set('userLat', this.userLat.toString());
+      params = params.set('userLon', this.userLon.toString());
+    }
     if (this.selectedBusinessType) params = params.set('businessType', this.selectedBusinessType);
 
     this.http.get<any>(`${environment.apiUrl}/salons`, { params }).subscribe({
