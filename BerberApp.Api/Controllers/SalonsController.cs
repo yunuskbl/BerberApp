@@ -1,4 +1,5 @@
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -32,7 +33,8 @@ public class SalonsController : ControllerBase
         [FromQuery] string? search,
         [FromQuery] double? userLat,
         [FromQuery] double? userLon,
-        [FromQuery] string sortBy = "rating")
+        [FromQuery] string sortBy = "rating",
+        [FromQuery] BusinessType? businessType = null)
     {
         var query = _context.Tenants
             .Where(x => x.IsActive && !x.IsDeleted)
@@ -44,11 +46,15 @@ public class SalonsController : ControllerBase
                 (x.City != null && x.City.ToLower().Contains(search.ToLower())) ||
                 (x.Address != null && x.Address.ToLower().Contains(search.ToLower())));
 
+        if (businessType.HasValue)
+            query = query.Where(x => x.BusinessType == businessType.Value);
+
         var tenants = await query
             .Select(x => new
             {
                 x.Id, x.Name, x.Subdomain, x.Address, x.City,
-                x.LogoUrl, x.ThemeColor, x.Latitude, x.Longitude, x.CreatedAt
+                x.LogoUrl, x.ThemeColor, x.Latitude, x.Longitude, x.CreatedAt,
+                x.BusinessType
             })
             .ToListAsync();
 
@@ -89,6 +95,7 @@ public class SalonsController : ControllerBase
             {
                 t.Id, t.Name, t.Subdomain, t.Address, t.City,
                 t.LogoUrl, t.ThemeColor, t.CreatedAt,
+                BusinessType  = t.BusinessType?.ToString(),
                 AverageRating = rv != null ? Math.Round(rv.AverageRating, 1) : 0.0,
                 TotalReviews  = rv?.TotalReviews ?? 0,
                 Photos        = photos,

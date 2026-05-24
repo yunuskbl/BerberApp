@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BerberApp.Application.Tenant.DTOs;
+using BerberApp.Domain.Enums;
 using MediatR;
 
 namespace BerberApp.Application.Tenant.Commands;
@@ -17,4 +18,5 @@ public class UpdateTenantCommand : IRequest<TenantDto>
     public string? NotificationPhone { get; set; }
     public string? Address { get; set; }
     public string? ThemeColor { get; set; }
+    public BusinessType? BusinessType { get; set; }
 }

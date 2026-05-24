@@ -53,6 +53,7 @@ public class GetTenantByIdHandler : IRequestHandler<GetTenantByIdQuery, TenantDt
             ThemeColor = tenant.ThemeColor,
             PreferredNotificationChannel = tenant.PreferredNotificationChannel,
             PlanType = plan.ToString(),
+            BusinessType = tenant.BusinessType,
         };
     }
 }

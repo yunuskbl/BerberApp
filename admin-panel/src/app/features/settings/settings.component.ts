@@ -109,6 +109,7 @@ export class SettingsComponent implements OnInit {
       address:           [''],
       logoUrl:           [''],
       themeColor:        ['#7c3aed'],
+      businessType:      [null],
     });
 
     this.closureForm = this.fb.group({
@@ -259,6 +260,7 @@ export class SettingsComponent implements OnInit {
             address:           res.data.address,
             logoUrl:           res.data.logoUrl ?? '',
             themeColor:        res.data.themeColor ?? '#7c3aed',
+            businessType:      res.data.businessType ?? null,
           });
           if (res.data.logoUrl) this.logoPreview = res.data.logoUrl;
           this.notificationChannel = res.data.preferredNotificationChannel ?? 0;

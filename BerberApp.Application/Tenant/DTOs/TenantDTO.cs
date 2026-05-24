@@ -20,4 +20,5 @@ public class TenantDto
     public string? ThemeColor { get; set; }
     public NotificationChannel PreferredNotificationChannel { get; set; }
     public string PlanType { get; set; } = "Baslangic";
+    public BusinessType? BusinessType { get; set; }
 }

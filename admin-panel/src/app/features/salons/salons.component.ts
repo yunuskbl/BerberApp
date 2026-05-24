@@ -21,6 +21,7 @@ interface Salon {
   city?:          string;
   logoUrl?:       string;
   themeColor?:    string;
+  businessType?:  string;
   averageRating?: number;
   totalReviews?:  number;
   photos?:        SalonPhoto[];
@@ -29,6 +30,9 @@ interface Salon {
 
 export type SortOption = 'rating' | 'reviews' | 'newest' | 'name' | 'distance';
 export type LocationMode = 'nearby' | 'city' | 'all' | 'notFound' | null;
+
+interface BusinessTypeOption { value: string; label: string; emoji: string; }
+
 
 @Component({
   selector: 'app-salons',
@@ -50,6 +54,18 @@ export class SalonsComponent implements OnInit {
   userLat: number | null = null;
   userLon: number | null = null;
   locationStatus: 'idle' | 'requesting' | 'granted' | 'denied' | 'unsupported' = 'idle';
+
+  // İşletme türü filtresi
+  selectedBusinessType: string | null = null;
+  readonly businessTypeOptions: BusinessTypeOption[] = [
+    { value: 'Berber',          label: 'Berber',           emoji: '✂️' },
+    { value: 'Kuafor',          label: 'Kuaför',           emoji: '💇' },
+    { value: 'GüzellikSalonu',  label: 'Güzellik Salonu',  emoji: '💅' },
+    { value: 'MasajSpa',        label: 'Masaj & Spa',      emoji: '🧖' },
+    { value: 'DisKlinigi',      label: 'Diş Kliniği',      emoji: '🦷' },
+    { value: 'Klinik',          label: 'Klinik',           emoji: '🏥' },
+    { value: 'Diger',           label: 'Diğer',            emoji: '🏪' },
+  ];
 
   // Sıralama
   sortBy: SortOption = 'rating';
@@ -136,6 +152,7 @@ export class SalonsComponent implements OnInit {
     if (this.searchQuery) params = params.set('search', this.searchQuery);
     if (this.userLat !== null) params = params.set('userLat', this.userLat.toString());
     if (this.userLon !== null) params = params.set('userLon', this.userLon.toString());
+    if (this.selectedBusinessType) params = params.set('businessType', this.selectedBusinessType);
 
     this.http.get<any>(`${environment.apiUrl}/salons`, { params }).subscribe({
       next: (res) => {
@@ -169,6 +186,11 @@ export class SalonsComponent implements OnInit {
     this.loadSalons();
   }
 
+  onBusinessTypeFilter(value: string | null): void {
+    this.selectedBusinessType = this.selectedBusinessType === value ? null : value;
+    this.loadSalons();
+  }
+
   get locationBannerText(): string {
     switch (this.locationMode) {
       case 'nearby': return '📍 Yakınınizdaki salonlar';
@@ -184,6 +206,10 @@ export class SalonsComponent implements OnInit {
 
   getInitials(name: string): string {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  getBusinessTypeEmoji(type: string): string {
+    return this.businessTypeOptions.find(o => o.value === type)?.emoji ?? '🏪';
   }
 
   get activeSortLabel(): string {

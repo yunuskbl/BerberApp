@@ -23,6 +23,7 @@ namespace BerberApp.Domain.Entities
         public bool IsActive { get; set; } = true;
         public string? ThemeColor { get; set; }
         public NotificationChannel PreferredNotificationChannel { get; set; } = NotificationChannel.WhatsApp;
+        public BusinessType? BusinessType { get; set; }
 
         // Navigation
         public ICollection<User> Users { get; set; } = new List<User>();

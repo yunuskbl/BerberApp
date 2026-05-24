@@ -109,6 +109,22 @@
               [placeholder]="'settings.salon.addressPh' | translate"/>
           </div>
 
+          <!-- İşletme Türü -->
+          <div class="form-group">
+            <label>İşletme Türü</label>
+            <select formControlName="businessType" class="form-select">
+              <option [ngValue]="null">— Seçiniz —</option>
+              <option value="Berber">✂️ Berber</option>
+              <option value="Kuafor">💇 Kuaför</option>
+              <option value="GüzellikSalonu">💅 Güzellik Salonu</option>
+              <option value="MasajSpa">🧖 Masaj & Spa</option>
+              <option value="DisKlinigi">🦷 Diş Kliniği</option>
+              <option value="Klinik">🏥 Klinik</option>
+              <option value="Diger">🏪 Diğer</option>
+            </select>
+            <small style="color:#6b7280;font-size:.75rem">Salonlar sayfasında filtrelemede kullanılır.</small>
+          </div>
+
           <!-- Tema Rengi -->
           <div class="form-group">
             <label>{{ 'settings.salon.themeColor' | translate }}</label>

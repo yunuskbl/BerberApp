@@ -26,6 +26,24 @@
           <button (click)="onSearch()">{{ 'salons.searchBtn' | translate }}</button>
         </div>
       </div>
+
+      <!-- İşletme türü filtre chip'leri -->
+      <div class="filter-chips">
+        <button
+          class="filter-chip"
+          [class.active]="selectedBusinessType === null"
+          (click)="onBusinessTypeFilter(null)">
+          Tümü
+        </button>
+        @for (opt of businessTypeOptions; track opt.value) {
+          <button
+            class="filter-chip"
+            [class.active]="selectedBusinessType === opt.value"
+            (click)="onBusinessTypeFilter(opt.value)">
+            {{ opt.emoji }} {{ opt.label }}
+          </button>
+        }
+      </div>
     </div>
   </div>
 
@@ -172,7 +190,12 @@
                   {{ getInitials(salon.name) }}
                 }
               </div>
-              <h3 class="card-name">{{ salon.name }}</h3>
+              <div class="card-name-row">
+                <h3 class="card-name">{{ salon.name }}</h3>
+                @if (salon.businessType) {
+                  <span class="business-type-badge">{{ getBusinessTypeEmoji(salon.businessType) }}</span>
+                }
+              </div>
 
               @if ((salon.totalReviews ?? 0) > 0) {
                 <div class="card-rating">

@@ -597,6 +597,9 @@ namespace BerberApp.Infrastructure.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("text");
 
+                    b.Property<int?>("BusinessType")
+                        .HasColumnType("integer");
+
                     b.Property<string>("City")
                         .HasColumnType("text");
 

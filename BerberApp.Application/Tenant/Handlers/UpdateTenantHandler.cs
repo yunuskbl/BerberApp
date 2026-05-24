@@ -33,6 +33,7 @@ public class UpdateTenantHandler : IRequestHandler<UpdateTenantCommand, TenantDt
         tenant.NotificationPhone = request.NotificationPhone;
         tenant.Address = request.Address;
         tenant.ThemeColor = request.ThemeColor;
+        tenant.BusinessType = request.BusinessType;
 
         await _tenantRepo.UpdateAsync(tenant, ct);
 
@@ -48,6 +49,7 @@ public class UpdateTenantHandler : IRequestHandler<UpdateTenantCommand, TenantDt
         Phone = t.Phone,
         Address = t.Address,
         IsActive = t.IsActive,
-        ThemeColor = t.ThemeColor
+        ThemeColor = t.ThemeColor,
+        BusinessType = t.BusinessType,
     };
 }
