@@ -19,4 +19,6 @@ public class UpdateTenantCommand : IRequest<TenantDto>
     public string? Address { get; set; }
     public string? ThemeColor { get; set; }
     public BusinessType? BusinessType { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
 }

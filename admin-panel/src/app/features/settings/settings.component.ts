@@ -59,6 +59,11 @@ export class SettingsComponent implements OnInit {
   isUploadingPhoto = false;
   photoUploadError = '';
 
+  // Geocoding
+  isGeocoding = false;
+  geocodeError = '';
+  geocodeSuccess = '';
+
   // Salon Kapalı Günler
   closures: SalonClosure[] = [];
   isSavingClosure = false;
@@ -110,6 +115,8 @@ export class SettingsComponent implements OnInit {
       logoUrl:           [''],
       themeColor:        ['#7c3aed'],
       businessType:      [null],
+      latitude:          [null as number | null],
+      longitude:         [null as number | null],
     });
 
     this.closureForm = this.fb.group({
@@ -261,6 +268,8 @@ export class SettingsComponent implements OnInit {
             logoUrl:           res.data.logoUrl ?? '',
             themeColor:        res.data.themeColor ?? '#7c3aed',
             businessType:      res.data.businessType ?? null,
+            latitude:          res.data.latitude ?? null,
+            longitude:         res.data.longitude ?? null,
           });
           if (res.data.logoUrl) this.logoPreview = res.data.logoUrl;
           this.notificationChannel = res.data.preferredNotificationChannel ?? 0;
@@ -273,6 +282,35 @@ export class SettingsComponent implements OnInit {
         this.isLoading = false;
       },
       error: () => { this.isLoading = false; },
+    });
+  }
+
+  /* ─── Geocoding ─── */
+  geocodeAddress(): void {
+    const address = this.salonForm.get('address')?.value?.trim();
+    if (!address) { this.geocodeError = 'Önce adres girin.'; return; }
+    this.isGeocoding = true;
+    this.geocodeError = '';
+    this.geocodeSuccess = '';
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&addressdetails=1`;
+    this.http.get<any[]>(url, { headers: { 'Accept-Language': 'tr' } }).subscribe({
+      next: (results) => {
+        this.isGeocoding = false;
+        if (!results?.length) {
+          this.geocodeError = 'Adres bulunamadı. Daha ayrıntılı bir adres deneyin.';
+          return;
+        }
+        const r = results[0];
+        const lat = parseFloat(r.lat);
+        const lon = parseFloat(r.lon);
+        this.salonForm.patchValue({ latitude: lat, longitude: lon });
+        this.geocodeSuccess = `Konum bulundu: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+        setTimeout(() => (this.geocodeSuccess = ''), 4000);
+      },
+      error: () => {
+        this.isGeocoding = false;
+        this.geocodeError = 'Konum servisi yanıt vermedi. Tekrar deneyin.';
+      },
     });
   }
 

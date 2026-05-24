@@ -54,6 +54,8 @@ public class GetTenantByIdHandler : IRequestHandler<GetTenantByIdQuery, TenantDt
             PreferredNotificationChannel = tenant.PreferredNotificationChannel,
             PlanType = plan.ToString(),
             BusinessType = tenant.BusinessType,
+            Latitude = tenant.Latitude,
+            Longitude = tenant.Longitude,
         };
     }
 }

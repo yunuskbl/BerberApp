@@ -21,4 +21,6 @@ public class TenantDto
     public NotificationChannel PreferredNotificationChannel { get; set; }
     public string PlanType { get; set; } = "Baslangic";
     public BusinessType? BusinessType { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
 }

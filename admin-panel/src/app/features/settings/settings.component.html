@@ -105,8 +105,27 @@
           <!-- Adres -->
           <div class="form-group">
             <label>{{ 'settings.salon.address' | translate }}</label>
-            <input type="text" formControlName="address"
-              [placeholder]="'settings.salon.addressPh' | translate"/>
+            <div class="address-row">
+              <input type="text" formControlName="address"
+                [placeholder]="'settings.salon.addressPh' | translate"/>
+              <button type="button" class="btn-geocode" (click)="geocodeAddress()" [disabled]="isGeocoding">
+                @if (isGeocoding) { <span class="geocode-spinner"></span> }
+                @else { 📍 }
+                {{ isGeocoding ? 'Aranıyor…' : 'Konumu Bul' }}
+              </button>
+            </div>
+            @if (geocodeSuccess) {
+              <small class="geocode-ok">✓ {{ geocodeSuccess }}</small>
+            }
+            @if (geocodeError) {
+              <small class="geocode-err">{{ geocodeError }}</small>
+            }
+            @if (salonForm.get('latitude')?.value) {
+              <small class="geocode-coords">
+                📍 {{ salonForm.get('latitude')?.value | number:'1.4-4' }}, {{ salonForm.get('longitude')?.value | number:'1.4-4' }}
+                <button type="button" class="btn-clear-coords" (click)="salonForm.patchValue({latitude: null, longitude: null})">✕</button>
+              </small>
+            }
           </div>
 
           <!-- İşletme Türü -->

@@ -34,6 +34,8 @@ public class UpdateTenantHandler : IRequestHandler<UpdateTenantCommand, TenantDt
         tenant.Address = request.Address;
         tenant.ThemeColor = request.ThemeColor;
         tenant.BusinessType = request.BusinessType;
+        tenant.Latitude    = request.Latitude;
+        tenant.Longitude   = request.Longitude;
 
         await _tenantRepo.UpdateAsync(tenant, ct);
 
@@ -51,5 +53,7 @@ public class UpdateTenantHandler : IRequestHandler<UpdateTenantCommand, TenantDt
         IsActive = t.IsActive,
         ThemeColor = t.ThemeColor,
         BusinessType = t.BusinessType,
+        Latitude = t.Latitude,
+        Longitude = t.Longitude,
     };
 }
