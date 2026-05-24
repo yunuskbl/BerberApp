@@ -8,6 +8,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
+  // Only attach token to our own API; skip for external requests (geocoding etc.)
+  if (!req.url.startsWith('/api')) {
+    return next(req);
+  }
+
   const cloned = addToken(req, authService.getToken());
 
   return next(cloned).pipe(
