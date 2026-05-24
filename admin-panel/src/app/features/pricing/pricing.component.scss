@@ -136,6 +136,12 @@ $green:        #059669;
   &:hover { color: $text; background: $bg; }
 }
 
+.nav-link-salons {
+  color: $purple;
+  font-weight: 600;
+  &:hover { color: $purple-dark; background: rgba(124,58,237,.07); }
+}
+
 .nav-actions {
   display: flex;
   gap: 10px;
