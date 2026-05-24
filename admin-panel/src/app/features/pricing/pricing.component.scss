@@ -330,6 +330,9 @@ $green:        #059669;
 }
 
 .btn-hero-secondary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   padding: 14px 28px;
   background: rgba(255,255,255,.8);
   color: $text;
@@ -341,6 +344,12 @@ $green:        #059669;
   transition: all .2s;
   backdrop-filter: blur(4px);
   &:hover { border-color: $purple; color: $purple; }
+}
+
+.btn-hero-salons {
+  border-color: rgba(124,58,237,.35);
+  color: $purple;
+  &:hover { background: rgba(124,58,237,.06); border-color: $purple; }
 }
 
 .hero-sectors {

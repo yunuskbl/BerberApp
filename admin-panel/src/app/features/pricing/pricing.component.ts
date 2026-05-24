@@ -353,6 +353,10 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     this.router.navigate(['/kayit']);
   }
 
+  goToSalons(): void {
+    this.router.navigate(['/salons']);
+  }
+
   selectPlan(name: string): void {
     const params: Record<string, string> = { plan: name };
     if (this.billingYearly) params['billing'] = 'yearly';
