@@ -123,7 +123,7 @@ app-language-switcher {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   flex-shrink: 0;
-  width: 38px;
+  width: 46px;
 }
 
 /* İşletme türü chip'leri */
@@ -544,7 +544,7 @@ app-language-switcher {
   .header-top-row { padding-bottom: 8px; }
   .header-search { max-width: 100%; padding-bottom: 8px; }
 
-  .filter-label { width: 30px; font-size: 10px; }
+  .filter-label { width: 40px; font-size: 10px; }
   .filter-chip { padding: 4px 10px; font-size: 12px; }
   .sort-chip { padding: 4px 10px; font-size: 12px; }
   .sort-chip-label { display: none; }

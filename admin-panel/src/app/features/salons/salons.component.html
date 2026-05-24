@@ -57,7 +57,6 @@
           <button
             class="sort-chip"
             [class.active]="locationFilterActive"
-            [class.location-chip]="!locationFilterActive"
             [disabled]="locationStatus === 'requesting'"
             (click)="onLocationToggle()">
             📍

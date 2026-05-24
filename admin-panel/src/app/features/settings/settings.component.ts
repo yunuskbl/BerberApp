@@ -292,8 +292,8 @@ export class SettingsComponent implements OnInit {
     this.isGeocoding = true;
     this.geocodeError = '';
     this.geocodeSuccess = '';
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&addressdetails=1`;
-    this.http.get<any[]>(url, { headers: { 'Accept-Language': 'tr' } }).subscribe({
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&accept-language=tr`;
+    this.http.get<any[]>(url).subscribe({
       next: (results) => {
         this.isGeocoding = false;
         if (!results?.length) {
