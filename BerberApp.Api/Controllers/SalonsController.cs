@@ -13,12 +13,7 @@ public class SalonsController : ControllerBase
 {
     private readonly IAppDbContext _context;
 
-    // Yakın mesafe eşiği (km)
-    private const double NearbyRadiusKm = 15.0;
-    // Şehir eşiği (km)
-    private const double CityRadiusKm = 75.0;
-
-    public SalonsController(IAppDbContext context)
+public SalonsController(IAppDbContext context)
     {
         _context = context;
     }
@@ -34,7 +29,8 @@ public class SalonsController : ControllerBase
         [FromQuery] double? userLat,
         [FromQuery] double? userLon,
         [FromQuery] string sortBy = "rating",
-        [FromQuery] BusinessType? businessType = null)
+        [FromQuery] BusinessType? businessType = null,
+        [FromQuery] double radiusKm = 10.0)
     {
         var query = _context.Tenants
             .Where(x => x.IsActive && !x.IsDeleted)
@@ -108,31 +104,19 @@ public class SalonsController : ControllerBase
 
         if (hasUserLocation && string.IsNullOrWhiteSpace(search))
         {
-            var withCoords = salons.Where(s => s.Distance.HasValue).ToList();
+            var withCoords    = salons.Where(s => s.Distance.HasValue).ToList();
             var withoutCoords = salons.Where(s => !s.Distance.HasValue).ToList();
+            var inRadius      = withCoords.Where(s => s.Distance!.Value <= radiusKm).ToList();
 
-            var nearby = withCoords.Where(s => s.Distance!.Value <= NearbyRadiusKm).ToList();
-
-            if (nearby.Count > 0)
+            if (inRadius.Count > 0)
             {
-                // Yakında salon var → sadece onları göster
-                salons = [..nearby, ..withoutCoords]; // koordinatsızları da ekle (kenar durum)
+                salons       = [..inRadius, ..withoutCoords];
                 locationMode = "nearby";
             }
             else
             {
-                var inCity = withCoords.Where(s => s.Distance!.Value <= CityRadiusKm).ToList();
-                if (inCity.Count > 0)
-                {
-                    salons = inCity;
-                    locationMode = "city";
-                }
-                else
-                {
-                    // Ne yakın ne şehirde salon var
-                    locationMode = "notFound";
-                    salons = [];
-                }
+                locationMode = "notFound";
+                salons       = [];
             }
         }
 

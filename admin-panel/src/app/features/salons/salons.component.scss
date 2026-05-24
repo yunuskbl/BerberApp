@@ -159,6 +159,34 @@ app-language-switcher {
   &.active { background: #111; color: #fff; border-color: #111; font-weight: 600; }
 }
 
+.radius-sep {
+  color: #d1d5db;
+  font-size: 14px;
+  flex-shrink: 0;
+  align-self: center;
+  margin: 0 2px;
+}
+
+.radius-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1.5px solid #e5e7eb;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s;
+
+  &:hover { border-color: #111; color: #111; background: #f3f4f6; }
+  &.active { background: #111; color: #fff; border-color: #111; font-weight: 600; }
+}
+
 /* Sıralama chip'leri */
 .sort-chips {
   display: flex;

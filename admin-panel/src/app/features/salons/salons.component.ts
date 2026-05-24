@@ -28,7 +28,7 @@ interface Salon {
   distance?:      number; // km
 }
 
-export type SortOption = 'rating' | 'reviews' | 'newest' | 'name' | 'distance';
+export type SortOption = 'rating' | 'reviews' | 'newest' | 'name';
 export type LocationMode = 'nearby' | 'city' | 'all' | 'notFound' | null;
 
 interface BusinessTypeOption { value: string; label: string; emoji: string; }
@@ -71,12 +71,15 @@ export class SalonsComponent implements OnInit {
   // Sıralama
   sortBy: SortOption = 'rating';
   readonly sortOptions: { value: SortOption; label: string; icon: string }[] = [
-    { value: 'rating',   label: 'En Yüksek Puan',        icon: '⭐' },
-    { value: 'reviews',  label: 'En Fazla Değerlendirme', icon: '💬' },
-    { value: 'distance', label: 'Yakınımdakiler',         icon: '📍' },
-    { value: 'newest',   label: 'Yeni Eklenenler',        icon: '🆕' },
-    { value: 'name',     label: 'A-Z',                    icon: '🔤' },
+    { value: 'rating',  label: 'En Yüksek Puan',         icon: '⭐' },
+    { value: 'reviews', label: 'En Fazla Değerlendirme',  icon: '💬' },
+    { value: 'newest',  label: 'Yeni Eklenenler',         icon: '🆕' },
+    { value: 'name',    label: 'A-Z',                     icon: '🔤' },
   ];
+
+  // Mesafe aralığı
+  selectedRadius = 10;
+  readonly radiusOptions = [5, 10, 25, 50, 100];
 
   // Carousel
   carouselIndex = new Map<string, number>();
@@ -166,6 +169,7 @@ export class SalonsComponent implements OnInit {
     if (this.locationFilterActive && this.userLat !== null && this.userLon !== null) {
       params = params.set('userLat', this.userLat.toString());
       params = params.set('userLon', this.userLon.toString());
+      params = params.set('radiusKm', this.selectedRadius.toString());
     }
     if (this.selectedBusinessType) params = params.set('businessType', this.selectedBusinessType);
 
@@ -193,15 +197,11 @@ export class SalonsComponent implements OnInit {
 
   onSortChange(val: SortOption): void {
     this.sortBy = val;
-    if (val === 'distance' && !this.locationFilterActive) {
-      // Mesafe seçildi ama konum filtresi kapalı → aç
-      if (this.userLat !== null) {
-        this.locationFilterActive = true;
-      } else {
-        this.requestLocation();
-        return;
-      }
-    }
+    this.loadSalons();
+  }
+
+  onRadiusChange(km: number): void {
+    this.selectedRadius = km;
     this.loadSalons();
   }
 

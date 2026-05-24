@@ -50,7 +50,7 @@
         </div>
       </div>
 
-      <!-- Konum filtresi -->
+      <!-- Konum filtresi + mesafe aralığı -->
       <div class="filter-row">
         <span class="filter-label">Konum</span>
         <div class="sort-chips">
@@ -65,6 +65,17 @@
               @else { Yakınımdakiler }
             </span>
           </button>
+          @if (locationFilterActive) {
+            <span class="radius-sep">|</span>
+            @for (km of radiusOptions; track km) {
+              <button
+                class="radius-chip"
+                [class.active]="selectedRadius === km"
+                (click)="onRadiusChange(km)">
+                {{ km }} km
+              </button>
+            }
+          }
         </div>
       </div>
 
@@ -73,15 +84,13 @@
         <span class="filter-label">Sırala</span>
         <div class="sort-chips">
           @for (opt of sortOptions; track opt.value) {
-            @if (opt.value !== 'distance' || locationFilterActive || locationStatus === 'granted') {
-              <button
-                class="sort-chip"
-                [class.active]="sortBy === opt.value"
-                (click)="onSortChange(opt.value)">
-                <span>{{ opt.icon }}</span>
-                <span class="sort-chip-label">{{ opt.label }}</span>
-              </button>
-            }
+            <button
+              class="sort-chip"
+              [class.active]="sortBy === opt.value"
+              (click)="onSortChange(opt.value)">
+              <span>{{ opt.icon }}</span>
+              <span class="sort-chip-label">{{ opt.label }}</span>
+            </button>
           }
         </div>
       </div>
