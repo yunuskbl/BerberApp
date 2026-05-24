@@ -105,25 +105,31 @@
           <!-- Adres -->
           <div class="form-group">
             <label>{{ 'settings.salon.address' | translate }}</label>
+            <input type="text" formControlName="address"
+              [placeholder]="'settings.salon.addressPh' | translate"/>
+          </div>
+
+          <!-- Konum (koordinat yapıştır) -->
+          <div class="form-group">
+            <label>Konum <span class="label-hint">Google Haritalar'dan sağ tık → koordinatı kopyala</span></label>
             <div class="address-row">
-              <input type="text" formControlName="address"
-                [placeholder]="'settings.salon.addressPh' | translate"/>
-              <button type="button" class="btn-geocode" (click)="geocodeAddress()" [disabled]="isGeocoding">
-                @if (isGeocoding) { <span class="geocode-spinner"></span> }
-                @else { 📍 }
-                {{ isGeocoding ? 'Aranıyor…' : 'Konumu Bul' }}
+              <input
+                type="text"
+                [(ngModel)]="coordPasteValue"
+                [ngModelOptions]="{standalone: true}"
+                placeholder="36.54512, 32.00597"
+                (keyup.enter)="applyCoords()"/>
+              <button type="button" class="btn-geocode" (click)="applyCoords()">
+                Uygula
               </button>
             </div>
-            @if (geocodeSuccess) {
-              <small class="geocode-ok">✓ {{ geocodeSuccess }}</small>
-            }
-            @if (geocodeError) {
-              <small class="geocode-err">{{ geocodeError }}</small>
+            @if (coordError) {
+              <small class="geocode-err">{{ coordError }}</small>
             }
             @if (salonForm.get('latitude')?.value) {
               <small class="geocode-coords">
                 📍 {{ salonForm.get('latitude')?.value | number:'1.4-4' }}, {{ salonForm.get('longitude')?.value | number:'1.4-4' }}
-                <button type="button" class="btn-clear-coords" (click)="salonForm.patchValue({latitude: null, longitude: null})">✕</button>
+                <button type="button" class="btn-clear-coords" (click)="salonForm.patchValue({latitude: null, longitude: null}); coordPasteValue = ''">✕</button>
               </small>
             }
           </div>

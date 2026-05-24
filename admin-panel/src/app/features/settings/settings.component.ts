@@ -59,10 +59,9 @@ export class SettingsComponent implements OnInit {
   isUploadingPhoto = false;
   photoUploadError = '';
 
-  // Geocoding
-  isGeocoding = false;
-  geocodeError = '';
-  geocodeSuccess = '';
+  // Koordinat yapıştırma
+  coordPasteValue = '';
+  coordError = '';
 
   // Salon Kapalı Günler
   closures: SalonClosure[] = [];
@@ -285,33 +284,21 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  /* ─── Geocoding ─── */
-  geocodeAddress(): void {
-    const address = this.salonForm.get('address')?.value?.trim();
-    if (!address) { this.geocodeError = 'Önce adres girin.'; return; }
-    this.isGeocoding = true;
-    this.geocodeError = '';
-    this.geocodeSuccess = '';
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&accept-language=tr`;
-    this.http.get<any[]>(url).subscribe({
-      next: (results) => {
-        this.isGeocoding = false;
-        if (!results?.length) {
-          this.geocodeError = 'Adres bulunamadı. Daha ayrıntılı bir adres deneyin.';
-          return;
-        }
-        const r = results[0];
-        const lat = parseFloat(r.lat);
-        const lon = parseFloat(r.lon);
-        this.salonForm.patchValue({ latitude: lat, longitude: lon });
-        this.geocodeSuccess = `Konum bulundu: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-        setTimeout(() => (this.geocodeSuccess = ''), 4000);
-      },
-      error: () => {
-        this.isGeocoding = false;
-        this.geocodeError = 'Konum servisi yanıt vermedi. Tekrar deneyin.';
-      },
-    });
+  /* ─── Koordinat Yapıştırma ─── */
+  applyCoords(): void {
+    this.coordError = '';
+    const raw = this.coordPasteValue.trim().replace(/\s/g, '');
+    // "36.54512, 32.00597" veya "36.54512 32.00597" veya "36.54512,32.00597"
+    const parts = raw.split(/[,;]/);
+    if (parts.length !== 2) { this.coordError = 'Format hatalı. Örnek: 36.54512, 32.00597'; return; }
+    const lat = parseFloat(parts[0]);
+    const lon = parseFloat(parts[1]);
+    if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+      this.coordError = 'Geçersiz koordinat değeri.';
+      return;
+    }
+    this.salonForm.patchValue({ latitude: lat, longitude: lon });
+    this.coordPasteValue = '';
   }
 
   /* ─── Bildirim Kanalı ─── */
