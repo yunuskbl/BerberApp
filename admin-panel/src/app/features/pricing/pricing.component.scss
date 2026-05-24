@@ -148,6 +148,20 @@ $green:        #059669;
   flex-shrink: 0;
 }
 
+.btn-nav-salons {
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $purple;
+  background: none;
+  border: 1.5px solid rgba(124,58,237,.35);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+  &:hover { background: rgba(124,58,237,.07); border-color: $purple; }
+}
+
 .btn-nav-login {
   padding: 8px 18px;
   font-size: 14px;
