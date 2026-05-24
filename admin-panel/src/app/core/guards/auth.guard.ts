@@ -17,6 +17,12 @@ export class authGuard implements CanActivate {
       return false;
     }
 
+    // Staff rolü admin paneline erişemez — staff paneline yönlendir
+    if (this.authService.isStaff() && !state.url.startsWith('/staff-panel')) {
+      this.router.navigate(['/staff-panel']);
+      return false;
+    }
+
     // /upgrade rotasını sonsuz döngüye sokmamak için geç
     if (state.url.startsWith('/upgrade')) {
       return true;

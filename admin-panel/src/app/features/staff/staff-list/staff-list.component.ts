@@ -7,6 +7,7 @@ import {
   Validators,
   FormArray,
 } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { StaffService } from '../../../core/services/staff.service';
 import { ServiceService } from '../../../core/services/service.service';
 import { Staff } from '../../../core/models/staff.model';
@@ -20,6 +21,7 @@ import { Observable, catchError, of } from 'rxjs';
 import { LanguageService } from '../../../core/services/language.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { CustomCalendarComponent } from '../../../shared/components/custom-calendar/custom-calendar.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-staff-list',
@@ -48,6 +50,15 @@ export class StaffListComponent implements OnInit {
   isDaysOffSaving = false;
   daysOffError = '';
   daysOffForm!: FormGroup;
+
+  // ── Hesap Oluşturma ───────────────────────────────────────────────────────
+  isAccountModalOpen = false;
+  selectedStaffForAccount: Staff | null = null;
+  accountForm!: FormGroup;
+  isCreatingAccount = false;
+  accountSuccess = '';
+  accountError = '';
+  staffWithAccounts = new Set<string>(); // hesabı olan personel ID'leri
 
   isServicesOpen = false;
   selectedStaffForSvc: Staff | null = null;
@@ -85,6 +96,7 @@ export class StaffListComponent implements OnInit {
     private serviceService: ServiceService,
     private staffDaysOffService: StaffDaysOffService,
     private fb: FormBuilder,
+    private http: HttpClient,
     public langService: LanguageService,
   ) {
     this.staffForm = this.fb.group({
@@ -342,10 +354,63 @@ export class StaffListComponent implements OnInit {
     this.isLoading = true;
     this.staffService.getAll().subscribe({
       next: (res) => {
-        if (res.success) this.staffList = res.data;
+        if (res.success) {
+          this.staffList = res.data;
+          this.checkStaffAccounts();
+        }
         this.isLoading = false;
       },
       error: () => { this.isLoading = false; },
+    });
+  }
+
+  checkStaffAccounts(): void {
+    this.staffList.forEach(s => {
+      this.http.get<any>(`${environment.apiUrl}/staff/${s.id}/has-account`).subscribe({
+        next: (res) => { if (res?.data?.hasAccount) this.staffWithAccounts.add(s.id); },
+        error: () => {},
+      });
+    });
+  }
+
+  hasAccount(staffId: string): boolean {
+    return this.staffWithAccounts.has(staffId);
+  }
+
+  openAccountModal(staff: Staff): void {
+    this.selectedStaffForAccount = staff;
+    this.accountSuccess = '';
+    this.accountError = '';
+    this.accountForm = this.fb.group({
+      email:    ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+    });
+    this.isAccountModalOpen = true;
+  }
+
+  closeAccountModal(): void {
+    this.isAccountModalOpen = false;
+    this.selectedStaffForAccount = null;
+  }
+
+  createAccount(): void {
+    if (!this.accountForm.valid || !this.selectedStaffForAccount) return;
+    this.isCreatingAccount = true;
+    this.accountError = '';
+    const { email, password } = this.accountForm.value;
+    this.http.post<any>(`${environment.apiUrl}/staff/${this.selectedStaffForAccount.id}/create-account`, { email, password }).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.accountSuccess = `Hesap oluşturuldu: ${email}`;
+          this.staffWithAccounts.add(this.selectedStaffForAccount!.id);
+          setTimeout(() => this.closeAccountModal(), 2000);
+        }
+        this.isCreatingAccount = false;
+      },
+      error: (err) => {
+        this.accountError = err.error?.message || 'Hesap oluşturulamadı.';
+        this.isCreatingAccount = false;
+      },
     });
   }
 

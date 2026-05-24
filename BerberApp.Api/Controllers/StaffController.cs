@@ -1,7 +1,10 @@
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Application.Staff.Commands;
 using BerberApp.Application.Staff.Queries;
+using BerberApp.Domain.Entities;
+using BerberApp.Domain.Enums;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -172,4 +175,60 @@ public class StaffController : BaseApiController
     }
 
     public record AddDayOffRequest(string Date, string? Reason);
+
+    // ── Personel Hesabı Oluşturma ────────────────────────────────────────────
+
+    [HttpPost("{id}/create-account")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    public async Task<IActionResult> CreateAccount(Guid id, [FromBody] CreateStaffAccountRequest request)
+    {
+        // Personelin bu tenant'a ait olduğunu doğrula
+        var staff = await _context.Staff
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == TenantId);
+
+        if (staff is null)
+            return NotFound(new { success = false, message = "Personel bulunamadı." });
+
+        // Bu personele zaten bir hesap bağlı mı?
+        var existingByStaff = await _context.Users
+            .FirstOrDefaultAsync(u => u.StaffId == id && !u.IsDeleted);
+        if (existingByStaff is not null)
+            return BadRequest(new { success = false, message = "Bu personele zaten bir giriş hesabı tanımlı." });
+
+        // E-posta zaten kayıtlı mı?
+        var existingByEmail = await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == request.Email.ToLower().Trim() && !u.IsDeleted);
+        if (existingByEmail is not null)
+            return BadRequest(new { success = false, message = "Bu e-posta adresi zaten kullanımda." });
+
+        var user = new User
+        {
+            Id           = Guid.NewGuid(),
+            TenantId     = TenantId,
+            StaffId      = staff.Id,
+            Email        = request.Email.ToLower().Trim(),
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+            FirstName    = staff.FullName.Split(' ')[0],
+            LastName     = staff.FullName.Contains(' ') ? staff.FullName[(staff.FullName.IndexOf(' ') + 1)..] : "",
+            Phone        = staff.Phone,
+            Role         = UserRole.Staff,
+            IsVerified   = true,
+            CreatedAt    = DateTime.UtcNow,
+        };
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        return Created(new { email = user.Email, staffId = staff.Id, message = "Personel giriş hesabı oluşturuldu." });
+    }
+
+    // Bu personele hesap tanımlı mı?
+    [HttpGet("{id}/has-account")]
+    public async Task<IActionResult> HasAccount(Guid id)
+    {
+        var has = await _context.Users.AnyAsync(u => u.StaffId == id && !u.IsDeleted);
+        return Success(new { hasAccount = has });
+    }
+
+    public record CreateStaffAccountRequest(string Email, string Password);
 }

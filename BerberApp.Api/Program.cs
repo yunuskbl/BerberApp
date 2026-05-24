@@ -231,6 +231,11 @@ using (var scope = app.Services.CreateScope())
         CREATE INDEX IF NOT EXISTS ""IX_TenantClosures_TenantId"" ON ""TenantClosures"" (""TenantId"");
     ");
 
+    // Users tablosuna StaffId kolonu ekle (idempotent)
+    db.Database.ExecuteSqlRaw(@"
+        ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""StaffId"" uuid;
+    ");
+
     // Appointments tablosuna reminder flag kolonlarını ekle (idempotent)
     db.Database.ExecuteSqlRaw(@"
         ALTER TABLE ""Appointments"" ADD COLUMN IF NOT EXISTS ""ReminderSent24h"" boolean NOT NULL DEFAULT false;

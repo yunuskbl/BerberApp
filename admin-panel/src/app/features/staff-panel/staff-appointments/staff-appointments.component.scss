@@ -1,0 +1,82 @@
+.page-header { margin-bottom: 24px; }
+.page-title { font-size: 22px; font-weight: 700; color: #1e293b; margin: 0 0 4px; }
+.page-sub { font-size: 14px; color: #64748b; margin: 0; }
+
+.loading-state {
+  display: flex; align-items: center; gap: 12px;
+  color: #64748b; font-size: 14px; padding: 40px 0;
+  justify-content: center;
+}
+.spinner {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid #e2e8f0; border-top-color: #7c3aed;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state {
+  text-align: center; padding: 60px 0; color: #94a3b8;
+}
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+.section { margin-bottom: 32px; }
+.section-title {
+  font-size: 15px; font-weight: 600; color: #374151;
+  margin: 0 0 12px; padding-bottom: 8px;
+  border-bottom: 1.5px solid #e2e8f0;
+}
+
+.apt-list { display: flex; flex-direction: column; gap: 10px; }
+
+.apt-card {
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  transition: box-shadow 0.18s;
+
+  &:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+
+  &.today {
+    border-color: #7c3aed;
+    background: #faf5ff;
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.08);
+  }
+}
+
+.today-badge {
+  position: absolute; top: -10px; left: 16px;
+  background: linear-gradient(135deg, #7c3aed, #4c1d95);
+  color: white; font-size: 10px; font-weight: 700;
+  padding: 2px 10px; border-radius: 20px; letter-spacing: 0.5px;
+}
+
+.apt-time {
+  min-width: 140px;
+  .apt-date { font-size: 13px; font-weight: 600; color: #1e293b; }
+  .apt-hour { font-size: 12px; color: #64748b; margin-top: 2px; }
+}
+
+.apt-info {
+  flex: 1; display: flex; flex-direction: column; gap: 3px;
+  .apt-customer { font-size: 14px; font-weight: 600; color: #1e293b; }
+  .apt-phone, .apt-service, .apt-notes { font-size: 13px; color: #64748b; }
+}
+
+.apt-status { margin-left: auto; }
+
+.status-badge {
+  display: inline-block; padding: 4px 12px;
+  border-radius: 20px; font-size: 12px; font-weight: 600;
+
+  &.pending    { background: #fef3c7; color: #92400e; }
+  &.confirmed  { background: #d1fae5; color: #065f46; }
+  &.completed  { background: #e0e7ff; color: #3730a3; }
+  &.cancelled  { background: #fee2e2; color: #991b1b; }
+}
+
+.past-card { opacity: 0.65; }

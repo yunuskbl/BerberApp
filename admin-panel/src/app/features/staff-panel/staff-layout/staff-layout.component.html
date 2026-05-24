@@ -1,0 +1,59 @@
+<div class="staff-shell">
+  <!-- Sidebar -->
+  <aside class="staff-sidebar" [class.open]="sidebarOpen">
+    <div class="sidebar-header">
+      <div class="logo-area">
+        <span class="logo-icon">✂</span>
+        <div>
+          <div class="logo-title">ayarlıyo</div>
+          <div class="logo-sub">Personel Paneli</div>
+        </div>
+      </div>
+      <button class="close-btn" (click)="sidebarOpen = false">✕</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/staff-panel/appointments" routerLinkActive="active" class="nav-item" (click)="sidebarOpen = false">
+        <span class="nav-icon">📅</span>
+        <span>Randevularım</span>
+      </a>
+      <a routerLink="/staff-panel/working-hours" routerLinkActive="active" class="nav-item" (click)="sidebarOpen = false">
+        <span class="nav-icon">🕐</span>
+        <span>Çalışma Saatlerim</span>
+      </a>
+      <a routerLink="/staff-panel/days-off" routerLinkActive="active" class="nav-item" (click)="sidebarOpen = false">
+        <span class="nav-icon">🌴</span>
+        <span>İzin Günlerim</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">{{ staffName.charAt(0) }}</div>
+        <div class="user-details">
+          <div class="user-name">{{ staffName }}</div>
+          <div class="user-email">{{ staffEmail }}</div>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()">
+        <span>Çıkış Yap</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Overlay -->
+  @if (sidebarOpen) {
+    <div class="overlay" (click)="sidebarOpen = false"></div>
+  }
+
+  <!-- Main Content -->
+  <main class="staff-main">
+    <header class="staff-topbar">
+      <button class="menu-btn" (click)="sidebarOpen = true">☰</button>
+      <span class="topbar-title">Personel Paneli</span>
+    </header>
+    <div class="staff-content">
+      <router-outlet />
+    </div>
+  </main>
+</div>

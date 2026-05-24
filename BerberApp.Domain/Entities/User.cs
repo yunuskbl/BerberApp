@@ -25,6 +25,9 @@ public class User : BaseEntity
     public string? EmailVerificationToken { get; set; }
     public DateTime? EmailVerificationTokenExpiry { get; set; }
 
+    // Personel hesabı bağlantısı (nullable — sadece Role=Staff için dolu)
+    public Guid? StaffId { get; set; }
+
     // Navigation
     public Tenant Tenant { get; set; } = null!;
 }

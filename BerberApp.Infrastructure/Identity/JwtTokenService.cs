@@ -36,6 +36,10 @@ public class JwtTokenService : IJwtTokenService
             new("plan_type",                   userPlan.ToString())
         };
 
+        // Personel hesabı için staff_id claim'i ekle
+        if (user.StaffId.HasValue)
+            claims.Add(new Claim("staff_id", user.StaffId.Value.ToString()));
+
         var token = new JwtSecurityToken(
             issuer: _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],

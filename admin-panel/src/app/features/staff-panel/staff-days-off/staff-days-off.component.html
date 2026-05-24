@@ -1,0 +1,54 @@
+<div class="page-header">
+  <h1 class="page-title">🌴 İzin Günlerim</h1>
+  <p class="page-sub">İzin günü ekleyin veya silin</p>
+</div>
+
+<div class="layout">
+  <!-- Takvim & Form -->
+  <div class="add-section">
+    <h2 class="section-title">İzin Günü Ekle</h2>
+    <app-custom-calendar
+      [minDate]="todayDate"
+      [markedDates]="markedDates"
+      [value]="form.get('date')?.value || ''"
+      (valueChange)="form.patchValue({ date: $event })"
+    />
+    <div class="form-row">
+      <select class="reason-select" [formControl]="$any(form.get('reason'))">
+        <option value="">Neden (İsteğe bağlı)</option>
+        <option value="Tatil">Tatil</option>
+        <option value="Hastalık">Hastalık</option>
+        <option value="Kişisel">Kişisel</option>
+        <option value="Diğer">Diğer</option>
+      </select>
+      <button class="add-btn" (click)="add()" [disabled]="isSaving || form.invalid">
+        {{ isSaving ? 'Ekleniyor...' : '+ Ekle' }}
+      </button>
+    </div>
+    @if (errorMsg) {
+      <div class="error-msg">{{ errorMsg }}</div>
+    }
+  </div>
+
+  <!-- İzin Listesi -->
+  <div class="list-section">
+    <h2 class="section-title">İzin Günlerim</h2>
+    @if (isLoading) {
+      <div class="empty">Yükleniyor...</div>
+    } @else if (daysOff.length === 0) {
+      <div class="empty">Henüz izin günü eklenmemiş.</div>
+    } @else {
+      <div class="days-list">
+        @for (d of daysOff; track d.id) {
+          <div class="day-row">
+            <div>
+              <div class="day-date">{{ formatDate(d.date) }}</div>
+              @if (d.reason) { <div class="day-reason">{{ d.reason }}</div> }
+            </div>
+            <button class="del-btn" (click)="remove(d.id)">🗑</button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

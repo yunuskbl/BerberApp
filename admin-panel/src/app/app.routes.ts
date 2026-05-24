@@ -1,7 +1,9 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { staffPanelGuard } from './core/guards/staff-panel.guard';
 import { MainLayoutComponent } from './shared/layout/main-layout/main-layout.component';
 import { SuperAdminLayoutComponent } from './shared/layout/super-admin-layout/super-admin-layout.component';
+import { StaffLayoutComponent } from './features/staff-panel/staff-layout/staff-layout.component';
 import { ReportsListComponent } from './features/reports/reports-list/reports-list.component';
 import { PlanGuard } from './core/guards/plan.guard';
 import { SuperAdminGuard } from './core/guards/superadmin.guard';
@@ -98,6 +100,41 @@ export const routes: Routes = [
       import('./features/payment/payment.component').then(
         (m) => m.PaymentComponent,
       ),
+  },
+
+  // Staff Panel routes — ayrı minimal layout
+  {
+    path: 'staff-panel',
+    component: StaffLayoutComponent,
+    canActivate: [staffPanelGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'appointments',
+        pathMatch: 'full',
+      },
+      {
+        path: 'appointments',
+        loadComponent: () =>
+          import('./features/staff-panel/staff-appointments/staff-appointments.component').then(
+            (m) => m.StaffAppointmentsComponent,
+          ),
+      },
+      {
+        path: 'working-hours',
+        loadComponent: () =>
+          import('./features/staff-panel/staff-working-hours/staff-working-hours.component').then(
+            (m) => m.StaffWorkingHoursComponent,
+          ),
+      },
+      {
+        path: 'days-off',
+        loadComponent: () =>
+          import('./features/staff-panel/staff-days-off/staff-days-off.component').then(
+            (m) => m.StaffDaysOffComponent,
+          ),
+      },
+    ],
   },
 
   // SuperAdmin routes — separate layout

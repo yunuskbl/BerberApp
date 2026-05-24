@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System.Security.Claims;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,6 +24,16 @@ public abstract class BaseApiController : ControllerBase
     // JWT'den UserId'yi otomatik al
     protected Guid UserId => Guid.Parse(
         User.Claims.First(x => x.Type == "sub").Value);
+
+    // JWT'den StaffId'yi al (sadece Role=Staff için dolu, diğerleri null)
+    protected Guid? CurrentStaffId
+    {
+        get
+        {
+            var val = User.FindFirstValue("staff_id");
+            return Guid.TryParse(val, out var id) ? id : null;
+        }
+    }
 
     // Başarılı response
     protected IActionResult Success<T>(T data, string message = "İşlem başarılı.")

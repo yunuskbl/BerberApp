@@ -1,0 +1,23 @@
+<div class="page-header">
+  <h1 class="page-title">🕐 Çalışma Saatlerim</h1>
+  <p class="page-sub">Haftalık çalışma programınız</p>
+</div>
+
+@if (isLoading) {
+  <div class="loading">Yükleniyor...</div>
+} @else if (hours.length === 0) {
+  <div class="empty">Çalışma saati henüz tanımlanmamış.</div>
+} @else {
+  <div class="hours-grid">
+    @for (h of hours; track h.id) {
+      <div class="hour-card" [class.off]="h.isOff">
+        <div class="day-name">{{ dayName(h.dayOfWeek) }}</div>
+        @if (h.isOff) {
+          <div class="day-off-label">Kapalı</div>
+        } @else {
+          <div class="time-range">{{ formatTime(h.startTime) }} – {{ formatTime(h.endTime) }}</div>
+        }
+      </div>
+    }
+  </div>
+}

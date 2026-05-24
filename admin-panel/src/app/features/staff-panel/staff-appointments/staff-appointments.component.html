@@ -1,0 +1,75 @@
+<div class="page-header">
+  <h1 class="page-title">📅 Randevularım</h1>
+  <p class="page-sub">Gelecek ve geçmiş tüm randevularınız</p>
+</div>
+
+@if (isLoading) {
+  <div class="loading-state">
+    <div class="spinner"></div>
+    <span>Yükleniyor...</span>
+  </div>
+} @else if (appointments.length === 0) {
+  <div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <p>Henüz randevunuz bulunmuyor.</p>
+  </div>
+} @else {
+  <!-- Yaklaşan Randevular -->
+  @if (upcoming.length > 0) {
+    <section class="section">
+      <h2 class="section-title">Yaklaşan & Bugünkü Randevular</h2>
+      <div class="apt-list">
+        @for (apt of upcoming; track apt.id) {
+          <div class="apt-card" [class.today]="isToday(apt.startTime)">
+            @if (isToday(apt.startTime)) {
+              <div class="today-badge">Bugün</div>
+            }
+            <div class="apt-time">
+              <div class="apt-date">{{ formatDate(apt.startTime) }}</div>
+              <div class="apt-hour">{{ formatTime(apt.startTime) }} – {{ formatTime(apt.endTime) }}</div>
+            </div>
+            <div class="apt-info">
+              <div class="apt-customer">👤 {{ apt.customerName }}</div>
+              <div class="apt-phone">📞 {{ apt.customerPhone }}</div>
+              <div class="apt-service">✂ {{ apt.serviceName }}</div>
+              @if (apt.notes) {
+                <div class="apt-notes">📝 {{ apt.notes }}</div>
+              }
+            </div>
+            <div class="apt-status">
+              <span class="status-badge" [class]="statusClass(apt.status)">
+                {{ statusLabel(apt.status) }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- Geçmiş Randevular -->
+  @if (past.length > 0) {
+    <section class="section">
+      <h2 class="section-title">Geçmiş Randevular</h2>
+      <div class="apt-list past">
+        @for (apt of past; track apt.id) {
+          <div class="apt-card past-card">
+            <div class="apt-time">
+              <div class="apt-date">{{ formatDate(apt.startTime) }}</div>
+              <div class="apt-hour">{{ formatTime(apt.startTime) }}</div>
+            </div>
+            <div class="apt-info">
+              <div class="apt-customer">👤 {{ apt.customerName }}</div>
+              <div class="apt-service">✂ {{ apt.serviceName }}</div>
+            </div>
+            <div class="apt-status">
+              <span class="status-badge" [class]="statusClass(apt.status)">
+                {{ statusLabel(apt.status) }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+}

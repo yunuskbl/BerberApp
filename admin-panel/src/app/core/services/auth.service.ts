@@ -165,4 +165,19 @@ export class AuthService {
   isSuperAdmin(): boolean {
     return this.getUserRole() === 'SuperAdmin';
   }
+
+  isStaff(): boolean {
+    return this.getUserRole() === 'Staff';
+  }
+
+  getStaffId(): string | null {
+    try {
+      const token = this.getToken();
+      if (!token) return null;
+      const decoded: any = jwtDecode(token);
+      return decoded.staff_id ?? null;
+    } catch {
+      return null;
+    }
+  }
 }
