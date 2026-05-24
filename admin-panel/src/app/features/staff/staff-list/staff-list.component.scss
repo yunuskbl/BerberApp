@@ -79,7 +79,10 @@
 
 /* ── Hesap Oluşturma Modalı ── */
 .modal-backdrop {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 500;
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  z-index: 9998;
+  display: none;
+  &.visible { display: block; }
 }
 
 .modal-box {
@@ -87,7 +90,9 @@
   width: 420px; max-width: calc(100vw - 32px);
   background: white; border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.18);
-  z-index: 501; padding: 24px;
+  z-index: 9999; padding: 24px;
+  display: none;
+  &.visible { display: block; }
 }
 
 .modal-header {

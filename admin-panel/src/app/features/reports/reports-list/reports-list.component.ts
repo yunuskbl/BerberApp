@@ -312,11 +312,14 @@ export class ReportsListComponent implements OnInit {
       }
     }
 
-    const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const escape = (v: string) => `"${(v ?? '').toString().replace(/"/g, '""')}"`;
     const csvBody = rows.map(r => r.map(escape).join(',')).join('\r\n');
-    const csv = '﻿' + 'sep=,\r\n' + csvBody;
+    const csvContent = 'sep=,\r\n' + csvBody;
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    // UTF-8 BOM (0xEF 0xBB 0xBF) — Excel'in Türkçe karakterleri doğru okuması için
+    const bom     = new Uint8Array([0xEF, 0xBB, 0xBF]);
+    const encoded = new TextEncoder().encode(csvContent);
+    const blob    = new Blob([bom, encoded], { type: 'text/csv;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;

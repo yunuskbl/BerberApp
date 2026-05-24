@@ -82,6 +82,13 @@
 
 // ── Print styles ───────────────────────────────────────────────
 @media print {
+  // Türkçe karakter desteği için sistem fontu kullan (web fontları print'te yüklenmeyebilir)
+  * {
+    font-family: Arial, 'Segoe UI', Helvetica, sans-serif !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   .print-header { display: flex !important; }
   .print-divider { display: block !important; }
 
