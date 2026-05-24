@@ -313,13 +313,13 @@ export class ReportsListComponent implements OnInit {
     }
 
     const escape = (v: string) => `"${(v ?? '').toString().replace(/"/g, '""')}"`;
-    const csvBody = rows.map(r => r.map(escape).join(',')).join('\r\n');
-    const csvContent = 'sep=,\r\n' + csvBody;
-
-    // UTF-8 BOM (0xEF 0xBB 0xBF) — Excel'in Türkçe karakterleri doğru okuması için
-    const bom     = new Uint8Array([0xEF, 0xBB, 0xBF]);
-    const encoded = new TextEncoder().encode(csvContent);
-    const blob    = new Blob([bom, encoded], { type: 'text/csv;charset=utf-8;' });
+    // Türkçe Excel: ayırıcı olarak noktalı virgül (;) kullanılır, virgül (,) değil.
+    // sep= satırı BOM tespitini bozduğu için kaldırıldı.
+    // UTF-8 BOM (0xEF 0xBB 0xBF) Excel'e "bu dosya UTF-8" bilgisini verir.
+    const csvBody    = rows.map(r => r.map(escape).join(';')).join('\r\n');
+    const bom        = new Uint8Array([0xEF, 0xBB, 0xBF]);
+    const encoded    = new TextEncoder().encode(csvBody);
+    const blob       = new Blob([bom, encoded], { type: 'text/csv;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
