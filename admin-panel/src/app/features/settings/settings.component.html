@@ -109,27 +109,31 @@
               [placeholder]="'settings.salon.addressPh' | translate"/>
           </div>
 
-          <!-- Konum (koordinat yapıştır) -->
+          <!-- Konum (Plus Code) -->
           <div class="form-group">
-            <label>Konum <span class="label-hint">Google Haritalar'dan sağ tık → koordinatı kopyala</span></label>
+            <label>
+              Konum
+              <span class="label-hint">Google Haritalar'da konuma tıkla → Plus Code'u kopyala</span>
+            </label>
             <div class="address-row">
               <input
                 type="text"
-                [(ngModel)]="coordPasteValue"
+                [(ngModel)]="plusCodeValue"
                 [ngModelOptions]="{standalone: true}"
-                placeholder="36.54512, 32.00597"
-                (keyup.enter)="applyCoords()"/>
-              <button type="button" class="btn-geocode" (click)="applyCoords()">
+                placeholder="MPHP+RG Alanya  veya  8FVC9G8F+6W"
+                (keyup.enter)="applyPlusCode()"/>
+              <button type="button" class="btn-geocode" (click)="applyPlusCode()" [disabled]="isResolvingCode">
+                @if (isResolvingCode) { <span class="geocode-spinner"></span> }
                 Uygula
               </button>
             </div>
-            @if (coordError) {
-              <small class="geocode-err">{{ coordError }}</small>
+            @if (plusCodeError) {
+              <small class="geocode-err">{{ plusCodeError }}</small>
             }
             @if (salonForm.get('latitude')?.value) {
               <small class="geocode-coords">
                 📍 {{ salonForm.get('latitude')?.value | number:'1.4-4' }}, {{ salonForm.get('longitude')?.value | number:'1.4-4' }}
-                <button type="button" class="btn-clear-coords" (click)="salonForm.patchValue({latitude: null, longitude: null}); coordPasteValue = ''">✕</button>
+                <button type="button" class="btn-clear-coords" (click)="salonForm.patchValue({latitude: null, longitude: null}); plusCodeValue = ''">✕</button>
               </small>
             }
           </div>

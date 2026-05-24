@@ -59,9 +59,10 @@ export class SettingsComponent implements OnInit {
   isUploadingPhoto = false;
   photoUploadError = '';
 
-  // Koordinat yapıştırma
-  coordPasteValue = '';
-  coordError = '';
+  // Plus Code
+  plusCodeValue = '';
+  plusCodeError = '';
+  isResolvingCode = false;
 
   // Salon Kapalı Günler
   closures: SalonClosure[] = [];
@@ -284,21 +285,61 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  /* ─── Koordinat Yapıştırma ─── */
-  applyCoords(): void {
-    this.coordError = '';
-    const raw = this.coordPasteValue.trim().replace(/\s/g, '');
-    // "36.54512, 32.00597" veya "36.54512 32.00597" veya "36.54512,32.00597"
-    const parts = raw.split(/[,;]/);
-    if (parts.length !== 2) { this.coordError = 'Format hatalı. Örnek: 36.54512, 32.00597'; return; }
-    const lat = parseFloat(parts[0]);
-    const lon = parseFloat(parts[1]);
-    if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-      this.coordError = 'Geçersiz koordinat değeri.';
+  /* ─── Plus Code ─── */
+  applyPlusCode(): void {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { OpenLocationCode } = require('open-location-code');
+    const olc = new OpenLocationCode();
+
+    this.plusCodeError = '';
+    const raw = this.plusCodeValue.trim();
+    if (!raw) return;
+
+    // "MPHP+RG Alanya" → code + optional reference
+    const spaceIdx = raw.indexOf(' ');
+    const code      = (spaceIdx > -1 ? raw.slice(0, spaceIdx) : raw).toUpperCase();
+    const reference = spaceIdx > -1 ? raw.slice(spaceIdx + 1).trim() : '';
+
+    if (!olc.isValid(code)) {
+      this.plusCodeError = 'Geçersiz Plus Code formatı.';
       return;
     }
-    this.salonForm.patchValue({ latitude: lat, longitude: lon });
-    this.coordPasteValue = '';
+
+    if (olc.isFull(code)) {
+      // Tam kod → direkt decode
+      const area = olc.decode(code);
+      this.salonForm.patchValue({ latitude: area.latitudeCenter, longitude: area.longitudeCenter });
+      this.plusCodeValue = '';
+      return;
+    }
+
+    // Kısa kod → referans şehir gerekli
+    if (!reference) {
+      this.plusCodeError = 'Kısa kodlar için şehir adı gerekli. Örnek: "MPHP+RG Alanya"';
+      return;
+    }
+
+    this.isResolvingCode = true;
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(reference)}&format=json&limit=1&accept-language=tr`;
+    this.http.get<any[]>(url).subscribe({
+      next: (results) => {
+        this.isResolvingCode = false;
+        if (!results?.length) {
+          this.plusCodeError = 'Şehir/bölge bulunamadı. Tam Plus Code kullanın.';
+          return;
+        }
+        const refLat = parseFloat(results[0].lat);
+        const refLon = parseFloat(results[0].lon);
+        const fullCode = olc.recoverNearest(code, refLat, refLon);
+        const area = olc.decode(fullCode);
+        this.salonForm.patchValue({ latitude: area.latitudeCenter, longitude: area.longitudeCenter });
+        this.plusCodeValue = '';
+      },
+      error: () => {
+        this.isResolvingCode = false;
+        this.plusCodeError = 'Şehir çözümlenemedi. Tam Plus Code kullanın.';
+      },
+    });
   }
 
   /* ─── Bildirim Kanalı ─── */
