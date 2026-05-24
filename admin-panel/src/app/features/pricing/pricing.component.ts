@@ -15,20 +15,21 @@ interface FAQ  { question: string; answer: string; open?: boolean; }
 interface Stat { value: string; label: string; num: number; format: (n: number) => string; }
 
 const ALL_FEATURES: Feature[] = [
-  { name: 'Online Randevu Sayfası',        included: true },
-  { name: 'Randevu Yönetimi',              included: true },
-  { name: 'Çoklu Hizmet Seçimi',           included: true },
-  { name: 'Müşteri & Personel Yönetimi',   included: true },
-  { name: 'Personele Özel Fiyatlandırma',  included: true },
-  { name: 'Hizmet & Fiyat Yönetimi',       included: true },
-  { name: 'Tema & Logo Özelleştirme',      included: true },
-  { name: 'Çoklu Dil (TR / EN / RU)',      included: true },
-  { name: 'WhatsApp Bildirimleri',          included: true },
-  { name: 'Randevu Hatırlatması',           included: true },
-  { name: 'Fotoğraf Galerisi',             included: true },
-  { name: 'Müşteri Değerlendirme Sistemi', included: true },
-  { name: 'Rapor & Gelir Analizi',         included: true },
-  { name: 'Öncelikli Destek',              included: true },
+  { name: 'Online Randevu Sayfası',           included: true },
+  { name: 'Randevu Yönetimi',                 included: true },
+  { name: 'Çoklu Hizmet Seçimi',              included: true },
+  { name: 'Müşteri & Personel Yönetimi',      included: true },
+  { name: 'Personele Özel Fiyatlandırma',     included: true },
+  { name: 'Hizmet & Fiyat Yönetimi',          included: true },
+  { name: 'Tema & Logo Özelleştirme',         included: true },
+  { name: 'Çoklu Dil (TR / EN / RU)',         included: true },
+  { name: 'WhatsApp Bildirimleri',             included: true },
+  { name: 'Randevu Hatırlatması',              included: true },
+  { name: 'Fotoğraf Galerisi',                included: true },
+  { name: 'Müşteri Değerlendirme Sistemi',    included: true },
+  { name: 'Gelir & Gider Yönetimi',           included: true },
+  { name: 'Personel Girişi & Yetkilendirme',  included: true },
+  { name: 'Öncelikli Destek',                 included: true },
 ];
 
 @Component({
@@ -62,7 +63,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   animatedStats = this.stats.map(s => s.format(0)); // ['0+', '0K+', '%0', '0 dk']
 
   // ── Card entry animation ──────────────────────────────────────────────────
-  cardVisible: boolean[] = [false, false, false];
+  cardVisible: boolean[] = [false, false, false, false, false, false, false];
 
   private observers: IntersectionObserver[] = [];
 
@@ -108,15 +109,15 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       desc: 'Hizmet tamamlandığında müşteriye otomatik puan linki gönderilir. Yorumlar ve puanlar profil sayfanızda yayınlanır.'
     },
     {
-      // Bar chart / gelir
+      // Bar chart / gelir & gider
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="18" y1="20" x2="18" y2="10"/>
         <line x1="12" y1="20" x2="12" y2="4"/>
         <line x1="6"  y1="20" x2="6"  y2="14"/>
         <line x1="2"  y1="20" x2="22" y2="20"/>
       </svg>`,
-      title: 'Gelir & Rapor Analizi',
-      desc: 'Aylık gelir, doluluk oranı ve personel bazlı performans raporlarına tek ekrandan ulaşın.'
+      title: 'Gelir & Gider Yönetimi',
+      desc: 'Gelir, gider ve net kâr raporlarına tek ekrandan ulaşın. Kategori bazlı gider takibi ve P&L özeti ile finansal durumunuzu anlık görün.'
     },
     {
       // Kişiler / personel
@@ -129,6 +130,16 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       title: 'Personel & Fiyat Yönetimi',
       desc: 'Her personele özel hizmet fiyatı tanımlayın. Çalışma saatlerini ve izinleri kolayca yönetin.'
     },
+    {
+      // Kilit / personel girişi
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        <circle cx="12" cy="16" r="1" fill="currentColor"/>
+      </svg>`,
+      title: 'Personel Girişi & Yetki',
+      desc: 'Her personele ayrı giriş hesabı tanımlayın. Personel yalnızca kendi randevularını ve çalışma saatlerini görebilir, admin bilgileri korunur.'
+    },
   ];
 
   appFeatures: Array<{ icon: SafeHtml; title: string; desc: string }> = [];
@@ -140,20 +151,21 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       icon: '🌱', featured: false, ctaDisabled: false,
       limits: { staff: '1 Personel', appointments: '100 Randevu/Ay' },
       features: [
-        { name: 'Online Randevu Sayfası',        included: true  },
-        { name: 'Randevu Yönetimi',              included: true  },
-        { name: 'Çoklu Hizmet Seçimi',           included: true  },
-        { name: 'Müşteri & Personel Yönetimi',   included: true  },
-        { name: 'Personele Özel Fiyatlandırma',  included: true  },
-        { name: 'Hizmet & Fiyat Yönetimi',       included: true  },
-        { name: 'Tema & Logo Özelleştirme',      included: true  },
-        { name: 'Çoklu Dil (TR / EN / RU)',      included: true  },
-        { name: 'WhatsApp Bildirimleri',          included: true  },
-        { name: 'Randevu Hatırlatması',           included: true  },
-        { name: 'Fotoğraf Galerisi',             included: true  },
-        { name: 'Müşteri Değerlendirme Sistemi', included: true  },
-        { name: 'Rapor & Gelir Analizi',         included: false },
-        { name: 'Öncelikli Destek',              included: false },
+        { name: 'Online Randevu Sayfası',          included: true  },
+        { name: 'Randevu Yönetimi',                included: true  },
+        { name: 'Çoklu Hizmet Seçimi',             included: true  },
+        { name: 'Müşteri & Personel Yönetimi',     included: true  },
+        { name: 'Personele Özel Fiyatlandırma',    included: true  },
+        { name: 'Hizmet & Fiyat Yönetimi',         included: true  },
+        { name: 'Tema & Logo Özelleştirme',        included: true  },
+        { name: 'Çoklu Dil (TR / EN / RU)',        included: true  },
+        { name: 'WhatsApp Bildirimleri',            included: true  },
+        { name: 'Randevu Hatırlatması',             included: true  },
+        { name: 'Fotoğraf Galerisi',               included: true  },
+        { name: 'Müşteri Değerlendirme Sistemi',   included: true  },
+        { name: 'Gelir & Gider Yönetimi',          included: false },
+        { name: 'Personel Girişi & Yetkilendirme', included: false },
+        { name: 'Öncelikli Destek',                included: false },
       ],
       cta: 'Başlangıç Planı',
     },
@@ -163,20 +175,21 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       icon: '⚡', featured: true,
       limits: { staff: '5 Personele Kadar', appointments: '500 Randevu/Ay' },
       features: [
-        { name: 'Online Randevu Sayfası',        included: true  },
-        { name: 'Randevu Yönetimi',              included: true  },
-        { name: 'Çoklu Hizmet Seçimi',           included: true  },
-        { name: 'Müşteri & Personel Yönetimi',   included: true  },
-        { name: 'Personele Özel Fiyatlandırma',  included: true  },
-        { name: 'Hizmet & Fiyat Yönetimi',       included: true  },
-        { name: 'Tema & Logo Özelleştirme',      included: true  },
-        { name: 'Çoklu Dil (TR / EN / RU)',      included: true  },
-        { name: 'WhatsApp Bildirimleri',          included: true  },
-        { name: 'Randevu Hatırlatması',           included: true  },
-        { name: 'Fotoğraf Galerisi',             included: true  },
-        { name: 'Müşteri Değerlendirme Sistemi', included: true  },
-        { name: 'Rapor & Gelir Analizi',         included: true  },
-        { name: 'Öncelikli Destek',              included: false },
+        { name: 'Online Randevu Sayfası',          included: true  },
+        { name: 'Randevu Yönetimi',                included: true  },
+        { name: 'Çoklu Hizmet Seçimi',             included: true  },
+        { name: 'Müşteri & Personel Yönetimi',     included: true  },
+        { name: 'Personele Özel Fiyatlandırma',    included: true  },
+        { name: 'Hizmet & Fiyat Yönetimi',         included: true  },
+        { name: 'Tema & Logo Özelleştirme',        included: true  },
+        { name: 'Çoklu Dil (TR / EN / RU)',        included: true  },
+        { name: 'WhatsApp Bildirimleri',            included: true  },
+        { name: 'Randevu Hatırlatması',             included: true  },
+        { name: 'Fotoğraf Galerisi',               included: true  },
+        { name: 'Müşteri Değerlendirme Sistemi',   included: true  },
+        { name: 'Gelir & Gider Yönetimi',          included: true  },
+        { name: 'Personel Girişi & Yetkilendirme', included: true  },
+        { name: 'Öncelikli Destek',                included: false },
       ],
       cta: 'Profesyonel\'e Geç',
     },
@@ -216,6 +229,14 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     {
       question: 'Personel ve randevu limitleri nedir?',
       answer: 'Başlangıç planında 1 personel ve ayda 100 randevu, Profesyonel planında 5 personele kadar ve ayda 500 randevu desteklenir. Premium planda her ikisi de sınırsızdır.',
+    },
+    {
+      question: 'Gelir ve gider takibi nasıl çalışıyor?',
+      answer: 'Profesyonel ve Premium planlarda gelir & gider yönetimi dahildir. Giderlerinizi kategori bazlı (kira, elektrik, malzeme vb.) ekleyebilir, seçtiğiniz tarih aralığında toplam gelir, toplam gider ve net kâr/zarar özetini anında görebilirsiniz. Raporlarınızı CSV olarak dışa aktarabilirsiniz.',
+    },
+    {
+      question: 'Personelime ayrı giriş hesabı tanımlayabilir miyim?',
+      answer: 'Profesyonel ve Premium planlarda her personel için ayrı bir e-posta/şifre hesabı oluşturabilirsiniz. Personel bu hesapla sisteme girerek yalnızca kendi randevularını, çalışma saatlerini ve izin günlerini görür. Müşteri iletişim bilgileri ve finansal veriler admin tarafında korunur.',
     },
     {
       question: 'Verilerim güvende mi?',
