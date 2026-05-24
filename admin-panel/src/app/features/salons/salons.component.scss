@@ -22,15 +22,18 @@
 .header-inner {
   max-width: 1100px;
   margin: 0 auto;
-  height: 64px;
   display: flex;
-  align-items: center;
-  gap: 20px;
+  flex-direction: column;
+  gap: 0;
+  padding: 10px 0 0;
 }
 
 /* Desktop: brand + lang yan yana, search ayrı */
 .header-top-row {
-  display: contents; /* desktop'ta şeffaf wrapper */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
 }
 
 .header-brand {
@@ -57,12 +60,11 @@
   letter-spacing: -0.3px;
 }
 
-.header-search { flex: 1; min-width: 0; max-width: 420px; }
+.header-search { width: 100%; max-width: 520px; padding-bottom: 10px; }
 
 app-language-switcher {
   flex-shrink: 0;
   display: flex;
-  margin-left: auto;
 }
 
 .search-wrap {
@@ -105,19 +107,42 @@ app-language-switcher {
   }
 }
 
-/* Filtre chip'leri */
+/* Filtre satırı (label + chip'ler) */
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+.filter-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #bbb;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  width: 38px;
+}
+
+/* İşletme türü chip'leri */
 .filter-chips {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 12px 0 4px;
+  gap: 6px;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+  padding-bottom: 2px;
 }
 
 .filter-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 14px;
+  gap: 4px;
+  padding: 5px 12px;
   border-radius: 20px;
   border: 1.5px solid #e5e7eb;
   background: #f9fafb;
@@ -127,13 +152,43 @@ app-language-switcher {
   font-family: 'Inter', sans-serif;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.15s;
 
-  &:hover {
-    border-color: #111;
-    color: #111;
-    background: #f3f4f6;
-  }
+  &:hover { border-color: #111; color: #111; background: #f3f4f6; }
+  &.active { background: #111; color: #fff; border-color: #111; font-weight: 600; }
+}
+
+/* Sıralama chip'leri */
+.sort-chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+  padding-bottom: 2px;
+}
+
+.sort-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1.5px solid #e5e7eb;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s;
+
+  &:hover { border-color: #111; color: #111; background: #f3f4f6; }
 
   &.active {
     background: #111;
@@ -141,6 +196,19 @@ app-language-switcher {
     border-color: #111;
     font-weight: 600;
   }
+
+  &.location-chip {
+    border-color: #f59e0b;
+    color: #d97706;
+    &:hover { background: #fffbeb; border-color: #d97706; }
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .sort-chip-label { font-size: 12px; }
 }
 
 /* Body */
@@ -183,13 +251,12 @@ app-language-switcher {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Results bar */
+/* Results bar — sadece konum badge + sayı */
 .results-bar {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 20px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
 }
 
@@ -219,49 +286,6 @@ app-language-switcher {
   border: 1px solid #bbf7d0;
   border-radius: 20px;
   padding: 3px 10px;
-}
-
-/* Sıralama butonları */
-.sort-bar {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.sort-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: 1px solid #e5e5e5;
-  background: white;
-  font-size: 12px;
-  font-weight: 500;
-  color: #555;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-
-  &:hover {
-    border-color: #111;
-    color: #111;
-  }
-
-  &.active {
-    background: #111;
-    border-color: #111;
-    color: white;
-  }
-
-  &.location-denied {
-    border-color: #f59e0b;
-    color: #f59e0b;
-    &:hover { background: #fffbeb; }
-  }
-
-  .sort-icon { font-size: 13px; }
 }
 
 /* Mesafe etiketi (kart üstünde) */
@@ -512,59 +536,22 @@ app-language-switcher {
 
 @media (max-width: 600px) {
   .salons-page { overflow-x: hidden; }
-
-  /* Mobilde swipe aktif — ok butonlarını her zaman göster */
   .carousel .carousel-btn { opacity: 0.75; }
-  /* Dot'lar zaten görünür, touch-action swipe'ı engellemesin */
   .carousel { touch-action: pan-y; }
 
+  .salons-header { padding: 0 14px; }
+  .header-inner { padding: 10px 0 0; }
+  .header-top-row { padding-bottom: 8px; }
+  .header-search { max-width: 100%; padding-bottom: 8px; }
 
-  /* Navbar: 2 satır */
-  .salons-header { padding: 0 16px; }
+  .filter-label { width: 30px; font-size: 10px; }
+  .filter-chip { padding: 4px 10px; font-size: 12px; }
+  .sort-chip { padding: 4px 10px; font-size: 12px; }
+  .sort-chip-label { display: none; }
 
-  .header-inner {
-    height: auto;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    padding: 10px 0;
-  }
-
-  .header-top-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-  }
-
-  app-language-switcher { margin-left: 0; }
-
-  .header-search {
-    max-width: none;
-    width: 100%;
-  }
-
-  /* Filtre chip'leri — yatay kaydır, sarılmasın */
-  .filter-chips {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 8px;
-    scrollbar-width: none;
-    &::-webkit-scrollbar { display: none; }
-  }
-
-  /* Sıralama */
-  .results-bar { flex-direction: column; align-items: stretch; }
-  .sort-bar { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; }
-  .sort-btn .sort-label { display: none; }
-  .sort-btn { padding: 6px 10px; flex-shrink: 0; }
-
-  /* Grid */
   .salons-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .salons-body { padding: 16px 12px 40px; }
+  .salons-body { padding: 14px 12px 40px; }
 
-  /* Card */
   .card-header { height: 120px; }
   .card-body { padding: 12px 14px 14px; }
   .card-name-row { margin-bottom: 4px; }
