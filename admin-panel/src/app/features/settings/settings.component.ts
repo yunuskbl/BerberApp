@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
   ReactiveFormsModule,
+  FormsModule,
   FormBuilder,
   FormGroup,
   Validators,
@@ -38,7 +39,7 @@ function numberValidator(ctrl: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, DatePipe, ReactiveFormsModule, RouterModule, TranslatePipe, CustomCalendarComponent],
+  imports: [CommonModule, DatePipe, ReactiveFormsModule, FormsModule, RouterModule, TranslatePipe, CustomCalendarComponent],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })

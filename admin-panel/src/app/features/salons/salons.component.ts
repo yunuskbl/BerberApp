@@ -149,7 +149,6 @@ export class SalonsComponent implements OnInit {
   onLocationToggle(): void {
     if (this.locationFilterActive) {
       this.locationFilterActive = false;
-      if (this.sortBy === 'distance') this.sortBy = 'rating';
       this.loadSalons();
       return;
     }
