@@ -140,6 +140,30 @@
     border: 1px solid #d1d5db !important;
     break-inside: avoid;
   }
+
+  // Sekme içerikleri print'te her zaman görünür
+  .tab-section {
+    display: block !important;
+  }
+
+  // P&L kartı print stili
+  .pnl-card {
+    break-inside: avoid;
+    border: 1.5px solid #d1d5db !important;
+    margin-bottom: 20px;
+  }
+
+  .pnl-item {
+    border-right: 1px solid #e5e7eb !important;
+  }
+
+  // Drawer ve overlay gizle
+  .drawer, .drawer-overlay { display: none !important; }
+}
+
+// Sekme içerikleri — browser'da sadece aktif sekme görünür, print'te her ikisi
+.tab-section {
+  &.tab-hidden { display: none; }
 }
 
 .filter-section {

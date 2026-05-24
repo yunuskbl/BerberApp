@@ -120,9 +120,9 @@
     </div>
 
     <!-- ══════════════════════════════════════════════════════════════════ -->
-    <!-- GELİR SEKMESİ -->
+    <!-- GELİR SEKMESİ (CSS ile gizle/göster — print'te her zaman görünür) -->
     <!-- ══════════════════════════════════════════════════════════════════ -->
-    @if (activeTab === 'income') {
+    <div class="tab-section" [class.tab-hidden]="activeTab !== 'income'">
 
       <!-- Özet Kartları -->
       <div class="stats-grid">
@@ -295,12 +295,12 @@
         </div>
       </div>
 
-    }
+    </div><!-- /tab-section income -->
 
     <!-- ══════════════════════════════════════════════════════════════════ -->
-    <!-- GİDER SEKMESİ -->
+    <!-- GİDER SEKMESİ (CSS ile gizle/göster — print'te her zaman görünür) -->
     <!-- ══════════════════════════════════════════════════════════════════ -->
-    @if (activeTab === 'expense') {
+    <div class="tab-section" [class.tab-hidden]="activeTab !== 'expense'">
 
       <!-- Kategori dağılımı (gider özeti) -->
       @if ((earnings.expenseByCategory?.length ?? 0) > 0) {
@@ -404,7 +404,7 @@
         </div>
       </div>
 
-    }
+    </div><!-- /tab-section expense -->
 
   }
 
