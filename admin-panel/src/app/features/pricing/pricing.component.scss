@@ -1279,7 +1279,8 @@ $green:        #059669;
   .nav-links { display: none; }
   .logo-tagline { display: none; }
   .btn-nav-login { display: none; }
-  .btn-nav-salons { display: none; }
+  .btn-nav-salons { padding: 6px 12px; font-size: 13px; }
+  .btn-nav-cta { padding: 6px 12px; font-size: 13px; }
 
   .section-title { font-size: 26px; }
   .section-sub { font-size: 15px; }
@@ -1320,8 +1321,9 @@ $green:        #059669;
 
 @media (max-width: 480px) {
   .nav-inner { height: 56px; gap: 8px; }
-  .logo-text { font-size: 16px; }
-  .btn-nav-cta { padding: 7px 14px; font-size: 13px; }
+  .logo-text { font-size: 15px; }
+  .btn-nav-salons { padding: 5px 10px; font-size: 12px; }
+  .btn-nav-cta { padding: 5px 10px; font-size: 12px; }
 
   .hero { padding: 36px 16px 52px; }
   .hero-title { font-size: 26px; }
