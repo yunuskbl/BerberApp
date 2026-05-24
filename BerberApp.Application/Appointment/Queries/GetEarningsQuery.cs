@@ -31,6 +31,18 @@ public class EarningsDto
     public List<DailyEarningDto> Daily { get; set; } = new();
     public List<StaffEarningDto> ByStaff { get; set; } = new();
     public List<ServiceEarningDto> ByService { get; set; } = new();
+
+    // P&L
+    public decimal TotalExpenses { get; set; }       // Seçili dönem toplam gider (TRY)
+    public decimal NetProfit { get; set; }            // TotalInTry - TotalExpenses
+    public List<ExpenseSummaryDto> ExpenseByCategory { get; set; } = new();
+}
+
+public class ExpenseSummaryDto
+{
+    public string Category { get; set; } = string.Empty;
+    public decimal Total { get; set; }
+    public int Count { get; set; }
 }
 
 public class CurrencyEarningDto

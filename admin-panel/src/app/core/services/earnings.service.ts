@@ -19,6 +19,16 @@ export interface EarningsDto {
   daily:                DailyEarningDto[];
   byStaff:              StaffEarningDto[];
   byService:            ServiceEarningDto[];
+  // P&L
+  totalExpenses:        number;
+  netProfit:            number;
+  expenseByCategory:    ExpenseSummaryDto[];
+}
+
+export interface ExpenseSummaryDto {
+  category: string;
+  total:    number;
+  count:    number;
 }
 
 export interface CurrencyEarningDto {

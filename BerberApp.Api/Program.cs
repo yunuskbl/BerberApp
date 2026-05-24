@@ -242,6 +242,26 @@ using (var scope = app.Services.CreateScope())
         ALTER TABLE ""Appointments"" ADD COLUMN IF NOT EXISTS ""ReminderSent1h""  boolean NOT NULL DEFAULT false;
     ");
 
+    // Expenses tablosu (gelir/gider takibi)
+    db.Database.ExecuteSqlRaw(@"
+        CREATE TABLE IF NOT EXISTS ""Expenses"" (
+            ""Id""          uuid NOT NULL DEFAULT gen_random_uuid(),
+            ""TenantId""    uuid NOT NULL,
+            ""Date""        timestamp with time zone NOT NULL,
+            ""Amount""      numeric(18,2) NOT NULL,
+            ""Currency""    varchar(10) NOT NULL DEFAULT 'TRY',
+            ""Category""    varchar(100) NOT NULL DEFAULT '',
+            ""Description"" varchar(500),
+            ""Note""        varchar(1000),
+            ""CreatedAt""   timestamp with time zone NOT NULL DEFAULT now(),
+            ""UpdatedAt""   timestamp with time zone,
+            ""IsDeleted""   boolean NOT NULL DEFAULT false,
+            CONSTRAINT ""PK_Expenses"" PRIMARY KEY (""Id"")
+        );
+        CREATE INDEX IF NOT EXISTS ""IX_Expenses_TenantId"" ON ""Expenses"" (""TenantId"");
+        CREATE INDEX IF NOT EXISTS ""IX_Expenses_Date"" ON ""Expenses"" (""Date"");
+    ");
+
     await SeedData.SeedAsync(db, env);
     await SeedData.SeedSuperAdminAsync(db);
 }

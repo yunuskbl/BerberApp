@@ -28,6 +28,7 @@ namespace BerberApp.Application.Common.Interfaces
         DbSet<OtpRecord> OtpRecords { get; }
         DbSet<StaffDayOffEntity> StaffDaysOff { get; }
         DbSet<TenantClosureEntity> TenantClosures { get; }
+        DbSet<ExpenseEntity> Expenses { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

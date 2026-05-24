@@ -45,7 +45,7 @@
   </div>
 
   <!-- Tarih Filtresi -->
-  <div class="filter-section">
+  <div class="filter-section no-print">
     <div class="quick-ranges">
       <button class="qr-btn" (click)="setQuickRange('week')">Bu Hafta</button>
       <button class="qr-btn" (click)="setQuickRange('month')">Bu Ay</button>
@@ -55,14 +55,26 @@
     <div class="date-inputs">
       <div class="filter-group">
         <label>{{ 'reports.startDate' | translate }}</label>
-        <input type="date" [(ngModel)]="reportStartDate" (change)="loadEarnings()"/>
+        <input type="date" [(ngModel)]="reportStartDate" (change)="onDateChange()"/>
       </div>
       <span class="date-sep">→</span>
       <div class="filter-group">
         <label>{{ 'reports.endDate' | translate }}</label>
-        <input type="date" [(ngModel)]="reportEndDate" (change)="loadEarnings()"/>
+        <input type="date" [(ngModel)]="reportEndDate" (change)="onDateChange()"/>
       </div>
     </div>
+  </div>
+
+  <!-- ── Sekme Çubuğu ──────────────────────────────────────────────────── -->
+  <div class="tab-bar no-print">
+    <button class="tab-btn" [class.active]="activeTab === 'income'" (click)="activeTab = 'income'">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      Gelir Raporu
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'expense'" (click)="activeTab = 'expense'">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+      Gider Yönetimi
+    </button>
   </div>
 
   @if (isLoading) {
@@ -70,175 +82,399 @@
       <div class="spinner"></div>
     </div>
   } @else if (earnings) {
-    <!-- Özet Kartları -->
-    <div class="stats-grid">
-      <div class="stat-card stat-card--purple">
-        <div class="stat-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+
+    <!-- ── P&L Özet Kartı (her iki sekmede görünür) ─────────────────────── -->
+    <div class="pnl-card">
+      <div class="pnl-item pnl-income">
+        <div class="pnl-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          Toplam Gelir
         </div>
-        <div class="stat-label">{{ 'reports.totalEarnings' | translate }}</div>
-        <div class="stat-value">{{ formatCurrency(earnings.totalInTry) }}</div>
-        <div class="stat-sub">{{ earnings.totalAppointments }} {{ 'reports.appt' | translate }}</div>
+        <div class="pnl-value">{{ formatCurrency(earnings.totalInTry) }}</div>
+        <div class="pnl-sub">{{ earnings.totalAppointments }} randevu</div>
       </div>
-      <div class="stat-card stat-card--blue">
-        <div class="stat-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <div class="pnl-divider">—</div>
+      <div class="pnl-item pnl-expense">
+        <div class="pnl-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+          Toplam Gider
         </div>
-        <div class="stat-label">{{ 'reports.avgPerAppt' | translate }}</div>
-        <div class="stat-value">{{ formatCurrency(earnings.averagePerAppointment) }}</div>
-        <div class="stat-sub">{{ 'reports.perAppt' | translate }}</div>
+        <div class="pnl-value">{{ formatCurrency(earnings.totalExpenses) }}</div>
+        <div class="pnl-sub">{{ earnings.expenseByCategory?.length ?? 0 }} kategori</div>
       </div>
-      <div class="stat-card stat-card--green">
-        <div class="stat-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <div class="pnl-divider">=</div>
+      <div class="pnl-item" [class.pnl-profit]="earnings.netProfit >= 0" [class.pnl-loss]="earnings.netProfit < 0">
+        <div class="pnl-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Net {{ earnings.netProfit >= 0 ? 'Kâr' : 'Zarar' }}
         </div>
-        <div class="stat-label">{{ 'reports.thisMonth' | translate }}</div>
-        <div class="stat-value">{{ formatCurrency(earnings.monthEarnings) }}</div>
-        <div class="stat-sub">{{ earnings.monthAppointments }} {{ 'reports.appt' | translate }}</div>
-      </div>
-      <div class="stat-card stat-card--amber">
-        <div class="stat-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <div class="pnl-value">{{ formatCurrency(earnings.netProfit) }}</div>
+        <div class="pnl-sub">
+          @if (earnings.totalInTry > 0) {
+            Kâr marjı: %{{ (earnings.netProfit / earnings.totalInTry * 100) | number: '1.0-0' }}
+          } @else {
+            Dönemde gelir yok
+          }
         </div>
-        <div class="stat-label">{{ 'reports.thisWeek' | translate }}</div>
-        <div class="stat-value">{{ formatCurrency(earnings.weekEarnings) }}</div>
-        <div class="stat-sub">{{ earnings.weekAppointments }} {{ 'reports.appt' | translate }}</div>
       </div>
     </div>
 
-    <!-- Para Birimine Göre Kazanç -->
-    @if (earnings.byCurrency.length > 1) {
-      <div class="report-section">
-        <div class="currency-header">
-          <h3>{{ 'reports.byCurrency' | translate }}</h3>
-          <span class="rate-date">{{ 'reports.rateDate' | translate }}: {{ earnings.exchangeRateDate }}</span>
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- GELİR SEKMESİ -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    @if (activeTab === 'income') {
+
+      <!-- Özet Kartları -->
+      <div class="stats-grid">
+        <div class="stat-card stat-card--purple">
+          <div class="stat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div class="stat-label">{{ 'reports.totalEarnings' | translate }}</div>
+          <div class="stat-value">{{ formatCurrency(earnings.totalInTry) }}</div>
+          <div class="stat-sub">{{ earnings.totalAppointments }} {{ 'reports.appt' | translate }}</div>
         </div>
-        <div class="currency-cards">
-          @for (c of earnings.byCurrency; track c.currency) {
-            <div class="currency-card">
-              <div class="currency-badge">{{ c.currency }}</div>
-              <div class="currency-amount">{{ formatCurrency(c.totalEarnings, c.currency) }}</div>
-              <div class="currency-try">≈ {{ formatCurrency(c.totalInTry) }}</div>
-              <div class="currency-rate">{{ formatRate(c.currency, c.exchangeRate) }}</div>
-              <div class="currency-appts">{{ c.appointmentCount }} {{ 'reports.appt' | translate }}</div>
+        <div class="stat-card stat-card--blue">
+          <div class="stat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="stat-label">{{ 'reports.avgPerAppt' | translate }}</div>
+          <div class="stat-value">{{ formatCurrency(earnings.averagePerAppointment) }}</div>
+          <div class="stat-sub">{{ 'reports.perAppt' | translate }}</div>
+        </div>
+        <div class="stat-card stat-card--green">
+          <div class="stat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <div class="stat-label">{{ 'reports.thisMonth' | translate }}</div>
+          <div class="stat-value">{{ formatCurrency(earnings.monthEarnings) }}</div>
+          <div class="stat-sub">{{ earnings.monthAppointments }} {{ 'reports.appt' | translate }}</div>
+        </div>
+        <div class="stat-card stat-card--amber">
+          <div class="stat-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </div>
+          <div class="stat-label">{{ 'reports.thisWeek' | translate }}</div>
+          <div class="stat-value">{{ formatCurrency(earnings.weekEarnings) }}</div>
+          <div class="stat-sub">{{ earnings.weekAppointments }} {{ 'reports.appt' | translate }}</div>
+        </div>
+      </div>
+
+      <!-- Para Birimine Göre Kazanç -->
+      @if (earnings.byCurrency.length > 1) {
+        <div class="report-section">
+          <div class="currency-header">
+            <h3>{{ 'reports.byCurrency' | translate }}</h3>
+            <span class="rate-date">{{ 'reports.rateDate' | translate }}: {{ earnings.exchangeRateDate }}</span>
+          </div>
+          <div class="currency-cards">
+            @for (c of earnings.byCurrency; track c.currency) {
+              <div class="currency-card">
+                <div class="currency-badge">{{ c.currency }}</div>
+                <div class="currency-amount">{{ formatCurrency(c.totalEarnings, c.currency) }}</div>
+                <div class="currency-try">≈ {{ formatCurrency(c.totalInTry) }}</div>
+                <div class="currency-rate">{{ formatRate(c.currency, c.exchangeRate) }}</div>
+                <div class="currency-appts">{{ c.appointmentCount }} {{ 'reports.appt' | translate }}</div>
+              </div>
+            }
+            <div class="currency-card total-card">
+              <div class="currency-badge">∑</div>
+              <div class="currency-amount">{{ formatCurrency(earnings.totalInTry) }}</div>
+              <div class="currency-try">{{ 'reports.grandTotal' | translate }}</div>
+              <div class="currency-appts">{{ earnings.totalAppointments }} {{ 'reports.appt' | translate }}</div>
             </div>
-          }
-          <div class="currency-card total-card">
-            <div class="currency-badge">∑</div>
-            <div class="currency-amount">{{ formatCurrency(earnings.totalInTry) }}</div>
-            <div class="currency-try">{{ 'reports.grandTotal' | translate }}</div>
-            <div class="currency-appts">{{ earnings.totalAppointments }} {{ 'reports.appt' | translate }}</div>
           </div>
         </div>
+      }
+
+      <!-- Personele Göre Kazanç -->
+      <div class="report-section">
+        <div class="section-title-row">
+          <div class="section-icon section-icon--purple">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>{{ 'reports.byStaff' | translate }}</h3>
+          @if (earnings.byCurrency.length > 1) {
+            <span class="try-badge" title="{{ 'reports.tryNote' | translate }}">
+              {{ 'reports.tryConverted' | translate }}
+            </span>
+          }
+        </div>
+        <div class="table-card">
+          @if (earnings.byStaff.length > 0) {
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>{{ 'reports.colStaff' | translate }}</th>
+                  <th>{{ 'reports.colTotalTry' | translate }}</th>
+                  <th class="col-share">Pay</th>
+                  <th>{{ 'reports.colAppts' | translate }}</th>
+                  <th>{{ 'reports.colAvgTry' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (staff of earnings.byStaff; track staff.staffId; let i = $index) {
+                  <tr>
+                    <td>
+                      <div class="staff-cell">
+                        <div class="staff-avatar" [attr.data-rank]="i === 0 ? '1' : null">
+                          {{ staff.staffName![0].toUpperCase() }}
+                        </div>
+                        <span class="staff-name">{{ staff.staffName }}</span>
+                        @if (i === 0) { <span class="top-badge">🏆 #1</span> }
+                      </div>
+                    </td>
+                    <td class="amount-cell">{{ formatCurrency(staff.totalEarnings) }}</td>
+                    <td class="share-cell">
+                      <div class="share-wrap">
+                        <div class="share-bar-bg">
+                          <div class="share-bar-fill share-bar-fill--purple" [style.width.%]="staffShare(staff.totalEarnings)"></div>
+                        </div>
+                        <span class="share-pct">%{{ staffShare(staff.totalEarnings) }}</span>
+                      </div>
+                    </td>
+                    <td class="center-cell">{{ staff.appointmentCount }}</td>
+                    <td class="amount-cell">{{ formatCurrency(staff.average) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <p class="empty-text">{{ 'reports.noData' | translate }}</p>
+          }
+        </div>
       </div>
+
+      <!-- Hizmet Bazında Kazanç -->
+      <div class="report-section">
+        <div class="section-title-row">
+          <div class="section-icon section-icon--green">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42"/></svg>
+          </div>
+          <h3>{{ 'reports.byService' | translate }}</h3>
+        </div>
+        <div class="table-card">
+          @if (earnings.byService.length > 0) {
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>{{ 'reports.colService' | translate }}</th>
+                  <th>{{ 'reports.colPrice' | translate }}</th>
+                  <th>{{ 'reports.colTotal' | translate }}</th>
+                  <th>{{ 'reports.colSales' | translate }}</th>
+                  <th class="col-share">Pay</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (service of earnings.byService; track service.serviceId; let i = $index) {
+                  <tr>
+                    <td>
+                      <div class="service-cell">
+                        <span class="service-name">{{ service.serviceName }}</span>
+                        @if (i === 0) { <span class="top-badge top-badge--green">⭐ En Çok</span> }
+                      </div>
+                    </td>
+                    <td class="amount-cell">{{ formatCurrency(service.price, service.currency) }}</td>
+                    <td class="amount-cell">{{ formatCurrency(service.totalEarnings, service.currency) }}</td>
+                    <td class="center-cell">{{ service.appointmentCount }}</td>
+                    <td class="share-cell">
+                      <div class="share-wrap">
+                        <div class="share-bar-bg">
+                          <div class="share-bar-fill share-bar-fill--green" [style.width.%]="serviceShare(service.appointmentCount)"></div>
+                        </div>
+                        <span class="share-pct">%{{ serviceShare(service.appointmentCount) }}</span>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <p class="empty-text">{{ 'reports.noData' | translate }}</p>
+          }
+        </div>
+      </div>
+
     }
 
-    <!-- Personele Göre Kazanç -->
-    <div class="report-section">
-      <div class="section-title-row">
-        <div class="section-icon section-icon--purple">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <h3>{{ 'reports.byStaff' | translate }}</h3>
-        @if (earnings.byCurrency.length > 1) {
-          <span class="try-badge" title="{{ 'reports.tryNote' | translate }}">
-            {{ 'reports.tryConverted' | translate }}
-          </span>
-        }
-      </div>
-      <div class="table-card">
-        @if (earnings.byStaff.length > 0) {
-          <table class="table">
-            <thead>
-              <tr>
-                <th>{{ 'reports.colStaff' | translate }}</th>
-                <th>{{ 'reports.colTotalTry' | translate }}</th>
-                <th class="col-share">Pay</th>
-                <th>{{ 'reports.colAppts' | translate }}</th>
-                <th>{{ 'reports.colAvgTry' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (staff of earnings.byStaff; track staff.staffId; let i = $index) {
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- GİDER SEKMESİ -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    @if (activeTab === 'expense') {
+
+      <!-- Kategori dağılımı (gider özeti) -->
+      @if ((earnings.expenseByCategory?.length ?? 0) > 0) {
+        <div class="report-section">
+          <div class="section-title-row">
+            <div class="section-icon section-icon--red">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <h3>Kategoriye Göre Gider</h3>
+          </div>
+          <div class="table-card">
+            <table class="table">
+              <thead>
                 <tr>
-                  <td>
-                    <div class="staff-cell">
-                      <div class="staff-avatar" [attr.data-rank]="i === 0 ? '1' : null">
-                        {{ staff.staffName[0].toUpperCase() }}
-                      </div>
-                      <span class="staff-name">{{ staff.staffName }}</span>
-                      @if (i === 0) { <span class="top-badge">🏆 #1</span> }
-                    </div>
-                  </td>
-                  <td class="amount-cell">{{ formatCurrency(staff.totalEarnings) }}</td>
-                  <td class="share-cell">
-                    <div class="share-wrap">
-                      <div class="share-bar-bg">
-                        <div class="share-bar-fill share-bar-fill--purple" [style.width.%]="staffShare(staff.totalEarnings)"></div>
-                      </div>
-                      <span class="share-pct">%{{ staffShare(staff.totalEarnings) }}</span>
-                    </div>
-                  </td>
-                  <td class="center-cell">{{ staff.appointmentCount }}</td>
-                  <td class="amount-cell">{{ formatCurrency(staff.average) }}</td>
+                  <th>Kategori</th>
+                  <th>Toplam (TRY)</th>
+                  <th class="col-share">Pay</th>
+                  <th>Kayıt Sayısı</th>
                 </tr>
-              }
-            </tbody>
-          </table>
-        } @else {
-          <p class="empty-text">{{ 'reports.noData' | translate }}</p>
+              </thead>
+              <tbody>
+                @for (cat of earnings.expenseByCategory; track cat.category) {
+                  <tr>
+                    <td>
+                      <span class="cat-dot"></span>
+                      <span class="category-name">{{ cat.category }}</span>
+                    </td>
+                    <td class="amount-cell amount-red">{{ formatCurrency(cat.total) }}</td>
+                    <td class="share-cell">
+                      <div class="share-wrap">
+                        <div class="share-bar-bg">
+                          <div class="share-bar-fill share-bar-fill--red" [style.width.%]="expenseCategoryShare(cat.total)"></div>
+                        </div>
+                        <span class="share-pct">%{{ expenseCategoryShare(cat.total) }}</span>
+                      </div>
+                    </td>
+                    <td class="center-cell">{{ cat.count }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- Gider Listesi -->
+      <div class="report-section">
+        <div class="section-title-row">
+          <div class="section-icon section-icon--red">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <h3>Gider Listesi</h3>
+          <button class="btn-add-expense no-print" (click)="openExpenseForm()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Gider Ekle
+          </button>
+        </div>
+
+        @if (expenseSuccess) {
+          <div class="expense-success">{{ expenseSuccess }}</div>
         }
+
+        <div class="table-card">
+          @if (isExpensesLoading) {
+            <div class="loading-state" style="padding: 2rem;"><div class="spinner"></div></div>
+          } @else if (expenses.length === 0) {
+            <div class="expense-empty">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <p>Bu dönem için gider kaydı yok.</p>
+              <button class="btn-add-expense" (click)="openExpenseForm()">İlk gideri ekle</button>
+            </div>
+          } @else {
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Tarih</th>
+                  <th>Kategori</th>
+                  <th>Açıklama</th>
+                  <th>Tutar</th>
+                  <th class="no-print">İşlem</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (exp of expenses; track exp.id) {
+                  <tr>
+                    <td class="date-cell">{{ formatDate(exp.date) }}</td>
+                    <td>
+                      <span class="cat-badge">{{ exp.category || '—' }}</span>
+                    </td>
+                    <td class="text-muted">{{ exp.description || '—' }}</td>
+                    <td class="amount-cell amount-red">{{ formatCurrency(exp.amount, exp.currency) }}</td>
+                    <td class="action-cell no-print">
+                      <button class="action-icon-btn edit-btn" (click)="openExpenseForm(exp)" title="Düzenle">✏</button>
+                      <button class="action-icon-btn del-btn" (click)="deleteExpense(exp.id)" title="Sil">🗑</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </div>
+
+    }
+
+  }
+
+</div>
+
+<!-- ── Gider Ekleme / Düzenleme Drawer ──────────────────────────────────── -->
+@if (isExpenseFormOpen) {
+  <div class="drawer-overlay" (click)="closeExpenseForm()"></div>
+}
+
+<div class="drawer" [class.open]="isExpenseFormOpen">
+  <div class="drawer-header">
+    <h3>{{ editingExpense ? 'Gider Düzenle' : 'Gider Ekle' }}</h3>
+    <button class="drawer-close" (click)="closeExpenseForm()">✕</button>
+  </div>
+
+  <form [formGroup]="expenseForm" (ngSubmit)="saveExpense()" class="drawer-body">
+
+    <div class="form-group">
+      <label>Tarih</label>
+      <input type="date" formControlName="date"
+        [class.error]="expenseForm.get('date')?.invalid && expenseForm.get('date')?.touched"/>
+    </div>
+
+    <div class="form-row-2">
+      <div class="form-group">
+        <label>Tutar</label>
+        <input type="number" formControlName="amount" placeholder="0.00" min="0" step="0.01"
+          [class.error]="expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched"/>
+      </div>
+      <div class="form-group">
+        <label>Para Birimi</label>
+        <select formControlName="currency">
+          @for (cur of currencies; track cur) {
+            <option [value]="cur">{{ cur }}</option>
+          }
+        </select>
       </div>
     </div>
 
-    <!-- Hizmet Bazında Kazanç -->
-    <div class="report-section">
-      <div class="section-title-row">
-        <div class="section-icon section-icon--green">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42"/></svg>
-        </div>
-        <h3>{{ 'reports.byService' | translate }}</h3>
-      </div>
-      <div class="table-card">
-        @if (earnings.byService.length > 0) {
-          <table class="table">
-            <thead>
-              <tr>
-                <th>{{ 'reports.colService' | translate }}</th>
-                <th>{{ 'reports.colPrice' | translate }}</th>
-                <th>{{ 'reports.colTotal' | translate }}</th>
-                <th>{{ 'reports.colSales' | translate }}</th>
-                <th class="col-share">Pay</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (service of earnings.byService; track service.serviceId; let i = $index) {
-                <tr>
-                  <td>
-                    <div class="service-cell">
-                      <span class="service-name">{{ service.serviceName }}</span>
-                      @if (i === 0) { <span class="top-badge top-badge--green">⭐ En Çok</span> }
-                    </div>
-                  </td>
-                  <td class="amount-cell">{{ formatCurrency(service.price, service.currency) }}</td>
-                  <td class="amount-cell">{{ formatCurrency(service.totalEarnings, service.currency) }}</td>
-                  <td class="center-cell">{{ service.appointmentCount }}</td>
-                  <td class="share-cell">
-                    <div class="share-wrap">
-                      <div class="share-bar-bg">
-                        <div class="share-bar-fill share-bar-fill--green" [style.width.%]="serviceShare(service.appointmentCount)"></div>
-                      </div>
-                      <span class="share-pct">%{{ serviceShare(service.appointmentCount) }}</span>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        } @else {
-          <p class="empty-text">{{ 'reports.noData' | translate }}</p>
+    <div class="form-group">
+      <label>Kategori</label>
+      <select formControlName="category">
+        <option value="">Seçiniz (opsiyonel)</option>
+        @for (cat of expenseCategories; track cat) {
+          <option [value]="cat">{{ cat }}</option>
         }
-      </div>
+      </select>
     </div>
-  }
+
+    <div class="form-group">
+      <label>Açıklama</label>
+      <input type="text" formControlName="description" placeholder="Örn: Ocak kiracı ödemesi"/>
+    </div>
+
+    <div class="form-group">
+      <label>Not (opsiyonel)</label>
+      <textarea formControlName="note" rows="2" placeholder="Ek notlar..."></textarea>
+    </div>
+
+    @if (expenseError) {
+      <div class="error-message">{{ expenseError }}</div>
+    }
+
+    <div class="drawer-footer">
+      <button type="button" class="btn btn-outline" (click)="closeExpenseForm()">İptal</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSavingExpense || expenseForm.invalid">
+        {{ isSavingExpense ? 'Kaydediliyor...' : (editingExpense ? 'Güncelle' : 'Kaydet') }}
+      </button>
+    </div>
+
+  </form>
 </div>

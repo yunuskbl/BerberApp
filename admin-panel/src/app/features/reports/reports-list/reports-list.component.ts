@@ -1,14 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { EarningsService, EarningsDto } from '../../../core/services/earnings.service';
+import { ExpenseService, ExpenseDto } from '../../../core/services/expense.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-reports-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: './reports-list.component.html',
   styleUrl: './reports-list.component.scss'
 })
@@ -16,20 +17,44 @@ export class ReportsListComponent implements OnInit {
   earnings: EarningsDto | null = null;
   isLoading = false;
 
-  isStartDateOpen = false;
-  isEndDateOpen = false;
+  // ── Aktif sekme ───────────────────────────────────────────────────────────
+  activeTab: 'income' | 'expense' = 'income';
 
+  // ── Tarih filtresi ────────────────────────────────────────────────────────
   reportStartDate = this.getDateString(new Date(new Date().setDate(new Date().getDate() - 30)));
   reportEndDate = this.getDateString(new Date());
 
+  // ── Gider yönetimi ────────────────────────────────────────────────────────
+  expenses: ExpenseDto[] = [];
+  isExpensesLoading = false;
+  expenseForm!: FormGroup;
+  isExpenseFormOpen = false;
+  editingExpense: ExpenseDto | null = null;
+  isSavingExpense = false;
+  expenseError = '';
+  expenseSuccess = '';
+
+  readonly expenseCategories = [
+    'Kira', 'Elektrik', 'Su', 'Doğalgaz', 'İnternet',
+    'Malzeme & Ürün', 'Ekipman', 'Personel Maaşı',
+    'Reklam & Pazarlama', 'Vergi & Harç', 'Sigorta', 'Diğer'
+  ];
+  readonly currencies = ['TRY', 'USD', 'EUR', 'GBP'];
+
   constructor(
     private earningsService: EarningsService,
+    private expenseService: ExpenseService,
+    private fb: FormBuilder,
     public langService: LanguageService,
   ) {}
 
   ngOnInit(): void {
     this.loadEarnings();
+    this.loadExpenses();
+    this.initExpenseForm();
   }
+
+  // ── Gelir ─────────────────────────────────────────────────────────────────
 
   loadEarnings(): void {
     this.isLoading = true;
@@ -41,6 +66,95 @@ export class ReportsListComponent implements OnInit {
       error: () => { this.isLoading = false; }
     });
   }
+
+  // ── Gider ─────────────────────────────────────────────────────────────────
+
+  loadExpenses(): void {
+    this.isExpensesLoading = true;
+    this.expenseService.getExpenses(this.reportStartDate, this.reportEndDate).subscribe({
+      next: (res) => {
+        if (res.success) this.expenses = res.data;
+        this.isExpensesLoading = false;
+      },
+      error: () => { this.isExpensesLoading = false; }
+    });
+  }
+
+  initExpenseForm(expense?: ExpenseDto): void {
+    this.expenseForm = this.fb.group({
+      date:        [expense?.date ?? this.getDateString(new Date()), Validators.required],
+      amount:      [expense?.amount ?? null, [Validators.required, Validators.min(0.01)]],
+      currency:    [expense?.currency ?? 'TRY', Validators.required],
+      category:    [expense?.category ?? ''],
+      description: [expense?.description ?? ''],
+      note:        [expense?.note ?? ''],
+    });
+  }
+
+  openExpenseForm(expense?: ExpenseDto): void {
+    this.editingExpense = expense ?? null;
+    this.expenseError = '';
+    this.expenseSuccess = '';
+    this.initExpenseForm(expense);
+    this.isExpenseFormOpen = true;
+  }
+
+  closeExpenseForm(): void {
+    this.isExpenseFormOpen = false;
+    this.editingExpense = null;
+  }
+
+  saveExpense(): void {
+    if (this.expenseForm.invalid) return;
+    this.isSavingExpense = true;
+    this.expenseError = '';
+
+    const val = this.expenseForm.value;
+
+    const req = {
+      date:        val.date,
+      amount:      Number(val.amount),
+      currency:    val.currency || 'TRY',
+      category:    val.category || '',
+      description: val.description || undefined,
+      note:        val.note || undefined,
+    };
+
+    const action$ = this.editingExpense
+      ? this.expenseService.updateExpense(this.editingExpense.id, req)
+      : this.expenseService.createExpense(req);
+
+    action$.subscribe({
+      next: () => {
+        this.isSavingExpense = false;
+        this.closeExpenseForm();
+        this.loadExpenses();
+        this.loadEarnings(); // P&L güncellenir
+        this.expenseSuccess = this.editingExpense ? 'Gider güncellendi.' : 'Gider eklendi.';
+        setTimeout(() => this.expenseSuccess = '', 3000);
+      },
+      error: (err) => {
+        this.isSavingExpense = false;
+        this.expenseError = err?.error?.message || 'Gider kaydedilemedi.';
+      }
+    });
+  }
+
+  deleteExpense(id: string): void {
+    if (!confirm('Bu gideri silmek istediğinizden emin misiniz?')) return;
+    this.expenseService.deleteExpense(id).subscribe({
+      next: () => {
+        this.loadExpenses();
+        this.loadEarnings();
+      }
+    });
+  }
+
+  get totalExpensesInPeriod(): number {
+    return this.expenses.reduce((sum, e) => sum + e.amount, 0);
+  }
+
+  // ── Yardımcılar ───────────────────────────────────────────────────────────
 
   private getDateString(date: Date): string {
     return date.toISOString().split('T')[0];
@@ -58,6 +172,13 @@ export class ReportsListComponent implements OnInit {
     return `1 ${currency} = ${new Intl.NumberFormat(this.langService.dateLocale, {
       style: 'currency', currency: 'TRY', minimumFractionDigits: 2
     }).format(rate)}`;
+  }
+
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '';
+    return new Intl.DateTimeFormat(this.langService.dateLocale, {
+      day: '2-digit', month: 'short', year: 'numeric'
+    }).format(new Date(dateStr + 'T12:00:00'));
   }
 
   get todayStr(): string {
@@ -81,6 +202,12 @@ export class ReportsListComponent implements OnInit {
     this.reportStartDate = this.getDateString(start!);
     this.reportEndDate   = this.getDateString(now);
     this.loadEarnings();
+    this.loadExpenses();
+  }
+
+  onDateChange(): void {
+    this.loadEarnings();
+    this.loadExpenses();
   }
 
   staffShare(earnings: number): number {
@@ -91,6 +218,11 @@ export class ReportsListComponent implements OnInit {
   serviceShare(count: number): number {
     if (!this.earnings?.totalAppointments) return 0;
     return Math.round((count / this.earnings.totalAppointments) * 100);
+  }
+
+  expenseCategoryShare(total: number): number {
+    if (!this.earnings?.totalExpenses) return 0;
+    return Math.round((total / this.earnings.totalExpenses) * 100);
   }
 
   printReport(): void {
@@ -104,31 +236,28 @@ export class ReportsListComponent implements OnInit {
     const e = this.earnings;
     const rows: string[][] = [];
 
-    // ── Header info ──
     rows.push(['ayarlıyo — ' + (lang === 'tr' ? 'Kazanç Raporu' : lang === 'en' ? 'Earnings Report' : 'Отчёт о доходах')]);
     rows.push([lang === 'tr' ? 'Dönem' : lang === 'en' ? 'Period' : 'Период',
                `${this.reportStartDate} → ${this.reportEndDate}`]);
     rows.push([]);
 
-    // ── Summary ──
     rows.push([lang === 'tr' ? 'ÖZET' : lang === 'en' ? 'SUMMARY' : 'СВОДКА']);
     rows.push([
-      lang === 'tr' ? 'Toplam Kazanç (TRY)' : lang === 'en' ? 'Total Earnings (TRY)' : 'Общий доход (TRY)',
+      lang === 'tr' ? 'Toplam Gelir (TRY)' : lang === 'en' ? 'Total Income (TRY)' : 'Доход (TRY)',
+      lang === 'tr' ? 'Toplam Gider (TRY)' : lang === 'en' ? 'Total Expenses (TRY)' : 'Расходы (TRY)',
+      lang === 'tr' ? 'Net Kâr (TRY)' : lang === 'en' ? 'Net Profit (TRY)' : 'Чистая прибыль (TRY)',
       lang === 'tr' ? 'Toplam Randevu' : lang === 'en' ? 'Total Appointments' : 'Всего записей',
-      lang === 'tr' ? 'Ort. Randevu Başına' : lang === 'en' ? 'Avg. Per Appt' : 'Сред. за запись',
       lang === 'tr' ? 'Bu Ay (TRY)' : lang === 'en' ? 'This Month (TRY)' : 'Этот месяц (TRY)',
-      lang === 'tr' ? 'Bu Hafta (TRY)' : lang === 'en' ? 'This Week (TRY)' : 'Эта неделя (TRY)',
     ]);
     rows.push([
       e.totalInTry.toFixed(2),
+      e.totalExpenses.toFixed(2),
+      e.netProfit.toFixed(2),
       String(e.totalAppointments),
-      e.averagePerAppointment.toFixed(2),
       e.monthEarnings.toFixed(2),
-      e.weekEarnings.toFixed(2),
     ]);
     rows.push([]);
 
-    // ── By Staff ──
     rows.push([lang === 'tr' ? 'PERSONELE GÖRE KAZANÇ' : lang === 'en' ? 'EARNINGS BY STAFF' : 'ДОХОД ПО СОТРУДНИКАМ']);
     rows.push([
       lang === 'tr' ? 'Personel' : lang === 'en' ? 'Staff' : 'Сотрудник',
@@ -141,7 +270,6 @@ export class ReportsListComponent implements OnInit {
     }
     rows.push([]);
 
-    // ── By Service ──
     rows.push([lang === 'tr' ? 'HİZMET BAZINDA KAZANÇ' : lang === 'en' ? 'EARNINGS BY SERVICE' : 'ДОХОД ПО УСЛУГАМ']);
     rows.push([
       lang === 'tr' ? 'Hizmet' : lang === 'en' ? 'Service' : 'Услуга',
@@ -154,7 +282,6 @@ export class ReportsListComponent implements OnInit {
       rows.push([s.serviceName, s.currency, s.price.toFixed(2), s.totalEarnings.toFixed(2), String(s.appointmentCount)]);
     }
 
-    // ── By Currency (if multi-currency) ──
     if (e.byCurrency.length > 1) {
       rows.push([]);
       rows.push([lang === 'tr' ? 'PARA BİRİMİNE GÖRE KAZANÇ' : lang === 'en' ? 'EARNINGS BY CURRENCY' : 'ДОХОД ПО ВАЛЮТАМ']);
@@ -170,13 +297,25 @@ export class ReportsListComponent implements OnInit {
       }
     }
 
-    // ── Build CSV string ──
-    // UTF-8 BOM + sep=, directive → forces Excel to use comma regardless of locale
+    if (this.expenses.length > 0) {
+      rows.push([]);
+      rows.push([lang === 'tr' ? 'GİDERLER' : lang === 'en' ? 'EXPENSES' : 'РАСХОДЫ']);
+      rows.push([
+        lang === 'tr' ? 'Tarih' : lang === 'en' ? 'Date' : 'Дата',
+        lang === 'tr' ? 'Kategori' : lang === 'en' ? 'Category' : 'Категория',
+        lang === 'tr' ? 'Tutar' : lang === 'en' ? 'Amount' : 'Сумма',
+        lang === 'tr' ? 'Para Birimi' : lang === 'en' ? 'Currency' : 'Валюта',
+        lang === 'tr' ? 'Açıklama' : lang === 'en' ? 'Description' : 'Описание',
+      ]);
+      for (const exp of this.expenses) {
+        rows.push([exp.date, exp.category, exp.amount.toFixed(2), exp.currency, exp.description ?? '']);
+      }
+    }
+
     const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
     const csvBody = rows.map(r => r.map(escape).join(',')).join('\r\n');
     const csv = '﻿' + 'sep=,\r\n' + csvBody;
 
-    // ── Download ──
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');

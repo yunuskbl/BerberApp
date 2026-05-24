@@ -10,17 +10,20 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
     private readonly IGenericRepository<AppointmentEntity> _appointmentRepo;
     private readonly IGenericRepository<ServiceEntity> _serviceRepo;
     private readonly IGenericRepository<StaffEntity> _staffRepo;
+    private readonly IGenericRepository<ExpenseEntity> _expenseRepo;
     private readonly IExchangeRateService _exchangeRates;
 
     public GetEarningsHandler(
         IGenericRepository<AppointmentEntity> appointmentRepo,
         IGenericRepository<ServiceEntity> serviceRepo,
         IGenericRepository<StaffEntity> staffRepo,
+        IGenericRepository<ExpenseEntity> expenseRepo,
         IExchangeRateService exchangeRates)
     {
         _appointmentRepo = appointmentRepo;
         _serviceRepo = serviceRepo;
         _staffRepo = staffRepo;
+        _expenseRepo = expenseRepo;
         _exchangeRates = exchangeRates;
     }
 
@@ -153,6 +156,36 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             })
             .ToList();
 
+        // ── Giderler (Expenses) ─────────────────────────────────────────────
+        var allExpenses = await _expenseRepo.GetAllAsync(
+            x => x.TenantId == request.TenantId &&
+                 x.Date >= startUtc && x.Date < endUtc, ct);
+
+        // Tüm gider para birimlerini döviz kurlarına ekle
+        var expenseCurrencies = allExpenses.Select(e => e.Currency).Distinct();
+        foreach (var cur in expenseCurrencies)
+        {
+            if (!rates.ContainsKey(cur.ToUpper()))
+            {
+                var extraRates = await _exchangeRates.GetRatesToTryAsync([cur], ct);
+                foreach (var kv in extraRates) rates[kv.Key] = kv.Value;
+            }
+        }
+
+        var totalExpenses = allExpenses.Sum(e =>
+            e.Amount * rates.GetValueOrDefault(e.Currency.ToUpper(), 1m));
+
+        var expenseByCategory = allExpenses
+            .GroupBy(e => string.IsNullOrWhiteSpace(e.Category) ? "Diğer" : e.Category)
+            .Select(g => new ExpenseSummaryDto
+            {
+                Category = g.Key,
+                Total = g.Sum(e => e.Amount * rates.GetValueOrDefault(e.Currency.ToUpper(), 1m)),
+                Count = g.Count()
+            })
+            .OrderByDescending(x => x.Total)
+            .ToList();
+
         return new EarningsDto
         {
             TotalEarnings = totalEarnings,
@@ -169,7 +202,10 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             ByCurrency = byCurrency,
             Daily = daily,
             ByStaff = byStaff,
-            ByService = byService
+            ByService = byService,
+            TotalExpenses = totalExpenses,
+            NetProfit = totalInTry - totalExpenses,
+            ExpenseByCategory = expenseByCategory
         };
     }
 }

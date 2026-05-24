@@ -14,4 +14,5 @@ global using StaffDayOffEntity         = BerberApp.Domain.Entities.StaffDayOff;
 global using TenantClosureEntity       = BerberApp.Domain.Entities.TenantClosure;
 global using AppointmentServiceEntity  = BerberApp.Domain.Entities.AppointmentService;
 global using OtpRecordEntity = BerberApp.Domain.Entities.OtpRecord;
+global using ExpenseEntity = BerberApp.Domain.Entities.Expense;
 global using BerberApp.Application.Common.Extensions;
