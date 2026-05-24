@@ -1275,10 +1275,11 @@ $green:        #059669;
 }
 
 @media (max-width: 768px) {
-  .nav-inner { padding: 0 16px; gap: 16px; }
+  .nav-inner { padding: 0 16px; gap: 12px; }
   .nav-links { display: none; }
   .logo-tagline { display: none; }
   .btn-nav-login { display: none; }
+  .btn-nav-salons { display: none; }
 
   .section-title { font-size: 26px; }
   .section-sub { font-size: 15px; }
@@ -1287,7 +1288,7 @@ $green:        #059669;
   .hero { padding: 48px 16px 60px; }
   .hero-title { font-size: 30px; }
   .hero-desc { font-size: 15px; }
-  .btn-hero-primary, .btn-hero-secondary { padding: 12px 22px; font-size: 15px; }
+  .btn-hero-primary, .btn-hero-secondary { padding: 12px 20px; font-size: 15px; }
 
   .mockup-card { max-width: 100%; }
   .mockup-stat-row { gap: 6px; }
@@ -1302,7 +1303,7 @@ $green:        #059669;
 
   .step { padding: 28px 24px; max-width: 100%; }
 
-  .plans-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
+  .plans-grid { grid-template-columns: 1fr; width: 100%; max-width: 440px; margin: 0 auto; }
   .plan-card.featured { transform: none; }
   .plan-card { padding: 28px 22px; }
 
@@ -1318,12 +1319,29 @@ $green:        #059669;
 }
 
 @media (max-width: 480px) {
-  .nav-inner { height: 56px; }
+  .nav-inner { height: 56px; gap: 8px; }
   .logo-text { font-size: 16px; }
+  .btn-nav-cta { padding: 7px 14px; font-size: 13px; }
 
+  .hero { padding: 36px 16px 52px; }
   .hero-title { font-size: 26px; }
   .hero-badge { font-size: 12px; }
+  .hero-desc { font-size: 14px; margin-bottom: 24px; }
   .sector-chip { font-size: 12px; padding: 4px 10px; }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .btn-hero-primary, .btn-hero-secondary {
+    width: 100%;
+    justify-content: center;
+    padding: 13px 20px;
+    font-size: 15px;
+  }
+
+  .hero-mockup { display: none; }
 
   .stat-value { font-size: 24px; }
   .stats-section { padding: 36px 16px; }
@@ -1331,9 +1349,17 @@ $green:        #059669;
   .section-inner { padding: 0 16px; }
   .faq-inner { padding: 0 16px; }
 
+  .plans-grid { max-width: 100%; padding: 0; }
+
   .cta-inner h2 { font-size: 24px; }
-  .cta-actions { flex-direction: column; align-items: center; }
+  .cta-actions { flex-direction: column; align-items: stretch; }
   .cta-btn-primary, .cta-btn-contact { width: 100%; text-align: center; }
 
-  .billing-toggle { flex-wrap: wrap; gap: 10px; }
+  .billing-toggle { gap: 10px; }
+  .toggle-label { font-size: 14px; }
+  .discount-chip { font-size: 10px; }
+
+  .compare-row { grid-template-columns: 1fr repeat(3, 90px); }
+  .compare-feat-col { padding: 12px 14px; font-size: 13px; }
+  .compare-plan-col { padding: 12px 6px; font-size: 12px; }
 }
