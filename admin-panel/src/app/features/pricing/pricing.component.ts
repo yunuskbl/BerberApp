@@ -354,7 +354,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   }
 
   goToSalons(): void {
-    this.router.navigate(['/salons']);
+    window.open('/salons', '_blank');
   }
 
   selectPlan(name: string): void {
