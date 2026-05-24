@@ -92,7 +92,8 @@
   .print-header { display: flex !important; }
   .print-divider { display: block !important; }
 
-  .no-print    { display: none !important; }
+  .no-print:not(.pnl-divider) { display: none !important; }
+  .pnl-divider { display: block !important; }
   .filter-section { display: none !important; }
 
   .page { max-width: 100%; padding: 0; }
@@ -496,6 +497,22 @@
   .filter-section { flex-direction: column; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .table { font-size: 12px; th, td { padding: 10px 12px; } }
+  .table-card { overflow-x: auto; }
+
+  .tab-bar { width: 100%; }
+  .tab-btn { flex: 1; justify-content: center; font-size: 12px; padding: 8px 10px; }
+
+  .date-inputs { flex-direction: column; align-items: stretch; }
+  .date-sep { display: none; }
+
+  .pnl-card { padding: 16px 18px; gap: 8px; }
+  .pnl-item { min-width: 0; }
+
+  .section-title-row {
+    flex-wrap: wrap;
+    gap: 8px;
+    .btn-add-expense { margin-left: 0; width: 100%; justify-content: center; }
+  }
 }
 .reports-section {
   margin-top: 40px;
@@ -575,6 +592,48 @@
 }
 
 .empty-text { text-align: center; color: #9ca3af; padding: 16px; }
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card { padding: 14px 12px; }
+  .stat-value { font-size: 17px; }
+  .stat-icon { width: 28px; height: 28px; margin-bottom: 8px; }
+
+  .pnl-card {
+    flex-direction: column;
+    padding: 14px 16px;
+    gap: 14px;
+  }
+  .pnl-divider { display: none; }
+  .pnl-item { width: 100%; }
+  .pnl-value { font-size: 18px; }
+
+  .tab-btn { font-size: 11px; padding: 7px 8px; gap: 4px; }
+  .tab-btn svg { display: none; }
+
+  .qr-btn { padding: 5px 10px; font-size: 12px; }
+
+  .table th, .table td { padding: 8px 10px; font-size: 11px; }
+  .share-bar-bg { display: none; }
+  .share-cell { min-width: auto; }
+  .col-share { min-width: auto; }
+  .top-badge { display: none; }
+
+  .currency-card { min-width: 0; }
+  .currency-amount { font-size: 17px; }
+
+  .action-btns { width: 100%; }
+  .btn-export, .btn-print { flex: 1; justify-content: center; font-size: 12px; padding: 7px 10px; }
+
+  .section-title-row h3 { font-size: 14px; }
+
+  .drawer { width: 100%; right: -100%; }
+}
+
+@media (max-width: 360px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .tab-bar { border-radius: 10px; }
+}
 
 @media (max-width: 768px) {
   .page { padding: 16px; }
