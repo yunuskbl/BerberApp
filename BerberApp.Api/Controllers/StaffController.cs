@@ -230,5 +230,74 @@ public class StaffController : BaseApiController
         return Success(new { hasAccount = has });
     }
 
+    // Personelin hesap bilgilerini getir
+    [HttpGet("{id}/account-info")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    public async Task<IActionResult> GetAccountInfo(Guid id)
+    {
+        var staff = await _context.Staff
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == TenantId);
+        if (staff is null)
+            return NotFound(new { success = false, message = "Personel bulunamadı." });
+
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.StaffId == id && !u.IsDeleted);
+        if (user is null)
+            return NotFound(new { success = false, message = "Bu personele ait hesap bulunamadı." });
+
+        return Success(new
+        {
+            userId    = user.Id,
+            email     = user.Email,
+            createdAt = user.CreatedAt,
+            isActive  = !user.IsDeleted,
+        });
+    }
+
+    // Personelin şifresini sıfırla
+    [HttpPut("{id}/reset-password")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetStaffPasswordRequest request)
+    {
+        var staff = await _context.Staff
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == TenantId);
+        if (staff is null)
+            return NotFound(new { success = false, message = "Personel bulunamadı." });
+
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.StaffId == id && !u.IsDeleted);
+        if (user is null)
+            return NotFound(new { success = false, message = "Bu personele ait hesap bulunamadı." });
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        user.UpdatedAt    = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return Success(new { message = "Şifre başarıyla güncellendi." });
+    }
+
+    // Personelin hesabını sil
+    [HttpDelete("{id}/delete-account")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    public async Task<IActionResult> DeleteAccount(Guid id)
+    {
+        var staff = await _context.Staff
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == TenantId);
+        if (staff is null)
+            return NotFound(new { success = false, message = "Personel bulunamadı." });
+
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.StaffId == id && !u.IsDeleted);
+        if (user is null)
+            return NotFound(new { success = false, message = "Bu personele ait hesap bulunamadı." });
+
+        user.IsDeleted = true;
+        user.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return Success(new { message = "Hesap silindi." });
+    }
+
     public record CreateStaffAccountRequest(string Email, string Password);
+    public record ResetStaffPasswordRequest(string NewPassword);
 }

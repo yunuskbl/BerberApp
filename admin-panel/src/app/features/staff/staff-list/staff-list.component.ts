@@ -51,14 +51,25 @@ export class StaffListComponent implements OnInit {
   daysOffError = '';
   daysOffForm!: FormGroup;
 
-  // ── Hesap Oluşturma ───────────────────────────────────────────────────────
+  // ── Hesap Oluşturma / Görüntüleme ────────────────────────────────────────
   isAccountModalOpen = false;
+  accountModalMode: 'create' | 'info' = 'create';
   selectedStaffForAccount: Staff | null = null;
   accountForm!: FormGroup;
+  resetPasswordForm!: FormGroup;
   isCreatingAccount = false;
   accountSuccess = '';
   accountError = '';
   staffWithAccounts = new Set<string>(); // hesabı olan personel ID'leri
+
+  // Hesap bilgisi (info mode)
+  accountInfo: { email: string; createdAt: string } | null = null;
+  isLoadingAccountInfo = false;
+  isResettingPassword = false;
+  isDeletingAccount = false;
+  showResetPasswordForm = false;
+  resetPasswordSuccess = '';
+  resetPasswordError = '';
 
   isServicesOpen = false;
   selectedStaffForSvc: Staff | null = null;
@@ -379,8 +390,13 @@ export class StaffListComponent implements OnInit {
 
   openAccountModal(staff: Staff): void {
     this.selectedStaffForAccount = staff;
+    this.accountModalMode = 'create';
     this.accountSuccess = '';
     this.accountError = '';
+    this.showResetPasswordForm = false;
+    this.resetPasswordSuccess = '';
+    this.resetPasswordError = '';
+    this.accountInfo = null;
     this.accountForm = this.fb.group({
       email:    ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
@@ -388,9 +404,34 @@ export class StaffListComponent implements OnInit {
     this.isAccountModalOpen = true;
   }
 
+  openAccountInfoModal(staff: Staff): void {
+    this.selectedStaffForAccount = staff;
+    this.accountModalMode = 'info';
+    this.accountInfo = null;
+    this.accountSuccess = '';
+    this.accountError = '';
+    this.showResetPasswordForm = false;
+    this.resetPasswordSuccess = '';
+    this.resetPasswordError = '';
+    this.resetPasswordForm = this.fb.group({
+      newPassword:     ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', Validators.required],
+    });
+    this.isAccountModalOpen = true;
+    this.isLoadingAccountInfo = true;
+    this.http.get<any>(`${environment.apiUrl}/staff/${staff.id}/account-info`).subscribe({
+      next: (res) => {
+        if (res.success) this.accountInfo = res.data;
+        this.isLoadingAccountInfo = false;
+      },
+      error: () => { this.isLoadingAccountInfo = false; }
+    });
+  }
+
   closeAccountModal(): void {
     this.isAccountModalOpen = false;
     this.selectedStaffForAccount = null;
+    this.accountInfo = null;
   }
 
   createAccount(): void {
@@ -412,6 +453,59 @@ export class StaffListComponent implements OnInit {
         this.isCreatingAccount = false;
       },
     });
+  }
+
+  resetPassword(): void {
+    if (!this.resetPasswordForm.valid || !this.selectedStaffForAccount) return;
+    const { newPassword, confirmPassword } = this.resetPasswordForm.value;
+    if (newPassword !== confirmPassword) {
+      this.resetPasswordError = 'Şifreler eşleşmiyor.';
+      return;
+    }
+    this.isResettingPassword = true;
+    this.resetPasswordError = '';
+    this.http.put<any>(`${environment.apiUrl}/staff/${this.selectedStaffForAccount.id}/reset-password`, { newPassword }).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.resetPasswordSuccess = 'Şifre başarıyla güncellendi.';
+          this.showResetPasswordForm = false;
+          this.resetPasswordForm.reset();
+          setTimeout(() => this.resetPasswordSuccess = '', 3000);
+        }
+        this.isResettingPassword = false;
+      },
+      error: (err) => {
+        this.resetPasswordError = err.error?.message || 'Şifre güncellenemedi.';
+        this.isResettingPassword = false;
+      }
+    });
+  }
+
+  deleteAccount(): void {
+    if (!confirm('Bu personelin giriş hesabını silmek istediğinizden emin misiniz?')) return;
+    if (!this.selectedStaffForAccount) return;
+    this.isDeletingAccount = true;
+    this.http.delete<any>(`${environment.apiUrl}/staff/${this.selectedStaffForAccount.id}/delete-account`).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.staffWithAccounts.delete(this.selectedStaffForAccount!.id);
+          this.isDeletingAccount = false;
+          this.closeAccountModal();
+        }
+      },
+      error: (err) => {
+        this.accountError = err.error?.message || 'Hesap silinemedi.';
+        this.isDeletingAccount = false;
+      }
+    });
+  }
+
+  formatAccountDate(dateStr: string): string {
+    if (!dateStr) return '';
+    return new Intl.DateTimeFormat('tr-TR', {
+      day: '2-digit', month: 'long', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    }).format(new Date(dateStr));
   }
 
   openDrawer(staff?: Staff): void {

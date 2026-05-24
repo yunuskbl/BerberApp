@@ -70,11 +70,9 @@
   &.account   { background: #f5f3ff; color: #7c3aed; &:hover { background: #ede9fe; } }
 }
 
-.account-badge {
-  font-size: 16px; line-height: 1;
-  display: flex; align-items: center; justify-content: center;
-  width: 32px; height: 32px;
-  cursor: default; title: 'Hesap mevcut';
+.account-info-btn {
+  background: #f0fdf4; color: #16a34a; border: none;
+  &:hover { background: #dcfce7; }
 }
 
 /* ── Hesap Oluşturma Modalı ── */
@@ -131,6 +129,69 @@
 .error-banner {
   background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;
   border-radius: 8px; padding: 10px 14px; font-size: 13px;
+}
+
+/* ── Hesap Bilgisi Modal ── */
+.modal-loading {
+  display: flex; justify-content: center; padding: 32px 0;
+}
+
+.account-info-body { display: flex; flex-direction: column; gap: 16px; }
+
+.account-staff-row {
+  display: flex; align-items: center; gap: 14px; padding: 14px;
+  background: #f9fafb; border-radius: 12px; border: 1px solid #e5e7eb;
+}
+.account-avatar {
+  width: 44px; height: 44px; border-radius: 50%; background: #6b7280;
+  color: white; font-size: 18px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.account-staff-name { font-size: 15px; font-weight: 700; color: #111827; }
+.account-staff-role { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+
+.account-info-cards { display: flex; flex-direction: column; gap: 8px; }
+.account-info-card {
+  padding: 12px 14px; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px;
+}
+.aic-label {
+  font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 5px;
+}
+.aic-value { font-size: 14px; font-weight: 600; color: #1e293b; }
+
+.btn-reset-password {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px; border-radius: 8px;
+  background: #fff; border: 1.5px solid #e5e7eb; color: #374151;
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  &:hover { border-color: #7c3aed; color: #7c3aed; background: #f5f3ff; }
+}
+
+.reset-password-form {
+  background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px;
+  padding: 14px; display: flex; flex-direction: column; gap: 12px;
+}
+
+.reset-form-actions {
+  display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;
+}
+
+.btn-sm { padding: 7px 14px; font-size: 13px; }
+
+.account-info-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 12px; border-top: 1px solid #f0f0f0; margin-top: 4px;
+}
+
+.btn-delete-account {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 8px; border: 1.5px solid #fecaca;
+  background: #fff; color: #dc2626; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+  &:hover { background: #fef2f2; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
 .services-hint { font-size: 13px; color: #9ca3af; margin-bottom: 16px; }
