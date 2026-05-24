@@ -18,6 +18,8 @@ public class Appointment : BaseEntity
     public DateTime EndTime { get; set; }
     public AppointmentStatus Status { get; set; } = AppointmentStatus.Pending;
     public string? Notes { get; set; }
+    public bool ReminderSent24h { get; set; } = false;
+    public bool ReminderSent1h  { get; set; } = false;
 
     // Navigation
     public Tenant Tenant { get; set; } = null!;

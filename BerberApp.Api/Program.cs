@@ -231,23 +231,42 @@ using (var scope = app.Services.CreateScope())
         CREATE INDEX IF NOT EXISTS ""IX_TenantClosures_TenantId"" ON ""TenantClosures"" (""TenantId"");
     ");
 
+    // Appointments tablosuna reminder flag kolonlarını ekle (idempotent)
+    db.Database.ExecuteSqlRaw(@"
+        ALTER TABLE ""Appointments"" ADD COLUMN IF NOT EXISTS ""ReminderSent24h"" boolean NOT NULL DEFAULT false;
+        ALTER TABLE ""Appointments"" ADD COLUMN IF NOT EXISTS ""ReminderSent1h""  boolean NOT NULL DEFAULT false;
+    ");
+
     await SeedData.SeedAsync(db, env);
     await SeedData.SeedSuperAdminAsync(db);
 }
 
-// Hangfire Recurring Job
+// Hangfire Recurring Jobs
+// Sabah 10:00 — yarın randevusu olan müşterilere gün sonu özet hatırlatması
 RecurringJob.AddOrUpdate<AppointmentReminderJob>(
     "appointment-reminders",
     job => job.SendRemindersAsync(),
     "0 10 * * *"
 );
-// Her 5 dakikada bir kontrol et
+// Her saat başı — randevudan tam 24 saat önce hatırlatma
+RecurringJob.AddOrUpdate<AppointmentReminder24hJob>(
+    "appointment-reminders-24h",
+    job => job.SendRemindersAsync(),
+    "0 * * * *"
+);
+// Her 15 dakikada bir — randevudan tam 1 saat önce hatırlatma
+RecurringJob.AddOrUpdate<AppointmentReminder1hJob>(
+    "appointment-reminders-1h",
+    job => job.SendRemindersAsync(),
+    "*/15 * * * *"
+);
+// Her 5 dakikada bir — süresi dolan pending randevuları iptal et
 RecurringJob.AddOrUpdate<ExpireAppointmentsJob>(
     "expire-appointments",
     job => job.ExpireOldAppointmentsAsync(),
     "*/5 * * * *"
 );
-// Her gün sabah 09:00'da abonelik sona erme uyarısı gönder
+// Her gün sabah 09:00 — abonelik sona erme uyarısı
 RecurringJob.AddOrUpdate<SubscriptionExpiryReminderJob>(
     "subscription-expiry-reminders",
     job => job.SendExpiryRemindersAsync(),

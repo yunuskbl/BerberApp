@@ -137,6 +137,18 @@ public class IletimerkeziSmsService : ISmsService
     public Task SendAppointmentUpdatedAsync(string phone, string customerName, string serviceName, string staffName, DateTime startTime, string salonName = "", string bookingUrl = "")
         => Task.CompletedTask; // IletiMerkezi yapılandırılmadığında sessizce geç
 
+    public Task SendAppointmentReminder1hAsync(
+        string phone, string customerName, string serviceName,
+        DateTime startTime, string salonName = "", string mapsUrl = "", string bookingUrl = "")
+    {
+        var turkeyTime  = ToTurkeyTime(startTime);
+        var culture     = new System.Globalization.CultureInfo("tr-TR");
+        var bookingPart = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $" Randevu: {bookingUrl}";
+        var text        = $"ayarliyo: Randevunuz 1 saat sonra! " +
+                          $"{turkeyTime.ToString("dd MMMM yyyy", culture)} {turkeyTime:HH:mm} - {serviceName}.{bookingPart}";
+        return SendAsync(phone, text);
+    }
+
     private static DateTime ToTurkeyTime(DateTime utcTime)
     {
         if (utcTime.Kind != DateTimeKind.Utc)

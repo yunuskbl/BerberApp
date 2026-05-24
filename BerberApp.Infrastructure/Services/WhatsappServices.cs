@@ -78,6 +78,33 @@ public class WhatsAppService : IWhatsAppService
         await SendMessageAsync(phone, message);
     }
 
+    public async Task SendAppointmentReminder1hAsync(
+        string phone, string customerName,
+        string serviceName, DateTime startTime, string salonName = "", string mapsUrl = "", string bookingUrl = "")
+    {
+        var turkeyTime  = ToTurkeyTime(startTime);
+        var culture     = new System.Globalization.CultureInfo("tr-TR");
+        var salonLine   = string.IsNullOrWhiteSpace(salonName)  ? "" : $"\n🏪 Salon: {salonName}";
+        var mapsLine    = string.IsNullOrWhiteSpace(mapsUrl)    ? "" : $"\n\n📍 *Yol Tarifi için tıklayın:*\n{mapsUrl}";
+        var bookingLine = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $"\n\n🔗 *Yeni randevu almak için:*\n{bookingUrl}";
+
+        var message = $"""
+        ⏰ *ayarlıyo - Randevunuz 1 Saat Sonra!*
+
+        Merhaba {customerName}! 👋
+
+        Randevunuz yaklaşıyor, sizi bekliyoruz!
+
+        📅 Tarih: {turkeyTime.ToString("dd MMMM yyyy", culture)}
+        ⏰ Saat: {turkeyTime:HH:mm}
+        💈 Hizmet: {serviceName}{salonLine}{mapsLine}{bookingLine}
+
+        Görüşmek üzere! 😊
+        """;
+
+        await SendMessageAsync(phone, message);
+    }
+
     public async Task SendAppointmentCancelledAsync(
         string phone, string customerName, DateTime startTime, string salonName = "", string bookingUrl = "")
     {

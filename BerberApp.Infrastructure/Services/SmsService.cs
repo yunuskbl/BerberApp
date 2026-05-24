@@ -49,6 +49,17 @@ public class SmsService : ISmsService
         await SendSmsAsync(phone, message);
     }
 
+    public async Task SendAppointmentReminder1hAsync(
+        string phone, string customerName, string serviceName, DateTime startTime, string salonName = "", string mapsUrl = "", string bookingUrl = "")
+    {
+        var turkeyTime  = ToTurkeyTime(startTime);
+        var culture     = new System.Globalization.CultureInfo("tr-TR");
+        var bookingPart = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $" Randevu: {bookingUrl}";
+        var message     = $"ayarliyo: Randevunuz 1 saat sonra! " +
+                          $"{turkeyTime.ToString("dd MMMM yyyy", culture)} {turkeyTime:HH:mm} - {serviceName}.{bookingPart}";
+        await SendSmsAsync(phone, message);
+    }
+
     public async Task SendAppointmentCancelledAsync(
         string phone, string customerName, DateTime startTime, string salonName = "", string bookingUrl = "")
     {
