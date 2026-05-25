@@ -49,19 +49,23 @@ public class ConfirmAppointmentHandler : IRequestHandler<ConfirmAppointmentComma
 
         if (customer is not null && service is not null && staff is not null)
         {
-            await _notificationService.SendAppointmentConfirmedAsync(
-                customer.Phone,
-                new AppointmentStatusDto
-                {
-                    Id = appointment.Id,
-                    TenantId = appointment.TenantId,
-                    CustomerName = customer.FullName,
-                    ServiceName = service.Name,
-                    StaffName = staff.FullName,
-                    StartTime = appointment.StartTime,
-                    EndTime = appointment.EndTime,
-                    Status = appointment.Status.ToString()
-                });
+            try
+            {
+                await _notificationService.SendAppointmentConfirmedAsync(
+                    customer.Phone,
+                    new AppointmentStatusDto
+                    {
+                        Id = appointment.Id,
+                        TenantId = appointment.TenantId,
+                        CustomerName = customer.FullName,
+                        ServiceName = service.Name,
+                        StaffName = staff.FullName,
+                        StartTime = appointment.StartTime,
+                        EndTime = appointment.EndTime,
+                        Status = appointment.Status.ToString()
+                    });
+            }
+            catch { /* Bildirim hatası onayı engellemesin */ }
         }
 
         return true;

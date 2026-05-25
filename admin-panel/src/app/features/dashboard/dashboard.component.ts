@@ -169,6 +169,10 @@ export class DashboardComponent implements OnInit {
         this.pendingAppointments = this.pendingAppointments.filter(a => a.id !== id);
         this.loadDashboard();
       },
+      error: () => {
+        this.pendingAppointments = this.pendingAppointments.filter(a => a.id !== id);
+        this.loadDashboard();
+      },
     });
   }
 

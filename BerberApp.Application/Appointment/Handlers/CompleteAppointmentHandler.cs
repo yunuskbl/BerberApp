@@ -51,19 +51,23 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
 
             if (customer is not null && service is not null)
             {
-                await _notificationService.SendAppointmentCompletedAsync(
-                    customer.Phone,
-                    new AppointmentStatusDto
-                    {
-                        Id           = appointment.Id,
-                        TenantId     = appointment.TenantId,
-                        CustomerName = customer.FullName,
-                        ServiceName  = service.Name,
-                        StartTime    = appointment.StartTime,
-                        EndTime      = appointment.EndTime,
-                        Status       = appointment.Status.ToString()
-                    },
-                    request.ReviewUrl);
+                try
+                {
+                    await _notificationService.SendAppointmentCompletedAsync(
+                        customer.Phone,
+                        new AppointmentStatusDto
+                        {
+                            Id           = appointment.Id,
+                            TenantId     = appointment.TenantId,
+                            CustomerName = customer.FullName,
+                            ServiceName  = service.Name,
+                            StartTime    = appointment.StartTime,
+                            EndTime      = appointment.EndTime,
+                            Status       = appointment.Status.ToString()
+                        },
+                        request.ReviewUrl);
+                }
+                catch { /* Bildirim hatası tamamlamayı engellemesin */ }
             }
         }
 
