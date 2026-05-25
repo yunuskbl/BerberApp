@@ -157,12 +157,13 @@ if (app.Environment.IsProduction() && !app.Environment.IsEnvironment("Container"
     app.UseHsts();
 }
 
-// Swagger — sadece development'ta
-if (!app.Environment.IsProduction())
+// Swagger — production'da SuperAdmin korumasıyla, diğer ortamlarda açık
+app.UseSwagger();
+if (app.Environment.IsProduction())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseMiddleware<SwaggerAuthMiddleware>();
 }
+app.UseSwaggerUI();
 
 // Static Files — auth'tan önce, en başta olmalı
 var staticFileOptions = new StaticFileOptions
