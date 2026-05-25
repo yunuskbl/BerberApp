@@ -517,6 +517,16 @@ export class StaffListComponent implements OnInit {
     const file = input.files[0];
     input.value = '';
 
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      this.avatarUploadError = 'Sadece JPG, PNG veya WebP yüklenebilir.';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.avatarUploadError = 'Dosya 5MB\'dan küçük olmalıdır.';
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 
@@ -532,7 +542,11 @@ export class StaffListComponent implements OnInit {
         this.avatarUploading = false;
       },
       error: (err) => {
-        this.avatarUploadError = err.error?.message || 'Fotoğraf yüklenemedi.';
+        if (err.status === 413) {
+          this.avatarUploadError = 'Dosya çok büyük. 5MB\'dan küçük bir fotoğraf seçin.';
+        } else {
+          this.avatarUploadError = err.error?.message || 'Fotoğraf yüklenemedi.';
+        }
         this.avatarUploading = false;
       }
     });

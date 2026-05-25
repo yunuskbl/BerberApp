@@ -300,6 +300,8 @@ public class StaffController : BaseApiController
 
     // ─── Avatar Upload ────────────────────────────────────────────────────────
     [HttpPost("{id}/avatar")]
+    [RequestSizeLimit(5_242_880)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 5_242_880)]
     public async Task<IActionResult> UploadAvatar(Guid id, [FromForm] IFormFile file)
     {
         if (file == null || file.Length == 0)
