@@ -587,7 +587,10 @@ export class StaffListComponent implements OnInit {
     const value = this.staffForm.value;
 
     if (this.editingStaff) {
-      this.staffService.update(this.editingStaff.id, value).subscribe({
+      this.staffService.update(this.editingStaff.id, {
+        ...value,
+        avatarUrl: this.editingStaff.avatarUrl,
+      }).subscribe({
         next: (res) => {
           if (res.success) { this.loadStaff(); this.closeDrawer(); }
           this.isSubmitting = false;

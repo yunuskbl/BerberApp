@@ -25,7 +25,7 @@ public class UpdateStaffHandler : IRequestHandler<UpdateStaffCommand, StaffDto>
 
         staff.FullName = request.FullName;
         staff.Phone = request.Phone;
-        staff.AvatarUrl = request.AvatarUrl;
+        if (request.AvatarUrl != null) staff.AvatarUrl = request.AvatarUrl;
         staff.Bio = request.Bio;
         staff.IsActive = request.IsActive;
 
