@@ -226,8 +226,8 @@ export class SalonsComponent implements OnInit {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   }
 
-  getBusinessTypeEmoji(type: string): string {
-    return this.businessTypeOptions.find(o => o.value === type)?.emoji ?? '🏪';
+  getBusinessTypeKey(type: string): string {
+    return this.businessTypeOptions.find(o => o.value === type)?.label ?? type;
   }
 
   get activeSortLabel(): string {
