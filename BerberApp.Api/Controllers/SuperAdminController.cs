@@ -1,12 +1,12 @@
 using BerberApp.Application.Auth.Commands;
 using BerberApp.Application.Tenant.DTOs;
+using BerberApp.Domain.Entities;
 using BerberApp.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BerberApp.Application.Common.Interfaces;
-using BerberApp.Domain.Entities;
 
 namespace BerberApp.Api.Controllers;
 
@@ -18,15 +18,16 @@ public class SuperAdminController : ControllerBase
     private readonly IMediator _mediator;
     private readonly IAppDbContext _context;
     private readonly ILogger<SuperAdminController> _logger;
+    private readonly IWhatsAppService _whatsApp;
 
-    // SuperAdmin'in sistem tenant ID'si
     private static readonly Guid SYSTEM_TENANT_ID = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
-    public SuperAdminController(IMediator mediator, IAppDbContext context, ILogger<SuperAdminController> logger)
+    public SuperAdminController(IMediator mediator, IAppDbContext context, ILogger<SuperAdminController> logger, IWhatsAppService whatsApp)
     {
-        _mediator = mediator;
-        _context = context;
-        _logger = logger;
+        _mediator  = mediator;
+        _context   = context;
+        _logger    = logger;
+        _whatsApp  = whatsApp;
     }
 
     /// <summary>
@@ -662,6 +663,220 @@ public class SuperAdminController : ControllerBase
         await _context.SaveChangesAsync();
         return Ok(new { success = true, message = "Silindi." });
     }
+
+    // ─── İŞLETME DÜZENLEME ──────────────────────────────────────────────────
+
+    [HttpPut("tenants/{id}")]
+    public async Task<IActionResult> UpdateTenant(Guid id, [FromBody] UpdateTenantRequest req)
+    {
+        var tenant = await _context.Tenants
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
+
+        if (tenant == null)
+            return NotFound(new { success = false, message = "İşletme bulunamadı." });
+
+        if (!string.IsNullOrWhiteSpace(req.Name))       tenant.Name    = req.Name;
+        if (!string.IsNullOrWhiteSpace(req.Phone))      tenant.Phone   = req.Phone;
+        if (!string.IsNullOrWhiteSpace(req.Address))    tenant.Address = req.Address;
+        if (req.IsActive.HasValue)                       tenant.IsActive = req.IsActive.Value;
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("SuperAdmin updated tenant {TenantId}", id);
+        return Ok(new { success = true, message = "İşletme güncellendi." });
+    }
+
+    // ─── ABONELİK TARİHİ UZATMA ─────────────────────────────────────────────
+
+    [HttpPatch("tenants/{id}/extend")]
+    public async Task<IActionResult> ExtendSubscription(Guid id, [FromBody] ExtendSubscriptionRequest req)
+    {
+        var subscription = await _context.Subscriptions
+            .IgnoreQueryFilters()
+            .Where(s => s.TenantId == id)
+            .OrderByDescending(s => s.StartDate)
+            .FirstOrDefaultAsync();
+
+        var now = DateTime.UtcNow;
+
+        if (subscription == null)
+        {
+            subscription = new Subscription
+            {
+                TenantId      = id,
+                Plan          = PlanType.Baslangic,
+                Status        = SubscriptionStatus.Trial,
+                StartDate     = now,
+                ExpiryDate    = now.AddDays(req.Days),
+                Price         = 0,
+                Currency      = "TRY",
+                IsAutoRenewal = false
+            };
+            _context.Subscriptions.Add(subscription);
+        }
+        else
+        {
+            var baseDate = subscription.ExpiryDate > now ? subscription.ExpiryDate : now;
+            subscription.ExpiryDate = baseDate.AddDays(req.Days);
+            subscription.Status     = SubscriptionStatus.Active;
+        }
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("SuperAdmin extended subscription for tenant {TenantId} by {Days} days", id, req.Days);
+        return Ok(new { success = true, message = $"Abonelik {req.Days} gün uzatıldı.", expiryDate = subscription.ExpiryDate });
+    }
+
+    // ─── ADMİN ŞİFRE SIFIRLAMA ──────────────────────────────────────────────
+
+    [HttpPost("tenants/{id}/reset-password")]
+    public async Task<IActionResult> ResetAdminPassword(Guid id, [FromBody] ResetPasswordRequest req)
+    {
+        if (string.IsNullOrWhiteSpace(req.NewPassword) || req.NewPassword.Length < 6)
+            return BadRequest(new { success = false, message = "Şifre en az 6 karakter olmalıdır." });
+
+        var admin = await _context.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.TenantId == id && u.Role == UserRole.Admin);
+
+        if (admin == null)
+            return NotFound(new { success = false, message = "Admin kullanıcı bulunamadı." });
+
+        admin.PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("SuperAdmin reset password for admin of tenant {TenantId}", id);
+        return Ok(new { success = true, message = "Şifre sıfırlandı." });
+    }
+
+    // ─── İŞLETMEYE BİLDİRİM GÖNDER ─────────────────────────────────────────
+
+    [HttpPost("tenants/{id}/notify")]
+    public async Task<IActionResult> NotifyTenant(Guid id, [FromBody] NotifyRequest req)
+    {
+        var tenant = await _context.Tenants
+            .IgnoreQueryFilters()
+            .Where(t => t.Id == id && t.Id != SYSTEM_TENANT_ID)
+            .Select(t => new { t.Name, t.Phone })
+            .FirstOrDefaultAsync();
+
+        if (tenant == null)
+            return NotFound(new { success = false, message = "İşletme bulunamadı." });
+
+        if (string.IsNullOrWhiteSpace(tenant.Phone))
+            return BadRequest(new { success = false, message = "İşletmenin telefon numarası yok." });
+
+        try
+        {
+            await _whatsApp.SendCustomMessageAsync(tenant.Phone, $"*ayarlıyo bildirim*\n\n{req.Message}");
+            _logger.LogInformation("SuperAdmin sent notification to tenant {TenantId}", id);
+            return Ok(new { success = true, message = "Bildirim gönderildi." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send notification to tenant {TenantId}", id);
+            return StatusCode(500, new { success = false, message = "Bildirim gönderilemedi." });
+        }
+    }
+
+    // ─── TÜM İŞLETMELERE DUYURU ─────────────────────────────────────────────
+
+    [HttpPost("broadcast")]
+    public async Task<IActionResult> Broadcast([FromBody] NotifyRequest req)
+    {
+        var tenants = await _context.Tenants
+            .IgnoreQueryFilters()
+            .Where(t => t.Id != SYSTEM_TENANT_ID && !t.IsDeleted && t.IsActive && t.Phone != null)
+            .Select(t => new { t.Id, t.Phone })
+            .ToListAsync();
+
+        var sent = 0;
+        var failed = 0;
+        foreach (var t in tenants)
+        {
+            try
+            {
+                await _whatsApp.SendCustomMessageAsync(t.Phone!, $"*ayarlıyo duyurusu*\n\n{req.Message}");
+                sent++;
+            }
+            catch { failed++; }
+        }
+
+        _logger.LogInformation("SuperAdmin broadcast: {Sent} sent, {Failed} failed", sent, failed);
+        return Ok(new { success = true, message = $"{sent} işletmeye gönderildi, {failed} başarısız." });
+    }
+
+    // ─── GELİR RAPORU ────────────────────────────────────────────────────────
+
+    [HttpGet("revenue")]
+    public async Task<IActionResult> GetRevenue([FromQuery] int months = 6)
+    {
+        var from = DateTime.UtcNow.AddMonths(-months);
+
+        var totalRevenue = await _context.PaymentTransactions
+            .IgnoreQueryFilters()
+            .Where(t => t.Status == PaymentTransactionStatus.Success)
+            .SumAsync(t => (decimal?)t.Amount) ?? 0;
+
+        var monthlyRevenue = await _context.PaymentTransactions
+            .IgnoreQueryFilters()
+            .Where(t => t.Status == PaymentTransactionStatus.Success && t.CreatedAt >= from)
+            .GroupBy(t => new { t.CreatedAt.Year, t.CreatedAt.Month })
+            .Select(g => new { g.Key.Year, g.Key.Month, Total = g.Sum(t => t.Amount), Count = g.Count() })
+            .OrderBy(g => g.Year).ThenBy(g => g.Month)
+            .ToListAsync();
+
+        var byPlan = await _context.PaymentTransactions
+            .IgnoreQueryFilters()
+            .Where(t => t.Status == PaymentTransactionStatus.Success)
+            .GroupBy(t => t.Plan)
+            .Select(g => new { Plan = g.Key, Total = g.Sum(t => t.Amount), Count = g.Count() })
+            .ToListAsync();
+
+        var totalRefunded = await _context.PaymentTransactions
+            .IgnoreQueryFilters()
+            .Where(t => t.Status == PaymentTransactionStatus.Refunded)
+            .SumAsync(t => (decimal?)t.Amount) ?? 0;
+
+        return Ok(new
+        {
+            success = true,
+            data = new { totalRevenue, totalRefunded, netRevenue = totalRevenue - totalRefunded, monthlyRevenue, byPlan }
+        });
+    }
+
+    // ─── İŞLETME RANDEVU TRENDİ ─────────────────────────────────────────────
+
+    [HttpGet("tenants/{id}/appointment-stats")]
+    public async Task<IActionResult> GetTenantAppointmentStats(Guid id, [FromQuery] int months = 6)
+    {
+        var from = DateTime.UtcNow.AddMonths(-months);
+
+        var monthly = await _context.Appointments
+            .IgnoreQueryFilters()
+            .Where(a => a.TenantId == id && a.CreatedAt >= from)
+            .GroupBy(a => new { a.CreatedAt.Year, a.CreatedAt.Month })
+            .Select(g => new
+            {
+                g.Key.Year, g.Key.Month,
+                Total     = g.Count(),
+                Completed = g.Count(a => a.Status == AppointmentStatus.Completed),
+                Cancelled = g.Count(a => a.Status == AppointmentStatus.Cancelled),
+                Pending   = g.Count(a => a.Status == AppointmentStatus.Pending)
+            })
+            .OrderBy(g => g.Year).ThenBy(g => g.Month)
+            .ToListAsync();
+
+        var topServices = await _context.Appointments
+            .IgnoreQueryFilters()
+            .Where(a => a.TenantId == id && a.CreatedAt >= from && a.Service != null)
+            .GroupBy(a => a.Service!.Name)
+            .Select(g => new { Service = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count)
+            .Take(5)
+            .ToListAsync();
+
+        return Ok(new { success = true, data = new { monthly, topServices } });
+    }
 }
 
 public class ChangePlanRequest
@@ -669,15 +884,38 @@ public class ChangePlanRequest
     public string Plan { get; set; } = string.Empty;
 }
 
+public class UpdateTenantRequest
+{
+    public string? Name     { get; set; }
+    public string? Phone    { get; set; }
+    public string? Address  { get; set; }
+    public bool?   IsActive { get; set; }
+}
+
+public class ExtendSubscriptionRequest
+{
+    public int Days { get; set; } = 30;
+}
+
+public class ResetPasswordRequest
+{
+    public string NewPassword { get; set; } = string.Empty;
+}
+
+public class NotifyRequest
+{
+    public string Message { get; set; } = string.Empty;
+}
+
 public class PaymentMethodRequest
 {
-    public string Name { get; set; } = string.Empty;
-    public string BankName { get; set; } = string.Empty;
-    public string Iban { get; set; } = string.Empty;
+    public string Name          { get; set; } = string.Empty;
+    public string BankName      { get; set; } = string.Empty;
+    public string Iban          { get; set; } = string.Empty;
     public string AccountHolder { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public bool IsActive { get; set; } = true;
-    public int Order { get; set; } = 0;
+    public string? Description  { get; set; }
+    public bool IsActive        { get; set; } = true;
+    public int Order            { get; set; } = 0;
 }
 
 public class ReplyRequest

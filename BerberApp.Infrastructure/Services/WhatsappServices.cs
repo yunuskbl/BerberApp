@@ -151,6 +151,9 @@ public class WhatsAppService : IWhatsAppService
         await SendMessageAsync(phone, message);
     }
 
+    public async Task SendCustomMessageAsync(string phone, string message)
+        => await SendMessageAsync(phone, message);
+
     private async Task SendMessageAsync(string phone, string message)
     {
         // Telefon numarasını WhatsApp formatına çevir
