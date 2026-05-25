@@ -19,60 +19,48 @@
         <span class="badge" [class.active]="tenant.isActive" [class.passive]="!tenant.isActive">
           {{ tenant.isActive ? 'Aktif' : 'Pasif' }}
         </span>
+        <button class="btn btn-secondary" (click)="openEditModal()">✏️ Düzenle</button>
         <button class="btn btn-secondary" (click)="toggleActive()">
           {{ tenant.isActive ? 'Pasif Yap' : 'Aktif Yap' }}
         </button>
         <button class="btn btn-plan" (click)="openPlanModal()">Plan Değiştir</button>
+        <button class="btn btn-extend" (click)="showExtendModal = true">Süre Uzat</button>
+        <button class="btn btn-notify" (click)="showNotifyModal = true">📨 Bildirim</button>
+        <button class="btn btn-password" (click)="showPasswordModal = true">🔑 Şifre Sıfırla</button>
         <button class="btn btn-soft-delete" (click)="openDeleteModal('soft')">Pasif Sil</button>
         <button class="btn btn-hard-delete" (click)="openDeleteModal('hard')">Kalıcı Sil</button>
       </div>
     </div>
 
-    <div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
+    @if (successMessage) {
+      <div class="success-message">{{ successMessage }}</div>
+    }
 
     <!-- Stats -->
     <div class="stats-grid">
       <div class="stat-card">
         <span class="stat-icon">👥</span>
-        <div>
-          <p class="stat-value">{{ tenant.staffCount }}</p>
-          <p class="stat-label">Personel</p>
-        </div>
+        <div><p class="stat-value">{{ tenant.staffCount }}</p><p class="stat-label">Personel</p></div>
       </div>
       <div class="stat-card">
         <span class="stat-icon">🧑</span>
-        <div>
-          <p class="stat-value">{{ tenant.customerCount }}</p>
-          <p class="stat-label">Müşteri</p>
-        </div>
+        <div><p class="stat-value">{{ tenant.customerCount }}</p><p class="stat-label">Müşteri</p></div>
       </div>
       <div class="stat-card">
         <span class="stat-icon">📅</span>
-        <div>
-          <p class="stat-value">{{ tenant.totalAppointments }}</p>
-          <p class="stat-label">Toplam Randevu</p>
-        </div>
+        <div><p class="stat-value">{{ tenant.totalAppointments }}</p><p class="stat-label">Toplam Randevu</p></div>
       </div>
       <div class="stat-card">
         <span class="stat-icon">⏳</span>
-        <div>
-          <p class="stat-value">{{ tenant.pendingAppointments }}</p>
-          <p class="stat-label">Bekleyen</p>
-        </div>
+        <div><p class="stat-value">{{ tenant.pendingAppointments }}</p><p class="stat-label">Bekleyen</p></div>
       </div>
       <div class="stat-card">
         <span class="stat-icon">✅</span>
-        <div>
-          <p class="stat-value">{{ tenant.completedAppointments }}</p>
-          <p class="stat-label">Tamamlanan</p>
-        </div>
+        <div><p class="stat-value">{{ tenant.completedAppointments }}</p><p class="stat-label">Tamamlanan</p></div>
       </div>
       <div class="stat-card">
         <span class="stat-icon">🏷️</span>
-        <div>
-          <p class="stat-value">{{ tenant.plan || 'Basic' }}</p>
-          <p class="stat-label">Plan</p>
-        </div>
+        <div><p class="stat-value">{{ tenant.plan || 'Basic' }}</p><p class="stat-label">Plan</p></div>
       </div>
     </div>
 
@@ -87,7 +75,40 @@
       </div>
     </div>
 
-    <!-- Recent Appointments -->
+    <!-- Randevu Trendi -->
+    <div class="appointments-card">
+      <h2>Randevu Trendi (Son 6 Ay)</h2>
+      @if (statsLoading) {
+        <div class="loading-inline"><div class="spinner-sm"></div></div>
+      } @else if (appointmentStats?.monthly?.length) {
+        <div class="trend-bars">
+          @for (m of appointmentStats!.monthly; track m.year + '-' + m.month) {
+            <div class="trend-col">
+              <div class="trend-value">{{ m.total }}</div>
+              <div class="trend-bar-wrap">
+                <div class="trend-bar" [style.height.%]="maxMonthlyCount > 0 ? (m.total / maxMonthlyCount * 100) : 0"></div>
+              </div>
+              <div class="trend-label">{{ getMonthName(m.month) }}</div>
+            </div>
+          }
+        </div>
+        @if (appointmentStats?.topServices?.length) {
+          <div class="top-services">
+            <h3>En Popüler Hizmetler</h3>
+            @for (s of appointmentStats!.topServices; track s.service) {
+              <div class="service-row">
+                <span class="service-name">{{ s.service }}</span>
+                <span class="service-count">{{ s.count }} randevu</span>
+              </div>
+            }
+          </div>
+        }
+      } @else {
+        <p class="empty">Henüz veri yok.</p>
+      }
+    </div>
+
+    <!-- Son Randevular -->
     <div class="appointments-card">
       <h2>Son Randevular</h2>
       @if (tenant.recentAppointments?.length === 0) {
@@ -95,12 +116,7 @@
       } @else {
         <table>
           <thead>
-            <tr>
-              <th>Tarih</th>
-              <th>Müşteri</th>
-              <th>Hizmet</th>
-              <th>Durum</th>
-            </tr>
+            <tr><th>Tarih</th><th>Müşteri</th><th>Hizmet</th><th>Durum</th></tr>
           </thead>
           <tbody>
             @for (a of tenant.recentAppointments; track a.id) {
@@ -142,7 +158,94 @@
   </div>
 }
 
-<!-- Delete Modal -->
+<!-- Düzenle Modal -->
+@if (showEditModal) {
+  <div class="modal-overlay" (click)="showEditModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>İşletme Düzenle</h3>
+      <div class="form-group">
+        <label>İşletme Adı</label>
+        <input type="text" [(ngModel)]="editForm.name" placeholder="İşletme adı" />
+      </div>
+      <div class="form-group">
+        <label>Telefon</label>
+        <input type="text" [(ngModel)]="editForm.phone" placeholder="05xx xxx xx xx" />
+      </div>
+      <div class="form-group">
+        <label>Adres</label>
+        <input type="text" [(ngModel)]="editForm.address" placeholder="Adres" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="showEditModal = false">İptal</button>
+        <button class="btn btn-plan" (click)="saveEdit()" [disabled]="isProcessing">
+          {{ isProcessing ? 'Kaydediliyor...' : 'Kaydet' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Süre Uzat Modal -->
+@if (showExtendModal) {
+  <div class="modal-overlay" (click)="showExtendModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Abonelik Süresi Uzat</h3>
+      <p>{{ tenant.name }} için mevcut abonelik bitiş tarihine eklenecek gün sayısı:</p>
+      <div class="form-group">
+        <label>Gün Sayısı</label>
+        <input type="number" [(ngModel)]="extendDays" min="1" max="365" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="showExtendModal = false">İptal</button>
+        <button class="btn btn-extend" (click)="saveExtend()" [disabled]="isProcessing">
+          {{ isProcessing ? 'Uzatılıyor...' : 'Uzat' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Şifre Sıfırla Modal -->
+@if (showPasswordModal) {
+  <div class="modal-overlay" (click)="showPasswordModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Admin Şifresi Sıfırla</h3>
+      <p>{{ tenant.name }} işletmesinin admin hesabı için yeni şifre belirleyin.</p>
+      <div class="form-group">
+        <label>Yeni Şifre</label>
+        <input type="password" [(ngModel)]="newPassword" placeholder="En az 6 karakter" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="showPasswordModal = false">İptal</button>
+        <button class="btn btn-password" (click)="savePassword()" [disabled]="isProcessing">
+          {{ isProcessing ? 'Sıfırlanıyor...' : 'Sıfırla' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Bildirim Modal -->
+@if (showNotifyModal) {
+  <div class="modal-overlay" (click)="showNotifyModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>WhatsApp Bildirimi Gönder</h3>
+      <p>{{ tenant.name }} işletmesine WhatsApp mesajı gönder.</p>
+      <div class="form-group">
+        <label>Mesaj</label>
+        <textarea [(ngModel)]="notifyMessage" rows="4" placeholder="Mesajınızı yazın..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="showNotifyModal = false">İptal</button>
+        <button class="btn btn-notify" (click)="sendNotify()" [disabled]="isProcessing || !notifyMessage.trim()">
+          {{ isProcessing ? 'Gönderiliyor...' : 'Gönder' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Sil Modal -->
 @if (showDeleteModal) {
   <div class="modal-overlay" (click)="showDeleteModal = false">
     <div class="modal" (click)="$event.stopPropagation()">

@@ -117,5 +117,96 @@
       </div>
     </div>
 
+    <!-- Gelir Raporu -->
+    <div class="charts-row">
+      <div class="chart-card revenue-card">
+        <h3>💰 Gelir Özeti</h3>
+        @if (revenueLoading) {
+          <div class="loading-inline"><div class="spinner-sm"></div></div>
+        } @else if (revenue) {
+          <div class="revenue-kpis">
+            <div class="rev-kpi rev-kpi--green">
+              <div class="rev-kpi-label">Toplam Gelir</div>
+              <div class="rev-kpi-value">{{ formatCurrency(revenue.totalRevenue) }}</div>
+            </div>
+            <div class="rev-kpi rev-kpi--red">
+              <div class="rev-kpi-label">İade</div>
+              <div class="rev-kpi-value">{{ formatCurrency(revenue.totalRefunded) }}</div>
+            </div>
+            <div class="rev-kpi rev-kpi--purple">
+              <div class="rev-kpi-label">Net Gelir</div>
+              <div class="rev-kpi-value">{{ formatCurrency(revenue.netRevenue) }}</div>
+            </div>
+          </div>
+          @if (revenue.byPlan.length) {
+            <div class="plan-bars" style="margin-top:16px">
+              @for (p of revenue.byPlan; track p.plan) {
+                <div class="plan-bar-row">
+                  <div class="plan-bar-label">{{ p.plan }}</div>
+                  <div class="plan-bar-track">
+                    <div class="plan-bar-fill" [style.width.%]="revenue.totalRevenue > 0 ? (p.total / revenue.totalRevenue * 100) : 0"></div>
+                  </div>
+                  <div class="plan-bar-count">{{ formatCurrency(p.total) }}</div>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <div class="chart-card">
+        <h3>Aylık Gelir (Son 6 Ay)</h3>
+        @if (revenueLoading) {
+          <div class="loading-inline"><div class="spinner-sm"></div></div>
+        } @else if (revenue?.monthlyRevenue?.length) {
+          <div class="bar-chart">
+            @for (m of revenue!.monthlyRevenue; track m.month + '-' + m.year) {
+              <div class="bar-col">
+                <div class="bar-value">{{ m.count }}</div>
+                <div class="bar" [style.height.%]="maxRevenueMonth > 0 ? (m.total / maxRevenueMonth * 100) : 0"></div>
+                <div class="bar-label">{{ getMonthName(m.month) }}</div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="no-data">Henüz ödeme yok</p>
+        }
+      </div>
+    </div>
+
+    <!-- Tüm İşletmelere Duyuru -->
+    <div class="broadcast-section">
+      <div class="broadcast-header">
+        <div>
+          <h3>📢 Tüm İşletmelere Duyuru</h3>
+          <p>Tüm aktif işletmelere WhatsApp mesajı gönder</p>
+        </div>
+        <button class="btn btn-notify" (click)="showBroadcastModal = true">Duyuru Gönder</button>
+      </div>
+    </div>
+
   }
 </div>
+
+@if (showBroadcastModal) {
+  <div class="modal-overlay" (click)="showBroadcastModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Tüm İşletmelere Duyuru</h3>
+      <p>Tüm aktif işletme sahiplerine WhatsApp bildirimi gönderilecek.</p>
+      @if (broadcastResult) {
+        <div class="broadcast-result">{{ broadcastResult }}</div>
+      } @else {
+        <div class="form-group">
+          <label>Mesaj</label>
+          <textarea [(ngModel)]="broadcastMessage" rows="5" placeholder="Duyurunuzu yazın..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="showBroadcastModal = false">İptal</button>
+          <button class="btn btn-notify" (click)="sendBroadcast()" [disabled]="isBroadcasting || !broadcastMessage.trim()">
+            {{ isBroadcasting ? 'Gönderiliyor...' : 'Gönder' }}
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}

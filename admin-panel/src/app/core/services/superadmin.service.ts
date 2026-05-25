@@ -94,6 +94,19 @@ export interface SuperAdminSubscription {
   daysLeft?: number;
 }
 
+export interface RevenueReport {
+  totalRevenue: number;
+  totalRefunded: number;
+  netRevenue: number;
+  monthlyRevenue: { year: number; month: number; total: number; count: number }[];
+  byPlan: { plan: string; total: number; count: number }[];
+}
+
+export interface AppointmentStats {
+  monthly: { year: number; month: number; total: number; completed: number; cancelled: number; pending: number }[];
+  topServices: { service: string; count: number }[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class SuperAdminService {
   private apiUrl = `${environment.apiUrl}/superadmin`;
@@ -181,5 +194,35 @@ export class SuperAdminService {
 
   deleteContactMessage(id: string): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/contact-messages/${id}`);
+  }
+
+  updateTenant(id: string, req: { name?: string; phone?: string; address?: string; isActive?: boolean }): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(`${this.apiUrl}/tenants/${id}`, req);
+  }
+
+  extendSubscription(id: string, days: number): Observable<ApiResponse<any>> {
+    return this.http.patch<ApiResponse<any>>(`${this.apiUrl}/tenants/${id}/extend`, { days });
+  }
+
+  resetAdminPassword(id: string, newPassword: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/tenants/${id}/reset-password`, { newPassword });
+  }
+
+  notifyTenant(id: string, message: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/tenants/${id}/notify`, { message });
+  }
+
+  broadcast(message: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/broadcast`, { message });
+  }
+
+  getRevenue(months = 6): Observable<ApiResponse<RevenueReport>> {
+    const params = new HttpParams().set('months', months.toString());
+    return this.http.get<ApiResponse<RevenueReport>>(`${this.apiUrl}/revenue`, { params });
+  }
+
+  getTenantAppointmentStats(id: string, months = 6): Observable<ApiResponse<AppointmentStats>> {
+    const params = new HttpParams().set('months', months.toString());
+    return this.http.get<ApiResponse<AppointmentStats>>(`${this.apiUrl}/tenants/${id}/appointment-stats`, { params });
   }
 }

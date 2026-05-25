@@ -239,3 +239,39 @@ table {
   gap: 10px;
   justify-content: flex-end;
 }
+
+.btn-extend   { background: #0ea5e9; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; &:hover { background: #0284c7; } }
+.btn-notify   { background: #10b981; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; &:hover { background: #059669; } }
+.btn-password { background: #f59e0b; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; &:hover { background: #d97706; } }
+
+.form-group {
+  margin-bottom: 14px;
+  label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
+  input, textarea {
+    width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+    color: #f1f5f9; font-size: 14px; padding: 10px 12px; outline: none; box-sizing: border-box;
+    &:focus { border-color: #6366f1; }
+  }
+  textarea { resize: vertical; font-family: inherit; }
+}
+
+.loading-inline { display: flex; align-items: center; padding: 20px 0; }
+.spinner-sm { width: 20px; height: 20px; border: 2px solid #334155; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.trend-bars {
+  display: flex; gap: 8px; align-items: flex-end; height: 100px; margin: 16px 0;
+  .trend-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .trend-value { font-size: 11px; color: #94a3b8; }
+  .trend-bar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+  .trend-bar { width: 100%; background: linear-gradient(to top, #6366f1, #818cf8); border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.3s; }
+  .trend-label { font-size: 10px; color: #64748b; }
+}
+
+.top-services {
+  margin-top: 16px; border-top: 1px solid #1e293b; padding-top: 16px;
+  h3 { font-size: 13px; color: #94a3b8; margin: 0 0 10px; }
+  .service-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1e293b; font-size: 13px; }
+  .service-name { color: #e2e8f0; }
+  .service-count { color: #6366f1; font-weight: 600; }
+}

@@ -252,3 +252,43 @@
 
   .kpi-icon { font-size: 22px; }
 }
+
+.revenue-card { grid-column: span 1; }
+
+.revenue-kpis { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.rev-kpi {
+  flex: 1; min-width: 100px; padding: 12px 16px; border-radius: 10px;
+  &--green { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); }
+  &--red   { background: rgba(239,68,68,0.10);  border: 1px solid rgba(239,68,68,0.25);  }
+  &--purple{ background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25); }
+}
+.rev-kpi-label { font-size: 11px; color: #94a3b8; margin-bottom: 4px; }
+.rev-kpi-value { font-size: 18px; font-weight: 700; color: #f1f5f9; }
+
+.broadcast-section {
+  background: #1e293b; border-radius: 12px; padding: 20px 24px; margin-top: 24px;
+  .broadcast-header { display: flex; align-items: center; justify-content: space-between; }
+  h3 { font-size: 15px; color: #f1f5f9; margin: 0 0 4px; }
+  p  { font-size: 13px; color: #64748b; margin: 0; }
+}
+
+.btn-notify { background: #10b981; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-size: 13px; font-weight: 600; cursor: pointer; &:hover { background: #059669; } }
+
+.loading-inline { display: flex; padding: 16px 0; }
+.spinner-sm { width: 20px; height: 20px; border: 2px solid #334155; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.broadcast-result { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 14px; color: #6ee7b7; text-align: center; font-weight: 600; }
+
+.form-group {
+  margin-bottom: 14px;
+  label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
+  textarea { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9; font-size: 14px; padding: 10px 12px; outline: none; box-sizing: border-box; resize: vertical; font-family: inherit; &:focus { border-color: #6366f1; } }
+}
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal { background: #1e293b; border-radius: 14px; padding: 28px; width: 440px; max-width: 90vw; }
+.modal h3 { font-size: 16px; color: #f1f5f9; margin: 0 0 8px; }
+.modal p  { font-size: 13px; color: #94a3b8; margin: 0 0 20px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
