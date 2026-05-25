@@ -65,6 +65,9 @@
               @else { {{ 'salons.filter.nearby' | translate }} }
             </span>
           </button>
+          @if (locationErrorMsg) {
+            <span class="location-error">{{ locationErrorMsg | translate }}</span>
+          }
           @if (locationFilterActive) {
             <span class="radius-sep">|</span>
             @for (km of radiusOptions; track km) {

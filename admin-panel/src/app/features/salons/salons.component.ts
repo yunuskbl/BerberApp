@@ -53,8 +53,9 @@ export class SalonsComponent implements OnInit {
   // Konum
   userLat: number | null = null;
   userLon: number | null = null;
-  locationStatus: 'idle' | 'requesting' | 'granted' | 'denied' | 'unsupported' = 'idle';
+  locationStatus: 'idle' | 'requesting' | 'granted' | 'denied' | 'unavailable' | 'timeout' | 'unsupported' = 'idle';
   locationFilterActive = false;
+  locationErrorMsg = '';
 
   // İşletme türü filtresi
   selectedBusinessType: string | null = null;
@@ -127,22 +128,41 @@ export class SalonsComponent implements OnInit {
   // ── Konum izni ────────────────────────────────────────────────────────────
   requestLocation(): void {
     if (!navigator.geolocation) {
-      this.locationStatus = 'unsupported';
+      this.locationStatus   = 'unsupported';
+      this.locationErrorMsg = 'salons.loc.unsupported';
       return;
     }
-    this.locationStatus = 'requesting';
+    this.locationStatus   = 'requesting';
+    this.locationErrorMsg = '';
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        this.userLat            = pos.coords.latitude;
-        this.userLon            = pos.coords.longitude;
-        this.locationStatus     = 'granted';
+        this.userLat              = pos.coords.latitude;
+        this.userLon              = pos.coords.longitude;
+        this.locationStatus       = 'granted';
+        this.locationErrorMsg     = '';
         this.locationFilterActive = true;
         this.loadSalons();
       },
-      () => {
-        this.locationStatus = 'denied';
+      (err) => {
+        switch (err.code) {
+          case GeolocationPositionError.PERMISSION_DENIED:
+            this.locationStatus   = 'denied';
+            this.locationErrorMsg = 'salons.loc.denied';
+            break;
+          case GeolocationPositionError.POSITION_UNAVAILABLE:
+            this.locationStatus   = 'unavailable';
+            this.locationErrorMsg = 'salons.loc.unavailable';
+            break;
+          case GeolocationPositionError.TIMEOUT:
+            this.locationStatus   = 'timeout';
+            this.locationErrorMsg = 'salons.loc.timeout';
+            break;
+          default:
+            this.locationStatus   = 'denied';
+            this.locationErrorMsg = 'salons.loc.denied';
+        }
       },
-      { timeout: 8000, maximumAge: 300_000 }
+      { timeout: 10000, maximumAge: 300_000 }
     );
   }
 

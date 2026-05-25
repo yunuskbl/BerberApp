@@ -309,6 +309,10 @@ const T: Record<Lang, Record<string, string>> = {
     'salons.sort.reviews':      'En Fazla Değerlendirme',
     'salons.sort.newest':       'Yeni Eklenenler',
     'salons.sort.name':         'A-Z',
+    'salons.loc.denied':      'Konum izni reddedildi. Tarayıcı ayarlarından izin verin.',
+    'salons.loc.unavailable': 'Konum bilgisi alınamadı. Tekrar deneyin.',
+    'salons.loc.timeout':     'Konum zaman aşımına uğradı. Tekrar deneyin.',
+    'salons.loc.unsupported': 'Tarayıcınız konum özelliğini desteklemiyor.',
 
     // Business types
     'biz.berber':    'Berber',
@@ -669,6 +673,10 @@ const T: Record<Lang, Record<string, string>> = {
     'salons.sort.reviews':      'Most Reviews',
     'salons.sort.newest':       'Newest',
     'salons.sort.name':         'A-Z',
+    'salons.loc.denied':      'Location permission denied. Allow it in browser settings.',
+    'salons.loc.unavailable': 'Location unavailable. Please try again.',
+    'salons.loc.timeout':     'Location request timed out. Please try again.',
+    'salons.loc.unsupported': 'Your browser does not support geolocation.',
 
     // Business types
     'biz.berber':    'Barber',
@@ -1029,6 +1037,10 @@ const T: Record<Lang, Record<string, string>> = {
     'salons.sort.reviews':      'Больше отзывов',
     'salons.sort.newest':       'Новинки',
     'salons.sort.name':         'А-Я',
+    'salons.loc.denied':      'Доступ к геолокации запрещён. Разрешите в настройках браузера.',
+    'salons.loc.unavailable': 'Местоположение недоступно. Попробуйте ещё раз.',
+    'salons.loc.timeout':     'Превышено время ожидания. Попробуйте ещё раз.',
+    'salons.loc.unsupported': 'Ваш браузер не поддерживает геолокацию.',
 
     // Business types
     'biz.berber':    'Парикмахер',
