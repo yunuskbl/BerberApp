@@ -44,7 +44,7 @@
               class="filter-chip"
               [class.active]="selectedBusinessType === opt.value"
               (click)="onBusinessTypeFilter(opt.value)">
-              {{ opt.emoji }} {{ opt.label | translate }}
+              <span class="filter-chip-emoji">{{ opt.emoji }}</span><span class="filter-chip-label">{{ opt.label | translate }}</span>
             </button>
           }
         </div>
