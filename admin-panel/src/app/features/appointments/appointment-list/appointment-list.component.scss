@@ -188,6 +188,55 @@
   &.cancel   { background: #fee2e2; color: #dc2626; &:hover { background: #fecaca; } }
 }
 
+.step-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0;
+  overflow: hidden;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  .step-from {
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 500;
+    opacity: 0.75;
+  }
+
+  .step-arrow {
+    font-size: 11px;
+    opacity: 0.6;
+  }
+
+  .step-action {
+    padding: 0 10px 0 6px;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  &.confirm {
+    background: #dbeafe;
+    color: #1d4ed8;
+    .step-from { background: #bfdbfe; color: #1e40af; }
+    &:hover { background: #bfdbfe; }
+  }
+
+  &.complete {
+    background: #dcfce7;
+    color: #15803d;
+    .step-from { background: #bbf7d0; color: #166534; }
+    &:hover { background: #bbf7d0; }
+  }
+}
+
 // Drawer
 .drawer-overlay {
   position: fixed;
@@ -977,6 +1026,23 @@ select {
   &.confirm  { background: rgba(37,99,235,0.2);  color: #1d4ed8; &:hover { background: rgba(37,99,235,0.35); } }
   &.complete { background: rgba(22,163,74,0.2);  color: #166534; &:hover { background: rgba(22,163,74,0.35); } }
   &.cancel   { background: rgba(220,38,38,0.2);  color: #991b1b; &:hover { background: rgba(220,38,38,0.35); } }
+}
+
+.apt-step-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: all 0.15s;
+
+  &.confirm  { background: rgba(37,99,235,0.15); color: #1d4ed8; &:hover { background: rgba(37,99,235,0.3); } }
+  &.complete { background: rgba(22,163,74,0.15); color: #166534; &:hover { background: rgba(22,163,74,0.3); } }
 }
 
 @media (max-width: 768px) {

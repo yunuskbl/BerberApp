@@ -110,14 +110,22 @@
               <td>
                 <div class="actions">
                   @if (apt.status === AppointmentStatus.Confirmed) {
-                    <button class="action-btn complete" (click)="completeAppointment(apt.id)" title="Tamamla">✓</button>
-                    <button class="action-btn edit"     (click)="openEditModal(apt)"           title="Güncelle">✏</button>
-                    <button class="action-btn cancel"   (click)="cancelAppointment(apt.id)"    title="İptal">✕</button>
+                    <button class="step-btn complete" (click)="completeAppointment(apt.id)">
+                      <span class="step-from">Onaylandı</span>
+                      <span class="step-arrow">→</span>
+                      <span class="step-action">Tamamla</span>
+                    </button>
+                    <button class="action-btn edit"   (click)="openEditModal(apt)"        title="Güncelle">✏</button>
+                    <button class="action-btn cancel" (click)="cancelAppointment(apt.id)" title="İptal">✕</button>
                   }
                   @if (apt.status === AppointmentStatus.Pending) {
-                    <button class="action-btn confirm" (click)="confirmAppointment(apt.id)" title="Onayla">✓</button>
-                    <button class="action-btn edit"    (click)="openEditModal(apt)"          title="Güncelle">✏</button>
-                    <button class="action-btn cancel"  (click)="cancelAppointment(apt.id)"   title="İptal">✕</button>
+                    <button class="step-btn confirm" (click)="confirmAppointment(apt.id)">
+                      <span class="step-from">Bekliyor</span>
+                      <span class="step-arrow">→</span>
+                      <span class="step-action">Onayla</span>
+                    </button>
+                    <button class="action-btn edit"   (click)="openEditModal(apt)"        title="Güncelle">✏</button>
+                    <button class="action-btn cancel" (click)="cancelAppointment(apt.id)" title="İptal">✕</button>
                   }
                 </div>
               </td>
@@ -228,14 +236,14 @@
                       <span class="badge {{ getStatusClass(apt.status) }}">{{ getStatusLabel(apt.status) }}</span>
                       <div class="apt-row-actions">
                         @if (apt.status === AppointmentStatus.Pending) {
-                          <button class="apt-action-btn confirm" (click)="confirmAppointment(apt.id)" title="Onayla">✓</button>
-                          <button class="apt-action-btn edit"    (click)="openEditModal(apt)"          title="Düzenle">✏</button>
-                          <button class="apt-action-btn cancel"  (click)="cancelAppointment(apt.id)"   title="İptal">✕</button>
+                          <button class="apt-step-btn confirm" (click)="confirmAppointment(apt.id)">→ Onayla</button>
+                          <button class="apt-action-btn edit"  (click)="openEditModal(apt)" title="Düzenle">✏</button>
+                          <button class="apt-action-btn cancel" (click)="cancelAppointment(apt.id)" title="İptal">✕</button>
                         }
                         @if (apt.status === AppointmentStatus.Confirmed) {
-                          <button class="apt-action-btn complete" (click)="completeAppointment(apt.id)" title="Tamamla">✓</button>
-                          <button class="apt-action-btn edit"     (click)="openEditModal(apt)"           title="Düzenle">✏</button>
-                          <button class="apt-action-btn cancel"   (click)="cancelAppointment(apt.id)"    title="İptal">✕</button>
+                          <button class="apt-step-btn complete" (click)="completeAppointment(apt.id)">✓ Tamamla</button>
+                          <button class="apt-action-btn edit"   (click)="openEditModal(apt)" title="Düzenle">✏</button>
+                          <button class="apt-action-btn cancel" (click)="cancelAppointment(apt.id)" title="İptal">✕</button>
                         }
                       </div>
                     </div>
