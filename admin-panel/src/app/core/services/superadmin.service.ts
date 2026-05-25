@@ -138,6 +138,10 @@ export class SuperAdminService {
     return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}`);
   }
 
+  resetAppointments(tenantId: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}/reset-appointments`, {});
+  }
+
   hardDeleteTenant(tenantId: string): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}/permanent`);
   }

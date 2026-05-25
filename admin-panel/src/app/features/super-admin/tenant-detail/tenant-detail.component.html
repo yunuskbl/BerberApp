@@ -27,6 +27,7 @@
         <button class="btn btn-extend" (click)="showExtendModal = true">Süre Uzat</button>
         <button class="btn btn-notify" (click)="showNotifyModal = true">📨 Bildirim</button>
         <button class="btn btn-password" (click)="showPasswordModal = true">🔑 Şifre Sıfırla</button>
+        <button class="btn btn-reset-appointments" (click)="showResetAppointmentsModal = true; resetAppointmentsResult = null">🗑️ Randevuları Sıfırla</button>
         <button class="btn btn-soft-delete" (click)="openDeleteModal('soft')">Pasif Sil</button>
         <button class="btn btn-hard-delete" (click)="openDeleteModal('hard')">Kalıcı Sil</button>
       </div>
@@ -241,6 +242,36 @@
           {{ isProcessing ? 'Gönderiliyor...' : 'Gönder' }}
         </button>
       </div>
+    </div>
+  </div>
+}
+
+<!-- Randevu Sıfırlama Modal -->
+@if (showResetAppointmentsModal) {
+  <div class="modal-overlay" (click)="!isProcessing && !resetAppointmentsResult && (showResetAppointmentsModal = false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      @if (!resetAppointmentsResult) {
+        <h3>🗑️ Randevuları Sıfırla</h3>
+        <p class="delete-warning">
+          <strong>{{ tenant.name }}</strong> işletmesine ait tüm randevular ve bağlı yorumlar kalıcı olarak silinecek.
+          <br><br>Bu işlem <strong>geri alınamaz.</strong>
+        </p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="showResetAppointmentsModal = false" [disabled]="isProcessing">İptal</button>
+          <button class="btn btn-hard-delete" (click)="confirmResetAppointments()" [disabled]="isProcessing">
+            {{ isProcessing ? 'Siliniyor...' : 'Evet, Sıfırla' }}
+          </button>
+        </div>
+      } @else {
+        <h3>✅ Tamamlandı</h3>
+        <p>
+          <strong>{{ resetAppointmentsResult.deletedAppointments }}</strong> randevu ve
+          <strong>{{ resetAppointmentsResult.deletedReviews }}</strong> yorum silindi.
+        </p>
+        <div class="modal-actions">
+          <button class="btn btn-primary" (click)="showResetAppointmentsModal = false; resetAppointmentsResult = null">Kapat</button>
+        </div>
+      }
     </div>
   </div>
 }

@@ -428,6 +428,34 @@ public class SuperAdminController : ControllerBase
     /// <summary>
     /// Tenant verilerini sıfırla — randevu, müşteri ve personel verilerini siler
     /// </summary>
+    [HttpPost("tenants/{id}/reset-appointments")]
+    public async Task<IActionResult> ResetAppointments(Guid id)
+    {
+        var tenantExists = await _context.Tenants
+            .IgnoreQueryFilters()
+            .AnyAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
+
+        if (!tenantExists)
+            return NotFound(new { success = false, message = "İşletme bulunamadı." });
+
+        var deletedReviews = await _context.Reviews
+            .IgnoreQueryFilters()
+            .Where(r => r.TenantId == id)
+            .ExecuteDeleteAsync();
+
+        var deletedAppointments = await _context.Appointments
+            .IgnoreQueryFilters()
+            .Where(a => a.TenantId == id)
+            .ExecuteDeleteAsync();
+
+        _logger.LogInformation(
+            "Tenant {TenantId} appointments reset: {R} reviews, {A} appointments deleted",
+            id, deletedReviews, deletedAppointments);
+
+        return Ok(new { success = true, deletedReviews, deletedAppointments });
+    }
+
+    /// <summary>
     [HttpPost("tenants/{id}/reset")]
     public async Task<IActionResult> ResetTenantData(Guid id)
     {

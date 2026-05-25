@@ -21,6 +21,8 @@ export class TenantDetailComponent implements OnInit {
   showPlanModal    = false;
   showDeleteModal  = false;
   deleteType: 'soft' | 'hard' = 'soft';
+  showResetAppointmentsModal = false;
+  resetAppointmentsResult: { deletedReviews: number; deletedAppointments: number } | null = null;
   selectedPlan     = '';
   isProcessing     = false;
 
@@ -95,6 +97,22 @@ export class TenantDetailComponent implements OnInit {
   }
 
   openDeleteModal(type: 'soft' | 'hard'): void { this.deleteType = type; this.showDeleteModal = true; }
+
+  confirmResetAppointments(): void {
+    this.isProcessing = true;
+    this.resetAppointmentsResult = null;
+    this.superAdminService.resetAppointments(this.tenant.id).subscribe({
+      next: (res: any) => {
+        this.isProcessing = false;
+        this.resetAppointmentsResult = { deletedReviews: res.deletedReviews, deletedAppointments: res.deletedAppointments };
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'Sıfırlama başarısız.';
+        this.isProcessing = false;
+        this.showResetAppointmentsModal = false;
+      }
+    });
+  }
 
   confirmDelete(): void {
     this.isProcessing = true;
