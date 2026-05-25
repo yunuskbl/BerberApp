@@ -36,7 +36,11 @@
             <tr>
               <td>
                 <div class="staff-info">
-                  <div class="avatar">{{ getInitials(staff.fullName) }}</div>
+                  @if (staff.avatarUrl) {
+                    <img class="avatar avatar-img" [src]="staff.avatarUrl" [alt]="staff.fullName" />
+                  } @else {
+                    <div class="avatar">{{ getInitials(staff.fullName) }}</div>
+                  }
                   <span class="staff-name">{{ staff.fullName }}</span>
                 </div>
               </td>
@@ -104,6 +108,36 @@
     </div>
 
     @if (editingStaff) {
+      <!-- Avatar Upload -->
+      <div class="form-group avatar-upload-group">
+        <label>Profil Fotoğrafı</label>
+        <div class="avatar-upload-row">
+          <div class="avatar-preview">
+            @if (editingStaff.avatarUrl) {
+              <img [src]="editingStaff.avatarUrl" [alt]="editingStaff.fullName" />
+            } @else {
+              <div class="avatar-placeholder">{{ getInitials(editingStaff.fullName) }}</div>
+            }
+            @if (avatarUploading) {
+              <div class="avatar-overlay"><div class="spinner-sm"></div></div>
+            }
+          </div>
+          <div class="avatar-actions">
+            <label class="btn btn-outline avatar-upload-btn" [class.disabled]="avatarUploading">
+              <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onAvatarSelected($event)" hidden />
+              {{ avatarUploading ? 'Yükleniyor...' : 'Fotoğraf Seç' }}
+            </label>
+            @if (editingStaff.avatarUrl) {
+              <button type="button" class="btn-remove-avatar" (click)="removeAvatar()">Kaldır</button>
+            }
+          </div>
+        </div>
+        @if (avatarUploadError) {
+          <span class="error-text">{{ avatarUploadError }}</span>
+        }
+        <span class="hint-text">JPG, PNG veya WebP · Maks. 5MB</span>
+      </div>
+
       <div class="form-group">
         <label class="toggle-label">
           <input type="checkbox" formControlName="isActive"/>

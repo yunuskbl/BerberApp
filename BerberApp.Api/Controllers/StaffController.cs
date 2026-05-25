@@ -298,6 +298,67 @@ public class StaffController : BaseApiController
         return Success(new { message = "Hesap silindi." });
     }
 
+    // ─── Avatar Upload ────────────────────────────────────────────────────────
+    [HttpPost("{id}/avatar")]
+    public async Task<IActionResult> UploadAvatar(Guid id, [FromForm] IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest(new { success = false, message = "Dosya seçilmedi." });
+
+        var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (!allowed.Contains(ext))
+            return BadRequest(new { success = false, message = "Sadece JPG, PNG veya WebP yüklenebilir." });
+
+        if (file.Length > 5 * 1024 * 1024)
+            return BadRequest(new { success = false, message = "Dosya 5MB'dan küçük olmalıdır." });
+
+        var staff = await _context.Staff
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == TenantId);
+        if (staff is null)
+            return NotFound(new { success = false, message = "Personel bulunamadı." });
+
+        var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "avatars");
+        Directory.CreateDirectory(uploadsDir);
+
+        // Eski fotoğrafı sil
+        if (!string.IsNullOrEmpty(staff.AvatarUrl))
+        {
+            var oldFile = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", staff.AvatarUrl.TrimStart('/'));
+            if (System.IO.File.Exists(oldFile)) System.IO.File.Delete(oldFile);
+        }
+
+        var fileName = $"{id}_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}{ext}";
+        var filePath = Path.Combine(uploadsDir, fileName);
+
+        await using var stream = System.IO.File.Create(filePath);
+        await file.CopyToAsync(stream);
+
+        staff.AvatarUrl = $"/uploads/avatars/{fileName}";
+        await _context.SaveChangesAsync();
+
+        return Ok(new { success = true, data = new { avatarUrl = staff.AvatarUrl } });
+    }
+
+    [HttpDelete("{id}/avatar")]
+    public async Task<IActionResult> DeleteAvatar(Guid id)
+    {
+        var staff = await _context.Staff
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == TenantId);
+        if (staff is null)
+            return NotFound(new { success = false, message = "Personel bulunamadı." });
+
+        if (!string.IsNullOrEmpty(staff.AvatarUrl))
+        {
+            var oldFile = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", staff.AvatarUrl.TrimStart('/'));
+            if (System.IO.File.Exists(oldFile)) System.IO.File.Delete(oldFile);
+            staff.AvatarUrl = null;
+            await _context.SaveChangesAsync();
+        }
+
+        return Ok(new { success = true });
+    }
+
     public record CreateStaffAccountRequest(string Email, string Password);
     public record ResetStaffPasswordRequest(string NewPassword);
 }

@@ -71,6 +71,9 @@ export class StaffListComponent implements OnInit {
   resetPasswordSuccess = '';
   resetPasswordError = '';
 
+  avatarUploading = false;
+  avatarUploadError = '';
+
   isServicesOpen = false;
   selectedStaffForSvc: Staff | null = null;
   allServices: Service[] = [];
@@ -508,9 +511,48 @@ export class StaffListComponent implements OnInit {
     }).format(new Date(dateStr));
   }
 
+  onAvatarSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length || !this.editingStaff) return;
+    const file = input.files[0];
+    input.value = '';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    this.avatarUploading = true;
+    this.avatarUploadError = '';
+    this.http.post<any>(`${environment.apiUrl}/staff/${this.editingStaff.id}/avatar`, formData).subscribe({
+      next: (res) => {
+        if (res.success) {
+          const staffInList = this.staffList.find(s => s.id === this.editingStaff!.id);
+          if (staffInList) staffInList.avatarUrl = res.data.avatarUrl;
+          if (this.editingStaff) this.editingStaff = { ...this.editingStaff, avatarUrl: res.data.avatarUrl };
+        }
+        this.avatarUploading = false;
+      },
+      error: (err) => {
+        this.avatarUploadError = err.error?.message || 'Fotoğraf yüklenemedi.';
+        this.avatarUploading = false;
+      }
+    });
+  }
+
+  removeAvatar(): void {
+    if (!this.editingStaff) return;
+    this.http.delete<any>(`${environment.apiUrl}/staff/${this.editingStaff.id}/avatar`).subscribe({
+      next: () => {
+        const staffInList = this.staffList.find(s => s.id === this.editingStaff!.id);
+        if (staffInList) staffInList.avatarUrl = undefined;
+        if (this.editingStaff) this.editingStaff = { ...this.editingStaff, avatarUrl: undefined };
+      }
+    });
+  }
+
   openDrawer(staff?: Staff): void {
     this.editingStaff = staff || null;
     this.errorMessage = '';
+    this.avatarUploadError = '';
     if (staff) {
       this.staffForm.patchValue(staff);
     } else {
