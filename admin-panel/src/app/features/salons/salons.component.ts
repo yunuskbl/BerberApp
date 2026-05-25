@@ -59,22 +59,22 @@ export class SalonsComponent implements OnInit {
   // İşletme türü filtresi
   selectedBusinessType: string | null = null;
   readonly businessTypeOptions: BusinessTypeOption[] = [
-    { value: 'Berber',          label: 'Berber',           emoji: '✂️' },
-    { value: 'Kuafor',          label: 'Kuaför',           emoji: '💇' },
-    { value: 'GüzellikSalonu',  label: 'Güzellik Salonu',  emoji: '💅' },
-    { value: 'MasajSpa',        label: 'Masaj & Spa',      emoji: '🧖' },
-    { value: 'DisKlinigi',      label: 'Diş Kliniği',      emoji: '🦷' },
-    { value: 'Klinik',          label: 'Klinik',           emoji: '🏥' },
-    { value: 'Diger',           label: 'Diğer',            emoji: '🏪' },
+    { value: 'Berber',          label: 'biz.berber',     emoji: '✂️' },
+    { value: 'Kuafor',          label: 'biz.kuafor',     emoji: '💇' },
+    { value: 'GüzellikSalonu',  label: 'biz.guzellik',   emoji: '💅' },
+    { value: 'MasajSpa',        label: 'biz.masajspa',   emoji: '🧖' },
+    { value: 'DisKlinigi',      label: 'biz.disklinigi', emoji: '🦷' },
+    { value: 'Klinik',          label: 'biz.klinik',     emoji: '🏥' },
+    { value: 'Diger',           label: 'biz.diger',      emoji: '🏪' },
   ];
 
   // Sıralama
   sortBy: SortOption = 'rating';
   readonly sortOptions: { value: SortOption; label: string; icon: string }[] = [
-    { value: 'rating',  label: 'En Yüksek Puan',         icon: '⭐' },
-    { value: 'reviews', label: 'En Fazla Değerlendirme',  icon: '💬' },
-    { value: 'newest',  label: 'Yeni Eklenenler',         icon: '🆕' },
-    { value: 'name',    label: 'A-Z',                     icon: '🔤' },
+    { value: 'rating',  label: 'salons.sort.rating',  icon: '⭐' },
+    { value: 'reviews', label: 'salons.sort.reviews', icon: '💬' },
+    { value: 'newest',  label: 'salons.sort.newest',  icon: '🆕' },
+    { value: 'name',    label: 'salons.sort.name',    icon: '🔤' },
   ];
 
   // Mesafe aralığı

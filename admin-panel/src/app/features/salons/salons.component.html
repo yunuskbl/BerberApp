@@ -31,20 +31,20 @@
 
       <!-- İşletme türü filtre chip'leri -->
       <div class="filter-row">
-        <span class="filter-label">Tür</span>
+        <span class="filter-label">{{ 'salons.filter.type' | translate }}</span>
         <div class="filter-chips">
           <button
             class="filter-chip"
             [class.active]="selectedBusinessType === null"
             (click)="onBusinessTypeFilter(null)">
-            Tümü
+            {{ 'salons.filter.all' | translate }}
           </button>
           @for (opt of businessTypeOptions; track opt.value) {
             <button
               class="filter-chip"
               [class.active]="selectedBusinessType === opt.value"
               (click)="onBusinessTypeFilter(opt.value)">
-              {{ opt.emoji }} {{ opt.label }}
+              {{ opt.emoji }} {{ opt.label | translate }}
             </button>
           }
         </div>
@@ -52,7 +52,7 @@
 
       <!-- Konum filtresi + mesafe aralığı -->
       <div class="filter-row">
-        <span class="filter-label">Konum</span>
+        <span class="filter-label">{{ 'salons.filter.location' | translate }}</span>
         <div class="sort-chips">
           <button
             class="sort-chip"
@@ -61,8 +61,8 @@
             (click)="onLocationToggle()">
             📍
             <span class="sort-chip-label">
-              @if (locationStatus === 'requesting') { Konum alınıyor… }
-              @else { Yakınımdakiler }
+              @if (locationStatus === 'requesting') { {{ 'salons.filter.requesting' | translate }} }
+              @else { {{ 'salons.filter.nearby' | translate }} }
             </span>
           </button>
           @if (locationFilterActive) {
@@ -81,7 +81,7 @@
 
       <!-- Sıralama -->
       <div class="filter-row">
-        <span class="filter-label">Sırala</span>
+        <span class="filter-label">{{ 'salons.filter.sort' | translate }}</span>
         <div class="sort-chips">
           @for (opt of sortOptions; track opt.value) {
             <button
@@ -89,7 +89,7 @@
               [class.active]="sortBy === opt.value"
               (click)="onSortChange(opt.value)">
               <span>{{ opt.icon }}</span>
-              <span class="sort-chip-label">{{ opt.label }}</span>
+              <span class="sort-chip-label">{{ opt.label | translate }}</span>
             </button>
           }
         </div>

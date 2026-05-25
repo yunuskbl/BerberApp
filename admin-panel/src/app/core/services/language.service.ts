@@ -299,6 +299,36 @@ const T: Record<Lang, Record<string, string>> = {
     'salons.count':       'salon',
     'salons.bookBtn':     'Randevu Al',
     'salons.footer':      'ayarlıyo © 2026',
+    'salons.filter.type':       'Tür',
+    'salons.filter.all':        'Tümü',
+    'salons.filter.location':   'Konum',
+    'salons.filter.requesting': 'Konum alınıyor…',
+    'salons.filter.nearby':     'Yakınımdakiler',
+    'salons.filter.sort':       'Sırala',
+    'salons.sort.rating':       'En Yüksek Puan',
+    'salons.sort.reviews':      'En Fazla Değerlendirme',
+    'salons.sort.newest':       'Yeni Eklenenler',
+    'salons.sort.name':         'A-Z',
+
+    // Business types
+    'biz.berber':    'Berber',
+    'biz.kuafor':    'Kuaför',
+    'biz.guzellik':  'Güzellik Salonu',
+    'biz.masajspa':  'Masaj & Spa',
+    'biz.disklinigi':'Diş Kliniği',
+    'biz.klinik':    'Klinik',
+    'biz.diger':     'Diğer',
+
+    // Settings — Konum & İşletme Türü
+    'settings.salon.location':      'Konum',
+    'settings.salon.locationHint':  'Google Haritalar\'da konuma tıkla → Plus Code\'u kopyala',
+    'settings.salon.applyCode':     'Uygula',
+    'settings.salon.bizType':       'İşletme Türü',
+    'settings.salon.bizTypeSelect': '— Seçiniz —',
+    'settings.salon.bizTypeHint':   'Salonlar sayfasında filtrelemede kullanılır.',
+
+    // Pricing
+    'pricing.exploreSalons': 'Salonları Keşfet',
 
     // Booking (public)
     'booking.loading':          'Salon bilgileri yükleniyor...',
@@ -629,6 +659,36 @@ const T: Record<Lang, Record<string, string>> = {
     'salons.count':       'salons',
     'salons.bookBtn':     'Book Appointment',
     'salons.footer':      'ayarlıyo © 2026',
+    'salons.filter.type':       'Type',
+    'salons.filter.all':        'All',
+    'salons.filter.location':   'Location',
+    'salons.filter.requesting': 'Getting location…',
+    'salons.filter.nearby':     'Nearby',
+    'salons.filter.sort':       'Sort',
+    'salons.sort.rating':       'Top Rated',
+    'salons.sort.reviews':      'Most Reviews',
+    'salons.sort.newest':       'Newest',
+    'salons.sort.name':         'A-Z',
+
+    // Business types
+    'biz.berber':    'Barber',
+    'biz.kuafor':    'Hair Salon',
+    'biz.guzellik':  'Beauty Salon',
+    'biz.masajspa':  'Massage & Spa',
+    'biz.disklinigi':'Dental Clinic',
+    'biz.klinik':    'Clinic',
+    'biz.diger':     'Other',
+
+    // Settings — Location & Business Type
+    'settings.salon.location':      'Location',
+    'settings.salon.locationHint':  'Open Google Maps, tap a location → copy the Plus Code',
+    'settings.salon.applyCode':     'Apply',
+    'settings.salon.bizType':       'Business Type',
+    'settings.salon.bizTypeSelect': '— Select —',
+    'settings.salon.bizTypeHint':   'Used for filtering on the Salons page.',
+
+    // Pricing
+    'pricing.exploreSalons': 'Explore Salons',
 
     // Booking (public)
     'booking.loading':          'Loading salon info...',
@@ -959,6 +1019,36 @@ const T: Record<Lang, Record<string, string>> = {
     'salons.count':       'салон(ов)',
     'salons.bookBtn':     'Записаться',
     'salons.footer':      'ayarlıyo © 2026',
+    'salons.filter.type':       'Тип',
+    'salons.filter.all':        'Все',
+    'salons.filter.location':   'Геолокация',
+    'salons.filter.requesting': 'Определение…',
+    'salons.filter.nearby':     'Рядом со мной',
+    'salons.filter.sort':       'Сортировка',
+    'salons.sort.rating':       'Высокий рейтинг',
+    'salons.sort.reviews':      'Больше отзывов',
+    'salons.sort.newest':       'Новинки',
+    'salons.sort.name':         'А-Я',
+
+    // Business types
+    'biz.berber':    'Парикмахер',
+    'biz.kuafor':    'Салон красоты',
+    'biz.guzellik':  'Центр красоты',
+    'biz.masajspa':  'Массаж & Спа',
+    'biz.disklinigi':'Стоматология',
+    'biz.klinik':    'Клиника',
+    'biz.diger':     'Другое',
+
+    // Settings — Местоположение & Тип бизнеса
+    'settings.salon.location':      'Местоположение',
+    'settings.salon.locationHint':  'Откройте Google Maps, нажмите на место → скопируйте Plus Code',
+    'settings.salon.applyCode':     'Применить',
+    'settings.salon.bizType':       'Тип бизнеса',
+    'settings.salon.bizTypeSelect': '— Выберите —',
+    'settings.salon.bizTypeHint':   'Используется для фильтрации на странице Салонов.',
+
+    // Pricing
+    'pricing.exploreSalons': 'Найти салоны',
 
     // Booking (public)
     'booking.loading':          'Загрузка информации о салоне...',

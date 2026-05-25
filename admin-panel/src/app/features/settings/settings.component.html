@@ -112,8 +112,8 @@
           <!-- Konum (Plus Code) -->
           <div class="form-group">
             <label>
-              Konum
-              <span class="label-hint">Google Haritalar'da konuma tıkla → Plus Code'u kopyala</span>
+              {{ 'settings.salon.location' | translate }}
+              <span class="label-hint">{{ 'settings.salon.locationHint' | translate }}</span>
             </label>
             <div class="address-row">
               <input
@@ -124,7 +124,7 @@
                 (keyup.enter)="applyPlusCode()"/>
               <button type="button" class="btn-geocode" (click)="applyPlusCode()" [disabled]="isResolvingCode">
                 @if (isResolvingCode) { <span class="geocode-spinner"></span> }
-                Uygula
+                {{ 'settings.salon.applyCode' | translate }}
               </button>
             </div>
             @if (plusCodeError) {
@@ -140,18 +140,18 @@
 
           <!-- İşletme Türü -->
           <div class="form-group">
-            <label>İşletme Türü</label>
+            <label>{{ 'settings.salon.bizType' | translate }}</label>
             <select formControlName="businessType" class="form-select">
-              <option [ngValue]="null">— Seçiniz —</option>
-              <option value="Berber">✂️ Berber</option>
-              <option value="Kuafor">💇 Kuaför</option>
-              <option value="GüzellikSalonu">💅 Güzellik Salonu</option>
-              <option value="MasajSpa">🧖 Masaj & Spa</option>
-              <option value="DisKlinigi">🦷 Diş Kliniği</option>
-              <option value="Klinik">🏥 Klinik</option>
-              <option value="Diger">🏪 Diğer</option>
+              <option [ngValue]="null">{{ 'settings.salon.bizTypeSelect' | translate }}</option>
+              <option value="Berber">✂️ {{ 'biz.berber' | translate }}</option>
+              <option value="Kuafor">💇 {{ 'biz.kuafor' | translate }}</option>
+              <option value="GüzellikSalonu">💅 {{ 'biz.guzellik' | translate }}</option>
+              <option value="MasajSpa">🧖 {{ 'biz.masajspa' | translate }}</option>
+              <option value="DisKlinigi">🦷 {{ 'biz.disklinigi' | translate }}</option>
+              <option value="Klinik">🏥 {{ 'biz.klinik' | translate }}</option>
+              <option value="Diger">🏪 {{ 'biz.diger' | translate }}</option>
             </select>
-            <small style="color:#6b7280;font-size:.75rem">Salonlar sayfasında filtrelemede kullanılır.</small>
+            <small style="color:#6b7280;font-size:.75rem">{{ 'settings.salon.bizTypeHint' | translate }}</small>
           </div>
 
           <!-- Tema Rengi -->
