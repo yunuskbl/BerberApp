@@ -124,7 +124,7 @@
           </div>
           <div class="avatar-actions">
             <label class="btn btn-outline avatar-upload-btn" [class.disabled]="avatarUploading">
-              <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onAvatarSelected($event)" hidden />
+              <input type="file" accept="image/*" (change)="onAvatarSelected($event)" hidden />
               {{ avatarUploading ? 'Yükleniyor...' : 'Fotoğraf Seç' }}
             </label>
             @if (editingStaff.avatarUrl) {

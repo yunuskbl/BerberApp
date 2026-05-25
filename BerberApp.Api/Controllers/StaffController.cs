@@ -307,9 +307,17 @@ public class StaffController : BaseApiController
         if (file == null || file.Length == 0)
             return BadRequest(new { success = false, message = "Dosya seçilmedi." });
 
-        var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (!allowed.Contains(ext))
+        // MIME type'a göre kontrol et (iOS HEIC→JPEG dönüşümü için uzantı yerine content type kullan)
+        var mimeToExt = new Dictionary<string, string>
+        {
+            ["image/jpeg"] = ".jpg",
+            ["image/png"]  = ".png",
+            ["image/webp"] = ".webp",
+            ["image/heic"] = ".jpg",
+            ["image/heif"] = ".jpg",
+        };
+        var contentType = file.ContentType?.ToLowerInvariant() ?? "";
+        if (!mimeToExt.TryGetValue(contentType, out var ext))
             return BadRequest(new { success = false, message = "Sadece JPG, PNG veya WebP yüklenebilir." });
 
         if (file.Length > 5 * 1024 * 1024)

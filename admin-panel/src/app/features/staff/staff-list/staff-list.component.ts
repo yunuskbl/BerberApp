@@ -517,9 +517,8 @@ export class StaffListComponent implements OnInit {
     const file = input.files[0];
     input.value = '';
 
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      this.avatarUploadError = 'Sadece JPG, PNG veya WebP yüklenebilir.';
+    if (!file.type.startsWith('image/')) {
+      this.avatarUploadError = 'Lütfen bir fotoğraf dosyası seçin.';
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
