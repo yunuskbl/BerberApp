@@ -168,6 +168,15 @@ app-language-switcher {
   &::before { content: '⚠️'; font-size: 12px; }
 }
 
+.location-approx {
+  font-size: 0.68rem;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  &::before { content: '〜'; }
+}
+
 .radius-sep {
   color: #d1d5db;
   font-size: 14px;

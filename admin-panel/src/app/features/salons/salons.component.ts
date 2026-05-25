@@ -126,49 +126,64 @@ export class SalonsComponent implements OnInit {
   }
 
   // ── Konum izni ────────────────────────────────────────────────────────────
+  locationApproximate = false; // IP bazlı konum kullanılıyorsa true
+
   requestLocation(): void {
-    if (!navigator.geolocation) {
-      this.locationStatus   = 'unsupported';
-      this.locationErrorMsg = 'salons.loc.unsupported';
-      return;
-    }
     this.locationStatus   = 'requesting';
     this.locationErrorMsg = '';
+
+    if (!navigator.geolocation) {
+      this.tryIpLocation();
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         this.userLat              = pos.coords.latitude;
         this.userLon              = pos.coords.longitude;
         this.locationStatus       = 'granted';
         this.locationErrorMsg     = '';
+        this.locationApproximate  = false;
         this.locationFilterActive = true;
         this.loadSalons();
       },
-      (err) => {
-        switch (err.code) {
-          case GeolocationPositionError.PERMISSION_DENIED:
-            this.locationStatus   = 'denied';
-            this.locationErrorMsg = 'salons.loc.denied';
-            break;
-          case GeolocationPositionError.POSITION_UNAVAILABLE:
-            this.locationStatus   = 'unavailable';
-            this.locationErrorMsg = 'salons.loc.unavailable';
-            break;
-          case GeolocationPositionError.TIMEOUT:
-            this.locationStatus   = 'timeout';
-            this.locationErrorMsg = 'salons.loc.timeout';
-            break;
-          default:
-            this.locationStatus   = 'denied';
-            this.locationErrorMsg = 'salons.loc.denied';
+      () => {
+        // Tarayıcı izin vermedi → IP bazlı konuma geç
+        this.tryIpLocation();
+      },
+      { timeout: 8000, maximumAge: 300_000 }
+    );
+  }
+
+  private tryIpLocation(): void {
+    this.http.get<any>('https://ipapi.co/json/').subscribe({
+      next: (data) => {
+        if (data?.latitude && data?.longitude) {
+          this.userLat              = data.latitude;
+          this.userLon              = data.longitude;
+          this.locationStatus       = 'granted';
+          this.locationErrorMsg     = '';
+          this.locationApproximate  = true;
+          this.locationFilterActive = true;
+          this.loadSalons();
+        } else {
+          this.locationStatus   = 'unavailable';
+          this.locationErrorMsg = 'salons.loc.unavailable';
         }
       },
-      { timeout: 10000, maximumAge: 300_000 }
-    );
+      error: () => {
+        this.locationStatus   = 'unavailable';
+        this.locationErrorMsg = 'salons.loc.unavailable';
+      },
+    });
   }
 
   onLocationToggle(): void {
     if (this.locationFilterActive) {
       this.locationFilterActive = false;
+      this.locationApproximate  = false;
+      this.userLat = null;
+      this.userLon = null;
       this.loadSalons();
       return;
     }

@@ -68,6 +68,9 @@
           @if (locationErrorMsg) {
             <span class="location-error">{{ locationErrorMsg | translate }}</span>
           }
+          @if (locationApproximate && locationFilterActive) {
+            <span class="location-approx">{{ 'salons.loc.approximate' | translate }}</span>
+          }
           @if (locationFilterActive) {
             <span class="radius-sep">|</span>
             @for (km of radiusOptions; track km) {

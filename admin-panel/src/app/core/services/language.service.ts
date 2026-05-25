@@ -313,6 +313,7 @@ const T: Record<Lang, Record<string, string>> = {
     'salons.loc.unavailable': 'Konum bilgisi alınamadı. Tekrar deneyin.',
     'salons.loc.timeout':     'Konum zaman aşımına uğradı. Tekrar deneyin.',
     'salons.loc.unsupported': 'Tarayıcınız konum özelliğini desteklemiyor.',
+    'salons.loc.approximate': 'yaklaşık konum',
 
     // Business types
     'biz.berber':    'Berber',
@@ -677,6 +678,7 @@ const T: Record<Lang, Record<string, string>> = {
     'salons.loc.unavailable': 'Location unavailable. Please try again.',
     'salons.loc.timeout':     'Location request timed out. Please try again.',
     'salons.loc.unsupported': 'Your browser does not support geolocation.',
+    'salons.loc.approximate': 'approximate location',
 
     // Business types
     'biz.berber':    'Barber',
@@ -1041,6 +1043,7 @@ const T: Record<Lang, Record<string, string>> = {
     'salons.loc.unavailable': 'Местоположение недоступно. Попробуйте ещё раз.',
     'salons.loc.timeout':     'Превышено время ожидания. Попробуйте ещё раз.',
     'salons.loc.unsupported': 'Ваш браузер не поддерживает геолокацию.',
+    'salons.loc.approximate': 'приблизительное местоположение',
 
     // Business types
     'biz.berber':    'Парикмахер',
