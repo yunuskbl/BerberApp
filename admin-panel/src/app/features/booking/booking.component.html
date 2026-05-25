@@ -238,7 +238,13 @@
           <div class="staff-list">
             @for (staff of staffList; track staff.id) {
               <div class="staff-item" [class.selected]="selectedStaff?.id === staff.id" (click)="selectStaff(staff)">
-                <div class="staff-avatar">{{ getInitials(staff.fullName) }}</div>
+                <div class="staff-avatar" [class.staff-avatar--photo]="staff.avatarUrl">
+                  @if (staff.avatarUrl) {
+                    <img [src]="staff.avatarUrl" [alt]="staff.fullName" class="staff-avatar-img" />
+                  } @else {
+                    {{ getInitials(staff.fullName) }}
+                  }
+                </div>
                 <div class="staff-info-wrap">
                   <div class="staff-name">{{ staff.fullName }}</div>
                 </div>
