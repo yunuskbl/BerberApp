@@ -95,6 +95,17 @@ app-language-switcher {
   overflow: hidden;
 }
 
+.left-scroll-wrap {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;
+}
+
+.scroll-fade {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 40px; pointer-events: none;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.95));
+  transition: opacity 0.2s;
+  &.hidden { opacity: 0; }
+}
+
 .left-scroll-area {
   flex: 1; overflow-y: auto; scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
@@ -130,17 +141,17 @@ app-language-switcher {
   &:hover { background: #f0f0f0; border-color: #ddd; }
 }
 
-.left-section { padding: 18px 24px; border-bottom: 1px solid #f0f0f0; }
+.left-section { padding: 14px 24px; border-bottom: 1px solid #f0f0f0; }
 .left-label {
   font-size: 10px; font-weight: 600; letter-spacing: 1px;
-  text-transform: uppercase; color: #bbb; margin-bottom: 10px;
+  text-transform: uppercase; color: #bbb; margin-bottom: 8px;
 }
 
 .photos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
 .photo-slot {
   border-radius: 8px; border: 1px solid #eee; overflow: hidden; aspect-ratio: 4/3;
   position: relative;
-  &:first-child { grid-column: 1/-1; aspect-ratio: 16/7; }
+  &:first-child { grid-column: 1/-1; aspect-ratio: 16/6; }
   svg { width: 100%; height: 100%; display: block; }
 }
 .photo-real {
@@ -185,7 +196,7 @@ app-language-switcher {
   cursor: pointer; text-decoration: none; display: block;
   &:hover .map-btn-small { background: var(--accent); color: white; border-color: var(--accent); }
 }
-.map-thumb { height: 90px; overflow: hidden; svg { width: 100%; height: 100%; display: block; } }
+.map-thumb { height: 68px; overflow: hidden; svg { width: 100%; height: 100%; display: block; } }
 .map-info  { padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; }
 .map-address { font-size: 12px; color: #999; }
 .map-btn-small {

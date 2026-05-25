@@ -80,7 +80,8 @@
       </div>
 
       <!-- Fotoğraflar + Konum: masaüstünde scroll alanı, mobilde gizli -->
-      <div class="left-scroll-area">
+      <div class="left-scroll-wrap">
+      <div class="left-scroll-area" #scrollArea (scroll)="onLeftScroll($event)">
 
       <!-- Fotoğraflar -->
       <div class="left-section">
@@ -170,6 +171,8 @@
       }
 
       </div><!-- /left-scroll-area -->
+      <div class="scroll-fade" [class.hidden]="scrolledToBottom"></div>
+      </div><!-- /left-scroll-wrap -->
 
       <!-- Özet -->
       <div class="left-summary">

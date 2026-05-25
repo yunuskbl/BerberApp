@@ -54,6 +54,7 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   currentStep = 1;
   isLoading = false;
+  scrolledToBottom = false;
   isSubmitting = false;
   isSuccess = false;
   errorMessage = '';
@@ -61,6 +62,11 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   lightboxPhoto: string | null = null;
   lightboxIndex = 0;
+
+  onLeftScroll(e: Event): void {
+    const el = e.target as HTMLElement;
+    this.scrolledToBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 8;
+  }
 
   openLightbox(index: number): void {
     const photos = this.salon?.photos;
