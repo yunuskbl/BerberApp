@@ -286,6 +286,87 @@ export class SettingsComponent implements OnInit {
     });
   }
 
+  // Türkiye il ve büyük ilçe koordinatları (offline lookup)
+  private readonly TR_CITIES: Record<string, [number, number]> = {
+    'adana': [37.0000, 35.3213], 'adıyaman': [37.7648, 38.2786],
+    'afyon': [38.7507, 30.5567], 'afyonkarahisar': [38.7507, 30.5567],
+    'ağrı': [39.7191, 43.0503], 'amasya': [40.6499, 35.8353],
+    'ankara': [39.9334, 32.8597], 'antalya': [36.8969, 30.7133],
+    'artvin': [41.1828, 41.8183], 'aydın': [37.8456, 27.8454],
+    'balıkesir': [39.6484, 27.8826], 'bilecik': [40.1506, 29.9790],
+    'bingöl': [38.8858, 40.4983], 'bitlis': [38.3938, 42.1231],
+    'bolu': [40.7360, 31.6060], 'burdur': [37.7205, 30.2911],
+    'bursa': [40.1829, 29.0669],
+    'çanakkale': [40.1553, 26.4142], 'çankırı': [40.6013, 33.6134],
+    'çorum': [40.5506, 34.9556], 'denizli': [37.7765, 29.0864],
+    'diyarbakır': [37.9144, 40.2306], 'edirne': [41.6771, 26.5557],
+    'elazığ': [38.6810, 39.2264], 'erzincan': [39.7500, 39.4917],
+    'erzurum': [39.9035, 41.2677], 'eskişehir': [39.7767, 30.5206],
+    'gaziantep': [37.0662, 37.3833], 'giresun': [40.9128, 38.3895],
+    'gümüşhane': [40.4386, 39.4814], 'hakkari': [37.5744, 43.7408],
+    'hatay': [36.4018, 36.3498], 'antakya': [36.2025, 36.1603],
+    'ısparta': [37.7648, 30.5566], 'isparta': [37.7648, 30.5566],
+    'istanbul': [41.0082, 28.9784], 'izmir': [38.4237, 27.1428],
+    'kars': [40.6013, 43.0975], 'kastamonu': [41.3887, 33.7827],
+    'kayseri': [38.7312, 35.4787], 'kırklareli': [41.7333, 27.2167],
+    'kırşehir': [39.1425, 34.1709], 'kocaeli': [40.7654, 29.9408],
+    'izmit': [40.7654, 29.9408], 'konya': [37.8714, 32.4846],
+    'kütahya': [39.4167, 29.9833], 'malatya': [38.3552, 38.3095],
+    'manisa': [38.6191, 27.4289], 'maraş': [37.5858, 36.9371],
+    'kahramanmaraş': [37.5858, 36.9371], 'mardin': [37.3212, 40.7245],
+    'muğla': [37.2153, 28.3636], 'muş': [38.9462, 41.7539],
+    'nevşehir': [38.6939, 34.6857], 'niğde': [37.9667, 34.6833],
+    'ordu': [40.9860, 37.8797], 'rize': [41.0201, 40.5234],
+    'sakarya': [40.6940, 30.4358], 'adapazarı': [40.7731, 30.3948],
+    'samsun': [41.2928, 36.3313], 'siirt': [37.9333, 41.9500],
+    'sinop': [42.0231, 35.1531], 'sivas': [39.7477, 37.0179],
+    'tekirdağ': [40.9781, 27.5115], 'tokat': [40.3167, 36.5500],
+    'trabzon': [41.0015, 39.7178], 'tunceli': [39.1079, 39.5482],
+    'şanlıurfa': [37.1591, 38.7969], 'urfa': [37.1591, 38.7969],
+    'uşak': [38.6823, 29.4082], 'van': [38.4891, 43.4089],
+    'yozgat': [39.8181, 34.8147], 'zonguldak': [41.4564, 31.7987],
+    'aksaray': [38.3687, 34.0370], 'bayburt': [40.2552, 40.2249],
+    'karaman': [37.1759, 33.2287], 'kırıkkale': [39.8468, 33.5153],
+    'batman': [37.8812, 41.1351], 'şırnak': [37.5164, 42.4611],
+    'bartın': [41.6344, 32.3375], 'ardahan': [41.1105, 42.7022],
+    'iğdır': [39.9167, 44.0333], 'yalova': [40.6500, 29.2667],
+    'karabük': [41.2061, 32.6204], 'kilis': [36.7184, 37.1212],
+    'osmaniye': [37.2167, 36.1833], 'düzce': [40.8438, 31.1565],
+    // Büyük ilçeler
+    'nilüfer': [40.2167, 28.9833], 'osmangazi': [40.1963, 29.0608],
+    'yıldırım': [40.1833, 29.1000], 'gemlik': [40.4333, 29.1500],
+    'mudanya': [40.3750, 28.8833], 'kemalpaşa': [38.4285, 27.4225],
+    'bornova': [38.4667, 27.2167], 'buca': [38.3833, 27.1833],
+    'karşıyaka': [38.4600, 27.1100], 'konak': [38.4127, 27.1384],
+    'gaziemir': [38.3244, 27.1358], 'torbalı': [38.1597, 27.3622],
+    'alanya': [36.5434, 32.0022], 'manavgat': [36.7858, 31.4414],
+    'serik': [36.9170, 31.1033], 'konyaaltı': [36.8667, 30.6333],
+    'muratpaşa': [36.8782, 30.7000], 'kepez': [37.0167, 30.7167],
+    'kadıköy': [40.9811, 29.0310], 'beşiktaş': [41.0422, 29.0078],
+    'şişli': [41.0602, 28.9878], 'üsküdar': [41.0228, 29.0151],
+    'bakırköy': [40.9781, 28.8736], 'maltepe': [40.9333, 29.1333],
+    'pendik': [40.8762, 29.2333], 'gebze': [40.8017, 29.4303],
+    'darıca': [40.7667, 29.3667], 'gölcük': [40.7167, 29.8167],
+    'çayırova': [40.8000, 29.3833], 'selçuklu': [37.9167, 32.4667],
+    'meram': [37.8333, 32.4333], 'karatay': [37.8833, 32.5167],
+    'melikgazi': [38.7000, 35.5167], 'kocasinan': [38.7167, 35.4667],
+    'odunpazarı': [39.7833, 30.5167], 'tepebaşı': [39.7667, 30.5000],
+    'pamukkale': [37.9208, 29.1183], 'merkezefendi': [37.7833, 29.0833],
+    'atakum': [41.3333, 36.3000], 'ilkadım': [41.2833, 36.3333],
+    'canik': [41.2333, 36.4000], 'mezitli': [36.7833, 34.5833],
+    'toroslar': [36.8500, 34.6167], 'yenişehir': [36.8167, 34.6500],
+  };
+
+  private lookupCity(reference: string): [number, number] | null {
+    // "Nilüfer, Bursa" → ['nilüfer', 'bursa'] — try each part
+    const parts = reference.split(/[,\/]/).map(p => p.trim().toLowerCase());
+    for (const part of parts) {
+      const coords = this.TR_CITIES[part];
+      if (coords) return coords;
+    }
+    return null;
+  }
+
   /* ─── Plus Code ─── */
   applyPlusCode(): void {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -307,40 +388,28 @@ export class SettingsComponent implements OnInit {
     }
 
     if (olc.isFull(code)) {
-      // Tam kod → direkt decode
       const area = olc.decode(code);
       this.salonForm.patchValue({ latitude: area.latitudeCenter, longitude: area.longitudeCenter });
       this.plusCodeValue = '';
       return;
     }
 
-    // Kısa kod → referans şehir gerekli
+    // Kısa kod → yerel tablodan referans koordinatı bul
     if (!reference) {
       this.plusCodeError = 'Kısa kodlar için şehir adı gerekli. Örnek: "MPHP+RG Alanya"';
       return;
     }
 
-    this.isResolvingCode = true;
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(reference)}&format=json&limit=1&accept-language=tr`;
-    this.http.get<any[]>(url).subscribe({
-      next: (results) => {
-        this.isResolvingCode = false;
-        if (!results?.length) {
-          this.plusCodeError = 'Şehir/bölge bulunamadı. Tam Plus Code kullanın.';
-          return;
-        }
-        const refLat = parseFloat(results[0].lat);
-        const refLon = parseFloat(results[0].lon);
-        const fullCode = olc.recoverNearest(code, refLat, refLon);
-        const area = olc.decode(fullCode);
-        this.salonForm.patchValue({ latitude: area.latitudeCenter, longitude: area.longitudeCenter });
-        this.plusCodeValue = '';
-      },
-      error: () => {
-        this.isResolvingCode = false;
-        this.plusCodeError = 'Şehir çözümlenemedi. Tam Plus Code kullanın.';
-      },
-    });
+    const refCoords = this.lookupCity(reference);
+    if (!refCoords) {
+      this.plusCodeError = `"${reference}" bulunamadı. Tam Plus Code kullanın (örn: 8FVC9G8F+6W).`;
+      return;
+    }
+
+    const fullCode = olc.recoverNearest(code, refCoords[0], refCoords[1]);
+    const area = olc.decode(fullCode);
+    this.salonForm.patchValue({ latitude: area.latitudeCenter, longitude: area.longitudeCenter });
+    this.plusCodeValue = '';
   }
 
   /* ─── Bildirim Kanalı ─── */
