@@ -128,14 +128,43 @@ public class IyzicoService : IIyzicoService
             if (parts == null || parts.Length < 2)
                 return new IyzicoPaymentResult(false, null, null, Guid.Empty, "Geçersiz conversationId.");
 
-            var tenantId = Guid.Parse(parts[0]);
-            var plan     = parts[1];
+            var tenantId             = Guid.Parse(parts[0]);
+            var plan                 = parts[1];
+            var paymentId            = form.PaymentId;
+            var paymentTransactionId = form.PaymentItems?.FirstOrDefault()?.PaymentTransactionId;
 
-            return new IyzicoPaymentResult(true, form.ConversationId, plan, tenantId, null);
+            return new IyzicoPaymentResult(true, form.ConversationId, plan, tenantId, null, paymentId, paymentTransactionId);
         }
         catch (Exception ex)
         {
             return new IyzicoPaymentResult(false, null, null, Guid.Empty, ex.Message);
+        }
+    }
+
+    public async Task<IyzicoRefundResult> RefundPayment(string iyzicoPaymentTransactionId, decimal amount)
+    {
+        try
+        {
+            var refundRequest = new Iyzipay.Request.CreateRefundRequest
+            {
+                Locale               = "tr",
+                PaymentTransactionId = iyzicoPaymentTransactionId,
+                Price                = amount.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture),
+                Currency             = "TRY",
+                Ip                   = "85.34.78.112"
+            };
+
+            var refund = await Task.Run(() =>
+                Iyzipay.Model.Refund.Create(refundRequest, _options));
+
+            if (refund.Status != "success")
+                return new IyzicoRefundResult(false, refund.ErrorMessage ?? "İade başarısız.");
+
+            return new IyzicoRefundResult(true, null);
+        }
+        catch (Exception ex)
+        {
+            return new IyzicoRefundResult(false, ex.Message);
         }
     }
 
