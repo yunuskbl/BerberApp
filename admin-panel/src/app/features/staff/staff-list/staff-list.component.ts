@@ -521,33 +521,53 @@ export class StaffListComponent implements OnInit {
       this.avatarUploadError = 'Lütfen bir fotoğraf dosyası seçin.';
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      this.avatarUploadError = 'Dosya 5MB\'dan küçük olmalıdır.';
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', file);
 
     this.avatarUploading = true;
     this.avatarUploadError = '';
-    this.http.post<any>(`${environment.apiUrl}/staff/${this.editingStaff.id}/avatar`, formData).subscribe({
-      next: (res) => {
-        if (res.success) {
-          const staffInList = this.staffList.find(s => s.id === this.editingStaff!.id);
-          if (staffInList) staffInList.avatarUrl = res.data.avatarUrl;
-          if (this.editingStaff) this.editingStaff = { ...this.editingStaff, avatarUrl: res.data.avatarUrl };
-        }
-        this.avatarUploading = false;
-      },
-      error: (err) => {
-        if (err.status === 413) {
-          this.avatarUploadError = 'Dosya çok büyük. 5MB\'dan küçük bir fotoğraf seçin.';
-        } else {
+
+    this.compressImage(file).then(blob => {
+      const formData = new FormData();
+      formData.append('file', blob, 'avatar.jpg');
+      this.http.post<any>(`${environment.apiUrl}/staff/${this.editingStaff!.id}/avatar`, formData).subscribe({
+        next: (res) => {
+          if (res.success) {
+            const staffInList = this.staffList.find(s => s.id === this.editingStaff!.id);
+            if (staffInList) staffInList.avatarUrl = res.data.avatarUrl;
+            if (this.editingStaff) this.editingStaff = { ...this.editingStaff, avatarUrl: res.data.avatarUrl };
+          }
+          this.avatarUploading = false;
+        },
+        error: (err) => {
           this.avatarUploadError = err.error?.message || 'Fotoğraf yüklenemedi.';
+          this.avatarUploading = false;
         }
-        this.avatarUploading = false;
-      }
+      });
+    }).catch(() => {
+      this.avatarUploadError = 'Fotoğraf işlenemedi.';
+      this.avatarUploading = false;
+    });
+  }
+
+  private compressImage(file: File): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const MAX = 800;
+        let { width, height } = img;
+        if (width > MAX || height > MAX) {
+          if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+          else { width = Math.round(width * MAX / height); height = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(), 'image/jpeg', 0.85);
+      };
+      img.onerror = reject;
+      img.src = url;
     });
   }
 
