@@ -54,6 +54,7 @@ export class AppointmentListComponent implements OnInit {
 
   selectedDate = new Date().toISOString().split('T')[0];
   selectedStaffId = '';
+  showPendingAll = false;
 
   viewMode: 'list' | 'calendar' = 'list';
 
@@ -136,10 +137,15 @@ export class AppointmentListComponent implements OnInit {
     return date.toISOString().split('T')[0];
   }
 
+  togglePendingAll(): void {
+    this.showPendingAll = !this.showPendingAll;
+    this.loadAppointments();
+  }
+
   loadAppointments(): void {
     this.isLoading = true;
     let dateStr: string | undefined;
-    if (this.selectedDate) {
+    if (!this.showPendingAll && this.selectedDate) {
       const [year, month, day] = this.selectedDate.split('-').map(Number);
       dateStr = new Date(Date.UTC(year, month - 1, day, 0, 0, 0)).toISOString();
     }

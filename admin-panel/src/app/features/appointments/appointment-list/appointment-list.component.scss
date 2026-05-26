@@ -461,6 +461,20 @@ select {
   }
 }
 
+.btn-pending-filter {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 14px; height: 38px; border-radius: 10px;
+  border: 1.5px solid #e5e7eb; background: white;
+  font-size: 13px; font-weight: 600; color: #6b7280; cursor: pointer;
+  transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
+  &:hover { border-color: #f59e0b; color: #92400e; }
+  &.active { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+}
+.pending-dot-sm {
+  width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; flex-shrink: 0;
+}
+.disabled-filter { opacity: 0.4; pointer-events: none; }
+
 // Filter select özel stil,
 .filter-date-btn {
   display: flex;
