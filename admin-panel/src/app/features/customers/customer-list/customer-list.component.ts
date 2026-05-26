@@ -286,12 +286,20 @@ export class CustomerListComponent implements OnInit {
   }
 
   statusLabel(status: AppointmentStatus): string {
-    const map: Record<number, string> = { 0: 'Bekliyor', 1: 'Onaylandı', 2: 'Tamamlandı', 3: 'İptal', 4: 'Gelmedi' };
+    const map: Record<string, string> = {
+      [AppointmentStatus.Pending]: 'Bekliyor', [AppointmentStatus.Confirmed]: 'Onaylandı',
+      [AppointmentStatus.Completed]: 'Tamamlandı', [AppointmentStatus.Cancelled]: 'İptal',
+      [AppointmentStatus.NoShow]: 'Gelmedi'
+    };
     return map[status] ?? '—';
   }
 
   statusClass(status: AppointmentStatus): string {
-    const map: Record<number, string> = { 0: 'pending', 1: 'confirmed', 2: 'completed', 3: 'cancelled', 4: 'noshow' };
+    const map: Record<string, string> = {
+      [AppointmentStatus.Pending]: 'pending', [AppointmentStatus.Confirmed]: 'confirmed',
+      [AppointmentStatus.Completed]: 'completed', [AppointmentStatus.Cancelled]: 'cancelled',
+      [AppointmentStatus.NoShow]: 'noshow'
+    };
     return map[status] ?? '';
   }
 
