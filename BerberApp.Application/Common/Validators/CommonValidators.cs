@@ -120,11 +120,15 @@ public static class PhoneNumberHelper
     {
         var cleaned = phone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
 
+        if (cleaned.StartsWith("+90"))
+            return cleaned;
+
         if (cleaned.StartsWith("0"))
             return "+90" + cleaned.Substring(1);
 
-        if (cleaned.StartsWith("+90"))
-            return cleaned;
+        // 10-digit number starting with 5 (Turkish mobile without prefix)
+        if (cleaned.Length == 10 && cleaned.StartsWith("5"))
+            return "+90" + cleaned;
 
         throw new ArgumentException("Geçersiz telefon numarası formatı");
     }
