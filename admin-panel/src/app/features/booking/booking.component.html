@@ -326,7 +326,31 @@
             <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
               <div class="form-group">
                 <div class="phone-row">
-                  <input class="form-input" type="tel" formControlName="phone" placeholder="05XX XXX XX XX" maxlength="11" (input)="onPhoneInput($event)" />
+                  <!-- Country code selector -->
+                  <div class="country-selector">
+                    @if (isCountryDropdownOpen) {
+                      <div class="country-backdrop" (click)="isCountryDropdownOpen = false"></div>
+                    }
+                    <button type="button" class="country-btn" (click)="isCountryDropdownOpen = !isCountryDropdownOpen" [attr.aria-label]="selectedCountry.name">
+                      <span>{{ selectedCountry.flag }}</span>
+                      <span class="country-dial-code">{{ selectedCountry.dial }}</span>
+                      <span class="country-caret">▾</span>
+                    </button>
+                    @if (isCountryDropdownOpen) {
+                      <div class="country-dropdown">
+                        @for (c of countries; track c.dial) {
+                          <button type="button" class="country-option" [class.selected]="c.dial === selectedCountry.dial" (click)="selectCountry(c)">
+                            <span class="country-flag-opt">{{ c.flag }}</span>
+                            <span class="country-name-opt">{{ c.name }}</span>
+                            <span class="country-dial-opt">{{ c.dial }}</span>
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+                  <input class="form-input phone-input" type="tel" formControlName="phone"
+                    [placeholder]="selectedCountry.dial === '+90' ? '5XX XXX XX XX' : '...'"
+                    (input)="onPhoneInput($event)" />
                   @if (isLookingUp) {
                     <span class="lookup-spinner"></span>
                   }

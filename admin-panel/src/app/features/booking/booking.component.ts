@@ -85,6 +85,44 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   rememberMe = false;
 
+  countries = [
+    { flag: '🇹🇷', dial: '+90',  name: 'Türkiye' },
+    { flag: '🇩🇪', dial: '+49',  name: 'Almanya' },
+    { flag: '🇳🇱', dial: '+31',  name: 'Hollanda' },
+    { flag: '🇧🇪', dial: '+32',  name: 'Belçika' },
+    { flag: '🇦🇹', dial: '+43',  name: 'Avusturya' },
+    { flag: '🇨🇭', dial: '+41',  name: 'İsviçre' },
+    { flag: '🇫🇷', dial: '+33',  name: 'Fransa' },
+    { flag: '🇬🇧', dial: '+44',  name: 'İngiltere' },
+    { flag: '🇸🇦', dial: '+966', name: 'S. Arabistan' },
+    { flag: '🇦🇿', dial: '+994', name: 'Azerbaycan' },
+    { flag: '🇷🇺', dial: '+7',   name: 'Rusya' },
+    { flag: '🇺🇦', dial: '+380', name: 'Ukrayna' },
+    { flag: '🇺🇸', dial: '+1',   name: 'ABD' },
+  ];
+
+  selectedCountry = this.countries[0];
+  isCountryDropdownOpen = false;
+
+  get fullPhone(): string {
+    const local = (this.customerForm.get('phone')?.value ?? '').replace(/[\s\-\(\)]/g, '');
+    if (!local) return '';
+    const dial = this.selectedCountry.dial;
+    if (dial === '+90' && local.startsWith('0')) return dial + local.slice(1);
+    return dial + local;
+  }
+
+  selectCountry(c: { flag: string; dial: string; name: string }): void {
+    this.selectedCountry = c;
+    this.isCountryDropdownOpen = false;
+    this.otpSent = false;
+    this.otpVerified = false;
+    this.otpCode = '';
+    this.otpError = '';
+    this.otpSuccess = '';
+    this.customerFound = false;
+  }
+
   customerFound = false;
   isLookingUp = false;
   private phoneSubject$ = new Subject<string>();
@@ -130,8 +168,7 @@ export class BookingComponent implements OnInit, OnDestroy {
         '',
         [
           Validators.required,
-          Validators.maxLength(11),
-          Validators.pattern(/^[0-9\s\-\+\(\)]{10,15}$/),
+          Validators.pattern(/^[0-9\s\-\(\)]{5,15}$/),
         ],
       ],
       email: ['', [Validators.email, Validators.maxLength(80)]],
@@ -151,8 +188,12 @@ export class BookingComponent implements OnInit, OnDestroy {
     try {
       const raw = localStorage.getItem(this.STORAGE_KEY);
       if (!raw) return;
-      const saved = JSON.parse(raw) as { fullName?: string; phone?: string; email?: string };
+      const saved = JSON.parse(raw) as { fullName?: string; phone?: string; email?: string; dialCode?: string };
       this.rememberMe = true;
+      if (saved.dialCode) {
+        const found = this.countries.find(c => c.dial === saved.dialCode);
+        if (found) this.selectedCountry = found;
+      }
       this.customerForm.patchValue({
         fullName: saved.fullName ?? '',
         phone:    saved.phone    ?? '',
@@ -165,7 +206,10 @@ export class BookingComponent implements OnInit, OnDestroy {
     try {
       if (this.rememberMe) {
         const { fullName, phone, email } = this.customerForm.value;
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify({ fullName, phone, email }));
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
+          fullName, phone, email,
+          dialCode: this.selectedCountry.dial,
+        }));
       } else {
         localStorage.removeItem(this.STORAGE_KEY);
       }
@@ -212,9 +256,12 @@ export class BookingComponent implements OnInit, OnDestroy {
   }
 
   onPhoneInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
     this.customerFound = false;
-    this.phoneSubject$.next(value);
+    if (this.otpSent && !this.otpVerified) {
+      this.otpSent = false;
+      this.otpCode = '';
+    }
+    this.phoneSubject$.next(this.fullPhone);
   }
 
   loadSalon(): void {
@@ -361,7 +408,8 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.isSubmitting = true;
     this.errorMessage = '';
 
-    const { fullName, phone, email, notes } = this.customerForm.value;
+    const { fullName, email, notes } = this.customerForm.value;
+    const phone = this.fullPhone;
     const serviceIds = this.selectedServices.map(s => s.id);
 
     this.bookingService
@@ -451,7 +499,7 @@ export class BookingComponent implements OnInit, OnDestroy {
   }
 
   sendOtp(): void {
-    const phone = this.customerForm.get('phone')?.value;
+    const phone = this.fullPhone;
     if (!phone) return;
 
     this.isSendingOtp = true;
@@ -477,7 +525,7 @@ export class BookingComponent implements OnInit, OnDestroy {
   }
 
   verifyOtp(): void {
-    const phone = this.customerForm.get('phone')?.value;
+    const phone = this.fullPhone;
     if (!phone || !this.otpCode) return;
 
     this.isVerifyingOtp = true;
