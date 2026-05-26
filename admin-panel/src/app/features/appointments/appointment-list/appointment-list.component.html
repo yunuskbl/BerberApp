@@ -86,7 +86,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (apt of (showPendingAll ? appointments.filter(a => a.status === AppointmentStatus.Pending) : appointments); track apt.id) {
+          @for (apt of visibleAppointments; track apt.id) {
             <tr>
               <td>
                 <div class="time-cell">

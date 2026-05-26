@@ -137,6 +137,12 @@ export class AppointmentListComponent implements OnInit {
     return date.toISOString().split('T')[0];
   }
 
+  get visibleAppointments() {
+    return this.showPendingAll
+      ? this.appointments.filter(a => a.status === AppointmentStatus.Pending)
+      : this.appointments;
+  }
+
   togglePendingAll(): void {
     this.showPendingAll = !this.showPendingAll;
     this.loadAppointments();
