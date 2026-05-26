@@ -16,21 +16,28 @@ interface FAQ  { question: string; answer: string; open?: boolean; }
 interface Stat { value: string; label: string; num: number; format: (n: number) => string; }
 
 const ALL_FEATURES: Feature[] = [
-  { name: 'Online Randevu Sayfası',           included: true },
-  { name: 'Randevu Yönetimi',                 included: true },
-  { name: 'Çoklu Hizmet Seçimi',              included: true },
-  { name: 'Müşteri & Personel Yönetimi',      included: true },
-  { name: 'Personele Özel Fiyatlandırma',     included: true },
-  { name: 'Hizmet & Fiyat Yönetimi',          included: true },
-  { name: 'Tema & Logo Özelleştirme',         included: true },
-  { name: 'Çoklu Dil (TR / EN / RU)',         included: true },
-  { name: 'WhatsApp Bildirimleri',             included: true },
-  { name: 'Randevu Hatırlatması',              included: true },
-  { name: 'Fotoğraf Galerisi',                included: true },
-  { name: 'Müşteri Değerlendirme Sistemi',    included: true },
-  { name: 'Gelir & Gider Yönetimi',           included: true },
-  { name: 'Personel Girişi & Yetkilendirme',  included: true },
-  { name: 'Öncelikli Destek',                 included: true },
+  { name: 'Online Randevu Sayfası',            included: true },
+  { name: 'Randevu Yönetimi & Takvim',         included: true },
+  { name: 'Çoklu Hizmet Seçimi',               included: true },
+  { name: 'WhatsApp OTP Doğrulama',            included: true },
+  { name: 'Uluslararası Telefon Desteği',      included: true },
+  { name: 'QR Kod ile Randevu Linki',          included: true },
+  { name: 'Harita & Konum Entegrasyonu',       included: true },
+  { name: 'Çalışma Saati & İzin Yönetimi',    included: true },
+  { name: 'Personel Profil Fotoğrafı',         included: true },
+  { name: 'Müşteri & Personel Yönetimi',       included: true },
+  { name: 'Personele Özel Fiyatlandırma',      included: true },
+  { name: 'Hizmet & Fiyat Yönetimi',           included: true },
+  { name: 'Tema & Logo Özelleştirme',          included: true },
+  { name: 'Çoklu Dil (TR / EN / RU)',          included: true },
+  { name: 'WhatsApp Bildirimleri',              included: true },
+  { name: 'Hatırlatma (24 saat + 1 saat)',     included: true },
+  { name: 'Fotoğraf Galerisi',                 included: true },
+  { name: 'Müşteri Değerlendirme Sistemi',     included: true },
+  { name: 'Toplu WhatsApp Kampanyası',         included: true },
+  { name: 'Gelir & Gider Yönetimi',            included: true },
+  { name: 'Personel Girişi & Yetkilendirme',   included: true },
+  { name: 'Öncelikli Destek',                  included: true },
 ];
 
 @Component({
@@ -71,7 +78,6 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   // ── Feature list ──────────────────────────────────────────────────────────
   private rawFeatures = [
     {
-      // Takvim / randevu
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="4" width="18" height="18" rx="2"/>
         <line x1="16" y1="2" x2="16" y2="6"/>
@@ -80,37 +86,41 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
         <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
       </svg>`,
       title: 'Online Randevu Sayfası',
-      desc: 'Müşterileriniz 7/24 linkten randevu alır. Telefon trafiği sıfıra iner, doluluk artar.'
+      desc: 'Müşteriler 7/24 kendi linkinden randevu alır; personel, hizmet, tarih ve saat seçer. Telefon trafiği sıfıra iner, doluluk artar.'
     },
     {
-      // Liste / çoklu seçim
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9 11l3 3L22 4"/>
         <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
       </svg>`,
       title: 'Çoklu Hizmet Seçimi',
-      desc: 'Müşteriler tek randevuda birden fazla hizmet seçebilir. Toplam süre ve ücret otomatik hesaplanır.'
+      desc: 'Müşteriler tek randevuda birden fazla hizmet seçebilir. Toplam süre ve ücret otomatik hesaplanır, uygun saatler buna göre gösterilir.'
     },
     {
-      // Mesaj balonu / whatsapp
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         <line x1="9" y1="10" x2="15" y2="10"/>
         <line x1="9" y1="14" x2="13" y2="14"/>
       </svg>`,
       title: 'WhatsApp Bildirimleri',
-      desc: 'Randevu onayı, hatırlatma ve iptal mesajları müşterinize otomatik WhatsApp\'tan iletilir. Ek kurulum gerekmez.'
+      desc: 'Randevu onayı, 24 saat ve 1 saat öncesi hatırlatma, iptal ve tamamlanma mesajları WhatsApp\'tan otomatik gider. Ek kurulum gerekmez.'
     },
     {
-      // Yıldız / değerlendirme
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <path d="M9 12l2 2 4-4"/>
+      </svg>`,
+      title: 'WhatsApp OTP Doğrulama',
+      desc: 'Randevu alırken müşterinin telefon numarası WhatsApp ile doğrulanır. Sahte randevuların önüne geçilir, 13 ülke alan kodu desteklenir.'
+    },
+    {
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
       </svg>`,
       title: 'Değerlendirme Sistemi',
-      desc: 'Hizmet tamamlandığında müşteriye otomatik puan linki gönderilir. Yorumlar ve puanlar profil sayfanızda yayınlanır.'
+      desc: 'Hizmet tamamlandığında müşteriye otomatik puan linki gönderilir. Yorumlar ve puanlar salon keşif sayfasında yayınlanır.'
     },
     {
-      // Bar chart / gelir & gider
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="18" y1="20" x2="18" y2="10"/>
         <line x1="12" y1="20" x2="12" y2="4"/>
@@ -118,10 +128,9 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
         <line x1="2"  y1="20" x2="22" y2="20"/>
       </svg>`,
       title: 'Gelir & Gider Yönetimi',
-      desc: 'Gelir, gider ve net kâr raporlarına tek ekrandan ulaşın. Kategori bazlı gider takibi ve P&L özeti ile finansal durumunuzu anlık görün.'
+      desc: 'Gelir, gider ve net kâr raporlarına tek ekrandan ulaşın. Kategori bazlı gider takibi ve tarih aralığı filtresiyle finansal durumunuzu anlık görün.'
     },
     {
-      // Kişiler / personel
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
         <circle cx="9" cy="7" r="4"/>
@@ -129,17 +138,23 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
       </svg>`,
       title: 'Personel & Fiyat Yönetimi',
-      desc: 'Her personele özel hizmet fiyatı tanımlayın. Çalışma saatlerini ve izinleri kolayca yönetin.'
+      desc: 'Her personele profil fotoğrafı, biyografi ve özel hizmet fiyatı tanımlayın. Çalışma saatleri, izin günleri ve salon kapanışlarını kolayca yönetin.'
     },
     {
-      // Kilit / personel girişi
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.65 3.21a2 2 0 0 1 1.99-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>`,
+      title: 'Toplu WhatsApp Kampanyası',
+      desc: 'Tüm kayıtlı müşterilerinize tek tıkla kişiselleştirilmiş WhatsApp mesajı gönderin. Kampanya, indirim veya hatırlatma bildirimi için idealdir.'
+    },
+    {
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
         <circle cx="12" cy="16" r="1" fill="currentColor"/>
       </svg>`,
       title: 'Personel Girişi & Yetki',
-      desc: 'Her personele ayrı giriş hesabı tanımlayın. Personel yalnızca kendi randevularını ve çalışma saatlerini görebilir, admin bilgileri korunur.'
+      desc: 'Her personele ayrı giriş hesabı tanımlayın. Personel yalnızca kendi randevularını ve çalışma saatlerini görür; müşteri ve finans verileri admin\'de kalır.'
     },
   ];
 
@@ -152,21 +167,28 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       icon: '🌱', featured: false, ctaDisabled: false,
       limits: { staff: '1 Personel', appointments: '100 Randevu/Ay' },
       features: [
-        { name: 'Online Randevu Sayfası',          included: true  },
-        { name: 'Randevu Yönetimi',                included: true  },
-        { name: 'Çoklu Hizmet Seçimi',             included: true  },
-        { name: 'Müşteri & Personel Yönetimi',     included: true  },
-        { name: 'Personele Özel Fiyatlandırma',    included: true  },
-        { name: 'Hizmet & Fiyat Yönetimi',         included: true  },
-        { name: 'Tema & Logo Özelleştirme',        included: true  },
-        { name: 'Çoklu Dil (TR / EN / RU)',        included: true  },
-        { name: 'WhatsApp Bildirimleri',            included: true  },
-        { name: 'Randevu Hatırlatması',             included: true  },
-        { name: 'Fotoğraf Galerisi',               included: true  },
-        { name: 'Müşteri Değerlendirme Sistemi',   included: true  },
-        { name: 'Gelir & Gider Yönetimi',          included: false },
-        { name: 'Personel Girişi & Yetkilendirme', included: false },
-        { name: 'Öncelikli Destek',                included: false },
+        { name: 'Online Randevu Sayfası',           included: true  },
+        { name: 'Randevu Yönetimi & Takvim',        included: true  },
+        { name: 'Çoklu Hizmet Seçimi',              included: true  },
+        { name: 'WhatsApp OTP Doğrulama',           included: true  },
+        { name: 'Uluslararası Telefon Desteği',     included: true  },
+        { name: 'QR Kod ile Randevu Linki',         included: true  },
+        { name: 'Harita & Konum Entegrasyonu',      included: true  },
+        { name: 'Çalışma Saati & İzin Yönetimi',   included: true  },
+        { name: 'Personel Profil Fotoğrafı',        included: true  },
+        { name: 'Müşteri & Personel Yönetimi',      included: true  },
+        { name: 'Personele Özel Fiyatlandırma',     included: true  },
+        { name: 'Hizmet & Fiyat Yönetimi',          included: true  },
+        { name: 'Tema & Logo Özelleştirme',         included: true  },
+        { name: 'Çoklu Dil (TR / EN / RU)',         included: true  },
+        { name: 'WhatsApp Bildirimleri',             included: true  },
+        { name: 'Hatırlatma (24 saat + 1 saat)',    included: true  },
+        { name: 'Fotoğraf Galerisi',                included: true  },
+        { name: 'Müşteri Değerlendirme Sistemi',    included: true  },
+        { name: 'Toplu WhatsApp Kampanyası',        included: false },
+        { name: 'Gelir & Gider Yönetimi',           included: false },
+        { name: 'Personel Girişi & Yetkilendirme',  included: false },
+        { name: 'Öncelikli Destek',                 included: false },
       ],
       cta: 'Başlangıç Planı',
     },
@@ -176,21 +198,28 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       icon: '⚡', featured: true,
       limits: { staff: '5 Personele Kadar', appointments: '500 Randevu/Ay' },
       features: [
-        { name: 'Online Randevu Sayfası',          included: true  },
-        { name: 'Randevu Yönetimi',                included: true  },
-        { name: 'Çoklu Hizmet Seçimi',             included: true  },
-        { name: 'Müşteri & Personel Yönetimi',     included: true  },
-        { name: 'Personele Özel Fiyatlandırma',    included: true  },
-        { name: 'Hizmet & Fiyat Yönetimi',         included: true  },
-        { name: 'Tema & Logo Özelleştirme',        included: true  },
-        { name: 'Çoklu Dil (TR / EN / RU)',        included: true  },
-        { name: 'WhatsApp Bildirimleri',            included: true  },
-        { name: 'Randevu Hatırlatması',             included: true  },
-        { name: 'Fotoğraf Galerisi',               included: true  },
-        { name: 'Müşteri Değerlendirme Sistemi',   included: true  },
-        { name: 'Gelir & Gider Yönetimi',          included: true  },
-        { name: 'Personel Girişi & Yetkilendirme', included: true  },
-        { name: 'Öncelikli Destek',                included: false },
+        { name: 'Online Randevu Sayfası',           included: true  },
+        { name: 'Randevu Yönetimi & Takvim',        included: true  },
+        { name: 'Çoklu Hizmet Seçimi',              included: true  },
+        { name: 'WhatsApp OTP Doğrulama',           included: true  },
+        { name: 'Uluslararası Telefon Desteği',     included: true  },
+        { name: 'QR Kod ile Randevu Linki',         included: true  },
+        { name: 'Harita & Konum Entegrasyonu',      included: true  },
+        { name: 'Çalışma Saati & İzin Yönetimi',   included: true  },
+        { name: 'Personel Profil Fotoğrafı',        included: true  },
+        { name: 'Müşteri & Personel Yönetimi',      included: true  },
+        { name: 'Personele Özel Fiyatlandırma',     included: true  },
+        { name: 'Hizmet & Fiyat Yönetimi',          included: true  },
+        { name: 'Tema & Logo Özelleştirme',         included: true  },
+        { name: 'Çoklu Dil (TR / EN / RU)',         included: true  },
+        { name: 'WhatsApp Bildirimleri',             included: true  },
+        { name: 'Hatırlatma (24 saat + 1 saat)',    included: true  },
+        { name: 'Fotoğraf Galerisi',                included: true  },
+        { name: 'Müşteri Değerlendirme Sistemi',    included: true  },
+        { name: 'Toplu WhatsApp Kampanyası',        included: true  },
+        { name: 'Gelir & Gider Yönetimi',           included: true  },
+        { name: 'Personel Girişi & Yetkilendirme',  included: true  },
+        { name: 'Öncelikli Destek',                 included: false },
       ],
       cta: 'Profesyonel\'e Geç',
     },
@@ -209,35 +238,43 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   faqItems: FAQ[] = [
     {
       question: 'Hangi tür işletmeler kullanabilir?',
-      answer: 'Randevu alan her tür hizmet işletmesi için uygundur. Berber, kuaför, güzellik salonu, masaj merkezi, dişçi, klinik, dövme stüdyosu, fotoğrafçı, danışmanlık ofisi ve daha fazlası. Hizmetlerinizi ve çalışma saatlerinizi sisteme girmeniz yeterli.',
+      answer: 'Randevu alan her tür hizmet işletmesi için uygundur: berber, kuaför, güzellik salonu, masaj & spa, diş kliniği, klinik, dövme stüdyosu, fotoğrafçı, danışmanlık ofisi ve daha fazlası. Hizmetlerinizi ve çalışma saatlerinizi sisteme girmeniz yeterli.',
     },
     {
       question: 'Kayıt olmak için ne gerekiyor?',
       answer: 'Sadece bir e-posta adresi ve telefon numarası yeterli. 3 dakikada sisteme kayıt olup randevu almaya başlayabilirsiniz.',
     },
     {
-      question: 'İstediğim zaman plan değiştirebilir miyim?',
-      answer: 'Evet! İstediğiniz zaman planınızı yükseltebilirsiniz. Değişiklik anında geçerli olur, ek ücret hesaplanmaz.',
+      question: 'WhatsApp OTP doğrulama nasıl çalışıyor?',
+      answer: 'Müşteri randevu alırken telefon numarasını girer, sisteme "Kodu Gönder" ile 6 haneli bir doğrulama kodu WhatsApp üzerinden iletilir. Kodu doğrulayan müşteri randevuyu tamamlayabilir. Bu sayede sahte veya hatalı numaralarla randevu alınması engellenir. Türkiye başta olmak üzere 13 ülke alan kodu desteklenir.',
     },
     {
       question: 'WhatsApp bildirimleri nasıl çalışıyor?',
-      answer: 'Randevu onayı, iptal ve hatırlatma mesajları müşterinizin telefonuna otomatik olarak WhatsApp üzerinden gönderilir. Ek bir kurulum gerekmez.',
+      answer: 'Randevu oluşturulduğunda onay, 24 saat ve 1 saat öncesi hatırlatma, randevu tamamlandığında değerlendirme linki ve iptal durumunda bilgi mesajı müşterinize otomatik WhatsApp\'tan gönderilir. İşletme sahibine de yeni randevu geldiğinde anlık bildirim iletilir. Ek kurulum gerekmez.',
+    },
+    {
+      question: 'Toplu WhatsApp mesajı özelliği ne işe yarar?',
+      answer: 'Profesyonel ve Premium planlarda, kayıtlı tüm müşterilerinize tek tıkla özel bir WhatsApp mesajı gönderebilirsiniz. Kampanya duyurusu, indirim bildirimi veya tatil tebriki gibi iletişimlerde kullanabilirsiniz. Mesaj kaç kişiye ulaştı, kaç gönderim başarısız oldu diye sonuç özeti gösterilir.',
     },
     {
       question: 'Müşteri birden fazla hizmet alabilir mi?',
-      answer: 'Evet. Müşteriler randevu alırken birden fazla hizmet seçebilir. Sistem toplam süreyi ve ücreti otomatik hesaplar, uygun zaman dilimlerini buna göre gösterir.',
+      answer: 'Evet. Müşteriler randevu alırken birden fazla hizmet seçebilir. Sistem toplam süreyi ve toplam ücreti otomatik hesaplar, uygun zaman dilimlerini buna göre gösterir.',
     },
     {
       question: 'Personel ve randevu limitleri nedir?',
-      answer: 'Başlangıç planında 1 personel ve ayda 100 randevu, Profesyonel planında 5 personele kadar ve ayda 500 randevu desteklenir. Premium planda her ikisi de sınırsızdır.',
-    },
-    {
-      question: 'Gelir ve gider takibi nasıl çalışıyor?',
-      answer: 'Profesyonel ve Premium planlarda gelir & gider yönetimi dahildir. Giderlerinizi kategori bazlı (kira, elektrik, malzeme vb.) ekleyebilir, seçtiğiniz tarih aralığında toplam gelir, toplam gider ve net kâr/zarar özetini anında görebilirsiniz. Raporlarınızı CSV olarak dışa aktarabilirsiniz.',
+      answer: 'Başlangıç planında 1 personel ve ayda 100 randevu, Profesyonel planında 5 personele kadar ve ayda 500 randevu desteklenir. Premium planda her ikisi de sınırsızdır. Aylık limite yaklaşıldığında sizi otomatik uyarı mesajı ile bilgilendiririz.',
     },
     {
       question: 'Personelime ayrı giriş hesabı tanımlayabilir miyim?',
-      answer: 'Profesyonel ve Premium planlarda her personel için ayrı bir e-posta/şifre hesabı oluşturabilirsiniz. Personel bu hesapla sisteme girerek yalnızca kendi randevularını, çalışma saatlerini ve izin günlerini görür. Müşteri iletişim bilgileri ve finansal veriler admin tarafında korunur.',
+      answer: 'Profesyonel ve Premium planlarda her personel için ayrı e-posta/şifre hesabı oluşturabilirsiniz. Personel yalnızca kendi randevularını, çalışma saatlerini ve izin günlerini görür. Müşteri iletişim bilgileri ve finansal veriler admin tarafında korunur.',
+    },
+    {
+      question: 'Gelir ve gider takibi nasıl çalışıyor?',
+      answer: 'Profesyonel ve Premium planlarda gelir & gider yönetimi dahildir. Giderlerinizi kategori bazlı (kira, elektrik, malzeme vb.) ekleyebilir, seçtiğiniz tarih aralığında toplam gelir, gider ve net kâr/zarar özetini anında görebilirsiniz.',
+    },
+    {
+      question: 'İstediğim zaman plan değiştirebilir miyim?',
+      answer: 'Evet! İstediğiniz zaman planınızı yükseltebilirsiniz. Değişiklik anında geçerli olur.',
     },
     {
       question: 'Verilerim güvende mi?',

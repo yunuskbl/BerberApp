@@ -519,9 +519,13 @@ $green:        #059669;
 
 .mockup-whatsapp {
   display: flex; align-items: center; gap: 8px;
-  padding: 10px 12px;
+  padding: 8px 12px;
   background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;
   font-size: 11px; color: #065f46; font-weight: 500;
+  & + .mockup-whatsapp { margin-top: 6px; }
+}
+.mockup-wa-campaign {
+  background: #eff6ff; border-color: #bfdbfe; color: #1e40af;
 }
 
 .wa-icon { display: flex; align-items: center; flex-shrink: 0; }
