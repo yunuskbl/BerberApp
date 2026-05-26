@@ -879,6 +879,21 @@ $green:        #059669;
   opacity: .7;
 }
 
+.price-vat-note {
+  font-size: 11px;
+  color: $muted;
+  margin-top: 4px;
+  opacity: .7;
+}
+
+.plans-vat-footer {
+  text-align: center;
+  font-size: 12px;
+  color: $muted;
+  margin-top: 24px;
+  opacity: .7;
+}
+
 // ── Plan limits ───────────────────────────────────────────────────────────────
 .plan-limits {
   display: flex;
