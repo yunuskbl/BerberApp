@@ -183,7 +183,7 @@
                   @if (getDayApts(day).length > 0) {
                     <span class="mcal-dot-row">
                       @for (apt of getDayApts(day).slice(0, 3); track apt.id) {
-                        <span class="mcal-dot status-dot-{{ apt.status }}"></span>
+                        <span class="mcal-dot status-dot-{{ getStatusIndex(apt.status) }}"></span>
                       }
                     </span>
                   }
@@ -227,7 +227,7 @@
             } @else {
               <div class="mcal-apt-list">
                 @for (apt of selectedDayApts; track apt.id) {
-                  <div class="mcal-apt-item status-bg-{{ apt.status }}">
+                  <div class="mcal-apt-item status-bg-{{ getStatusIndex(apt.status) }}">
                     <div class="mcal-apt-time">
                       <span class="apt-time-start">{{ formatTime(apt.startTime) }}</span>
                       <span class="apt-time-end">{{ formatTime(apt.endTime) }}</span>

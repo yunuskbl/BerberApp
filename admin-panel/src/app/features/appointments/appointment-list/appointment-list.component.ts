@@ -405,6 +405,17 @@ export class AppointmentListComponent implements OnInit {
     return map[status] ?? 'badge-gray';
   }
 
+  getStatusIndex(status: AppointmentStatus): number {
+    const map: Record<AppointmentStatus, number> = {
+      [AppointmentStatus.Pending]:   0,
+      [AppointmentStatus.Confirmed]: 1,
+      [AppointmentStatus.Completed]: 2,
+      [AppointmentStatus.Cancelled]: 3,
+      [AppointmentStatus.NoShow]:    4,
+    };
+    return map[status] ?? 0;
+  }
+
   formatTime(dateStr: string): string {
     return new Date(dateStr).toLocaleTimeString(this.langService.dateLocale, {
       hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul'
