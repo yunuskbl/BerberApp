@@ -38,4 +38,11 @@ public class CustomersController : BaseApiController
         await Mediator.Send(new DeleteCustomerCommand { Id = id, TenantId = TenantId });
         return NoContent();
     }
+
+    [HttpPost("broadcast")]
+    public async Task<IActionResult> Broadcast([FromBody] BroadcastMessageCommand command)
+    {
+        command.TenantId = TenantId;
+        return Success(await Mediator.Send(command));
+    }
 }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BerberApp.Application.Common.Exceptions;
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Application.Common.Validators;
 using BerberApp.Application.Customer.Commands;
 using BerberApp.Application.Customer.DTOs;
 using MediatR;
@@ -30,16 +31,18 @@ public class CreateCustomerHandler : IRequestHandler<CreateCustomerCommand, Cust
         if (!tenantExists)
             throw new NotFoundException("Tenant", request.TenantId);
 
+        var normalizedPhone = PhoneNumberHelper.NormalizePhoneNumber(request.Phone);
+
         var phoneExists = await _customerRepo.AnyAsync(
-            x => x.Phone == request.Phone && x.TenantId == request.TenantId, ct);
+            x => x.Phone == normalizedPhone && x.TenantId == request.TenantId, ct);
         if (phoneExists)
-            throw new ConflictException($"'{request.Phone}' numaralı müşteri zaten kayıtlı.");
+            throw new ConflictException($"'{normalizedPhone}' numaralı müşteri zaten kayıtlı.");
 
         var customer = new CustomerEntity
         {
             TenantId = request.TenantId,
             FullName = request.FullName,
-            Phone = request.Phone,
+            Phone = normalizedPhone,
             Email = request.Email,
             Notes = request.Notes
         };

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BerberApp.Application.Common.Exceptions;
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Application.Common.Validators;
 using BerberApp.Application.Customer.Commands;
 using BerberApp.Application.Customer.DTOs;
 using MediatR;
@@ -29,7 +30,7 @@ public class UpdateCustomerHandler : IRequestHandler<UpdateCustomerCommand, Cust
             throw new NotFoundException("Müşteri", request.Id);
 
         customer.FullName = request.FullName;
-        customer.Phone = request.Phone;
+        customer.Phone = PhoneNumberHelper.NormalizePhoneNumber(request.Phone);
         customer.Email = request.Email;
         customer.Notes = request.Notes;
 

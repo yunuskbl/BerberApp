@@ -47,6 +47,13 @@ export class CustomerListComponent implements OnInit {
   updateError          = '';
   updateForm: FormGroup;
 
+  // --- Toplu mesaj ---
+  isBroadcastOpen      = false;
+  broadcastMessage     = '';
+  broadcastSubmitting  = false;
+  broadcastResult: { totalCustomers: number; sent: number; failed: number } | null = null;
+  broadcastError       = '';
+
   // --- Tekrarla modal ---
   repeatingAppointment: Appointment | null = null;
   repeatDate   = '';
@@ -263,6 +270,36 @@ export class CustomerListComponent implements OnInit {
         this.repeatSubmitting = false;
       },
       error: (err) => { this.repeatError = err.error?.message || 'Hata oluştu.'; this.repeatSubmitting = false; }
+    });
+  }
+
+  // ─── TOPLU MESAJ ─────────────────────────────────────────
+  openBroadcast(): void {
+    this.isBroadcastOpen = true;
+    this.broadcastMessage = '';
+    this.broadcastResult = null;
+    this.broadcastError = '';
+  }
+
+  closeBroadcast(): void {
+    this.isBroadcastOpen = false;
+  }
+
+  onBroadcastSubmit(): void {
+    if (!this.broadcastMessage.trim() || this.broadcastSubmitting) return;
+    this.broadcastSubmitting = true;
+    this.broadcastResult = null;
+    this.broadcastError = '';
+    this.customerService.broadcast(this.broadcastMessage.trim()).subscribe({
+      next: (res) => {
+        if (res.success) this.broadcastResult = res.data;
+        else this.broadcastError = 'Gönderim başarısız.';
+        this.broadcastSubmitting = false;
+      },
+      error: (err) => {
+        this.broadcastError = err.error?.message || 'Hata oluştu.';
+        this.broadcastSubmitting = false;
+      }
     });
   }
 

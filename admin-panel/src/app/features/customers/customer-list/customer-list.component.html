@@ -5,7 +5,10 @@
       <h2>{{ 'page.customers' | translate }}</h2>
       <p>{{ customerList.length }} {{ 'customers.registered' | translate }}</p>
     </div>
-    <button class="btn btn-primary" (click)="openDrawer()">{{ 'customers.add' | translate }}</button>
+    <div class="header-actions">
+      <button class="btn btn-outline btn-broadcast" (click)="openBroadcast()">📢 Toplu Mesaj</button>
+      <button class="btn btn-primary" (click)="openDrawer()">{{ 'customers.add' | translate }}</button>
+    </div>
   </div>
 
   <div class="search-bar">
@@ -233,6 +236,63 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+}
+
+<!-- ═══ TOPLU MESAJ MODAL ═══ -->
+@if (isBroadcastOpen) {
+  <div class="modal-overlay" (click)="closeBroadcast()">
+    <div class="modal modal--broadcast" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>📢 Toplu Mesaj Gönder</h3>
+        <button class="drawer-close" (click)="closeBroadcast()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="broadcast-info">
+          Kayıtlı <strong>{{ customerList.length }}</strong> müşteriye WhatsApp mesajı gönderilecek.
+        </p>
+        @if (!broadcastResult) {
+          <div class="form-group">
+            <label>Mesaj</label>
+            <textarea
+              [(ngModel)]="broadcastMessage"
+              rows="5"
+              placeholder="Mesajınızı buraya yazın..."
+              [disabled]="broadcastSubmitting"
+              class="broadcast-textarea">
+            </textarea>
+            <span class="char-count">{{ broadcastMessage.length }} karakter</span>
+          </div>
+          @if (broadcastError) { <div class="error-message">{{ broadcastError }}</div> }
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeBroadcast()">İptal</button>
+            <button type="button" class="btn btn-primary"
+              [disabled]="!broadcastMessage.trim() || broadcastSubmitting"
+              (click)="onBroadcastSubmit()">
+              {{ broadcastSubmitting ? 'Gönderiliyor...' : 'Gönder' }}
+            </button>
+          </div>
+        } @else {
+          <div class="broadcast-result">
+            <div class="broadcast-stat broadcast-stat--success">
+              <span class="stat-num">{{ broadcastResult.sent }}</span>
+              <span class="stat-label">Gönderildi</span>
+            </div>
+            <div class="broadcast-stat broadcast-stat--fail">
+              <span class="stat-num">{{ broadcastResult.failed }}</span>
+              <span class="stat-label">Başarısız</span>
+            </div>
+            <div class="broadcast-stat">
+              <span class="stat-num">{{ broadcastResult.totalCustomers }}</span>
+              <span class="stat-label">Toplam</span>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" (click)="closeBroadcast()">Kapat</button>
+          </div>
+        }
+      </div>
     </div>
   </div>
 }

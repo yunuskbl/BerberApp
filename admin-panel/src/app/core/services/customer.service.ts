@@ -30,4 +30,10 @@ export class CustomerService {
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  broadcast(message: string): Observable<ApiResponse<{ totalCustomers: number; sent: number; failed: number }>> {
+    return this.http.post<ApiResponse<{ totalCustomers: number; sent: number; failed: number }>>(
+      `${this.apiUrl}/broadcast`, { message }
+    );
+  }
 }
