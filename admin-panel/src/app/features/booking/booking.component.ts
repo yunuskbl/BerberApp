@@ -9,6 +9,9 @@ import {
   FormGroup,
   Validators,
   FormsModule,
+  AbstractControl,
+  ValidatorFn,
+  ValidationErrors,
 } from '@angular/forms';
 import {
   BookingApiService,
@@ -92,19 +95,19 @@ export class BookingComponent implements OnInit, OnDestroy {
   rememberMe = false;
 
   countries = [
-    { flag: '🇹🇷', dial: '+90',  name: 'Türkiye' },
-    { flag: '🇩🇪', dial: '+49',  name: 'Almanya' },
-    { flag: '🇳🇱', dial: '+31',  name: 'Hollanda' },
-    { flag: '🇧🇪', dial: '+32',  name: 'Belçika' },
-    { flag: '🇦🇹', dial: '+43',  name: 'Avusturya' },
-    { flag: '🇨🇭', dial: '+41',  name: 'İsviçre' },
-    { flag: '🇫🇷', dial: '+33',  name: 'Fransa' },
-    { flag: '🇬🇧', dial: '+44',  name: 'İngiltere' },
-    { flag: '🇸🇦', dial: '+966', name: 'S. Arabistan' },
-    { flag: '🇦🇿', dial: '+994', name: 'Azerbaycan' },
-    { flag: '🇷🇺', dial: '+7',   name: 'Rusya' },
-    { flag: '🇺🇦', dial: '+380', name: 'Ukrayna' },
-    { flag: '🇺🇸', dial: '+1',   name: 'ABD' },
+    { flag: '🇹🇷', dial: '+90',  name: 'Türkiye',     placeholder: '5XX XXX XX XX',  minDigits: 10, maxDigits: 11 },
+    { flag: '🇩🇪', dial: '+49',  name: 'Almanya',      placeholder: '1XX XXXXXXXX',   minDigits: 10, maxDigits: 12 },
+    { flag: '🇳🇱', dial: '+31',  name: 'Hollanda',     placeholder: '6XX XXX XXXX',   minDigits:  9, maxDigits: 10 },
+    { flag: '🇧🇪', dial: '+32',  name: 'Belçika',      placeholder: '4XX XX XX XX',   minDigits:  8, maxDigits:  9 },
+    { flag: '🇦🇹', dial: '+43',  name: 'Avusturya',    placeholder: '6XX XXXXXXX',    minDigits:  7, maxDigits: 13 },
+    { flag: '🇨🇭', dial: '+41',  name: 'İsviçre',      placeholder: '7X XXX XX XX',   minDigits:  9, maxDigits:  9 },
+    { flag: '🇫🇷', dial: '+33',  name: 'Fransa',       placeholder: '6X XX XX XX XX', minDigits:  9, maxDigits: 10 },
+    { flag: '🇬🇧', dial: '+44',  name: 'İngiltere',    placeholder: '7XXX XXXXXX',    minDigits: 10, maxDigits: 11 },
+    { flag: '🇸🇦', dial: '+966', name: 'S. Arabistan', placeholder: '5XX XXX XXXX',   minDigits:  9, maxDigits:  9 },
+    { flag: '🇦🇿', dial: '+994', name: 'Azerbaycan',   placeholder: '5X XXX XXXX',    minDigits:  9, maxDigits:  9 },
+    { flag: '🇷🇺', dial: '+7',   name: 'Rusya',        placeholder: '9XX XXX XXXX',   minDigits: 10, maxDigits: 10 },
+    { flag: '🇺🇦', dial: '+380', name: 'Ukrayna',      placeholder: '9X XXX XXXX',    minDigits:  9, maxDigits:  9 },
+    { flag: '🇺🇸', dial: '+1',   name: 'ABD',          placeholder: 'XXX XXX XXXX',   minDigits: 10, maxDigits: 10 },
   ];
 
   selectedCountry = this.countries[0];
@@ -118,15 +121,42 @@ export class BookingComponent implements OnInit, OnDestroy {
     return dial + local;
   }
 
-  selectCountry(c: { flag: string; dial: string; name: string }): void {
+  selectCountry(c: typeof this.countries[0]): void {
     this.selectedCountry = c;
     this.isCountryDropdownOpen = false;
+    this.updatePhoneValidators();
     this.otpSent = false;
     this.otpVerified = false;
     this.otpCode = '';
     this.otpError = '';
     this.otpSuccess = '';
     this.customerFound = false;
+  }
+
+  private buildPhoneValidator(country: typeof this.countries[0]): ValidatorFn {
+    return (ctrl: AbstractControl): ValidationErrors | null => {
+      const raw = (ctrl.value ?? '') as string;
+      const digits = raw.replace(/[\s\-\(\)]/g, '');
+      if (!digits) return null;
+      if (!/^[0-9]+$/.test(digits)) return { phoneFormat: true };
+      if (digits.length < country.minDigits || digits.length > country.maxDigits)
+        return { phoneLength: { min: country.minDigits, max: country.maxDigits } };
+      return null;
+    };
+  }
+
+  private updatePhoneValidators(): void {
+    const ctrl = this.customerForm.get('phone');
+    if (!ctrl) return;
+    ctrl.setValidators([Validators.required, this.buildPhoneValidator(this.selectedCountry)]);
+    ctrl.updateValueAndValidity();
+  }
+
+  get phoneLengthError(): string {
+    const { name, minDigits, maxDigits } = this.selectedCountry;
+    return minDigits === maxDigits
+      ? `${name} numarası ${minDigits} haneli olmalıdır`
+      : `${name} numarası ${minDigits}–${maxDigits} haneli olmalıdır`;
   }
 
   customerFound = false;
@@ -170,13 +200,7 @@ export class BookingComponent implements OnInit, OnDestroy {
   ) {
     this.customerForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.maxLength(30)]],
-      phone: [
-        '',
-        [
-          Validators.required,
-          Validators.pattern(/^[0-9\s\-\(\)]{5,15}$/),
-        ],
-      ],
+      phone: ['', [Validators.required]],
       email: ['', [Validators.email, Validators.maxLength(80)]],
       notes: ['', [Validators.maxLength(200)]],
       kvkkAccepted: [false, [Validators.requiredTrue]],
@@ -186,6 +210,7 @@ export class BookingComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subdomain = this.route.snapshot.paramMap.get('subdomain') || '';
     this.loadSavedCustomer();
+    this.updatePhoneValidators();
     this.loadSalon();
     this.initPhoneLookup();
   }

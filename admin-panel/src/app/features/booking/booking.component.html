@@ -358,7 +358,8 @@
                     }
                   </div>
                   <input class="form-input phone-input" type="tel" formControlName="phone"
-                    [placeholder]="selectedCountry.dial === '+90' ? '5XX XXX XX XX' : '...'"
+                    [placeholder]="selectedCountry.placeholder"
+                    [maxlength]="selectedCountry.maxDigits + 4"
                     (input)="onPhoneInput($event)" />
                   @if (isLookingUp) {
                     <span class="lookup-spinner"></span>
@@ -382,8 +383,11 @@
                 @if (customerForm.get('phone')?.errors?.['required'] && customerForm.get('phone')?.touched) {
                   <span class="field-error">{{ 'booking.phoneRequired' | translate }}</span>
                 }
-                @if (customerForm.get('phone')?.errors?.['pattern'] && customerForm.get('phone')?.touched) {
-                  <span class="field-error">{{ 'booking.phoneInvalid' | translate }}</span>
+                @if (customerForm.get('phone')?.errors?.['phoneFormat'] && customerForm.get('phone')?.touched) {
+                  <span class="field-error">Sadece rakam girin</span>
+                }
+                @if (customerForm.get('phone')?.errors?.['phoneLength'] && customerForm.get('phone')?.touched) {
+                  <span class="field-error">{{ phoneLengthError }}</span>
                 }
               </div>
               <div class="form-group">
