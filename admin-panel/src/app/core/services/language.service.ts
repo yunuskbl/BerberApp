@@ -378,7 +378,7 @@ const T: Record<Lang, Record<string, string>> = {
     'booking.dateAndTime':      'Tarih & Saat',
     'booking.submitting':       'Randevu Oluşturuluyor...',
     'booking.submit':           'Randevu Al →',
-    'booking.poweredBy':        'BerberApp ile güçlendirildi',
+    'booking.poweredBy':        'ayarlıyo ile güçlendirildi',
     'booking.customerFound':    'Kayıtlı müşteri, bilgiler otomatik dolduruldu',
   },
 
@@ -743,7 +743,7 @@ const T: Record<Lang, Record<string, string>> = {
     'booking.dateAndTime':      'Date & Time',
     'booking.submitting':       'Creating Appointment...',
     'booking.submit':           'Book Appointment →',
-    'booking.poweredBy':        'Powered by BerberApp',
+    'booking.poweredBy':        'Powered by ayarlıyo',
     'booking.customerFound':    'Returning customer found, details auto-filled',
   },
 
@@ -1108,7 +1108,7 @@ const T: Record<Lang, Record<string, string>> = {
     'booking.dateAndTime':      'Дата и время',
     'booking.submitting':       'Создание записи...',
     'booking.submit':           'Записаться →',
-    'booking.poweredBy':        'Работает на BerberApp',
+    'booking.poweredBy':        'Работает на ayarlıyo',
     'booking.customerFound':    'Постоянный клиент найден, данные заполнены автоматически',
   },
 };
