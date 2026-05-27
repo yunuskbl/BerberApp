@@ -222,7 +222,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       cta: 'Profesyonel\'e Geç',
     },
     {
-      name: 'premium', label: 'Premium', price: 2399,
+      name: 'premium', label: 'Premium', price: 2999,
       description: 'Zincir işletmeler için merkezi yönetim',
       icon: '👑', featured: false,
       limits: { staff: 'Sınırsız Personel', appointments: 'Çoklu Şube' },
