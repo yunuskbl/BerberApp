@@ -223,6 +223,10 @@ public class TenantsController : BaseApiController
     [HttpGet("branches")]
     public async Task<IActionResult> GetBranches()
     {
+        var currentTenant = await _context.Tenants.FindAsync(TenantId);
+        if (currentTenant?.ParentTenantId != null)
+            return StatusCode(403, new { success = false, message = "Şubeler kendi alt şube oluşturamaz." });
+
         var subscription = await _context.Subscriptions
             .Where(s => s.TenantId == TenantId && !s.IsDeleted)
             .OrderByDescending(s => s.StartDate)
@@ -238,6 +242,10 @@ public class TenantsController : BaseApiController
     [HttpPost("branches")]
     public async Task<IActionResult> CreateBranch([FromBody] CreateBranchCommand command)
     {
+        var currentTenant = await _context.Tenants.FindAsync(TenantId);
+        if (currentTenant?.ParentTenantId != null)
+            return StatusCode(403, new { success = false, message = "Şubeler kendi alt şube oluşturamaz." });
+
         var subscription = await _context.Subscriptions
             .Where(s => s.TenantId == TenantId && !s.IsDeleted)
             .OrderByDescending(s => s.StartDate)
@@ -254,6 +262,10 @@ public class TenantsController : BaseApiController
     [HttpDelete("branches/{id}")]
     public async Task<IActionResult> DeleteBranch(Guid id)
     {
+        var currentTenant = await _context.Tenants.FindAsync(TenantId);
+        if (currentTenant?.ParentTenantId != null)
+            return StatusCode(403, new { success = false, message = "Şubeler kendi alt şube oluşturamaz." });
+
         var branch = await _context.Tenants
             .FirstOrDefaultAsync(t => t.Id == id && t.ParentTenantId == TenantId && !t.IsDeleted);
 

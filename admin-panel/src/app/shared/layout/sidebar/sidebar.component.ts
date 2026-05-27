@@ -20,14 +20,14 @@ export class SidebarComponent {
   isCollapsed = false;
 
   menuItems = [
-    { key: 'nav.home',         icon: 'home',      route: '/dashboard',    minPlan: null           },
-    { key: 'nav.appointments', icon: 'calendar',  route: '/appointments', minPlan: null           },
-    { key: 'nav.staff',        icon: 'user',      route: '/staff',        minPlan: null           },
-    { key: 'nav.services',     icon: 'scissors',  route: '/services',     minPlan: null           },
-    { key: 'nav.customers',    icon: 'users',     route: '/customers',    minPlan: null           },
-    { key: 'nav.reviews',      icon: 'star',      route: '/reviews',      minPlan: 'Profesyonel'  },
-    { key: 'nav.reports',      icon: 'chart-bar', route: '/reports',      minPlan: 'Premium'      },
-    { key: 'nav.branches',     icon: 'branch',    route: '/branches',     minPlan: 'Premium'      },
+    { key: 'nav.home',         icon: 'home',      route: '/dashboard',    minPlan: null,          parentOnly: false },
+    { key: 'nav.appointments', icon: 'calendar',  route: '/appointments', minPlan: null,          parentOnly: false },
+    { key: 'nav.staff',        icon: 'user',      route: '/staff',        minPlan: null,          parentOnly: false },
+    { key: 'nav.services',     icon: 'scissors',  route: '/services',     minPlan: null,          parentOnly: false },
+    { key: 'nav.customers',    icon: 'users',     route: '/customers',    minPlan: null,          parentOnly: false },
+    { key: 'nav.reviews',      icon: 'star',      route: '/reviews',      minPlan: 'Profesyonel', parentOnly: false },
+    { key: 'nav.reports',      icon: 'chart-bar', route: '/reports',      minPlan: 'Premium',     parentOnly: false },
+    { key: 'nav.branches',     icon: 'branch',    route: '/branches',     minPlan: 'Premium',     parentOnly: true  },
   ];
 
   private readonly planLevels: Record<string, number> = {

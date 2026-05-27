@@ -16,20 +16,22 @@
     <div class="nav-section-label">ANA MENÜ</div>
 
     @for (item of menuItems; track item.route) {
-      <a
-        [routerLink]="item.route"
-        routerLinkActive="active"
-        class="nav-item"
-        [class.nav-item--locked]="isLocked(item.minPlan)"
-        [title]="item.key | translate"
-        (click)="navigateTo(item.route)">
-        <span class="nav-icon" [innerHTML]="getIcon(item.icon)"></span>
-        <span class="nav-label">{{ item.key | translate }}</span>
-        @if (isLocked(item.minPlan)) {
-          <span class="nav-lock" title="{{ item.minPlan }}">🔒</span>
-        }
-        <span class="nav-indicator"></span>
-      </a>
+      @if (!item.parentOnly || !branchService.activeBranch()) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          class="nav-item"
+          [class.nav-item--locked]="isLocked(item.minPlan)"
+          [title]="item.key | translate"
+          (click)="navigateTo(item.route)">
+          <span class="nav-icon" [innerHTML]="getIcon(item.icon)"></span>
+          <span class="nav-label">{{ item.key | translate }}</span>
+          @if (isLocked(item.minPlan)) {
+            <span class="nav-lock" title="{{ item.minPlan }}">🔒</span>
+          }
+          <span class="nav-indicator"></span>
+        </a>
+      }
     }
   </nav>
 
