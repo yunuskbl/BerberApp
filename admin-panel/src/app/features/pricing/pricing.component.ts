@@ -159,7 +159,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       name: 'baslangic', label: 'Başlangıç', price: 899,
       description: 'Tek lokasyonlu küçük işletmeler için',
       icon: '🌱', featured: false, ctaDisabled: false,
-      limits: { staff: '3 Personele Kadar', appointments: '150 Randevu/Ay' },
+      limits: { staff: '1 Personel', appointments: '150 Randevu/Ay' },
       features: [
         { name: 'Online Randevu Sayfası',           included: true  },
         { name: 'Randevu Yönetimi & Takvim',        included: true  },
@@ -179,7 +179,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
         { name: 'Hatırlatma (24 saat + 1 saat)',    included: true  },
         { name: 'Fotoğraf Galerisi',                included: true  },
         { name: 'Müşteri Değerlendirme Sistemi',    included: true  },
-        { name: 'Manuel Randevu Onayı',             included: false },
+        { name: 'Manuel Randevu Onayı',             included: true  },
         { name: 'Toplu WhatsApp Kampanyası',        included: false },
         { name: 'Gelir & Gider Yönetimi',           included: false },
         { name: 'Personel Girişi & Yetkilendirme',  included: false },
