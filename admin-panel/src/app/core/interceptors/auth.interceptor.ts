@@ -18,7 +18,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   let cloned = addToken(req, authService.getToken());
 
   const activeBranch = branchService.activeBranch();
-  if (activeBranch) {
+  if (activeBranch && !req.url.includes('/auth/')) {
     cloned = cloned.clone({ headers: cloned.headers.set('X-Branch-Id', activeBranch.id) });
   }
 
@@ -31,8 +31,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         if (refreshToken) {
           return authService.refreshToken().pipe(
             switchMap(() => {
-              // Yeni access token ile orijinal isteği tekrar gönder
-              return next(addToken(req, authService.getToken()));
+              let retryReq = addToken(req, authService.getToken());
+              if (activeBranch && !req.url.includes('/auth/')) {
+                retryReq = retryReq.clone({ headers: retryReq.headers.set('X-Branch-Id', activeBranch.id) });
+              }
+              return next(retryReq);
             }),
             catchError(refreshError => {
               // Refresh de başarısız → kullanıcıyı login'e yönlendir
