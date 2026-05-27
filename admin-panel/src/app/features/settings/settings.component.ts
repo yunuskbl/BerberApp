@@ -18,6 +18,7 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { SalonClosureService, SalonClosure } from '../../core/services/salon-closure.service';
 import { CustomCalendarComponent } from '../../shared/components/custom-calendar/custom-calendar.component';
 import { catchError, of } from 'rxjs';
+import { BranchService } from '../../core/services/branch.service';
 import QRCode from 'qrcode';
 
 /* Turkish/generic phone validator */
@@ -106,6 +107,7 @@ export class SettingsComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private salonClosureService: SalonClosureService,
+    private branchService: BranchService,
     public langService: LanguageService,
   ) {
     this.salonForm = this.fb.group({
@@ -275,8 +277,8 @@ export class SettingsComponent implements OnInit {
           if (res.data.logoUrl) this.logoPreview = res.data.logoUrl;
           this.notificationChannel = res.data.preferredNotificationChannel ?? 0;
           setTimeout(() => this.generateQrCode(), 0);
-          // DB'den gelen planı localStorage ile senkronize et (stale JWT sorunu çözümü)
-          if (res.data.planType) {
+          // DB'den gelen planı localStorage ile senkronize et — şube bağlamındayken yapma
+          if (res.data.planType && !this.branchService.activeBranch()) {
             localStorage.setItem('userPlan', res.data.planType);
           }
         }
