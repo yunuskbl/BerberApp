@@ -192,7 +192,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       name: 'profesyonel', label: 'Profesyonel', price: 1799,
       description: 'Büyüyen tek şubeli işletmeler için',
       icon: '⚡', featured: true,
-      limits: { staff: 'Sınırsız Personel', appointments: 'Sınırsız Randevu' },
+      limits: { staff: '5 Personele Kadar', appointments: 'Sınırsız Randevu' },
       features: [
         { name: 'Online Randevu Sayfası',           included: true  },
         { name: 'Randevu Yönetimi & Takvim',        included: true  },
@@ -260,7 +260,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     },
     {
       question: 'Personel ve randevu limitleri nedir?',
-      answer: 'Başlangıç planında 1 personel ve ayda 150 randevu desteklenir. Profesyonel ve Premium planlarda personel ve randevu sınırı yoktur. Başlangıç planında aylık limite yaklaşıldığında otomatik uyarı alırsınız.',
+      answer: 'Başlangıç planında 1 personel ve ayda 150 randevu desteklenir. Profesyonel planda 5 personele kadar ve sınırsız randevu desteklenir. Premium planda personel ve randevu sınırı yoktur. Başlangıç planında aylık limite yaklaşıldığında otomatik uyarı alırsınız.',
     },
     {
       question: 'Randevuları manuel onaylamak istiyorum, mümkün mü?',
