@@ -49,6 +49,17 @@ export class ReportsListComponent implements OnInit {
     this.loadEarnings();
   }
 
+  onScopeChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    if (value === 'main') {
+      this.setScope('main');
+    } else if (value === 'consolidated') {
+      this.setScope('consolidated');
+    } else if (value.startsWith('branch:')) {
+      this.setScope('branch', value.slice(7));
+    }
+  }
+
   // ── Aktif sekme ───────────────────────────────────────────────────────────
   activeTab: 'income' | 'expense' = 'income';
 

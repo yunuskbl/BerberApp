@@ -47,23 +47,22 @@
   <!-- Kapsam Seçici (Premium + ana bağlam + şube varsa) -->
   @if (showScopeSelector) {
     <div class="scope-selector no-print">
-      <button class="scope-btn" [class.active]="selectedScope === 'main'" (click)="setScope('main')">
-        Ana İşletme
-      </button>
-      @for (branch of branches; track branch.id) {
-        <button class="scope-btn" [class.active]="selectedScope === 'branch' && selectedBranchId === branch.id"
-                (click)="setScope('branch', branch.id)">
-          {{ branch.name }}
-        </button>
-      }
-      <button class="scope-btn scope-btn--consolidated" [class.active]="selectedScope === 'consolidated'"
-              (click)="setScope('consolidated')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <label class="scope-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
           <polyline points="9,22 9,12 15,12 15,22"/>
         </svg>
-        Tüm Şubeler
-      </button>
+        Görünüm
+      </label>
+      <select class="scope-select" (change)="onScopeChange($event)">
+        <option value="main" [selected]="selectedScope === 'main'">Ana İşletme</option>
+        @for (branch of branches; track branch.id) {
+          <option [value]="'branch:' + branch.id" [selected]="selectedScope === 'branch' && selectedBranchId === branch.id">
+            {{ branch.name }}
+          </option>
+        }
+        <option value="consolidated" [selected]="selectedScope === 'consolidated'">🏠 Tüm Şubeler (Konsolide)</option>
+      </select>
     </div>
   }
 

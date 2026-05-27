@@ -3,40 +3,37 @@
 /* ── Kapsam seçici ── */
 .scope-selector {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 16px;
 }
 
-.scope-btn {
+.scope-label {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 14px;
-  border: 1.5px solid #e5e7eb;
-  border-radius: 20px;
-  background: white;
-  color: #6b7280;
   font-size: 12.5px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.scope-select {
+  padding: 7px 32px 7px 12px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;
+  appearance: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
   font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+  min-width: 200px;
 
-  &:hover { border-color: #7c3aed; color: #7c3aed; }
-
-  &.active {
-    background: #111827;
-    border-color: #111827;
-    color: white;
-  }
-
-  &--consolidated {
-    &.active {
-      background: linear-gradient(135deg, #7c3aed, #6d28d9);
-      border-color: transparent;
-    }
-  }
+  &:focus { border-color: #7c3aed; }
 }
 
 .scope-chip {
