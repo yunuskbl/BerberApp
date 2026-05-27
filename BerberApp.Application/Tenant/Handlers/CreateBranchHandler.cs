@@ -19,7 +19,7 @@ public class CreateBranchHandler : IRequestHandler<CreateBranchCommand, CreateBr
         if (await _context.Tenants.AnyAsync(t => t.Subdomain == subdomain && !t.IsDeleted, ct))
             throw new InvalidOperationException("Bu subdomain zaten kullanımda.");
 
-        var branch = new Tenant
+        var branch = new BerberApp.Domain.Entities.Tenant
         {
             Name           = request.Name.Trim(),
             Subdomain      = subdomain,
