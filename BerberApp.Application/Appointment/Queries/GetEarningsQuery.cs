@@ -5,6 +5,7 @@ namespace BerberApp.Application.Appointment.Queries;
 public class GetEarningsQuery : IRequest<EarningsDto>
 {
     public Guid TenantId { get; set; }
+    public List<Guid>? TenantIds { get; set; }  // null → single TenantId; set → multi-tenant (consolidated/branch)
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public Guid? StaffId { get; set; }

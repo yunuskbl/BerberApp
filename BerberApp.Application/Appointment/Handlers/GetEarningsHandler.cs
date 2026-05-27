@@ -42,8 +42,10 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             DateTime.SpecifyKind(request.EndDate.AddDays(1), DateTimeKind.Unspecified), turkeyTz);
 
         var query = new List<AppointmentEntity>();
+        var tenantIds = request.TenantIds ?? new List<Guid> { request.TenantId };
+
         var allAppointments = await _appointmentRepo.GetAllAsync(
-            x => x.TenantId == request.TenantId &&
+            x => tenantIds.Contains(x.TenantId) &&
                  x.Status == AppointmentStatus.Completed, ct);
 
         var appointments = allAppointments
@@ -74,8 +76,8 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
                 DateTime.SpecifyKind(monthStart.AddMonths(1), DateTimeKind.Unspecified), turkeyTz))
             .ToList();
 
-        var services = await _serviceRepo.GetAllAsync(x => x.TenantId == request.TenantId, ct);
-        var staff = await _staffRepo.GetAllAsync(x => x.TenantId == request.TenantId, ct);
+        var services = await _serviceRepo.GetAllAsync(x => tenantIds.Contains(x.TenantId), ct);
+        var staff = await _staffRepo.GetAllAsync(x => tenantIds.Contains(x.TenantId), ct);
 
         // Döviz kurları
         var currencies = services.Select(s => s.Currency).Distinct();
@@ -158,7 +160,7 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
 
         // ── Giderler (Expenses) ─────────────────────────────────────────────
         var allExpenses = await _expenseRepo.GetAllAsync(
-            x => x.TenantId == request.TenantId &&
+            x => tenantIds.Contains(x.TenantId) &&
                  x.Date >= startUtc && x.Date < endUtc, ct);
 
         // Tüm gider para birimlerini döviz kurlarına ekle

@@ -1,5 +1,54 @@
 ﻿.page { max-width: 1200px; }
 
+/* ── Kapsam seçici ── */
+.scope-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.scope-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 20px;
+  background: white;
+  color: #6b7280;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+
+  &:hover { border-color: #7c3aed; color: #7c3aed; }
+
+  &.active {
+    background: #111827;
+    border-color: #111827;
+    color: white;
+  }
+
+  &--consolidated {
+    &.active {
+      background: linear-gradient(135deg, #7c3aed, #6d28d9);
+      border-color: transparent;
+    }
+  }
+}
+
+.scope-chip {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(124, 58, 237, 0.15);
+  color: #7c3aed;
+  margin-left: 4px;
+}
+
 .page-header {
   display: flex;
   align-items: flex-start;

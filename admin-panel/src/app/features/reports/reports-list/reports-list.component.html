@@ -44,6 +44,29 @@
     }
   </div>
 
+  <!-- Kapsam Seçici (Premium + ana bağlam + şube varsa) -->
+  @if (showScopeSelector) {
+    <div class="scope-selector no-print">
+      <button class="scope-btn" [class.active]="selectedScope === 'main'" (click)="setScope('main')">
+        Ana İşletme
+      </button>
+      @for (branch of branches; track branch.id) {
+        <button class="scope-btn" [class.active]="selectedScope === 'branch' && selectedBranchId === branch.id"
+                (click)="setScope('branch', branch.id)">
+          {{ branch.name }}
+        </button>
+      }
+      <button class="scope-btn scope-btn--consolidated" [class.active]="selectedScope === 'consolidated'"
+              (click)="setScope('consolidated')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9,22 9,12 15,12 15,22"/>
+        </svg>
+        Tüm Şubeler
+      </button>
+    </div>
+  }
+
   <!-- Tarih Filtresi -->
   <div class="filter-section no-print">
     <div class="quick-ranges">
@@ -70,11 +93,16 @@
     <button class="tab-btn" [class.active]="activeTab === 'income'" (click)="activeTab = 'income'">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
       Gelir Raporu
+      @if (selectedScope !== 'main') {
+        <span class="scope-chip">{{ scopeLabel }}</span>
+      }
     </button>
-    <button class="tab-btn" [class.active]="activeTab === 'expense'" (click)="activeTab = 'expense'">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
-      Gider Yönetimi
-    </button>
+    @if (selectedScope === 'main') {
+      <button class="tab-btn" [class.active]="activeTab === 'expense'" (click)="activeTab = 'expense'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+        Gider Yönetimi
+      </button>
+    }
   </div>
 
   @if (isLoading) {

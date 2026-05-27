@@ -68,9 +68,14 @@ export class EarningsService {
 
   constructor(private http: HttpClient) {}
 
-  getEarnings(startDate: string, endDate: string, staffId?: string): Observable<any> {
+  getEarnings(
+    startDate: string, endDate: string,
+    staffId?: string, branchId?: string, consolidated = false
+  ): Observable<any> {
     let url = `${this.apiUrl}?startDate=${startDate}&endDate=${endDate}`;
-    if (staffId) url += `&staffId=${staffId}`;
+    if (staffId)     url += `&staffId=${staffId}`;
+    if (branchId)    url += `&branchId=${branchId}`;
+    if (consolidated) url += `&consolidated=true`;
     return this.http.get(url);
   }
 }

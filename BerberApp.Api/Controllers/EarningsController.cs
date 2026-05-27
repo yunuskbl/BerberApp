@@ -1,8 +1,10 @@
 ﻿using BerberApp.Application.Appointment.Queries;
+using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BerberApp.Api.Controllers;
 
@@ -13,26 +15,30 @@ public class EarningsController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILogger<EarningsController> _logger;
+    private readonly IAppDbContext _context;
 
-    public EarningsController(IMediator mediator, ILogger<EarningsController> logger)
+    public EarningsController(IMediator mediator, ILogger<EarningsController> logger, IAppDbContext context)
     {
         _mediator = mediator;
         _logger = logger;
+        _context = context;
     }
 
     /// <summary>
-    /// Get earnings report for date range
+    /// Get earnings report for date range.
+    /// Optional: branchId={guid} → specific branch; consolidated=true → all branches aggregated.
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetEarnings(
         [FromQuery] DateTime startDate,
         [FromQuery] DateTime endDate,
         [FromQuery] Guid? staffId,
-        CancellationToken ct)
+        [FromQuery] Guid? branchId,
+        [FromQuery] bool consolidated = false,
+        CancellationToken ct = default)
     {
         try
         {
-            // Get tenant ID from claims
             var tenantIdClaim = User.FindFirst("tenant_id");
             if (tenantIdClaim == null)
                 return Unauthorized();
@@ -40,28 +46,47 @@ public class EarningsController : ControllerBase
             if (!Guid.TryParse(tenantIdClaim.Value, out var tenantId))
                 return BadRequest(new { success = false, message = "Geçersiz salon ID" });
 
-            // Validate dates
             if (startDate >= endDate)
                 return BadRequest(new { success = false, message = "Başlangıç tarihi bitiş tarihinden önce olmalıdır" });
 
             if ((endDate - startDate).TotalDays > 365)
                 return BadRequest(new { success = false, message = "Maksimum 1 yıllık rapor alınabilir" });
 
+            List<Guid> tenantIds;
+
+            if (consolidated)
+            {
+                var branchIds = await _context.Tenants
+                    .Where(t => t.ParentTenantId == tenantId && !t.IsDeleted)
+                    .Select(t => t.Id)
+                    .ToListAsync(ct);
+                tenantIds = new List<Guid> { tenantId };
+                tenantIds.AddRange(branchIds);
+            }
+            else if (branchId.HasValue)
+            {
+                var isOwned = await _context.Tenants
+                    .AnyAsync(t => t.Id == branchId.Value && t.ParentTenantId == tenantId && !t.IsDeleted, ct);
+                if (!isOwned)
+                    return StatusCode(403, new { success = false, message = "Bu şube size ait değil." });
+                tenantIds = new List<Guid> { branchId.Value };
+            }
+            else
+            {
+                tenantIds = new List<Guid> { tenantId };
+            }
+
             var query = new GetEarningsQuery
             {
-                TenantId = tenantId,
+                TenantId  = tenantId,
+                TenantIds = tenantIds,
                 StartDate = startDate,
-                EndDate = endDate,
-                StaffId = staffId
+                EndDate   = endDate,
+                StaffId   = staffId
             };
 
             var result = await _mediator.Send(query, ct);
-
-            return Ok(new
-            {
-                success = true,
-                data = result
-            });
+            return Ok(new { success = true, data = result });
         }
         catch (Exception ex)
         {

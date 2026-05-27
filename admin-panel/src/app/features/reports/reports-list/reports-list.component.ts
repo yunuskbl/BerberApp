@@ -1,10 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { EarningsService, EarningsDto } from '../../../core/services/earnings.service';
 import { ExpenseService, ExpenseDto } from '../../../core/services/expense.service';
 import { LanguageService } from '../../../core/services/language.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { BranchService } from '../../../core/services/branch.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { environment } from '../../../../environments/environment';
+
+interface BranchOption { id: string; name: string; }
 
 @Component({
   selector: 'app-reports-list',
@@ -16,6 +22,32 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 export class ReportsListComponent implements OnInit {
   earnings: EarningsDto | null = null;
   isLoading = false;
+
+  // ── Kapsam seçici (Premium + ana bağlam) ─────────────────────────────────
+  branches: BranchOption[] = [];
+  selectedScope: 'main' | 'branch' | 'consolidated' = 'main';
+  selectedBranchId: string | null = null;
+
+  get isPremium(): boolean {
+    const levels: Record<string, number> = { Baslangic: 1, Profesyonel: 2, Premium: 3 };
+    return (levels[this.authService.getUserPlan()] ?? 1) >= 3;
+  }
+
+  get showScopeSelector(): boolean {
+    return this.isPremium && !this.branchService.activeBranch() && this.branches.length > 0;
+  }
+
+  get scopeLabel(): string {
+    if (this.selectedScope === 'consolidated') return 'Tüm Şubeler';
+    if (this.selectedScope === 'branch') return this.branches.find(b => b.id === this.selectedBranchId)?.name ?? '';
+    return 'Ana İşletme';
+  }
+
+  setScope(scope: 'main' | 'branch' | 'consolidated', branchId?: string): void {
+    this.selectedScope = scope;
+    this.selectedBranchId = branchId ?? null;
+    this.loadEarnings();
+  }
 
   // ── Aktif sekme ───────────────────────────────────────────────────────────
   activeTab: 'income' | 'expense' = 'income';
@@ -46,19 +78,38 @@ export class ReportsListComponent implements OnInit {
     private expenseService: ExpenseService,
     private fb: FormBuilder,
     public langService: LanguageService,
+    private authService: AuthService,
+    public branchService: BranchService,
+    private http: HttpClient,
   ) {}
 
   ngOnInit(): void {
     this.loadEarnings();
     this.loadExpenses();
     this.initExpenseForm();
+    if (this.isPremium && !this.branchService.activeBranch()) {
+      this.loadBranches();
+    }
+  }
+
+  loadBranches(): void {
+    this.http.get<any>(`${environment.apiUrl}/tenants/branches`).subscribe({
+      next: (res) => {
+        if (res.success) this.branches = res.data.map((b: any) => ({ id: b.id, name: b.name }));
+      },
+      error: () => {}
+    });
   }
 
   // ── Gelir ─────────────────────────────────────────────────────────────────
 
   loadEarnings(): void {
     this.isLoading = true;
-    this.earningsService.getEarnings(this.reportStartDate, this.reportEndDate).subscribe({
+    const branchId = this.selectedScope === 'branch' ? this.selectedBranchId ?? undefined : undefined;
+    const consolidated = this.selectedScope === 'consolidated';
+    this.earningsService.getEarnings(
+      this.reportStartDate, this.reportEndDate, undefined, branchId, consolidated
+    ).subscribe({
       next: (res) => {
         if (res.success) this.earnings = res.data;
         this.isLoading = false;
