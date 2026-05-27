@@ -106,4 +106,8 @@ export class BranchesComponent implements OnInit {
   bookingUrl(subdomain: string): string {
     return `/book/${subdomain}`;
   }
+
+  formatLocation(address?: string, city?: string): string {
+    return [address, city].filter(v => v).join(', ');
+  }
 }
