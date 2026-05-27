@@ -76,8 +76,11 @@
             }
           </div>
           <div class="branch-card-footer">
+            <button class="btn-manage" (click)="manageBranch(branch)">
+              Yönet →
+            </button>
             <a [routerLink]="bookingUrl(branch.subdomain)" target="_blank" class="btn-booking">
-              Randevu Sayfası →
+              Randevu Sayfası
             </a>
             @if (deleteConfirmId === branch.id) {
               <div class="delete-confirm">

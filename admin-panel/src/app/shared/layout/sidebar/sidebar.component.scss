@@ -219,6 +219,48 @@
   }
 }
 
+.branch-banner {
+  margin: 8px 12px;
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.branch-banner-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+}
+
+.branch-banner-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.branch-banner-exit {
+  margin-top: 4px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  &:hover { background: rgba(255,255,255,0.25); }
+}
+
 @media (max-width: 768px) {
   .sidebar {
     display: none !important;

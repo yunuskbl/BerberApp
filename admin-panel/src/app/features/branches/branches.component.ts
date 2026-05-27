@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { BranchService, Branch, CreateBranchRequest } from '../../core/services/branch.service';
 
 @Component({
@@ -25,7 +25,7 @@ export class BranchesComponent implements OnInit {
   deleteConfirmId: string | null = null;
   isDeleting = false;
 
-  constructor(private branchService: BranchService) {}
+  constructor(private branchService: BranchService, private router: Router) {}
 
   ngOnInit(): void {
     this.load();
@@ -109,5 +109,10 @@ export class BranchesComponent implements OnInit {
 
   formatLocation(address?: string, city?: string): string {
     return [address, city].filter(v => v).join(', ');
+  }
+
+  manageBranch(branch: Branch): void {
+    this.branchService.setActiveBranch({ id: branch.id, name: branch.name });
+    this.router.navigate(['/dashboard']);
   }
 }

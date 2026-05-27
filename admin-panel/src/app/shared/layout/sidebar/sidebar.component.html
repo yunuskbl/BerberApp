@@ -4,6 +4,14 @@
     <app-logo variant="light"></app-logo>
   </div>
 
+  @if (branchService.activeBranch()) {
+    <div class="branch-banner">
+      <div class="branch-banner-label">Şube Yönetimi</div>
+      <div class="branch-banner-name">{{ branchService.activeBranch()!.name }}</div>
+      <button class="branch-banner-exit" (click)="exitBranchContext()">← Ana İşletme</button>
+    </div>
+  }
+
   <nav class="sidebar-nav">
     <div class="nav-section-label">ANA MENÜ</div>
 

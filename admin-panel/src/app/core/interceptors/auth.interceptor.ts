@@ -3,9 +3,11 @@ import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { BranchService } from '../services/branch.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
+  const branchService = inject(BranchService);
   const router = inject(Router);
 
   // Only attach token to our own API; skip for external requests (geocoding etc.)
@@ -13,7 +15,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  const cloned = addToken(req, authService.getToken());
+  let cloned = addToken(req, authService.getToken());
+
+  const activeBranch = branchService.activeBranch();
+  if (activeBranch) {
+    cloned = cloned.clone({ headers: cloned.headers.set('X-Branch-Id', activeBranch.id) });
+  }
 
   return next(cloned).pipe(
     catchError((error: HttpErrorResponse) => {

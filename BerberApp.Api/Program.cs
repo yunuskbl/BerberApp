@@ -184,6 +184,7 @@ app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseCors("AllowAngular");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<BranchContextMiddleware>();
 
 // Hangfire Dashboard — production'da sadece SuperAdmin erişebilir
 app.UseHangfireDashboard("/hangfire", new DashboardOptions

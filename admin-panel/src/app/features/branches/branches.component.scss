@@ -186,12 +186,25 @@
   gap: 8px;
 }
 
-.btn-booking {
+.btn-manage {
+  padding: 6px 14px;
+  background: #111;
+  color: white;
+  border: none;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: #7c3aed;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.8; }
+}
+
+.btn-booking {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
   text-decoration: none;
-  &:hover { text-decoration: underline; }
+  &:hover { color: #7c3aed; }
 }
 
 .btn-delete {

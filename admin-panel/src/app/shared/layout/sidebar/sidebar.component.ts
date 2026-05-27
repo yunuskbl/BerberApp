@@ -5,6 +5,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { LanguageService, Lang } from '../../../core/services/language.service';
+import { BranchService } from '../../../core/services/branch.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { LogoComponent } from '../../components/logo/logo.component';
 
@@ -80,6 +81,7 @@ export class SidebarComponent {
     private router: Router,
     public langService: LanguageService,
     private sanitizer: DomSanitizer,
+    public branchService: BranchService,
   ) {}
 
   get user() { return this.authService.getUser(); }
@@ -89,8 +91,14 @@ export class SidebarComponent {
   }
 
   logout(): void {
+    this.branchService.clearActiveBranch();
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  exitBranchContext(): void {
+    this.branchService.clearActiveBranch();
+    this.router.navigate(['/branches']);
   }
 
   navigateTo(route: string): void {
