@@ -34,9 +34,11 @@ const ALL_FEATURES: Feature[] = [
   { name: 'Hatırlatma (24 saat + 1 saat)',     included: true },
   { name: 'Fotoğraf Galerisi',                 included: true },
   { name: 'Müşteri Değerlendirme Sistemi',     included: true },
+  { name: 'Manuel Randevu Onayı',              included: true },
   { name: 'Toplu WhatsApp Kampanyası',         included: true },
   { name: 'Gelir & Gider Yönetimi',            included: true },
   { name: 'Personel Girişi & Yetkilendirme',   included: true },
+  { name: 'Çoklu Şube Yönetimi',               included: true },
   { name: 'Öncelikli Destek',                  included: true },
 ];
 
@@ -155,9 +157,9 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   plans: Plan[] = [
     {
       name: 'baslangic', label: 'Başlangıç', price: 899,
-      description: 'Tek kişilik işletmeler için tam araçlar',
+      description: 'Tek lokasyonlu küçük işletmeler için',
       icon: '🌱', featured: false, ctaDisabled: false,
-      limits: { staff: '1 Personel', appointments: '100 Randevu/Ay' },
+      limits: { staff: '3 Personele Kadar', appointments: '150 Randevu/Ay' },
       features: [
         { name: 'Online Randevu Sayfası',           included: true  },
         { name: 'Randevu Yönetimi & Takvim',        included: true  },
@@ -177,18 +179,20 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
         { name: 'Hatırlatma (24 saat + 1 saat)',    included: true  },
         { name: 'Fotoğraf Galerisi',                included: true  },
         { name: 'Müşteri Değerlendirme Sistemi',    included: true  },
+        { name: 'Manuel Randevu Onayı',             included: false },
         { name: 'Toplu WhatsApp Kampanyası',        included: false },
         { name: 'Gelir & Gider Yönetimi',           included: false },
         { name: 'Personel Girişi & Yetkilendirme',  included: false },
+        { name: 'Çoklu Şube Yönetimi',              included: false },
         { name: 'Öncelikli Destek',                 included: false },
       ],
       cta: 'Başlangıç Planı',
     },
     {
       name: 'profesyonel', label: 'Profesyonel', price: 1799,
-      description: 'Büyüyen işletmeler için tam donanım',
+      description: 'Büyüyen tek şubeli işletmeler için',
       icon: '⚡', featured: true,
-      limits: { staff: '5 Personele Kadar', appointments: '500 Randevu/Ay' },
+      limits: { staff: 'Sınırsız Personel', appointments: 'Sınırsız Randevu' },
       features: [
         { name: 'Online Randevu Sayfası',           included: true  },
         { name: 'Randevu Yönetimi & Takvim',        included: true  },
@@ -208,16 +212,18 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
         { name: 'Hatırlatma (24 saat + 1 saat)',    included: true  },
         { name: 'Fotoğraf Galerisi',                included: true  },
         { name: 'Müşteri Değerlendirme Sistemi',    included: true  },
+        { name: 'Manuel Randevu Onayı',             included: true  },
         { name: 'Toplu WhatsApp Kampanyası',        included: true  },
         { name: 'Gelir & Gider Yönetimi',           included: true  },
         { name: 'Personel Girişi & Yetkilendirme',  included: true  },
+        { name: 'Çoklu Şube Yönetimi',              included: false },
         { name: 'Öncelikli Destek',                 included: false },
       ],
       cta: 'Profesyonel\'e Geç',
     },
     {
       name: 'premium', label: 'Premium', price: 2399,
-      description: 'Büyük salonlar için sınırsız kullanım',
+      description: 'Zincir işletmeler için merkezi yönetim',
       icon: '👑', featured: false,
       limits: { staff: 'Sınırsız Personel', appointments: 'Sınırsız Randevu' },
       features: ALL_FEATURES,
@@ -254,7 +260,15 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     },
     {
       question: 'Personel ve randevu limitleri nedir?',
-      answer: 'Başlangıç planında 1 personel ve ayda 100 randevu, Profesyonel planında 5 personele kadar ve ayda 500 randevu desteklenir. Premium planda her ikisi de sınırsızdır. Aylık limite yaklaşıldığında sizi otomatik uyarı mesajı ile bilgilendiririz.',
+      answer: 'Başlangıç planında 3 personele kadar ve ayda 150 randevu desteklenir. Profesyonel ve Premium planlarda personel ve randevu sınırı yoktur. Başlangıç planında aylık limite yaklaşıldığında otomatik uyarı alırsınız.',
+    },
+    {
+      question: 'Randevuları manuel onaylamak istiyorum, mümkün mü?',
+      answer: 'Profesyonel ve Premium planlarda randevu onay modunu ayarlayabilirsiniz. Manuel modda müşteri randevu talebi oluşturur; siz onayladığınızda müşteriye WhatsApp bildirim gönderilir. Bu mod özellikle yoğun dönemlerde veya kapasite kontrolü gerektiren işletmeler için idealdir. Otomatik modda ise randevu anında onaylanır.',
+    },
+    {
+      question: 'Birden fazla şubem var, sistemi kullanabilir miyim?',
+      answer: 'Premium planda çoklu şube yönetimi dahildir. Her şubenin kendi personeli, çalışma saatleri ve randevuları ayrı ayrı yönetilir; tüm şubelerinizi tek panel üzerinden takip edebilirsiniz. Başlangıç ve Profesyonel planlar tek şube içindir.',
     },
     {
       question: 'Personelime ayrı giriş hesabı tanımlayabilir miyim?',
