@@ -95,8 +95,8 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
         };
         _context.Users.Add(user);
 
-        // 14 günlük ücretsiz deneme aboneliği
-        var trialEnd = DateTime.UtcNow.AddDays(14);
+        // 30 günlük ücretsiz deneme aboneliği
+        var trialEnd = DateTime.UtcNow.AddDays(30);
         var trial = new BerberApp.Domain.Entities.Subscription
         {
             TenantId   = tenant.Id,

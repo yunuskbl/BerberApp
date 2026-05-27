@@ -52,10 +52,10 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResponse>
                 .OrderByDescending(x => x.StartDate)
                 .FirstOrDefaultAsync(ct);
 
-            // Abonelik yoksa (eski kayıt) otomatik 14 günlük trial oluştur
+            // Abonelik yoksa (eski kayıt) otomatik 30 günlük trial oluştur
             if (subscription == null)
             {
-                var trialEnd = DateTime.UtcNow.AddDays(14);
+                var trialEnd = DateTime.UtcNow.AddDays(30);
                 subscription = new Subscription
                 {
                     TenantId   = user.TenantId,
