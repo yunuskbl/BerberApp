@@ -922,6 +922,13 @@ $green:        #059669;
     border-color: rgba(124,58,237,.25);
     color: $purple-dark;
   }
+
+  &--branch {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #15803d;
+    svg { color: #16a34a; }
+  }
 }
 
 .plan-btn-group {

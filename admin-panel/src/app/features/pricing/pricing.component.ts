@@ -225,7 +225,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       name: 'premium', label: 'Premium', price: 2399,
       description: 'Zincir işletmeler için merkezi yönetim',
       icon: '👑', featured: false,
-      limits: { staff: 'Sınırsız Personel', appointments: 'Sınırsız Randevu' },
+      limits: { staff: 'Sınırsız Personel', appointments: 'Çoklu Şube' },
       features: ALL_FEATURES,
       cta: 'Premium\'a Geç',
     },
@@ -260,11 +260,11 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     },
     {
       question: 'Personel ve randevu limitleri nedir?',
-      answer: 'Başlangıç planında 3 personele kadar ve ayda 150 randevu desteklenir. Profesyonel ve Premium planlarda personel ve randevu sınırı yoktur. Başlangıç planında aylık limite yaklaşıldığında otomatik uyarı alırsınız.',
+      answer: 'Başlangıç planında 1 personel ve ayda 150 randevu desteklenir. Profesyonel ve Premium planlarda personel ve randevu sınırı yoktur. Başlangıç planında aylık limite yaklaşıldığında otomatik uyarı alırsınız.',
     },
     {
       question: 'Randevuları manuel onaylamak istiyorum, mümkün mü?',
-      answer: 'Profesyonel ve Premium planlarda randevu onay modunu ayarlayabilirsiniz. Manuel modda müşteri randevu talebi oluşturur; siz onayladığınızda müşteriye WhatsApp bildirim gönderilir. Bu mod özellikle yoğun dönemlerde veya kapasite kontrolü gerektiren işletmeler için idealdir. Otomatik modda ise randevu anında onaylanır.',
+      answer: 'Manuel randevu onayı tüm planlarda (Başlangıç dahil) mevcuttur. Manuel modda müşteri randevu talebi oluşturur; siz onayladığınızda müşteriye WhatsApp bildirim gönderilir. Bu mod özellikle yoğun dönemlerde veya kapasite kontrolü gerektiren işletmeler için idealdir. Otomatik modda ise randevu anında onaylanır.',
     },
     {
       question: 'Birden fazla şubem var, sistemi kullanabilir miyim?',
