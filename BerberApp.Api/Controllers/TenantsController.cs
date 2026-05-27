@@ -5,6 +5,7 @@ using BerberApp.Application.Tenant.Queries;
 using BerberApp.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using BerberApp.Domain.Enums;
 
 namespace BerberApp.Api.Controllers;
 
@@ -216,4 +217,51 @@ public class TenantsController : BaseApiController
     }
 
     public record AddClosureRequest(string StartDate, string EndDate, string? Reason);
+
+    // ── BRANCHES ─────────────────────────────────────────────────────────────
+
+    [HttpGet("branches")]
+    public async Task<IActionResult> GetBranches()
+    {
+        var subscription = await _context.Subscriptions
+            .Where(s => s.TenantId == TenantId && !s.IsDeleted)
+            .OrderByDescending(s => s.StartDate)
+            .FirstOrDefaultAsync();
+
+        if (subscription?.Plan != PlanType.Premium)
+            return StatusCode(403, new { success = false, message = "Çoklu şube yönetimi sadece Premium planda kullanılabilir." });
+
+        var branches = await Mediator.Send(new GetBranchesQuery { ParentTenantId = TenantId });
+        return Success(branches);
+    }
+
+    [HttpPost("branches")]
+    public async Task<IActionResult> CreateBranch([FromBody] CreateBranchCommand command)
+    {
+        var subscription = await _context.Subscriptions
+            .Where(s => s.TenantId == TenantId && !s.IsDeleted)
+            .OrderByDescending(s => s.StartDate)
+            .FirstOrDefaultAsync();
+
+        if (subscription?.Plan != PlanType.Premium)
+            return StatusCode(403, new { success = false, message = "Çoklu şube yönetimi sadece Premium planda kullanılabilir." });
+
+        command.ParentTenantId = TenantId;
+        var result = await Mediator.Send(command);
+        return Created(result);
+    }
+
+    [HttpDelete("branches/{id}")]
+    public async Task<IActionResult> DeleteBranch(Guid id)
+    {
+        var branch = await _context.Tenants
+            .FirstOrDefaultAsync(t => t.Id == id && t.ParentTenantId == TenantId && !t.IsDeleted);
+
+        if (branch is null)
+            return NotFound(new { success = false, message = "Şube bulunamadı." });
+
+        _context.Tenants.Remove(branch);
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
 }

@@ -275,6 +275,15 @@ export const routes: Routes = [
         data: { requiredPlan: 'Profesyonel' },
       },
       {
+        path: 'branches',
+        loadComponent: () =>
+          import('./features/branches/branches.component').then(
+            (m) => m.BranchesComponent,
+          ),
+        canActivate: [PlanGuard],
+        data: { requiredPlan: 'Premium' },
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',

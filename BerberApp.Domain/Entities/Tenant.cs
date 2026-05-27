@@ -24,8 +24,11 @@ namespace BerberApp.Domain.Entities
         public string? ThemeColor { get; set; }
         public NotificationChannel PreferredNotificationChannel { get; set; } = NotificationChannel.WhatsApp;
         public BusinessType? BusinessType { get; set; }
+        public Guid? ParentTenantId { get; set; }
 
         // Navigation
+        public Tenant? ParentTenant { get; set; }
+        public ICollection<Tenant> Branches { get; set; } = new List<Tenant>();
         public ICollection<User> Users { get; set; } = new List<User>();
         public ICollection<Staff> Staff { get; set; } = new List<Staff>();
         public ICollection<Service> Services { get; set; } = new List<Service>();
