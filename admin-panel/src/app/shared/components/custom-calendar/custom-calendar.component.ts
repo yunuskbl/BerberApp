@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../../core/services/language.service';
 
@@ -9,7 +9,7 @@ import { LanguageService } from '../../../core/services/language.service';
   templateUrl: './custom-calendar.component.html',
   styleUrl: './custom-calendar.component.scss'
 })
-export class CustomCalendarComponent implements OnInit {
+export class CustomCalendarComponent implements OnInit, OnChanges {
   @Input() mode:        'single' | 'range' = 'single';
   @Input() minDate:     string   = '';
   @Input() maxDate:     string   = '';
@@ -17,6 +17,7 @@ export class CustomCalendarComponent implements OnInit {
   @Input() markedDates: string[] = [];
   @Input() startDate:   string   = '';
   @Input() endDate:     string   = '';
+  @Input() themeColor:  string   = '#7c3aed';
   @Output() valueChange      = new EventEmitter<string>();
   @Output() startDateChange  = new EventEmitter<string>();
   @Output() endDateChange    = new EventEmitter<string>();
@@ -33,7 +34,65 @@ export class CustomCalendarComponent implements OnInit {
     ru: ['Пн',  'Вт',  'Ср',  'Чт',  'Пт',  'Сб',  'Вс' ],
   };
 
-  constructor(public langService: LanguageService) {}
+  constructor(public langService: LanguageService, private el: ElementRef) {}
+
+  ngOnInit(): void {
+    this.applyTheme(this.themeColor);
+    const today      = new Date();
+    this.currentYear  = today.getFullYear();
+    this.currentMonth = today.getMonth();
+    this.buildCalendar();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['themeColor']) {
+      this.applyTheme(this.themeColor);
+    }
+  }
+
+  private applyTheme(hex: string): void {
+    if (!hex) return;
+    const host = this.el.nativeElement as HTMLElement;
+    const dark       = this.darkenHex(hex, 0.32);
+    const light      = this.lightenHex(hex, 0.90);
+    const lightText  = this.darkenHex(hex, 0.08);
+    const rgb        = this.hexToRgb(hex);
+    host.style.setProperty('--cal-primary',    hex);
+    host.style.setProperty('--cal-dark',        dark);
+    host.style.setProperty('--cal-light',       light);
+    host.style.setProperty('--cal-light-text',  lightText);
+    if (rgb) {
+      host.style.setProperty('--cal-shadow',    `rgba(${rgb.r},${rgb.g},${rgb.b},0.35)`);
+      host.style.setProperty('--cal-shadow-sm', `rgba(${rgb.r},${rgb.g},${rgb.b},0.20)`);
+    }
+  }
+
+  private hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.trim());
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16),
+    } : null;
+  }
+
+  private darkenHex(hex: string, amount: number): string {
+    const rgb = this.hexToRgb(hex);
+    if (!rgb) return hex;
+    const r = Math.max(0, Math.round(rgb.r * (1 - amount)));
+    const g = Math.max(0, Math.round(rgb.g * (1 - amount)));
+    const b = Math.max(0, Math.round(rgb.b * (1 - amount)));
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  }
+
+  private lightenHex(hex: string, amount: number): string {
+    const rgb = this.hexToRgb(hex);
+    if (!rgb) return hex;
+    const r = Math.min(255, Math.round(rgb.r + (255 - rgb.r) * amount));
+    const g = Math.min(255, Math.round(rgb.g + (255 - rgb.g) * amount));
+    const b = Math.min(255, Math.round(rgb.b + (255 - rgb.b) * amount));
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  }
 
   get weekDays(): string[] {
     return CustomCalendarComponent.WEEK_DAYS[this.langService.lang()] ?? CustomCalendarComponent.WEEK_DAYS['tr'];
@@ -48,13 +107,6 @@ export class CustomCalendarComponent implements OnInit {
 
   get selectedLabel(): string {
     return { tr: 'Seçilen', en: 'Selected', ru: 'Выбрано' }[this.langService.lang()] ?? 'Seçilen';
-  }
-
-  ngOnInit(): void {
-    const today      = new Date();
-    this.currentYear  = today.getFullYear();
-    this.currentMonth = today.getMonth();
-    this.buildCalendar();
   }
 
   buildCalendar(): void {
@@ -97,7 +149,6 @@ export class CustomCalendarComponent implements OnInit {
       return;
     }
 
-    // Range mode
     if (!this.startDate || (this.startDate && this.endDate)) {
       this.startDate = date;
       this.endDate   = '';
