@@ -21,14 +21,11 @@
 
     .cards-wrap { display: flex; flex-direction: column; gap: 32px; align-items: center; }
     .card-row   { display: flex; flex-direction: column; gap: 10px; }
-    .card-label {
-      font-size: 10px; font-weight: 500; letter-spacing: 3px;
-      color: rgba(50,45,38,.50);
-    }
+    .card-label { font-size: 10px; font-weight: 500; letter-spacing: 3px; color: rgba(50,45,38,.50); }
 
-    /* ═══════════════════════════════
-       ÖN YÜZ  —  krem  #ede8e0
-    ═══════════════════════════════ */
+    /* ═══════════════════════
+       ÖN YÜZ  —  krem
+    ═══════════════════════ */
     .front {
       width: 856px;
       height: 498px;
@@ -36,39 +33,37 @@
       overflow: hidden;
       background: #ede8e0;
       position: relative;
-      box-shadow:
-        0 2px 8px  rgba(30,25,20,.10),
-        0 24px 60px rgba(30,25,20,.18);
-      display: flex;
-      flex-direction: column;
+      box-shadow: 0 2px 8px rgba(30,25,20,.10), 0 24px 60px rgba(30,25,20,.18);
     }
 
-    /* Çok hafif noise dokusu (SVG filter) */
-    .front::after {
-      content: '';
+    /* Soluk büyük "°" arka plan doldurucusu */
+    .f-watermark {
       position: absolute;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      right: -24px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 420px;
+      color: rgba(30,25,20,.042);
+      line-height: 1;
+      user-select: none;
       pointer-events: none;
       z-index: 0;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* üst alan */
-    .f-top {
-      flex: 1;
-      padding: 42px 52px 0;
+    /* tüm içerik sarmalayıcısı */
+    .f-inner {
       position: relative;
       z-index: 1;
+      height: 100%;
+      padding: 42px 52px 34px;
       display: flex;
       flex-direction: column;
     }
 
-    .logo-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-
+    /* logo */
     .logo-mark {
       font-family: 'Syne', sans-serif;
       font-weight: 800;
@@ -80,124 +75,96 @@
     }
     .logo-deg {
       font-size: 18px; font-weight: 800;
-      color: #666; vertical-align: super; line-height: 0;
+      color: rgba(30,25,20,.38); vertical-align: super; line-height: 0;
     }
     .logo-sub {
       margin-top: 9px;
       font-family: 'Syne', sans-serif;
       font-size: 8px; font-weight: 600;
       letter-spacing: 5.5px;
-      color: rgba(30,25,20,.35);
+      color: rgba(30,25,20,.32);
     }
 
-    /* sağ üst köşe dekoratif element */
-    .corner-mark {
-      width: 42px; height: 42px;
-      border-radius: 50%;
-      border: 1.5px solid rgba(30,25,20,.12);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .corner-mark span {
-      font-family: 'Syne', sans-serif;
-      font-size: 20px; font-weight: 800;
-      color: rgba(30,25,20,.18);
-      line-height: 1;
-    }
-
-    .f-spacer { flex: 1; }
-
-    /* tam genişlik ince ayraç */
-    .f-rule {
-      height: 1px;
-      background: rgba(30,25,20,.10);
-      margin: 0 52px;
-      position: relative;
-      z-index: 1;
-    }
-
-    /* alt alan */
-    .f-bottom {
-      padding: 22px 52px 32px;
+    /* isim bölgesi — logo ile çizgi arasında alta yaslanır */
+    .f-name {
+      flex: 1;
       display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      position: relative;
-      z-index: 1;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-bottom: 22px;
     }
 
     .person-name {
       font-family: 'Syne', sans-serif;
       font-weight: 800;
-      font-size: 22px;
+      font-size: 26px;
       color: #111;
-      letter-spacing: -.4px;
+      letter-spacing: -.5px;
       -webkit-font-smoothing: antialiased;
       line-height: 1.1;
     }
     .person-title {
-      margin-top: 5px;
+      margin-top: 6px;
       font-size: 11px; font-weight: 500;
-      color: rgba(30,25,20,.45);
-      letter-spacing: .8px;
+      color: rgba(30,25,20,.42);
+      letter-spacing: .9px;
       text-transform: uppercase;
     }
 
-    /* iletişim grid */
+    /* tam genişlik ince çizgi */
+    .f-rule {
+      height: 1px;
+      background: rgba(30,25,20,.09);
+      flex-shrink: 0;
+    }
+
+    /* iletişim + QR */
+    .f-contact {
+      padding-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+
     .contact-grid {
-      margin-top: 20px;
       display: grid;
       grid-template-columns: auto auto;
-      gap: 7px 28px;
+      gap: 8px 32px;
       align-items: center;
     }
-    .contact-item {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
+    .contact-item { display: flex; align-items: center; gap: 8px; }
+
     .c-icon {
-      width: 14px; height: 14px;
+      width: 16px; height: 16px;
       border-radius: 50%;
-      border: 1px solid rgba(30,25,20,.18);
+      border: 1px solid rgba(30,25,20,.16);
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
-    .c-icon svg { width: 7px; height: 7px; }
+    .c-icon svg { width: 8px; height: 8px; }
+
     .c-text {
       font-size: 10.5px; font-weight: 400;
-      color: rgba(30,25,20,.55);
-      letter-spacing: .05px;
+      color: rgba(30,25,20,.52);
     }
 
     /* QR */
-    .qr-block {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
+    .qr-block { display: flex; flex-direction: column; align-items: center; gap: 7px; flex-shrink: 0; }
     .qr-frame {
-      width: 88px; height: 88px;
+      width: 86px; height: 86px;
       background: #fff;
       border-radius: 10px;
-      border: 1px solid rgba(30,25,20,.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 8px rgba(30,25,20,.06);
+      border: 1px solid rgba(30,25,20,.07);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(30,25,20,.05);
     }
-    .qr-frame img { width: 72px; height: 72px; display: block; }
-    .qr-lbl {
-      font-size: 8px; font-weight: 500;
-      letter-spacing: 2px;
-      color: rgba(30,25,20,.30);
-    }
+    .qr-frame img { width: 70px; height: 70px; display: block; }
+    .qr-lbl { font-size: 8px; font-weight: 500; letter-spacing: 2px; color: rgba(30,25,20,.28); }
 
-    /* ═══════════════════════════════
-       ARKA YÜZ  —  siyah  #0e0e0e
-    ═══════════════════════════════ */
+    /* ═══════════════════════
+       ARKA YÜZ  —  siyah
+    ═══════════════════════ */
     .back {
       width: 856px;
       height: 498px;
@@ -205,16 +172,14 @@
       overflow: hidden;
       background: #0e0e0e;
       position: relative;
-      box-shadow:
-        0 2px 8px  rgba(0,0,0,.25),
-        0 24px 60px rgba(0,0,0,.40);
+      box-shadow: 0 2px 8px rgba(0,0,0,.25), 0 24px 60px rgba(0,0,0,.40);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
     }
 
-    /* Çok hafif krem glow merkezi */
+    /* krem glow */
     .back::before {
       content: '';
       position: absolute;
@@ -222,21 +187,25 @@
       transform: translate(-50%,-56%);
       width: 560px; height: 560px;
       background: radial-gradient(circle,
-        rgba(237,232,224,.09) 0%,
+        rgba(237,232,224,.08) 0%,
         rgba(237,232,224,.03) 42%,
         transparent 68%);
       border-radius: 50%;
       pointer-events: none;
     }
 
-    /* sağ alt köşe ince daire */
-    .back::after {
-      content: '';
+    /* sağ altta soluk büyük "a" harfi doldurma */
+    .back-watermark {
       position: absolute;
-      bottom: 32px; right: 44px;
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      border: 1px solid rgba(237,232,224,.10);
+      right: -30px; bottom: -60px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 320px;
+      color: rgba(237,232,224,.03);
+      line-height: 1;
+      user-select: none;
+      pointer-events: none;
+      -webkit-font-smoothing: antialiased;
     }
 
     .back-logo {
@@ -251,12 +220,12 @@
     }
     .back-deg {
       font-size: 50px; font-weight: 800;
-      color: rgba(237,232,224,.50);
+      color: rgba(237,232,224,.45);
       vertical-align: super; line-height: 0;
     }
     .back-rule {
       width: 200px; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(237,232,224,.22), transparent);
+      background: linear-gradient(90deg, transparent, rgba(237,232,224,.20), transparent);
       margin: 22px 0 18px;
       position: relative; z-index: 1;
     }
@@ -264,11 +233,11 @@
       font-family: 'Syne', sans-serif;
       font-size: 10px; font-weight: 600;
       letter-spacing: 8px;
-      color: rgba(237,232,224,.22);
+      color: rgba(237,232,224,.20);
       position: relative; z-index: 1;
     }
 
-    /* ─── AKSIYONLAR ─── */
+    /* aksiyonlar */
     .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
     .btn {
       padding: 12px 28px; border: none; border-radius: 10px;
@@ -276,12 +245,9 @@
       font-family: 'Inter', sans-serif; transition: opacity .15s;
     }
     .btn:hover { opacity: .82; }
-    .btn-dark  { background: #111; color: #ede8e0; }
-    .btn-ghost {
-      background: rgba(30,25,20,.07);
-      color: rgba(30,25,20,.65);
-      border: 1px solid rgba(30,25,20,.15);
-    }
+    .btn-dark { background: #111; color: #ede8e0; }
+    .btn-ghost { background: rgba(30,25,20,.07); color: rgba(30,25,20,.65); border: 1px solid rgba(30,25,20,.15); }
+
     @media print {
       body { background: #fff; padding: 0; }
       .actions, .card-label { display: none; }
@@ -297,30 +263,34 @@
   <div class="card-row">
     <div class="card-label">ÖN YÜZ</div>
     <div class="front" id="card-front">
-      <div class="f-top">
-        <div class="logo-row">
-          <div>
-            <div class="logo-mark">ayarlıyo<span class="logo-deg">°</span></div>
-            <div class="logo-sub">RANDEVU SISTEMI</div>
-          </div>
-          <div class="corner-mark"><span>°</span></div>
-        </div>
-        <div class="f-spacer"></div>
-      </div>
 
-      <div class="f-rule"></div>
+      <!-- Büyük soluk ° arka plan -->
+      <div class="f-watermark">°</div>
 
-      <div class="f-bottom">
+      <div class="f-inner">
+        <!-- Logo -->
         <div>
+          <div class="logo-mark">ayarlıyo<span class="logo-deg">°</span></div>
+          <div class="logo-sub">RANDEVU SISTEMI</div>
+        </div>
+
+        <!-- İsim — orta-alt -->
+        <div class="f-name">
           <div class="person-name">Yunus Emre Kobal</div>
           <div class="person-title">Kurucu &amp; Geliştirici</div>
+        </div>
 
+        <!-- Çizgi -->
+        <div class="f-rule"></div>
+
+        <!-- İletişim + QR -->
+        <div class="f-contact">
           <div class="contact-grid">
             <!-- telefon -->
             <div class="contact-item">
               <div class="c-icon">
                 <svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2 1.5C2 1.5 2.5 3 3.5 4S6.5 6 6.5 6L7.5 5C7.5 5 8 5.5 8.5 6L7 8C7 8 4 7.5 2 5.5S1 2 1 2L2 1.5Z" stroke="rgba(30,25,20,.45)" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2 1.5C2 1.5 2.5 3 3.5 4S6.5 6 6.5 6L7.5 5C7.5 5 8 5.5 8.5 6L7 8C7 8 4 7.5 2 5.5S1 2 1 2L2 1.5Z" stroke="rgba(30,25,20,.42)" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
               <span class="c-text">+90 538 399 69 16</span>
@@ -329,8 +299,8 @@
             <div class="contact-item">
               <div class="c-icon">
                 <svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="1" y="2.5" width="8" height="5.5" rx="1" stroke="rgba(30,25,20,.45)" stroke-width=".9"/>
-                  <path d="M1.5 3L5 6L8.5 3" stroke="rgba(30,25,20,.45)" stroke-width=".9" stroke-linecap="round"/>
+                  <rect x="1" y="2.5" width="8" height="5.5" rx="1" stroke="rgba(30,25,20,.42)" stroke-width=".9"/>
+                  <path d="M1.5 3L5 6L8.5 3" stroke="rgba(30,25,20,.42)" stroke-width=".9" stroke-linecap="round"/>
                 </svg>
               </div>
               <span class="c-text">ayarliyoinfo@gmail.com</span>
@@ -339,9 +309,9 @@
             <div class="contact-item">
               <div class="c-icon">
                 <svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="1.5" y="1.5" width="7" height="7" rx="2" stroke="rgba(30,25,20,.45)" stroke-width=".9"/>
-                  <circle cx="5" cy="5" r="1.5" stroke="rgba(30,25,20,.45)" stroke-width=".9"/>
-                  <circle cx="7.2" cy="2.8" r=".4" fill="rgba(30,25,20,.45)"/>
+                  <rect x="1.5" y="1.5" width="7" height="7" rx="2" stroke="rgba(30,25,20,.42)" stroke-width=".9"/>
+                  <circle cx="5" cy="5" r="1.5" stroke="rgba(30,25,20,.42)" stroke-width=".9"/>
+                  <circle cx="7.2" cy="2.8" r=".4" fill="rgba(30,25,20,.42)"/>
                 </svg>
               </div>
               <span class="c-text">@ayarlıyo</span>
@@ -350,20 +320,20 @@
             <div class="contact-item">
               <div class="c-icon">
                 <svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="5" cy="5" r="3.5" stroke="rgba(30,25,20,.45)" stroke-width=".9"/>
-                  <path d="M5 1.5C5 1.5 6.5 3 6.5 5S5 8.5 5 8.5M5 1.5C5 1.5 3.5 3 3.5 5S5 8.5 5 8.5M1.5 5H8.5" stroke="rgba(30,25,20,.45)" stroke-width=".9" stroke-linecap="round"/>
+                  <circle cx="5" cy="5" r="3.5" stroke="rgba(30,25,20,.42)" stroke-width=".9"/>
+                  <path d="M5 1.5C5 1.5 6.5 3 6.5 5S5 8.5 5 8.5M5 1.5C5 1.5 3.5 3 3.5 5S5 8.5 5 8.5M1.5 5H8.5" stroke="rgba(30,25,20,.42)" stroke-width=".9" stroke-linecap="round"/>
                 </svg>
               </div>
               <span class="c-text">ayarliyo.com</span>
             </div>
           </div>
-        </div>
 
-        <div class="qr-block">
-          <div class="qr-frame">
-            <img id="qr-img" alt="QR">
+          <div class="qr-block">
+            <div class="qr-frame">
+              <img id="qr-img" alt="QR">
+            </div>
+            <div class="qr-lbl">AYARLIYO.COM</div>
           </div>
-          <div class="qr-lbl">AYARLIYO.COM</div>
         </div>
       </div>
     </div>
@@ -373,6 +343,7 @@
   <div class="card-row">
     <div class="card-label">ARKA YÜZ</div>
     <div class="back" id="card-back">
+      <div class="back-watermark">a</div>
       <div class="back-logo">ayarlıyo<span class="back-deg">°</span></div>
       <div class="back-rule"></div>
       <div class="back-sub">RANDEVU SISTEMI</div>
@@ -389,21 +360,18 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-  /* QR: api.qrserver.com → canvas → data URL → img */
   (function() {
     var src =
       'https://api.qrserver.com/v1/create-qr-code/' +
-      '?size=144x144&bgcolor=ffffff&color=111111&qzone=1' +
+      '?size=140x140&bgcolor=ffffff&color=111111&qzone=1' +
       '&data=https%3A%2F%2Fayarliyo.com';
-
     var loader = new Image();
     loader.crossOrigin = 'anonymous';
-
     loader.onload = function() {
       try {
         var c = document.createElement('canvas');
-        c.width = c.height = 72;
-        c.getContext('2d').drawImage(loader, 0, 0, 72, 72);
+        c.width = c.height = 70;
+        c.getContext('2d').drawImage(loader, 0, 0, 70, 70);
         document.getElementById('qr-img').src = c.toDataURL('image/png');
       } catch(e) {
         document.getElementById('qr-img').src = src;
@@ -411,21 +379,17 @@
     };
     loader.onerror = function() {
       document.querySelector('.qr-frame').innerHTML =
-        '<div style="font-size:9px;color:#666;text-align:center;padding:10px;line-height:1.6">' +
-        'ayarliyo<br>.com</div>';
+        '<div style="font-size:9px;color:#666;text-align:center;padding:12px;line-height:1.6">ayarliyo<br>.com</div>';
     };
     loader.src = src;
   })();
 
   async function dl(id, name) {
-    var el = document.getElementById(id);
-    var c  = await html2canvas(el, {
+    var c = await html2canvas(document.getElementById(id), {
       scale: 3, backgroundColor: null, useCORS: true, logging: false
     });
     var a = document.createElement('a');
-    a.download = name;
-    a.href = c.toDataURL('image/png');
-    a.click();
+    a.download = name; a.href = c.toDataURL('image/png'); a.click();
   }
 </script>
 
