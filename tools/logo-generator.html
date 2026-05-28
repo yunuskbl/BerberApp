@@ -127,12 +127,12 @@
       ctx.fillStyle    = 'rgba(255,255,255,0.30)';
       ctx.textAlign    = 'center';
       ctx.textBaseline = 'alphabetic';
-      ctx.fillText('RANDEVU SİSTEMİ', cx, textY + 58);
+      ctx.fillText('randevu sistemi', cx, textY + 58);
 
       ctx.restore();
     }
 
-    document.fonts.load('800 48px Syne').then(draw).catch(draw);
+    document.fonts.load('800 48px Syne', 'ayarlıyo randevu sistemi°ıöüşğç').then(draw).catch(draw);
 
     function dl() {
       const a = document.createElement('a');
