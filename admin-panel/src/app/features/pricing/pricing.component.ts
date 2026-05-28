@@ -60,7 +60,8 @@ const ALL_FEATURES: Feature[] = [
 })
 export class PricingComponent implements AfterViewInit, OnDestroy {
 
-  // ── Eğitim Videoları ─────────────────────────────────────────────────────
+  // ── Eğitim Videoları (showVideos: videolar hazır olunca true yap) ────────
+  showVideos = false;
   readonly videos: TutorialVideo[] = [
     {
       title: 'Kurulum & Başlangıç',

@@ -11,7 +11,7 @@
       <nav class="nav-links">
         <button class="nav-link" (click)="scrollTo('features')">Özellikler</button>
         <button class="nav-link" (click)="scrollTo('pricing')">Fiyatlar</button>
-        <button class="nav-link" (click)="scrollTo('videos')">Videolar</button>
+        @if (showVideos) {<button class="nav-link" (click)="scrollTo('videos')">Videolar</button>}
         <button class="nav-link" (click)="scrollTo('faq')">SSS</button>
         <button class="nav-link" (click)="scrollTo('contact')">İletişim</button>
       </nav>
@@ -350,7 +350,8 @@
     </div>
   </section>
 
-  <!-- ══ VIDEOS ════════════════════════════════════════════════════════════ -->
+  <!-- ══ VIDEOS (pasif — videolar hazır olunca showVideos: true yap) ═══════ -->
+  @if (showVideos) {
   <section class="videos-section" id="videos">
     <div class="section-inner">
       <div class="section-header">
@@ -424,6 +425,7 @@
       </div>
     </div>
   </section>
+  } <!-- /showVideos -->
 
   <!-- ══ FAQ ═════════════════════════════════════════════════════════════════ -->
   <section class="faq-section" id="faq">
