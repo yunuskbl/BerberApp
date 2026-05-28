@@ -14,6 +14,7 @@ interface Plan {
 }
 interface FAQ  { question: string; answer: string; open?: boolean; }
 interface Stat { value: string; label: string; num: number; format: (n: number) => string; }
+interface TutorialVideo { title: string; description: string; filename: string; duration: string; }
 
 const ALL_FEATURES: Feature[] = [
   { name: 'Online Randevu Sayfası',            included: true },
@@ -58,6 +59,43 @@ const ALL_FEATURES: Feature[] = [
   ]
 })
 export class PricingComponent implements AfterViewInit, OnDestroy {
+
+  // ── Eğitim Videoları ─────────────────────────────────────────────────────
+  readonly videos: TutorialVideo[] = [
+    {
+      title: 'Kurulum & Başlangıç',
+      description: 'Sisteme kayıt olun, işletme bilgilerinizi girin ve randevu sayfanızı 3 dakikada aktif edin.',
+      filename: 'kurulum.mp4',
+      duration: '3:24',
+    },
+    {
+      title: 'Randevu Yönetimi',
+      description: 'Takvim görünümü, randevu onaylama, iptal ve yeniden planlama işlemlerini öğrenin.',
+      filename: 'randevu-yonetimi.mp4',
+      duration: '4:10',
+    },
+    {
+      title: 'Personel & Hizmet Tanımlama',
+      description: 'Personel ekleyin, her personele özel hizmet fiyatı ve çalışma saati belirleyin.',
+      filename: 'personel-hizmet.mp4',
+      duration: '5:02',
+    },
+    {
+      title: 'WhatsApp Bildirimleri',
+      description: 'OTP doğrulama, otomatik hatırlatmalar ve toplu WhatsApp kampanyası ayarlarını yapın.',
+      filename: 'whatsapp-bildirimler.mp4',
+      duration: '3:47',
+    },
+  ];
+  selectedVideoIndex = 0;
+  readonly videoBase = '/uploads/videos/';
+
+  get selectedVideo(): TutorialVideo { return this.videos[this.selectedVideoIndex]; }
+
+  selectVideo(index: number): void {
+    if (this.selectedVideoIndex === index) return;
+    this.selectedVideoIndex = index;
+  }
 
   // ── Billing toggle ────────────────────────────────────────────────────────
   billingYearly  = false;
