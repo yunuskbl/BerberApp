@@ -4,13 +4,11 @@
   <meta charset="utf-8">
   <title>ayarlıyo — Kartvizit</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #e8e2d8;
+      background: #d6cfc4;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -21,73 +19,97 @@
       font-family: 'Inter', sans-serif;
     }
 
-    .cards-wrap { display: flex; flex-direction: column; gap: 28px; align-items: center; }
+    .cards-wrap { display: flex; flex-direction: column; gap: 32px; align-items: center; }
     .card-row   { display: flex; flex-direction: column; gap: 10px; }
 
     .card-label {
       font-size: 10px;
       font-weight: 500;
       letter-spacing: 3px;
-      color: rgba(100,85,60,.50);
+      color: rgba(80,65,45,.55);
     }
 
+    /* ─── KART ─── */
     .card {
       width: 856px;
       height: 498px;
-      border-radius: 18px;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      box-shadow:
+        0 4px 12px  rgba(80,60,30,.10),
+        0 20px 56px rgba(80,60,30,.16);
+    }
+
+    /* ══ ÖN YÜZ ══ */
+
+    /* Üst koyu bölüm */
+    .front-top {
+      height: 230px;
+      background: #1a1612;
+      padding: 38px 52px 0;
       position: relative;
       overflow: hidden;
-      background: #faf8f4;
-      box-shadow:
-        0 2px 6px  rgba(160,130,80,.08),
-        0 16px 48px rgba(140,110,60,.12),
-        inset 0 0 0 1px rgba(201,169,110,.18);
     }
 
-    .glow {
+    /* Speküler ışık efekti */
+    .front-top::before {
+      content: '';
       position: absolute;
+      top: -140px; left: -80px;
+      width: 440px; height: 440px;
+      background: radial-gradient(circle,
+        rgba(220,190,130,.10) 0%,
+        rgba(220,190,130,.04) 45%,
+        transparent 70%);
       border-radius: 50%;
       pointer-events: none;
-    }
-
-    /* ── ÖN YÜZ ── */
-    .front-inner {
-      position: relative;
-      z-index: 2;
-      height: 100%;
-      padding: 46px 58px;
-      display: flex;
-      flex-direction: column;
     }
 
     .logo-mark {
       font-family: 'Syne', sans-serif;
       font-weight: 800;
-      font-size: 27px;
-      color: #1c1814;
+      font-size: 30px;
+      color: #fff;
       letter-spacing: -0.5px;
       -webkit-font-smoothing: antialiased;
       line-height: 1;
+      position: relative;
+      z-index: 1;
     }
     .logo-deg {
-      font-size: 17px;
+      font-size: 19px;
       font-weight: 800;
       color: #c9a96e;
       vertical-align: super;
       line-height: 0;
     }
     .logo-sub {
-      margin-top: 9px;
+      margin-top: 10px;
       font-family: 'Syne', sans-serif;
       font-size: 8.5px;
       font-weight: 600;
       letter-spacing: 5.5px;
-      color: rgba(140,110,65,.45);
+      color: rgba(201,169,110,.45);
+      position: relative;
+      z-index: 1;
     }
 
-    .spacer { flex: 1; }
+    /* Altın ayraç çizgisi */
+    .gold-line {
+      height: 1px;
+      background: linear-gradient(90deg,
+        rgba(201,169,110,.0)  0%,
+        rgba(201,169,110,.55) 30%,
+        rgba(201,169,110,.55) 70%,
+        rgba(201,169,110,.0)  100%);
+    }
 
-    .bottom-row {
+    /* Alt açık bölüm */
+    .front-bottom {
+      height: 267px;
+      background: #faf8f4;
+      padding: 28px 52px 32px;
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
@@ -96,59 +118,63 @@
     .person-name {
       font-family: 'Syne', sans-serif;
       font-weight: 700;
-      font-size: 17.5px;
-      color: #1c1814;
+      font-size: 18px;
+      color: #1a1612;
       letter-spacing: -.3px;
       -webkit-font-smoothing: antialiased;
+      margin-bottom: 4px;
     }
     .person-title {
-      margin-top: 5px;
       font-size: 11.5px;
       font-weight: 400;
       color: #8a7d6a;
       letter-spacing: .2px;
+      margin-bottom: 18px;
     }
 
     .divider {
-      width: 240px;
+      width: 220px;
       height: 1px;
       background: linear-gradient(90deg,
-        rgba(201,169,110,.65) 0%,
-        rgba(201,169,110,.18) 55%,
+        rgba(201,169,110,.60) 0%,
+        rgba(201,169,110,.15) 60%,
         transparent 100%);
-      margin: 16px 0 13px;
+      margin-bottom: 14px;
     }
 
     .contact-line {
       display: flex;
       align-items: center;
       gap: 14px;
-      margin-bottom: 6px;
+      margin-bottom: 7px;
     }
     .contact-line:last-child { margin-bottom: 0; }
 
-    .ci   { font-size: 10.5px; color: #8a7d6a; letter-spacing: .1px; }
+    .ci   { font-size: 10.5px; color: #8a7d6a; }
     .cdot { width: 3px; height: 3px; border-radius: 50%; background: rgba(201,169,110,.70); flex-shrink: 0; }
 
-    /* qr */
+    /* QR */
     .qr-block {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 9px;
+      gap: 8px;
+      flex-shrink: 0;
     }
-    .qr-wrap {
-      padding: 10px;
+    .qr-frame {
+      width: 96px; height: 96px;
       background: #f0ece4;
       border-radius: 12px;
       border: 1px solid rgba(201,169,110,.22);
-      line-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
-    /* SVG inject edilince boyutlanır */
-    .qr-wrap svg {
-      display: block;
+    .qr-frame img {
       width: 80px;
       height: 80px;
+      display: block;
       border-radius: 4px;
     }
     .qr-lbl {
@@ -158,52 +184,74 @@
       color: rgba(140,110,65,.45);
     }
 
-    /* ── ARKA YÜZ ── */
-    .back-inner {
+    /* ══ ARKA YÜZ ══ */
+    .back-card {
+      width: 856px;
+      height: 498px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #1a1612;
       position: relative;
-      z-index: 2;
-      height: 100%;
+      box-shadow:
+        0 4px 12px  rgba(80,60,30,.12),
+        0 20px 56px rgba(80,60,30,.20);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
     }
+    .back-card::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -58%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle,
+        rgba(201,169,110,.12) 0%,
+        rgba(201,169,110,.05) 40%,
+        transparent 68%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
 
     .back-logo {
       font-family: 'Syne', sans-serif;
       font-weight: 800;
-      font-size: 76px;
-      color: #1c1814;
+      font-size: 80px;
+      color: #fff;
       letter-spacing: -2.5px;
       -webkit-font-smoothing: antialiased;
       line-height: 1;
+      position: relative;
+      z-index: 1;
     }
     .back-deg {
-      font-size: 46px;
+      font-size: 48px;
       font-weight: 800;
       color: #c9a96e;
       vertical-align: super;
       line-height: 0;
     }
-
     .back-divider {
       width: 220px;
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(201,169,110,.55), transparent);
-      margin: 22px 0 19px;
+      background: linear-gradient(90deg, transparent, rgba(201,169,110,.50), transparent);
+      margin: 22px 0 18px;
+      position: relative;
+      z-index: 1;
     }
-
     .back-sub {
       font-family: 'Syne', sans-serif;
-      font-size: 10.5px;
+      font-size: 11px;
       font-weight: 600;
       letter-spacing: 8px;
-      color: rgba(140,110,65,.40);
+      color: rgba(201,169,110,.38);
+      position: relative;
+      z-index: 1;
     }
 
-    /* ── AKSIYONLAR ── */
+    /* ─── AKSIYONLAR ─── */
     .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-
     .btn {
       padding: 12px 28px;
       border: none;
@@ -215,17 +263,17 @@
       transition: opacity .15s;
     }
     .btn:hover { opacity: .82; }
-    .btn-primary { background: #b8954a; color: #fff; }
-    .btn-ghost {
-      background: rgba(180,145,70,.10);
-      color: #8a6c2a;
-      border: 1px solid rgba(180,145,70,.25);
+    .btn-dark   { background: #1a1612; color: #fff; }
+    .btn-ghost  {
+      background: rgba(90,70,35,.08);
+      color: #6b5530;
+      border: 1px solid rgba(140,110,60,.25);
     }
 
     @media print {
-      body { background: #fff; padding: 0; gap: 0; }
-      .actions { display: none; }
-      .card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: #fff; padding: 0; }
+      .actions, .card-label { display: none; }
+      .card, .back-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
   </style>
 </head>
@@ -238,91 +286,104 @@
     <div class="card-label">ÖN YÜZ</div>
     <div class="card" id="card-front">
 
-      <div class="glow" style="
-        top:-160px; left:-120px; width:520px; height:520px;
-        background:radial-gradient(circle,rgba(220,190,130,.14) 0%,rgba(220,190,130,.05) 45%,transparent 70%);
-      "></div>
-      <div class="glow" style="
-        bottom:-150px; right:-90px; width:380px; height:380px;
-        background:radial-gradient(circle,rgba(220,190,130,.08) 0%,transparent 65%);
-      "></div>
+      <!-- Üst koyu alan -->
+      <div class="front-top">
+        <div class="logo-mark">ayarlıyo<span class="logo-deg">°</span></div>
+        <div class="logo-sub">RANDEVU SISTEMI</div>
+      </div>
 
-      <div class="front-inner">
+      <!-- Altın çizgi -->
+      <div class="gold-line"></div>
+
+      <!-- Alt açık alan -->
+      <div class="front-bottom">
         <div>
-          <div class="logo-mark">ayarlıyo<span class="logo-deg">°</span></div>
-          <div class="logo-sub">RANDEVU SISTEMI</div>
+          <div class="person-name">Yunus Emre Kobal</div>
+          <div class="person-title">Kurucu &amp; Geliştirici</div>
+          <div class="divider"></div>
+          <div class="contact-line">
+            <span class="ci">+90 538 399 69 16</span>
+            <span class="cdot"></span>
+            <span class="ci">ayarliyoinfo@gmail.com</span>
+          </div>
+          <div class="contact-line">
+            <span class="ci">@ayarlıyo</span>
+            <span class="cdot"></span>
+            <span class="ci">ayarliyo.com</span>
+          </div>
         </div>
 
-        <div class="spacer"></div>
-
-        <div class="bottom-row">
-          <div>
-            <div class="person-name">Yunus Emre Kobal</div>
-            <div class="person-title">Kurucu &amp; Geliştirici</div>
-            <div class="divider"></div>
-            <div class="contact-line">
-              <span class="ci">+90 538 399 69 16</span>
-              <span class="cdot"></span>
-              <span class="ci">ayarliyoinfo@gmail.com</span>
-            </div>
-            <div class="contact-line">
-              <span class="ci">@ayarlıyo</span>
-              <span class="cdot"></span>
-              <span class="ci">ayarliyo.com</span>
-            </div>
+        <div class="qr-block">
+          <div class="qr-frame">
+            <img id="qr-img" alt="QR">
           </div>
-
-          <div class="qr-block">
-            <div class="qr-wrap" id="qr-container"></div>
-            <div class="qr-lbl">AYARLIYO.COM</div>
-          </div>
+          <div class="qr-lbl">AYARLIYO.COM</div>
         </div>
       </div>
+
     </div>
   </div>
 
   <!-- ARKA YÜZ -->
   <div class="card-row">
     <div class="card-label">ARKA YÜZ</div>
-    <div class="card" id="card-back">
-      <div class="glow" style="
-        top:50%; left:50%; transform:translate(-50%,-55%);
-        width:620px; height:620px;
-        background:radial-gradient(circle,rgba(220,190,130,.15) 0%,rgba(220,190,130,.06) 42%,transparent 68%);
-      "></div>
-      <div class="back-inner">
-        <div class="back-logo">ayarlıyo<span class="back-deg">°</span></div>
-        <div class="back-divider"></div>
-        <div class="back-sub">RANDEVU SISTEMI</div>
-      </div>
+    <div class="back-card" id="card-back">
+      <div class="back-logo">ayarlıyo<span class="back-deg">°</span></div>
+      <div class="back-divider"></div>
+      <div class="back-sub">RANDEVU SISTEMI</div>
     </div>
   </div>
 
 </div>
 
 <div class="actions">
-  <button class="btn btn-primary" onclick="dl('card-front','ayarliyo-on-yuz.png')">⬇ Ön Yüz PNG</button>
-  <button class="btn btn-primary" onclick="dl('card-back','ayarliyo-arka-yuz.png')">⬇ Arka Yüz PNG</button>
+  <button class="btn btn-dark"  onclick="dl('card-front','ayarliyo-on-yuz.png')">⬇ Ön Yüz PNG</button>
+  <button class="btn btn-dark"  onclick="dl('card-back', 'ayarliyo-arka-yuz.png')">⬇ Arka Yüz PNG</button>
   <button class="btn btn-ghost" onclick="window.print()">🖨 Yazdır</button>
 </div>
 
-<script>
-  // SVG olarak üret, doğrudan DOM'a inject et — canvas / CORS sorunu yok
-  QRCode.toString('https://ayarliyo.com', {
-    type: 'svg',
-    margin: 1,
-    color: { dark: '#3d2c10', light: '#f0ece4' }
-  }, function(err, svgString) {
-    if (err) { console.error('QR hatası:', err); return; }
-    const container = document.getElementById('qr-container');
-    container.innerHTML = svgString;
-    const svg = container.querySelector('svg');
-    if (svg) {
-      svg.setAttribute('width',  '80');
-      svg.setAttribute('height', '80');
-    }
-  });
+<!-- html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
+<script>
+  /* ── QR ──
+     api.qrserver.com tarayıcıdan yüklenir.
+     Önce canvas'a çizilip data URL'e dönüştürülür
+     → html2canvas bunu CORS sorunu olmadan yakalar.  */
+  (function() {
+    const QR_URL =
+      'https://api.qrserver.com/v1/create-qr-code/' +
+      '?size=160x160&bgcolor=f0ece4&color=3d2c10&qzone=1' +
+      '&data=https%3A%2F%2Fayarliyo.com';
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    img.onload = function() {
+      // Data URL'e çevir
+      try {
+        const c = document.createElement('canvas');
+        c.width = c.height = 80;
+        c.getContext('2d').drawImage(img, 0, 0, 80, 80);
+        document.getElementById('qr-img').src = c.toDataURL('image/png');
+      } catch(_) {
+        // CORS engeli: direkt URL ile göster (yazdırmak için yeterli)
+        document.getElementById('qr-img').src = QR_URL;
+      }
+    };
+
+    img.onerror = function() {
+      // İnternet yoksa placeholder
+      const frame = document.querySelector('.qr-frame');
+      frame.innerHTML =
+        '<div style="font-size:9px;color:#8a7d6a;text-align:center;padding:8px;line-height:1.5">' +
+        'ayarliyo.com</div>';
+    };
+
+    img.src = QR_URL;
+  })();
+
+  /* ── PNG indirme ── */
   async function dl(id, name) {
     const el = document.getElementById(id);
     const c  = await html2canvas(el, {
