@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>ayarlıyo — Kartvizit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #242424;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+      padding: 48px 24px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .cards-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .card-row { display: flex; flex-direction: column; gap: 10px; }
+
+    .card-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,0.28);
+    }
+
+    /* ─── KART TEMEL ─── */
+    .card {
+      width: 856px;
+      height: 498px;
+      border-radius: 18px;
+      background: #080808;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glow {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    /* ─── ÖN YÜZ ─── */
+    .front-inner {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      padding: 46px 58px 46px 58px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* logo */
+    .logo-mark {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 27px;
+      color: #fff;
+      letter-spacing: -0.5px;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1;
+    }
+    .logo-deg {
+      font-size: 17px;
+      font-weight: 800;
+      opacity: .65;
+      vertical-align: super;
+      line-height: 0;
+    }
+    .logo-sub {
+      margin-top: 8px;
+      font-family: 'Syne', sans-serif;
+      font-size: 8.5px;
+      font-weight: 600;
+      letter-spacing: 5.5px;
+      color: rgba(255,255,255,.28);
+    }
+
+    .spacer { flex: 1; }
+
+    /* alt alan */
+    .bottom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .person-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 17.5px;
+      color: #fff;
+      letter-spacing: -.3px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .person-title {
+      margin-top: 5px;
+      font-size: 11.5px;
+      font-weight: 400;
+      color: rgba(255,255,255,.44);
+      letter-spacing: .2px;
+    }
+
+    .divider {
+      width: 200px;
+      height: 1px;
+      background: rgba(255,255,255,.10);
+      margin: 16px 0 13px;
+    }
+
+    .contact-line {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 6px;
+    }
+    .contact-line:last-child { margin-bottom: 0; }
+
+    .ci {
+      font-size: 10.5px;
+      color: rgba(255,255,255,.38);
+      letter-spacing: .1px;
+    }
+    .cdot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.18);
+      flex-shrink: 0;
+    }
+
+    /* qr */
+    .qr-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 9px;
+    }
+    .qr-block canvas {
+      border-radius: 10px;
+      display: block;
+    }
+    .qr-lbl {
+      font-size: 8px;
+      font-weight: 500;
+      letter-spacing: 2.5px;
+      color: rgba(255,255,255,.22);
+    }
+
+    /* ─── ARKA YÜZ ─── */
+    .back-inner {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+    }
+
+    .back-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 76px;
+      color: #fff;
+      letter-spacing: -2.5px;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1;
+    }
+    .back-deg {
+      font-size: 46px;
+      font-weight: 800;
+      opacity: .60;
+      vertical-align: super;
+      line-height: 0;
+    }
+
+    .back-divider {
+      width: 210px;
+      height: 1px;
+      background: rgba(255,255,255,.12);
+      margin: 22px 0 19px;
+    }
+
+    .back-sub {
+      font-family: 'Syne', sans-serif;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 8px;
+      color: rgba(255,255,255,.26);
+    }
+
+    /* ─── AKSIYON ─── */
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: #7c3aed; color: #fff; }
+    .btn-ghost {
+      background: rgba(255,255,255,.07);
+      color: rgba(255,255,255,.7);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; gap: 0; }
+      .actions { display: none; }
+      .card-label { color: #555; }
+      .card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .cards-wrap { gap: 0; }
+      .card-row { page-break-after: always; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cards-wrap">
+
+  <!-- ÖN YÜZ -->
+  <div class="card-row">
+    <div class="card-label">ÖN YÜZ</div>
+    <div class="card" id="card-front">
+
+      <!-- Glow 1: sol üst speküler -->
+      <div class="glow" style="
+        top:-130px; left:-90px;
+        width:500px; height:500px;
+        background: radial-gradient(circle, rgba(255,255,255,.12) 0%, rgba(255,255,255,.04) 40%, transparent 70%);
+      "></div>
+      <!-- Glow 2: sağ alt rim -->
+      <div class="glow" style="
+        bottom:-180px; right:-100px;
+        width:420px; height:420px;
+        background: radial-gradient(circle, rgba(255,255,255,.04) 0%, transparent 65%);
+      "></div>
+
+      <div class="front-inner">
+        <!-- Logo -->
+        <div>
+          <div class="logo-mark">ayarlıyo<span class="logo-deg">°</span></div>
+          <div class="logo-sub">RANDEVU SISTEMI</div>
+        </div>
+
+        <div class="spacer"></div>
+
+        <!-- Alt: kişi + QR -->
+        <div class="bottom-row">
+          <div>
+            <div class="person-name">Yunus Emre Kobal</div>
+            <div class="person-title">Kurucu &amp; Geliştirici</div>
+            <div class="divider"></div>
+            <div class="contact-line">
+              <span class="ci">+90 538 399 69 16</span>
+              <span class="cdot"></span>
+              <span class="ci">ayarliyoinfo@gmail.com</span>
+            </div>
+            <div class="contact-line">
+              <span class="ci">@ayarlıyo</span>
+              <span class="cdot"></span>
+              <span class="ci">ayarliyo.com</span>
+            </div>
+          </div>
+
+          <div class="qr-block">
+            <canvas id="qr"></canvas>
+            <div class="qr-lbl">AYARLIYO.COM</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ARKA YÜZ -->
+  <div class="card-row">
+    <div class="card-label">ARKA YÜZ</div>
+    <div class="card" id="card-back">
+
+      <!-- Glow merkezi -->
+      <div class="glow" style="
+        top:50%; left:50%;
+        transform: translate(-50%,-55%);
+        width:620px; height:620px;
+        background: radial-gradient(circle, rgba(255,255,255,.13) 0%, rgba(255,255,255,.05) 38%, transparent 68%);
+      "></div>
+
+      <div class="back-inner">
+        <div class="back-logo">ayarlıyo<span class="back-deg">°</span></div>
+        <div class="back-divider"></div>
+        <div class="back-sub">RANDEVU SISTEMI</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Aksiyonlar -->
+<div class="actions">
+  <button class="btn btn-primary" onclick="dl('card-front','ayarliyo-on-yuz.png')">⬇ Ön Yüz PNG</button>
+  <button class="btn btn-primary" onclick="dl('card-back','ayarliyo-arka-yuz.png')">⬇ Arka Yüz PNG</button>
+  <button class="btn btn-ghost" onclick="window.print()">🖨 Yazdır</button>
+</div>
+
+<script>
+  // QR Code — beyaz, şeffaf arka plan
+  QRCode.toCanvas(document.getElementById('qr'), 'https://ayarliyo.com', {
+    width: 88,
+    margin: 1,
+    color: { dark: '#ffffff', light: '#00000000' }
+  });
+
+  // PNG export — scale:3 → 2568×1494px yüksek çözünürlük
+  async function dl(id, name) {
+    const el = document.getElementById(id);
+    const c  = await html2canvas(el, {
+      scale: 3,
+      backgroundColor: null,
+      useCORS: true,
+      logging: false
+    });
+    const a = document.createElement('a');
+    a.download = name;
+    a.href = c.toDataURL('image/png');
+    a.click();
+  }
+</script>
+
+</body>
+</html>
