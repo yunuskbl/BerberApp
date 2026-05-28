@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>ayarlıyo — Logo Üretici</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #3a3a3a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 28px;
+      font-family: system-ui, sans-serif;
+    }
+    canvas {
+      border-radius: 50%;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+      width: 400px;
+      height: 400px;
+    }
+    .actions { display: flex; gap: 12px; }
+    .btn {
+      padding: 13px 32px;
+      background: #7c3aed;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: -.2px;
+    }
+    .btn:hover { background: #6d28d9; }
+    .note { color: rgba(255,255,255,0.5); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <canvas id="c" width="1000" height="1000"></canvas>
+  <div class="actions">
+    <button class="btn" onclick="dl()">⬇ PNG indir (1000 × 1000)</button>
+  </div>
+  <p class="note">Syne 800 · profil fotoğrafı için hazır</p>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const S = 1000, cx = S / 2, cy = S / 2, R = S / 2;
+
+    function draw() {
+      ctx.clearRect(0, 0, S, S);
+
+      /* ── daire klibi ── */
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.clip();
+
+      /* ── siyah arka plan gradyanı ── */
+      const bg = ctx.createRadialGradient(cx, cy * 0.65, 0, cx, cy, R * 1.1);
+      bg.addColorStop(0, '#1e1e20');
+      bg.addColorStop(1, '#020202');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, S, S);
+
+      /* ── beyaz ışık / glow ── */
+      const glow = ctx.createRadialGradient(cx, cy * 0.45, 0, cx, cy * 0.45, R * 0.72);
+      glow.addColorStop(0,   'rgba(255,255,255,0.16)');
+      glow.addColorStop(0.35,'rgba(255,255,255,0.07)');
+      glow.addColorStop(0.7, 'rgba(255,255,255,0.02)');
+      glow.addColorStop(1,   'rgba(255,255,255,0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, S, S);
+
+      ctx.restore();
+
+      /* ── içerik grubu: nokta + metin ── */
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.clip();
+
+      /* metin ölçümü için önce font ayarla */
+      ctx.font = '800 108px Syne';
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '-3px';
+      const metrics = ctx.measureText('ayarlıyo°');
+      const textW   = metrics.width;
+
+      /* dikey merkez */
+      const textY  = cy + 4;
+      const dotR   = 11;           /* nokta yarıçapı */
+      const gap    = 18;           /* nokta ile metin arası */
+      const groupW = dotR * 2 + gap + textW;
+      const startX = cx - groupW / 2;
+
+      /* mor nokta */
+      const dotCX = startX + dotR;
+      const dotCY = textY - 108 * 0.35; /* cap-height ortası yaklaşık */
+      ctx.beginPath();
+      ctx.arc(dotCX, dotCY, dotR, 0, Math.PI * 2);
+      ctx.fillStyle = '#7c3aed';
+      ctx.fill();
+
+      /* ayarlıyo° metni */
+      ctx.fillStyle = '#ffffff';
+      ctx.textBaseline = 'alphabetic';
+      ctx.textAlign = 'left';
+      ctx.fillText('ayarlıyo°', startX + dotR * 2 + gap, textY);
+
+      ctx.restore();
+    }
+
+    document.fonts.load('800 48px Syne').then(draw).catch(draw);
+
+    function dl() {
+      const a = document.createElement('a');
+      a.download = 'ayarliyo-logo.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }
+  </script>
+</body>
+</html>
