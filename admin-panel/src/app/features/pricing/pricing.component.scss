@@ -102,7 +102,9 @@ $green:        #059669;
   font-size: 18px;
   font-weight: 800;
   color: $text;
-  letter-spacing: -.5px;
+  letter-spacing: -0.5px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .logo-suffix { color: $purple; }
