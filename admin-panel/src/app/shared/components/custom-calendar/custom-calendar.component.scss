@@ -11,7 +11,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  background: linear-gradient(135deg, #111827, #1e293b, #334155);
+  background: linear-gradient(135deg, var(--cal-dark, #111827), var(--cal-primary, #7c3aed));
 }
 
 .month-label {
@@ -74,37 +74,37 @@
   transition: all 0.15s;
 
   &:hover:not(.disabled):not(.empty):not(.selected) {
-    background: #f5f3ff;
-    color: #7c3aed;
+    background: var(--cal-light, #f5f3ff);
+    color: var(--cal-primary, #7c3aed);
   }
 
   &.empty { cursor: default; }
 
   &.today:not(.selected) {
-    background: #ede9fe;
-    color: #7c3aed;
+    background: var(--cal-light, #ede9fe);
+    color: var(--cal-primary, #7c3aed);
     font-weight: 700;
   }
 
   &.selected {
-    background: linear-gradient(135deg, #7c3aed, #4c1d95);
+    background: linear-gradient(135deg, var(--cal-primary, #7c3aed), var(--cal-dark, #4c1d95));
     color: white;
     font-weight: 700;
-    box-shadow: 0 6px 14px rgba(124,58,237,0.35);
+    box-shadow: 0 6px 14px var(--cal-shadow, rgba(124,58,237,0.35));
   }
 
   &.range-start, &.range-end {
-    background: linear-gradient(135deg, #7c3aed, #4c1d95);
+    background: linear-gradient(135deg, var(--cal-primary, #7c3aed), var(--cal-dark, #4c1d95));
     color: white;
     font-weight: 700;
-    box-shadow: 0 4px 12px rgba(124,58,237,0.35);
+    box-shadow: 0 4px 12px var(--cal-shadow, rgba(124,58,237,0.35));
     position: relative;
     z-index: 1;
   }
 
   &.in-range {
-    background: #ede9fe;
-    color: #5b21b6;
+    background: var(--cal-light, #ede9fe);
+    color: var(--cal-light-text, #5b21b6);
     border-radius: 0;
   }
 
@@ -153,6 +153,6 @@
   .selected-date {
     font-size: 13px;
     font-weight: 600;
-    color: #7c3aed;
+    color: var(--cal-primary, #7c3aed);
   }
 }
