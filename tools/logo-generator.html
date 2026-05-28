@@ -120,14 +120,24 @@
       ctx.fillStyle = 'rgba(255,255,255,0.70)';
       ctx.fillText('°', startX + mainW, textY - 28);
 
+      /* ince ayraç çizgisi */
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+      ctx.lineWidth   = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx - 110, textY + 32);
+      ctx.lineTo(cx + 110, textY + 32);
+      ctx.stroke();
+      ctx.restore();
+
       /* randevu sistemi — altında, silik */
-      const tagSize = 30;
+      const tagSize = 26;
       ctx.font = `600 ${tagSize}px Syne`;
-      if ('letterSpacing' in ctx) ctx.letterSpacing = '6px';
-      ctx.fillStyle    = 'rgba(255,255,255,0.30)';
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '4px';
+      ctx.fillStyle    = 'rgba(255,255,255,0.32)';
       ctx.textAlign    = 'center';
       ctx.textBaseline = 'alphabetic';
-      ctx.fillText('randevu sistemi', cx, textY + 58);
+      ctx.fillText('randevu sistemi', cx, textY + 68);
 
       ctx.restore();
     }
