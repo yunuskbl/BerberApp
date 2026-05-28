@@ -98,6 +98,7 @@ $green:        #059669;
 }
 
 .logo-text {
+  font-family: 'Syne', sans-serif;
   font-size: 18px;
   font-weight: 800;
   color: $text;
@@ -1437,7 +1438,7 @@ $green:        #059669;
   p { font-size: 13px; color: rgba(255,255,255,.4); margin: 4px 0 0; }
 }
 
-.footer-logo-text { font-size: 18px; font-weight: 900; color: $white; letter-spacing: -.5px; }
+.footer-logo-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: $white; letter-spacing: -.5px; }
 
 .footer-links {
   display: flex; gap: 24px; align-items: center; flex-wrap: wrap;
