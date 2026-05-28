@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <title>ayarlıyo — Kartvizit</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,7 +31,6 @@
       color: rgba(100,85,60,.50);
     }
 
-    /* ─── KART ─── */
     .card {
       width: 856px;
       height: 498px;
@@ -51,7 +50,7 @@
       pointer-events: none;
     }
 
-    /* ─── ÖN YÜZ ─── */
+    /* ── ÖN YÜZ ── */
     .front-inner {
       position: relative;
       z-index: 2;
@@ -143,8 +142,15 @@
       background: #f0ece4;
       border-radius: 12px;
       border: 1px solid rgba(201,169,110,.22);
+      line-height: 0;
     }
-    .qr-wrap img { display: block; border-radius: 6px; }
+    /* SVG inject edilince boyutlanır */
+    .qr-wrap svg {
+      display: block;
+      width: 80px;
+      height: 80px;
+      border-radius: 4px;
+    }
     .qr-lbl {
       font-size: 8px;
       font-weight: 500;
@@ -152,7 +158,7 @@
       color: rgba(140,110,65,.45);
     }
 
-    /* ─── ARKA YÜZ ─── */
+    /* ── ARKA YÜZ ── */
     .back-inner {
       position: relative;
       z-index: 2;
@@ -183,10 +189,7 @@
     .back-divider {
       width: 220px;
       height: 1px;
-      background: linear-gradient(90deg,
-        transparent,
-        rgba(201,169,110,.55),
-        transparent);
+      background: linear-gradient(90deg, transparent, rgba(201,169,110,.55), transparent);
       margin: 22px 0 19px;
     }
 
@@ -198,7 +201,7 @@
       color: rgba(140,110,65,.40);
     }
 
-    /* ─── AKSIYONLAR ─── */
+    /* ── AKSIYONLAR ── */
     .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 
     .btn {
@@ -235,27 +238,16 @@
     <div class="card-label">ÖN YÜZ</div>
     <div class="card" id="card-front">
 
-      <!-- Sol üst sıcak glow -->
       <div class="glow" style="
-        top:-160px; left:-120px;
-        width:520px; height:520px;
-        background: radial-gradient(circle,
-          rgba(220,190,130,.14) 0%,
-          rgba(220,190,130,.05) 45%,
-          transparent 70%);
+        top:-160px; left:-120px; width:520px; height:520px;
+        background:radial-gradient(circle,rgba(220,190,130,.14) 0%,rgba(220,190,130,.05) 45%,transparent 70%);
       "></div>
-
-      <!-- Sağ alt hafif sıcak glow -->
       <div class="glow" style="
-        bottom:-150px; right:-90px;
-        width:380px; height:380px;
-        background: radial-gradient(circle,
-          rgba(220,190,130,.08) 0%,
-          transparent 65%);
+        bottom:-150px; right:-90px; width:380px; height:380px;
+        background:radial-gradient(circle,rgba(220,190,130,.08) 0%,transparent 65%);
       "></div>
 
       <div class="front-inner">
-
         <div>
           <div class="logo-mark">ayarlıyo<span class="logo-deg">°</span></div>
           <div class="logo-sub">RANDEVU SISTEMI</div>
@@ -281,13 +273,10 @@
           </div>
 
           <div class="qr-block">
-            <div class="qr-wrap">
-              <img id="qr-img" width="80" height="80" alt="QR">
-            </div>
+            <div class="qr-wrap" id="qr-container"></div>
             <div class="qr-lbl">AYARLIYO.COM</div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -296,23 +285,16 @@
   <div class="card-row">
     <div class="card-label">ARKA YÜZ</div>
     <div class="card" id="card-back">
-
       <div class="glow" style="
-        top:50%; left:50%;
-        transform: translate(-50%,-55%);
+        top:50%; left:50%; transform:translate(-50%,-55%);
         width:620px; height:620px;
-        background: radial-gradient(circle,
-          rgba(220,190,130,.15) 0%,
-          rgba(220,190,130,.06) 42%,
-          transparent 68%);
+        background:radial-gradient(circle,rgba(220,190,130,.15) 0%,rgba(220,190,130,.06) 42%,transparent 68%);
       "></div>
-
       <div class="back-inner">
         <div class="back-logo">ayarlıyo<span class="back-deg">°</span></div>
         <div class="back-divider"></div>
         <div class="back-sub">RANDEVU SISTEMI</div>
       </div>
-
     </div>
   </div>
 
@@ -325,13 +307,20 @@
 </div>
 
 <script>
-  // QR — img tag kullanıyoruz, html2canvas canvas yakalayamıyor
-  QRCode.toDataURL('https://ayarliyo.com', {
-    width: 80,
-    margin: 0,
-    color: { dark: '#2d2010', light: '#f0ece4' }
-  }, function(err, url) {
-    if (!err) document.getElementById('qr-img').src = url;
+  // SVG olarak üret, doğrudan DOM'a inject et — canvas / CORS sorunu yok
+  QRCode.toString('https://ayarliyo.com', {
+    type: 'svg',
+    margin: 1,
+    color: { dark: '#3d2c10', light: '#f0ece4' }
+  }, function(err, svgString) {
+    if (err) { console.error('QR hatası:', err); return; }
+    const container = document.getElementById('qr-container');
+    container.innerHTML = svgString;
+    const svg = container.querySelector('svg');
+    if (svg) {
+      svg.setAttribute('width',  '80');
+      svg.setAttribute('height', '80');
+    }
   });
 
   async function dl(id, name) {
@@ -340,8 +329,7 @@
       scale: 3,
       backgroundColor: null,
       useCORS: true,
-      logging: false,
-      allowTaint: true
+      logging: false
     });
     const a = document.createElement('a');
     a.download = name;
