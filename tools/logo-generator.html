@@ -91,7 +91,7 @@
 
       const mainSize   = 108;
       const suffixSize = 68;   /* ° daha küçük */
-      const textY      = cy + 38;
+      const textY      = cy + 18;
 
       /* ana metin ölçümü */
       ctx.font = `800 ${mainSize}px Syne`;
@@ -119,6 +119,15 @@
       if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
       ctx.fillStyle = 'rgba(255,255,255,0.70)';
       ctx.fillText('°', startX + mainW, textY - 28);
+
+      /* randevu sistemi — altında, silik */
+      const tagSize = 30;
+      ctx.font = `600 ${tagSize}px Syne`;
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '6px';
+      ctx.fillStyle    = 'rgba(255,255,255,0.30)';
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('RANDEVU SİSTEMİ', cx, textY + 58);
 
       ctx.restore();
     }
