@@ -16,6 +16,15 @@ admin-panel/.angular/
 # Instagram content araçları — tamamı git dışında
 instagram-content/
 
+# Tasarım ve görsel araç dosyaları
+tools/
+admin-panel/design-preview*.html
+admin-panel/font-preview.html
+admin-panel/src/assets/preview-designs.html
+admin-panel/src/assets/pricing-reel.html
+admin-panel/src/assets/salon-fotos/
+admin-panel/src/assets/logos/
+
 # Docker
 postgres_data/
 
