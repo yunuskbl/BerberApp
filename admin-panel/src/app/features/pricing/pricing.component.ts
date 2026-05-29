@@ -1,9 +1,12 @@
 import { Component, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { environment } from '../../../environments/environment';
 
 interface Feature  { name: string; included: boolean; }
 interface PlanLimit { staff: string; appointments: string; }
@@ -46,7 +49,7 @@ const ALL_FEATURES: Feature[] = [
 @Component({
   selector: 'app-pricing',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe],
   templateUrl: './pricing.component.html',
   styleUrls: ['./pricing.component.scss'],
   animations: [
@@ -330,7 +333,15 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   get isLoggedIn(): boolean { return !!localStorage.getItem('accessToken'); }
 
-  constructor(private router: Router, private sanitizer: DomSanitizer) {
+  // ── Contact form ──────────────────────────────────────────────────────────
+  contactName    = '';
+  contactEmail   = '';
+  contactMessage = '';
+  contactSending = false;
+  contactSuccess = '';
+  contactError   = '';
+
+  constructor(private router: Router, private sanitizer: DomSanitizer, private http: HttpClient) {
     // Sanitize SVG icons so Angular's DomSanitizer doesn't strip them
     this.appFeatures = this.rawFeatures.map(f => ({
       icon: this.sanitizer.bypassSecurityTrustHtml(f.icon),
@@ -464,6 +475,35 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
 
   planHas(plan: Plan, featureName: string): boolean {
     return plan.features.find(f => f.name === featureName)?.included ?? false;
+  }
+
+  sendContactForm(): void {
+    if (!this.contactName.trim() || !this.contactEmail.trim() || !this.contactMessage.trim()) {
+      this.contactError = 'Lütfen tüm alanları doldurun.';
+      return;
+    }
+    this.contactSending = true;
+    this.contactError   = '';
+    this.contactSuccess = '';
+    this.http.post<any>(`${environment.apiUrl}/contact/public`, {
+      name: this.contactName.trim(),
+      email: this.contactEmail.trim(),
+      message: this.contactMessage.trim(),
+    }).subscribe({
+      next: res => {
+        if (res.success) {
+          this.contactSuccess = 'Mesajınız iletildi. En kısa sürede yanıtlanacaktır.';
+          this.contactName    = '';
+          this.contactEmail   = '';
+          this.contactMessage = '';
+        }
+        this.contactSending = false;
+      },
+      error: () => {
+        this.contactError   = 'Mesaj gönderilemedi. Lütfen tekrar deneyin.';
+        this.contactSending = false;
+      }
+    });
   }
 
   openMail(): void {
