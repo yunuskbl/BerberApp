@@ -386,6 +386,40 @@
           <span class="contact-card-badge">Hafta içi 09:00 – 18:00</span>
         </div>
       </div>
+
+      <!-- Contact form -->
+      <div class="contact-form-wrap" id="contact-form">
+        <h3 class="contact-form-title">Mesaj Gönder</h3>
+        <p class="contact-form-sub">Formu doldurun, size en kısa sürede dönelim.</p>
+
+        @if (contactSuccess) {
+          <div class="contact-alert contact-alert-success">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            {{ contactSuccess }}
+          </div>
+        }
+        @if (contactError) {
+          <div class="contact-alert contact-alert-error">{{ contactError }}</div>
+        }
+
+        <div class="contact-form-row">
+          <div class="contact-form-field">
+            <label>Ad Soyad *</label>
+            <input [(ngModel)]="contactName" placeholder="Adınız ve soyadınız" />
+          </div>
+          <div class="contact-form-field">
+            <label>E-posta *</label>
+            <input [(ngModel)]="contactEmail" type="email" placeholder="ornek@email.com" />
+          </div>
+        </div>
+        <div class="contact-form-field">
+          <label>Mesajınız *</label>
+          <textarea [(ngModel)]="contactMessage" rows="5" placeholder="Sorunuzu veya mesajınızı yazın…"></textarea>
+        </div>
+        <button class="contact-form-btn" (click)="sendContactForm()" [disabled]="contactSending">
+          {{ contactSending ? 'Gönderiliyor…' : 'Gönder' }}
+        </button>
+      </div>
     </div>
   </section>
 
@@ -399,7 +433,7 @@
         <button class="cta-btn-primary" (click)="isLoggedIn ? goToApp() : goToRegister()">
           Ücretsiz Başla
         </button>
-        <button class="cta-btn-contact" (click)="openMail()">
+        <button class="cta-btn-contact" (click)="scrollTo('contact')">
           Bize Yazın →
         </button>
       </div>

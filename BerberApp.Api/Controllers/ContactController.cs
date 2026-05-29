@@ -84,6 +84,32 @@ public class ContactController : BaseApiController
     }
 
     /// <summary>
+    /// Anonim ziyaretçi (landing sayfasından) mesaj gönderir
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("public")]
+    public async Task<IActionResult> SendPublicMessage([FromBody] PublicContactRequest req)
+    {
+        if (string.IsNullOrWhiteSpace(req.Name) || string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.Message))
+            return BadRequest(new { success = false, message = "Ad, e-posta ve mesaj alanları zorunludur." });
+
+        var msg = new ContactMessage
+        {
+            TenantId = Guid.Empty,
+            TenantName = req.Name.Trim(),
+            SenderEmail = req.Email.Trim(),
+            Subject = $"[Landing] {req.Name.Trim()}",
+            Message = req.Message.Trim(),
+            Status = "New"
+        };
+
+        _context.ContactMessages.Add(msg);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { success = true, message = "Mesajınız iletildi. En kısa sürede yanıtlanacaktır." });
+    }
+
+    /// <summary>
     /// Salon admini mesaj gönderir
     /// </summary>
     [Authorize]
@@ -121,5 +147,12 @@ public class ContactController : BaseApiController
 public class SendMessageRequest
 {
     public string Subject { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+}
+
+public class PublicContactRequest
+{
+    public string Name    { get; set; } = string.Empty;
+    public string Email   { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
 }

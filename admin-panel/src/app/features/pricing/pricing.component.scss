@@ -1119,6 +1119,114 @@ $green:        #059669;
   border-radius: 999px;
 }
 
+// ── Contact form ──────────────────────────────────────────────────────────────
+.contact-form-wrap {
+  max-width: 680px;
+  margin: 56px auto 0;
+  background: $white;
+  border: 1.5px solid $border;
+  border-radius: 24px;
+  padding: 48px;
+
+  @media (max-width: 600px) {
+    padding: 28px 20px;
+    margin-top: 40px;
+  }
+}
+
+.contact-form-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 6px;
+}
+
+.contact-form-sub {
+  font-size: 14px;
+  color: $muted;
+  margin: 0 0 28px;
+}
+
+.contact-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-bottom: 20px;
+
+  &.contact-alert-success {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    color: #166534;
+  }
+
+  &.contact-alert-error {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+  }
+}
+
+.contact-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+.contact-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  input, textarea {
+    border: 1.5px solid $border;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 14px;
+    color: $text;
+    font-family: inherit;
+    outline: none;
+    resize: vertical;
+    transition: border-color .15s;
+    background: $white;
+
+    &:focus { border-color: $purple; box-shadow: 0 0 0 3px rgba(124,58,237,.08); }
+    &::placeholder { color: #d1d5db; }
+  }
+}
+
+.contact-form-btn {
+  width: 100%;
+  padding: 13px;
+  background: $purple;
+  color: $white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, opacity .15s;
+  margin-top: 4px;
+
+  &:hover { background: darken($purple, 6%); }
+  &:disabled { opacity: .5; cursor: default; }
+}
+
 // ── CTA ───────────────────────────────────────────────────────────────────────
 .cta-section {
   padding: 100px 24px;
