@@ -2,64 +2,57 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
+interface PlanInfo {
+  name: string;
+  label: string;
+  price: number;
+  icon: string;
+  color: string;
+  extras: string[];
+}
+
 @Component({
   selector: 'app-upgrade',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="upgrade-container">
-      <div class="upgrade-card">
-        <h2>⛔ Yetki Yetersiz</h2>
-        <p>
-          Bu özellik <strong>{{ requiredPlan }}</strong> paket'te mevcut
-        </p>
-        <p>
-          Sizin paketiniz: <strong>{{ currentPlan }}</strong>
-        </p>
-        <button (click)="goToPayment()" class="btn-upgrade">
-          Paket Yükselt
-        </button>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .upgrade-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    
-    .upgrade-card {
-      text-align: center;
-      padding: 40px;
-      background: #f5f5f5;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    h2 { font-size: 24px; margin-bottom: 20px; }
-    p { margin: 10px 0; font-size: 16px; }
-    
-    .btn-upgrade {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: #6366f1;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    
-    .btn-upgrade:hover { background: #4f46e5; }
-  `]
+  templateUrl: './upgrade.component.html',
+  styleUrl: './upgrade.component.scss',
 })
 export class UpgradeComponent implements OnInit {
-  currentPlan = 'Baslangic';
-  requiredPlan = 'Profesyonel';
+  currentPlanName  = 'Baslangic';
+  requiredPlanName = 'Profesyonel';
 
-  private readonly planSlugMap: Record<string, string> = {
+  private readonly plans: Record<string, PlanInfo> = {
+    Baslangic: {
+      name: 'Baslangic', label: 'Başlangıç', price: 899, icon: '🌱', color: '#6b7280',
+      extras: [],
+    },
+    Profesyonel: {
+      name: 'Profesyonel', label: 'Profesyonel', price: 1799, icon: '⚡', color: '#7c3aed',
+      extras: [
+        'Toplu WhatsApp Kampanyası',
+        'Gelir & Gider Yönetimi',
+        'Personel Girişi & Yetkilendirme',
+        '5 Personele Kadar',
+        'Sınırsız Randevu',
+      ],
+    },
+    Premium: {
+      name: 'Premium', label: 'Premium', price: 2999, icon: '👑', color: '#d97706',
+      extras: [
+        'Çoklu Şube Yönetimi',
+        'Sınırsız Personel',
+        'Öncelikli Destek',
+        'Merkezi Raporlama',
+        'Tüm Profesyonel Özellikler',
+      ],
+    },
+  };
+
+  get current(): PlanInfo  { return this.plans[this.currentPlanName]  ?? this.plans['Baslangic']; }
+  get required(): PlanInfo { return this.plans[this.requiredPlanName] ?? this.plans['Profesyonel']; }
+
+  private readonly slugMap: Record<string, string> = {
     Profesyonel: 'profesyonel',
     Premium:     'premium',
     Baslangic:   'baslangic',
@@ -67,15 +60,17 @@ export class UpgradeComponent implements OnInit {
 
   constructor(private route: ActivatedRoute, private router: Router) {}
 
-  ngOnInit() {
-    this.route.queryParams.subscribe(params => {
-      this.currentPlan  = params['current']  || 'Baslangic';
-      this.requiredPlan = params['required'] || 'Profesyonel';
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(p => {
+      this.currentPlanName  = p['current']  || 'Baslangic';
+      this.requiredPlanName = p['required'] || 'Profesyonel';
     });
   }
 
-  goToPayment() {
-    const slug = this.planSlugMap[this.requiredPlan] ?? 'profesyonel';
+  goToPayment(): void {
+    const slug = this.slugMap[this.requiredPlanName] ?? 'profesyonel';
     this.router.navigate(['/payment'], { queryParams: { plan: slug } });
   }
+
+  goBack(): void { this.router.navigate(['/dashboard']); }
 }

@@ -1,1 +1,73 @@
-<p>upgrade works!</p>
+<div class="upgrade-page">
+  <div class="upgrade-wrap">
+
+    <!-- Lock badge -->
+    <div class="lock-badge">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      Bu özellik kilitle korumalı
+    </div>
+
+    <!-- Header -->
+    <h1 class="upgrade-title">Planınızı Yükseltin</h1>
+    <p class="upgrade-sub">
+      Bu özelliği kullanmak için <strong>{{ required.label }}</strong> planına geçmeniz gerekiyor.
+    </p>
+
+    <!-- Plan cards -->
+    <div class="plan-compare">
+
+      <!-- Current plan -->
+      <div class="plan-card plan-current">
+        <div class="plan-icon">{{ current.icon }}</div>
+        <div class="plan-label">Mevcut Planınız</div>
+        <div class="plan-name">{{ current.label }}</div>
+        <div class="plan-price">₺{{ current.price | number }}<span>/ay</span></div>
+      </div>
+
+      <!-- Arrow -->
+      <div class="compare-arrow">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </div>
+
+      <!-- Required plan -->
+      <div class="plan-card plan-required">
+        <div class="plan-badge">Önerilen</div>
+        <div class="plan-icon">{{ required.icon }}</div>
+        <div class="plan-label">Hedef Plan</div>
+        <div class="plan-name">{{ required.label }}</div>
+        <div class="plan-price">₺{{ required.price | number }}<span>/ay</span></div>
+      </div>
+
+    </div>
+
+    <!-- What you get -->
+    <div class="gains-box">
+      <p class="gains-title">{{ required.label }} planıyla kazanacaklarınız:</p>
+      <ul class="gains-list">
+        @for (feat of required.extras; track feat) {
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            {{ feat }}
+          </li>
+        }
+      </ul>
+    </div>
+
+    <!-- Actions -->
+    <div class="upgrade-actions">
+      <button class="btn-upgrade" (click)="goToPayment()">
+        {{ required.label }}'e Geç
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <button class="btn-back" (click)="goBack()">Geri Dön</button>
+    </div>
+
+    <p class="upgrade-note">İptal etmek istersen istediğin zaman plan değiştirebilirsin.</p>
+
+  </div>
+</div>

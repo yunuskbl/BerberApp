@@ -290,4 +290,13 @@ export const routes: Routes = [
       },
     ],
   },
+
+  // 404 — wildcard (en sonda olmalı)
+  {
+    path: '**',
+    loadComponent: () =>
+      import('./features/not-found/not-found.component').then(
+        (m) => m.NotFoundComponent,
+      ),
+  },
 ];
