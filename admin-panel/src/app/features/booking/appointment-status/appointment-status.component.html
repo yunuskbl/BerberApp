@@ -102,7 +102,9 @@
           </div>
         </div>
 
-        <p class="footer-note">{{ 'booking.successNote' | translate }}</p>
+        @if (appointment.status === 'Pending' || appointment.status === 'Confirmed') {
+          <p class="footer-note">{{ 'booking.successNote' | translate }}</p>
+        }
 
         <!-- Müşteri İptal Bölümü -->
         @if (canCustomerCancel) {
