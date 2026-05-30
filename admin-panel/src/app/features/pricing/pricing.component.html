@@ -11,7 +11,6 @@
       <nav class="nav-links">
         <button class="nav-link" (click)="scrollTo('features')">Özellikler</button>
         <button class="nav-link" (click)="scrollTo('pricing')">Fiyatlar</button>
-        @if (showVideos) {<button class="nav-link" (click)="scrollTo('videos')">Videolar</button>}
         <button class="nav-link" (click)="scrollTo('faq')">SSS</button>
         <button class="nav-link" (click)="scrollTo('contact')">İletişim</button>
       </nav>
@@ -350,83 +349,6 @@
     </div>
   </section>
 
-  <!-- ══ VIDEOS (pasif — videolar hazır olunca showVideos: true yap) ═══════ -->
-  @if (showVideos) {
-  <section class="videos-section" id="videos">
-    <div class="section-inner">
-      <div class="section-header">
-        <p class="section-eyebrow">Eğitim</p>
-        <h2 class="section-title">Nasıl kullanılır?</h2>
-        <p class="section-sub">Sistemin tüm özelliklerini adım adım anlatan kısa videolar.</p>
-      </div>
-
-      <div class="videos-layout">
-
-        <!-- Sol: Aktif video oynatıcı -->
-        <div class="video-player-wrap">
-          @for (video of videos; let i = $index; track video.filename) {
-            @if (selectedVideoIndex === i) {
-              <video
-                class="video-player"
-                [src]="videoBase + video.filename"
-                controls
-                preload="metadata"
-                autoplay>
-                Tarayıcınız video oynatmayı desteklemiyor.
-              </video>
-            }
-          }
-          <div class="video-player-meta">
-            <h3 class="video-player-title">{{ selectedVideo.title }}</h3>
-            <p class="video-player-desc">{{ selectedVideo.description }}</p>
-          </div>
-        </div>
-
-        <!-- Sağ: Video listesi -->
-        <div class="video-list">
-          @for (video of videos; let i = $index; track video.filename) {
-            <button
-              class="video-item"
-              [class.active]="selectedVideoIndex === i"
-              (click)="selectVideo(i)">
-              <div class="video-thumb">
-                <video
-                  class="video-thumb-preview"
-                  [src]="videoBase + video.filename + '#t=1'"
-                  preload="metadata"
-                  muted
-                  playsinline>
-                </video>
-                @if (selectedVideoIndex !== i) {
-                  <div class="video-play-overlay">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                      <polygon points="5,3 19,12 5,21"/>
-                    </svg>
-                  </div>
-                }
-                @if (selectedVideoIndex === i) {
-                  <div class="video-playing-badge">▶ Oynatılıyor</div>
-                }
-              </div>
-              <div class="video-item-meta">
-                <span class="video-item-num">{{ i + 1 }}</span>
-                <div class="video-item-info">
-                  <span class="video-item-title">{{ video.title }}</span>
-                  <span class="video-item-duration">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    {{ video.duration }}
-                  </span>
-                </div>
-              </div>
-            </button>
-          }
-        </div>
-
-      </div>
-    </div>
-  </section>
-  } <!-- /showVideos -->
-
   <!-- ══ FAQ ═════════════════════════════════════════════════════════════════ -->
   <section class="faq-section" id="faq">
     <div class="faq-inner">
@@ -485,39 +407,6 @@
         </div>
       </div>
 
-      <!-- Contact form -->
-      <div class="contact-form-wrap" id="contact-form">
-        <h3 class="contact-form-title">Mesaj Gönder</h3>
-        <p class="contact-form-sub">Formu doldurun, size en kısa sürede dönelim.</p>
-
-        @if (contactSuccess) {
-          <div class="contact-alert contact-alert-success">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-            {{ contactSuccess }}
-          </div>
-        }
-        @if (contactError) {
-          <div class="contact-alert contact-alert-error">{{ contactError }}</div>
-        }
-
-        <div class="contact-form-row">
-          <div class="contact-form-field">
-            <label>Ad Soyad *</label>
-            <input [(ngModel)]="contactName" placeholder="Adınız ve soyadınız" />
-          </div>
-          <div class="contact-form-field">
-            <label>E-posta *</label>
-            <input [(ngModel)]="contactEmail" type="email" placeholder="ornek@email.com" />
-          </div>
-        </div>
-        <div class="contact-form-field">
-          <label>Mesajınız *</label>
-          <textarea [(ngModel)]="contactMessage" rows="5" placeholder="Sorunuzu veya mesajınızı yazın…"></textarea>
-        </div>
-        <button class="contact-form-btn" (click)="sendContactForm()" [disabled]="contactSending">
-          {{ contactSending ? 'Gönderiliyor…' : 'Gönder' }}
-        </button>
-      </div>
     </div>
   </section>
 

@@ -1,12 +1,9 @@
 import { Component, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { environment } from '../../../environments/environment';
 
 interface Feature  { name: string; included: boolean; }
 interface PlanLimit { staff: string; appointments: string; }
@@ -17,39 +14,29 @@ interface Plan {
 }
 interface FAQ  { question: string; answer: string; open?: boolean; }
 interface Stat { value: string; label: string; num: number; format: (n: number) => string; }
-interface TutorialVideo { title: string; description: string; filename: string; duration: string; }
 
 const ALL_FEATURES: Feature[] = [
-  { name: 'Online Randevu Sayfası',            included: true },
-  { name: 'Randevu Yönetimi & Takvim',         included: true },
-  { name: 'Çoklu Hizmet Seçimi',               included: true },
-  { name: 'WhatsApp OTP Doğrulama',            included: true },
-  { name: 'Uluslararası Telefon Desteği',      included: true },
-  { name: 'QR Kod ile Randevu Linki',          included: true },
-  { name: 'Harita & Konum Entegrasyonu',       included: true },
-  { name: 'Çalışma Saati & İzin Yönetimi',    included: true },
-  { name: 'Personel Profil Fotoğrafı',         included: true },
-  { name: 'Müşteri & Personel Yönetimi',       included: true },
-  { name: 'Personele Özel Fiyatlandırma',      included: true },
-  { name: 'Hizmet & Fiyat Yönetimi',           included: true },
-  { name: 'Tema & Logo Özelleştirme',          included: true },
-  { name: 'Çoklu Dil (TR / EN / RU)',          included: true },
-  { name: 'WhatsApp Bildirimleri',              included: true },
-  { name: 'Hatırlatma (24 saat + 1 saat)',     included: true },
-  { name: 'Fotoğraf Galerisi',                 included: true },
-  { name: 'Müşteri Değerlendirme Sistemi',     included: true },
-  { name: 'Manuel Randevu Onayı',              included: true },
-  { name: 'Toplu WhatsApp Kampanyası',         included: true },
-  { name: 'Gelir & Gider Yönetimi',            included: true },
-  { name: 'Personel Girişi & Yetkilendirme',   included: true },
-  { name: 'Çoklu Şube Yönetimi',               included: true },
-  { name: 'Öncelikli Destek',                  included: true },
+  { name: 'Online Randevu Sayfası',           included: true },
+  { name: 'Randevu Yönetimi & Takvim',        included: true },
+  { name: 'Çoklu Hizmet Seçimi',              included: true },
+  { name: 'WhatsApp OTP Doğrulama',           included: true },
+  { name: 'QR Kod ile Randevu Linki',         included: true },
+  { name: 'Harita & Konum Entegrasyonu',      included: true },
+  { name: 'Çalışma Saati & İzin Yönetimi',   included: true },
+  { name: 'WhatsApp Bildirimleri',            included: true },
+  { name: 'Müşteri & Personel Yönetimi',      included: true },
+  { name: 'Hizmet & Fiyat Yönetimi',          included: true },
+  { name: 'Müşteri Değerlendirme Sistemi',    included: true },
+  { name: 'Toplu WhatsApp Kampanyası',        included: true },
+  { name: 'Gelir & Gider Yönetimi',           included: true },
+  { name: 'Personel Girişi & Yetkilendirme',  included: true },
+  { name: 'Çoklu Şube Yönetimi',              included: true },
 ];
 
 @Component({
   selector: 'app-pricing',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe],
+  imports: [CommonModule, RouterModule, TranslatePipe],
   templateUrl: './pricing.component.html',
   styleUrls: ['./pricing.component.scss'],
   animations: [
@@ -63,56 +50,18 @@ const ALL_FEATURES: Feature[] = [
 })
 export class PricingComponent implements AfterViewInit, OnDestroy {
 
-  // ── Eğitim Videoları (showVideos: videolar hazır olunca true yap) ────────
-  showVideos = false;
-  readonly videos: TutorialVideo[] = [
-    {
-      title: 'Kurulum & Başlangıç',
-      description: 'Sisteme kayıt olun, işletme bilgilerinizi girin ve randevu sayfanızı 3 dakikada aktif edin.',
-      filename: 'kurulum.mp4',
-      duration: '3:24',
-    },
-    {
-      title: 'Randevu Yönetimi',
-      description: 'Takvim görünümü, randevu onaylama, iptal ve yeniden planlama işlemlerini öğrenin.',
-      filename: 'randevu-yonetimi.mp4',
-      duration: '4:10',
-    },
-    {
-      title: 'Personel & Hizmet Tanımlama',
-      description: 'Personel ekleyin, her personele özel hizmet fiyatı ve çalışma saati belirleyin.',
-      filename: 'personel-hizmet.mp4',
-      duration: '5:02',
-    },
-    {
-      title: 'WhatsApp Bildirimleri',
-      description: 'OTP doğrulama, otomatik hatırlatmalar ve toplu WhatsApp kampanyası ayarlarını yapın.',
-      filename: 'whatsapp-bildirimler.mp4',
-      duration: '3:47',
-    },
-  ];
-  selectedVideoIndex = 0;
-  readonly videoBase = '/uploads/videos/';
-
-  get selectedVideo(): TutorialVideo { return this.videos[this.selectedVideoIndex]; }
-
-  selectVideo(index: number): void {
-    if (this.selectedVideoIndex === index) return;
-    this.selectedVideoIndex = index;
-  }
-
   // ── Billing toggle ────────────────────────────────────────────────────────
   billingYearly  = false;
   priceAnimating = false;
 
   // ── Stats counter ─────────────────────────────────────────────────────────
   stats: Stat[] = [
-    { value: '500+', label: 'Aktif İşletme',      num: 500, format: n => `${n}+`   },
-    { value: '50K+', label: 'Aylık Randevu',       num: 50,  format: n => `${n}K+`  },
+    { value: '100+', label: 'Aktif İşletme',      num: 100, format: n => `${n}+`   },
+    { value: '10K+', label: 'Aylık Randevu',       num: 10,  format: n => `${n}K+`  },
     { value: '%98',  label: 'Müşteri Memnuniyeti', num: 98,  format: n => `%${n}`   },
     { value: '3 dk', label: 'Kurulum Süresi',      num: 3,   format: n => `${n} dk` },
   ];
-  animatedStats = this.stats.map(s => s.format(0)); // ['0+', '0K+', '%0', '0 dk']
+  animatedStats = this.stats.map(s => s.format(0));
 
   // ── Card entry animation ──────────────────────────────────────────────────
   cardVisible: boolean[] = [false, false, false, false, false, false, false];
@@ -190,7 +139,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
         <circle cx="12" cy="16" r="1" fill="currentColor"/>
       </svg>`,
       title: 'Personel Girişi & Yetki',
-      desc: 'Her personele ayrı giriş hesabı tanımlayın. Personel yalnızca kendi randevularını ve çalışma saatlerini görür; müşteri ve finans verileri admin\'de kalır.'
+      desc: 'Her personele ayrı giriş hesabı tanımlayın. Personel yalnızca kendi randevularını, çalışma saatlerini ve izin günlerini görür; müşteri ve finans verileri admin\'de kalır.'
     },
   ];
 
@@ -198,7 +147,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
 
   plans: Plan[] = [
     {
-      name: 'baslangic', label: 'Başlangıç', price: 899,
+      name: 'baslangic', label: 'Başlangıç', price: 890,
       description: 'Tek lokasyonlu küçük işletmeler için',
       icon: '🌱', featured: false, ctaDisabled: false,
       limits: { staff: '1 Personel', appointments: '150 Randevu/Ay' },
@@ -207,31 +156,22 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
         { name: 'Randevu Yönetimi & Takvim',        included: true  },
         { name: 'Çoklu Hizmet Seçimi',              included: true  },
         { name: 'WhatsApp OTP Doğrulama',           included: true  },
-        { name: 'Uluslararası Telefon Desteği',     included: true  },
         { name: 'QR Kod ile Randevu Linki',         included: true  },
         { name: 'Harita & Konum Entegrasyonu',      included: true  },
         { name: 'Çalışma Saati & İzin Yönetimi',   included: true  },
-        { name: 'Personel Profil Fotoğrafı',        included: true  },
-        { name: 'Müşteri & Personel Yönetimi',      included: true  },
-        { name: 'Personele Özel Fiyatlandırma',     included: true  },
-        { name: 'Hizmet & Fiyat Yönetimi',          included: true  },
-        { name: 'Tema & Logo Özelleştirme',         included: true  },
-        { name: 'Çoklu Dil (TR / EN / RU)',         included: true  },
         { name: 'WhatsApp Bildirimleri',             included: true  },
-        { name: 'Hatırlatma (24 saat + 1 saat)',    included: true  },
-        { name: 'Fotoğraf Galerisi',                included: true  },
+        { name: 'Müşteri & Personel Yönetimi',      included: true  },
+        { name: 'Hizmet & Fiyat Yönetimi',          included: true  },
         { name: 'Müşteri Değerlendirme Sistemi',    included: true  },
-        { name: 'Manuel Randevu Onayı',             included: true  },
         { name: 'Toplu WhatsApp Kampanyası',        included: false },
         { name: 'Gelir & Gider Yönetimi',           included: false },
         { name: 'Personel Girişi & Yetkilendirme',  included: false },
         { name: 'Çoklu Şube Yönetimi',              included: false },
-        { name: 'Öncelikli Destek',                 included: false },
       ],
       cta: 'Başlangıç Planı',
     },
     {
-      name: 'profesyonel', label: 'Profesyonel', price: 1799,
+      name: 'profesyonel', label: 'Profesyonel', price: 1790,
       description: 'Büyüyen tek şubeli işletmeler için',
       icon: '⚡', featured: true,
       limits: { staff: '5 Personele Kadar', appointments: 'Sınırsız Randevu' },
@@ -240,34 +180,25 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
         { name: 'Randevu Yönetimi & Takvim',        included: true  },
         { name: 'Çoklu Hizmet Seçimi',              included: true  },
         { name: 'WhatsApp OTP Doğrulama',           included: true  },
-        { name: 'Uluslararası Telefon Desteği',     included: true  },
         { name: 'QR Kod ile Randevu Linki',         included: true  },
         { name: 'Harita & Konum Entegrasyonu',      included: true  },
         { name: 'Çalışma Saati & İzin Yönetimi',   included: true  },
-        { name: 'Personel Profil Fotoğrafı',        included: true  },
-        { name: 'Müşteri & Personel Yönetimi',      included: true  },
-        { name: 'Personele Özel Fiyatlandırma',     included: true  },
-        { name: 'Hizmet & Fiyat Yönetimi',          included: true  },
-        { name: 'Tema & Logo Özelleştirme',         included: true  },
-        { name: 'Çoklu Dil (TR / EN / RU)',         included: true  },
         { name: 'WhatsApp Bildirimleri',             included: true  },
-        { name: 'Hatırlatma (24 saat + 1 saat)',    included: true  },
-        { name: 'Fotoğraf Galerisi',                included: true  },
+        { name: 'Müşteri & Personel Yönetimi',      included: true  },
+        { name: 'Hizmet & Fiyat Yönetimi',          included: true  },
         { name: 'Müşteri Değerlendirme Sistemi',    included: true  },
-        { name: 'Manuel Randevu Onayı',             included: true  },
         { name: 'Toplu WhatsApp Kampanyası',        included: true  },
         { name: 'Gelir & Gider Yönetimi',           included: true  },
         { name: 'Personel Girişi & Yetkilendirme',  included: true  },
         { name: 'Çoklu Şube Yönetimi',              included: false },
-        { name: 'Öncelikli Destek',                 included: false },
       ],
       cta: 'Profesyonel\'e Geç',
     },
     {
-      name: 'premium', label: 'Premium', price: 2999,
+      name: 'premium', label: 'Premium', price: 2390,
       description: 'Zincir işletmeler için merkezi yönetim',
       icon: '👑', featured: false,
-      limits: { staff: 'Sınırsız Personel', appointments: 'Çoklu Şube' },
+      limits: { staff: 'Sınırsız Personel', appointments: 'Sınırsız Randevu' },
       features: ALL_FEATURES,
       cta: 'Premium\'a Geç',
     },
@@ -286,15 +217,11 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     },
     {
       question: 'WhatsApp OTP doğrulama nasıl çalışıyor?',
-      answer: 'Müşteri randevu alırken telefon numarasını girer, sisteme "Kodu Gönder" ile 6 haneli bir doğrulama kodu WhatsApp üzerinden iletilir. Kodu doğrulayan müşteri randevuyu tamamlayabilir. Bu sayede sahte veya hatalı numaralarla randevu alınması engellenir. Türkiye başta olmak üzere 13 ülke alan kodu desteklenir.',
+      answer: 'Müşteri randevu alırken telefon numarasını girer, sisteme "Kodu Gönder" ile 6 haneli bir doğrulama kodu WhatsApp üzerinden iletilir. Kodu doğrulayan müşteri randevuyu tamamlayabilir. Bu sayede sahte veya hatalı numaralarla randevu alınması engellenir.',
     },
     {
       question: 'WhatsApp bildirimleri nasıl çalışıyor?',
-      answer: 'Randevu oluşturulduğunda onay, 24 saat ve 1 saat öncesi hatırlatma, randevu tamamlandığında değerlendirme linki ve iptal durumunda bilgi mesajı müşterinize otomatik WhatsApp\'tan gönderilir. İşletme sahibine de yeni randevu geldiğinde anlık bildirim iletilir. Ek kurulum gerekmez.',
-    },
-    {
-      question: 'Toplu WhatsApp mesajı özelliği ne işe yarar?',
-      answer: 'Profesyonel ve Premium planlarda, kayıtlı tüm müşterilerinize tek tıkla özel bir WhatsApp mesajı gönderebilirsiniz. Kampanya duyurusu, indirim bildirimi veya tatil tebriki gibi iletişimlerde kullanabilirsiniz. Mesaj kaç kişiye ulaştı, kaç gönderim başarısız oldu diye sonuç özeti gösterilir.',
+      answer: 'Randevu oluşturulduğunda onay, 24 saat ve 1 saat öncesi hatırlatma, randevu tamamlandığında değerlendirme linki ve iptal durumunda bilgi mesajı müşterinize otomatik WhatsApp\'tan gönderilir. İşletme sahibine de yeni randevu geldiğinde anlık bildirim iletilir.',
     },
     {
       question: 'Müşteri birden fazla hizmet alabilir mi?',
@@ -302,23 +229,11 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     },
     {
       question: 'Personel ve randevu limitleri nedir?',
-      answer: 'Başlangıç planında 1 personel ve ayda 150 randevu desteklenir. Profesyonel planda 5 personele kadar ve sınırsız randevu desteklenir. Premium planda personel ve randevu sınırı yoktur. Başlangıç planında aylık limite yaklaşıldığında otomatik uyarı alırsınız.',
+      answer: 'Başlangıç planında 1 personel ve ayda 150 randevu desteklenir. Profesyonel planda 5 personele kadar ve sınırsız randevu desteklenir. Premium planda personel ve randevu sınırı yoktur.',
     },
     {
       question: 'Randevuları manuel onaylamak istiyorum, mümkün mü?',
-      answer: 'Manuel randevu onayı tüm planlarda (Başlangıç dahil) mevcuttur. Manuel modda müşteri randevu talebi oluşturur; siz onayladığınızda müşteriye WhatsApp bildirim gönderilir. Bu mod özellikle yoğun dönemlerde veya kapasite kontrolü gerektiren işletmeler için idealdir. Otomatik modda ise randevu anında onaylanır.',
-    },
-    {
-      question: 'Birden fazla şubem var, sistemi kullanabilir miyim?',
-      answer: 'Premium planda çoklu şube yönetimi dahildir. Her şubenin kendi personeli, çalışma saatleri ve randevuları ayrı ayrı yönetilir; tüm şubelerinizi tek panel üzerinden takip edebilirsiniz. Başlangıç ve Profesyonel planlar tek şube içindir.',
-    },
-    {
-      question: 'Personelime ayrı giriş hesabı tanımlayabilir miyim?',
-      answer: 'Profesyonel ve Premium planlarda her personel için ayrı e-posta/şifre hesabı oluşturabilirsiniz. Personel yalnızca kendi randevularını, çalışma saatlerini ve izin günlerini görür. Müşteri iletişim bilgileri ve finansal veriler admin tarafında korunur.',
-    },
-    {
-      question: 'Gelir ve gider takibi nasıl çalışıyor?',
-      answer: 'Profesyonel ve Premium planlarda gelir & gider yönetimi dahildir. Giderlerinizi kategori bazlı (kira, elektrik, malzeme vb.) ekleyebilir, seçtiğiniz tarih aralığında toplam gelir, gider ve net kâr/zarar özetini anında görebilirsiniz.',
+      answer: 'Manuel randevu onayı tüm planlarda mevcuttur. Manuel modda müşteri randevu talebi oluşturur; siz onayladığınızda müşteriye WhatsApp bildirim gönderilir. Otomatik modda ise randevu anında onaylanır.',
     },
     {
       question: 'İstediğim zaman plan değiştirebilir miyim?',
@@ -333,16 +248,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   get isLoggedIn(): boolean { return !!localStorage.getItem('accessToken'); }
 
-  // ── Contact form ──────────────────────────────────────────────────────────
-  contactName    = '';
-  contactEmail   = '';
-  contactMessage = '';
-  contactSending = false;
-  contactSuccess = '';
-  contactError   = '';
-
-  constructor(private router: Router, private sanitizer: DomSanitizer, private http: HttpClient) {
-    // Sanitize SVG icons so Angular's DomSanitizer doesn't strip them
+  constructor(private router: Router, private sanitizer: DomSanitizer) {
     this.appFeatures = this.rawFeatures.map(f => ({
       icon: this.sanitizer.bypassSecurityTrustHtml(f.icon),
       title: f.title,
@@ -351,7 +257,6 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // Stats counter: fires when stats section scrolls into view
     const statsSection = document.querySelector('.stats-section');
     if (statsSection) {
       const statsObs = new IntersectionObserver(entries => {
@@ -364,7 +269,6 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       this.observers.push(statsObs);
     }
 
-    // Card visibility: staggered entrance per card
     const wrappers = document.querySelectorAll('.plan-card-wrapper');
     const cardObs = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -390,10 +294,10 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     const timer = setInterval(() => {
       step++;
       const t      = step / STEPS;
-      const eased  = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      const eased  = 1 - Math.pow(1 - t, 3);
       this.animatedStats[index] = format(Math.round(eased * target));
       if (step >= STEPS) clearInterval(timer);
-    }, 33); // 60 × 33ms ≈ 2 s
+    }, 33);
   }
 
   // ── Billing ───────────────────────────────────────────────────────────────
@@ -475,35 +379,6 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
 
   planHas(plan: Plan, featureName: string): boolean {
     return plan.features.find(f => f.name === featureName)?.included ?? false;
-  }
-
-  sendContactForm(): void {
-    if (!this.contactName.trim() || !this.contactEmail.trim() || !this.contactMessage.trim()) {
-      this.contactError = 'Lütfen tüm alanları doldurun.';
-      return;
-    }
-    this.contactSending = true;
-    this.contactError   = '';
-    this.contactSuccess = '';
-    this.http.post<any>(`${environment.apiUrl}/contact/public`, {
-      name: this.contactName.trim(),
-      email: this.contactEmail.trim(),
-      message: this.contactMessage.trim(),
-    }).subscribe({
-      next: res => {
-        if (res.success) {
-          this.contactSuccess = 'Mesajınız iletildi. En kısa sürede yanıtlanacaktır.';
-          this.contactName    = '';
-          this.contactEmail   = '';
-          this.contactMessage = '';
-        }
-        this.contactSending = false;
-      },
-      error: () => {
-        this.contactError   = 'Mesaj gönderilemedi. Lütfen tekrar deneyin.';
-        this.contactSending = false;
-      }
-    });
   }
 
   openMail(): void {
