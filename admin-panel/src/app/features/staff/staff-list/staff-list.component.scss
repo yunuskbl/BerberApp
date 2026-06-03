@@ -230,7 +230,12 @@
 }
 .toggle-switch { width: 40px; height: 22px; background: #e5e7eb; border-radius: 11px; position: relative; transition: background 0.2s; flex-shrink: 0; &.on { background: #111827; } }
 .toggle-knob { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: white; transition: transform 0.2s; .toggle-switch.on & { transform: translateX(18px); } }
-.empty-hint { font-size: 13px; color: #9ca3af; text-align: center; padding: 20px; }
+.services-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 24px 16px; text-align: center;
+  span { font-size: 28px; }
+  p { font-size: 13px; color: #9ca3af; margin: 0; }
+}
 .svc-success-message { margin: 0.5rem 1rem 0; padding: 8px 12px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 6px; color: #15803d; font-size: 0.85rem; }
 
 // Drawer
@@ -310,7 +315,12 @@
 
 .daysoff-divider { height: 1px; background: #f0f0f0; margin: 20px 0; }
 
-.daysoff-empty { font-size: 13px; color: #9ca3af; text-align: center; padding: 20px 0; }
+.daysoff-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 24px 0; text-align: center;
+  span { font-size: 28px; }
+  p { font-size: 13px; color: #9ca3af; margin: 0; }
+}
 
 .daysoff-list { display: flex; flex-direction: column; gap: 8px; }
 

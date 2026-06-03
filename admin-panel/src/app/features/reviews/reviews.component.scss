@@ -183,6 +183,32 @@
   font-weight: 500;
 }
 
+/* ─── Filter empty state ─── */
+.filter-empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 14px;
+
+  .filter-empty-icon { font-size: 36px; display: block; margin-bottom: 12px; }
+  p { color: #6b7280; font-size: 14px; margin: 0 0 16px; }
+
+  .filter-empty-clear {
+    display: inline-block;
+    padding: 8px 20px;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: background 0.15s;
+    &:hover { background: #e5e7eb; }
+  }
+}
+
 /* ─── Review cards ─── */
 .reviews-list { display: flex; flex-direction: column; gap: 12px; }
 

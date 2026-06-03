@@ -251,7 +251,10 @@
     @if (isDaysOffLoading) {
       <div class="loading-state"><div class="spinner"></div></div>
     } @else if (staffDaysOff.length === 0) {
-      <p class="daysoff-empty">Bu personel için kayıtlı izin günü yok.</p>
+      <div class="daysoff-empty">
+        <span>📅</span>
+        <p>Bu personel için kayıtlı izin günü yok.</p>
+      </div>
     } @else {
       <div class="daysoff-list">
         @for (item of staffDaysOff; track item.id) {
@@ -326,7 +329,10 @@
         </div>
       }
       @if (allServices.length === 0) {
-        <p class="empty-hint">{{ 'services.empty' | translate }}</p>
+        <div class="services-empty">
+        <span>✂️</span>
+        <p>{{ 'services.empty' | translate }}</p>
+      </div>
       }
     </div>
 

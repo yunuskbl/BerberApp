@@ -116,6 +116,12 @@
             <p class="review-comment">{{ r.comment }}</p>
           }
         </div>
+      } @empty {
+        <div class="filter-empty-state">
+          <span class="filter-empty-icon">🔍</span>
+          <p>Filtreyle eşleşen yorum bulunamadı.</p>
+          <button class="filter-empty-clear" (click)="clearFilters()">Filtreleri Temizle</button>
+        </div>
       }
     </div>
   }

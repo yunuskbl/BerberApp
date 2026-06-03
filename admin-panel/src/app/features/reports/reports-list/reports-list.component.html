@@ -267,7 +267,10 @@
               </tbody>
             </table>
           } @else {
-            <p class="empty-text">{{ 'reports.noData' | translate }}</p>
+            <div class="table-empty-state">
+              <span class="table-empty-icon">📊</span>
+              <p>{{ 'reports.noData' | translate }}</p>
+            </div>
           }
         </div>
       </div>
@@ -317,7 +320,10 @@
               </tbody>
             </table>
           } @else {
-            <p class="empty-text">{{ 'reports.noData' | translate }}</p>
+            <div class="table-empty-state">
+              <span class="table-empty-icon">📊</span>
+              <p>{{ 'reports.noData' | translate }}</p>
+            </div>
           }
         </div>
       </div>

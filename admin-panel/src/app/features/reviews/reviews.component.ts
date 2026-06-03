@@ -120,6 +120,13 @@ export class ReviewsComponent implements OnInit {
     this.selectedCustomerName = null;
   }
 
+  clearFilters(): void {
+    this.searchQuery          = '';
+    this.selectedCustomerId   = null;
+    this.selectedCustomerName = null;
+    this.hideRepeat           = false;
+  }
+
   starArray(n: number): number[] { return Array(n).fill(0); }
   emptyStarArray(n: number): number[] { return Array(5 - n).fill(0); }
 

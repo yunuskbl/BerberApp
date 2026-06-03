@@ -380,7 +380,14 @@
 }
 
 .staff-name, .service-name { font-weight: 500; }
-.empty-text { padding: 24px; text-align: center; color: #9ca3af; }
+.table-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 24px;
+  .table-empty-icon { font-size: 32px; margin-bottom: 10px; }
+  p { color: #9ca3af; font-size: 14px; margin: 0; }
+}
 
 // ── Staff / Service cells ────────────────────────────────────────
 .staff-cell {
@@ -637,7 +644,11 @@
   tr:hover td { background: #fafafa; }
 }
 
-.empty-text { text-align: center; color: #9ca3af; padding: 16px; }
+.table-empty-state-sm {
+  display: flex; flex-direction: column; align-items: center; padding: 28px 16px;
+  .table-empty-icon { font-size: 26px; margin-bottom: 8px; }
+  p { color: #9ca3af; font-size: 13px; margin: 0; }
+}
 
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
