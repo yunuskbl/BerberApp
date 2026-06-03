@@ -17,6 +17,7 @@ export class SuperAdminSidebarComponent {
     { icon: '💳', label: 'Ödemeler',         route: '/superadmin/payments' },
     { icon: '🏦', label: 'Ödeme Yöntemleri', route: '/superadmin/payment-methods' },
     { icon: '✉️', label: 'Mesajlar',          route: '/superadmin/messages' },
+    { icon: '🛡️', label: 'Güvenlik Logları', route: '/superadmin/audit-logs' },
   ];
 
   constructor(private authService: AuthService, private router: Router) {}

@@ -1,0 +1,112 @@
+<div class="audit-page">
+  <div class="audit-header">
+    <div>
+      <h1>Güvenlik & Denetim Logları</h1>
+      <p class="audit-sub">Son 30 saniyede otomatik yenilenir · Toplam: {{ total }} kayıt</p>
+    </div>
+  </div>
+
+  <!-- Filtreler -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Önem Derecesi</label>
+      <div class="chip-row">
+        @for (s of severities; track s.value) {
+          <button class="chip" [class.active]="selectedSeverity === s.value"
+                  (click)="selectedSeverity = s.value; applyFilters()">
+            {{ s.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label>Olay Türü</label>
+      <select [(ngModel)]="selectedEventType" (change)="applyFilters()">
+        @for (e of eventTypes; track e.value) {
+          <option [value]="e.value">{{ e.label }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Tarih Aralığı</label>
+      <div class="date-row">
+        <input type="date" [(ngModel)]="fromDate" (change)="applyFilters()" placeholder="Başlangıç" />
+        <span>—</span>
+        <input type="date" [(ngModel)]="toDate"   (change)="applyFilters()" placeholder="Bitiş" />
+      </div>
+    </div>
+
+    <button class="btn-clear" (click)="clearFilters()">Filtreleri Temizle</button>
+  </div>
+
+  <!-- Yükleniyor -->
+  @if (isLoading) {
+    <div class="loading-wrap">
+      <div class="spinner"></div>
+      <span>Loglar yükleniyor…</span>
+    </div>
+  }
+
+  <!-- Hata -->
+  @if (errorMessage && !isLoading) {
+    <div class="error-msg">{{ errorMessage }}</div>
+  }
+
+  <!-- Boş durum -->
+  @if (!isLoading && !errorMessage && logs.length === 0) {
+    <div class="empty-state">
+      <span class="empty-icon">🛡️</span>
+      <h3>Kayıt bulunamadı</h3>
+      <p>Seçilen filtrelere uygun güvenlik logu yok.</p>
+      <button class="btn-clear" (click)="clearFilters()">Filtreleri Temizle</button>
+    </div>
+  }
+
+  <!-- Tablo -->
+  @if (!isLoading && logs.length > 0) {
+    <div class="table-wrap">
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>Tarih / Saat</th>
+            <th>Olay</th>
+            <th>Önem</th>
+            <th>IP Adresi</th>
+            <th>Path</th>
+            <th>Açıklama</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (log of logs; track log.id) {
+            <tr [class.row-critical]="log.severity === 'Critical'"
+                [class.row-warning]="log.severity === 'Warning'">
+              <td class="td-date">{{ formatDate(log.createdAt) }}</td>
+              <td class="td-event">
+                <span class="event-icon">{{ eventIcon(log.eventType) }}</span>
+                {{ log.eventType }}
+              </td>
+              <td>
+                <span class="badge" [class]="severityClass(log.severity)">{{ log.severity }}</span>
+              </td>
+              <td class="td-ip">{{ log.ipAddress }}</td>
+              <td class="td-path">
+                <span class="method-tag">{{ log.method }}</span>
+                {{ log.path }}
+              </td>
+              <td class="td-desc">{{ log.description ?? '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Sayfalama -->
+    <div class="pagination">
+      <button [disabled]="page === 1" (click)="prevPage()">← Önceki</button>
+      <span>Sayfa {{ page }} / {{ totalPages }}</span>
+      <button [disabled]="page >= totalPages" (click)="nextPage()">Sonraki →</button>
+    </div>
+  }
+</div>

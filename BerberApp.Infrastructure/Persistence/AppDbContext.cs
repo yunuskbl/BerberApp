@@ -29,6 +29,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<TenantClosure> TenantClosures => Set<TenantClosure>();
     public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -1,6 +1,5 @@
-﻿using BerberApp.Application.Auth.Commands;
-using BerberApp.Application.Common.Models;
-using BerberApp.Domain.Entities;
+using BerberApp.Application.Auth.Commands;
+using BerberApp.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,18 +11,37 @@ namespace BerberApp.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IAuditLogService _audit;
 
-    public AuthController(IMediator mediator)
+    public AuthController(IMediator mediator, IAuditLogService audit)
     {
         _mediator = mediator;
+        _audit    = audit;
     }
 
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginCommand command)
     {
-        var result = await _mediator.Send(command);
-        return Ok(new { success = true, message = "Giriş başarılı.", data = result });
+        var ip     = Request.Headers["X-Real-IP"].FirstOrDefault()
+                  ?? HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var ua     = Request.Headers.UserAgent.ToString();
+        var path   = Request.Path.Value ?? "/api/auth/login";
+        var method = Request.Method;
+
+        try
+        {
+            var result = await _mediator.Send(command);
+            await _audit.LogAsync("LOGIN_SUCCESS", "Info", ip, path, method,
+                userAgent: ua, description: $"E-posta: {MaskEmail(command.Email)}");
+            return Ok(new { success = true, message = "Giriş başarılı.", data = result });
+        }
+        catch
+        {
+            await _audit.LogAsync("LOGIN_FAILED", "Warning", ip, path, method,
+                userAgent: ua, description: $"E-posta: {MaskEmail(command.Email)}");
+            throw;
+        }
     }
 
     [HttpPost("register")]
@@ -41,6 +59,7 @@ public class AuthController : ControllerBase
         var result = await _mediator.Send(command);
         return Ok(new { success = true, data = result });
     }
+
     [HttpPost("change-password")]
     [Authorize]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command)
@@ -48,8 +67,7 @@ public class AuthController : ControllerBase
         var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
                       ?? User.FindFirst("sub");
 
-        if (userIdClaim is null)
-            return Unauthorized();
+        if (userIdClaim is null) return Unauthorized();
 
         command.UserId = Guid.Parse(userIdClaim.Value);
         var result = await _mediator.Send(command);
@@ -79,17 +97,12 @@ public class AuthController : ControllerBase
         var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
                       ?? User.FindFirst("sub");
 
-        if (userIdClaim is null)
-            return Unauthorized();
+        if (userIdClaim is null) return Unauthorized();
 
         await _mediator.Send(new LogoutCommand { UserId = Guid.Parse(userIdClaim.Value) });
         return Ok(new { success = true, message = "Çıkış yapıldı." });
     }
 
-    /// <summary>
-    /// KVKK/GDPR — Hesabı kalıcı olarak sil ve kişisel verileri anonimleştir.
-    /// Bu işlem geri alınamaz. Şifre ile doğrulama zorunludur.
-    /// </summary>
     [HttpPost("resend-verification")]
     [Authorize]
     public async Task<IActionResult> ResendVerification()
@@ -111,7 +124,6 @@ public class AuthController : ControllerBase
             return BadRequest(new { success = false, message = "Geçersiz doğrulama bağlantısı." });
 
         var result = await _mediator.Send(new VerifyEmailCommand { Token = token });
-
         if (!result)
             return BadRequest(new { success = false, message = "Bağlantı geçersiz veya süresi dolmuş." });
 
@@ -125,17 +137,17 @@ public class AuthController : ControllerBase
         var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
                       ?? User.FindFirst("sub");
 
-        if (userIdClaim is null)
-            return Unauthorized();
+        if (userIdClaim is null) return Unauthorized();
 
         command.UserId = Guid.Parse(userIdClaim.Value);
         await _mediator.Send(command);
-
-        return Ok(new
-        {
-            success = true,
-            message = "Hesabınız ve kişisel verileriniz başarıyla silindi. (KVKK Madde 7)"
-        });
+        return Ok(new { success = true, message = "Hesabınız ve kişisel verileriniz başarıyla silindi. (KVKK Madde 7)" });
     }
 
+    private static string MaskEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return "***";
+        var at = email.IndexOf('@');
+        return at <= 1 ? "***" : $"{email[0]}***{email[at..]}";
+    }
 }

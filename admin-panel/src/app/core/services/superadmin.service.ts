@@ -229,4 +229,40 @@ export class SuperAdminService {
     const params = new HttpParams().set('months', months.toString());
     return this.http.get<ApiResponse<AppointmentStats>>(`${this.apiUrl}/tenants/${id}/appointment-stats`, { params });
   }
+
+  getAuditLogs(filters: {
+    page?: number; pageSize?: number;
+    severity?: string; eventType?: string;
+    from?: string; to?: string;
+  }): Observable<ApiResponse<AuditLogPage>> {
+    let params = new HttpParams();
+    if (filters.page)      params = params.set('page',      filters.page.toString());
+    if (filters.pageSize)  params = params.set('pageSize',  filters.pageSize.toString());
+    if (filters.severity)  params = params.set('severity',  filters.severity);
+    if (filters.eventType) params = params.set('eventType', filters.eventType);
+    if (filters.from)      params = params.set('from',      filters.from);
+    if (filters.to)        params = params.set('to',        filters.to);
+    return this.http.get<ApiResponse<AuditLogPage>>(`${this.apiUrl}/audit-logs`, { params });
+  }
+}
+
+export interface AuditLogEntry {
+  id: string;
+  eventType: string;
+  severity: string;
+  ipAddress: string;
+  path: string;
+  method: string;
+  userId?: string;
+  tenantId?: string;
+  description?: string;
+  userAgent: string;
+  createdAt: string;
+}
+
+export interface AuditLogPage {
+  total: number;
+  page: number;
+  pageSize: number;
+  items: AuditLogEntry[];
 }

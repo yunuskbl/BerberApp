@@ -108,6 +108,7 @@ builder.Services.AddScoped<INotificationService, LinkNotificationService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<IIyzicoService, BerberApp.Infrastructure.Services.IyzicoService>();
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddSingleton<IAppSettings, AppSettingsService>();
 builder.Services.AddScoped<BerberApp.Infrastructure.Services.IyzicoService>();
 builder.Services.AddHttpClient<ITranslationService, MyMemoryTranslationService>();

@@ -19,15 +19,17 @@ public class SuperAdminController : ControllerBase
     private readonly IAppDbContext _context;
     private readonly ILogger<SuperAdminController> _logger;
     private readonly IWhatsAppService _whatsApp;
+    private readonly IAuditLogService _audit;
 
     private static readonly Guid SYSTEM_TENANT_ID = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
-    public SuperAdminController(IMediator mediator, IAppDbContext context, ILogger<SuperAdminController> logger, IWhatsAppService whatsApp)
+    public SuperAdminController(IMediator mediator, IAppDbContext context, ILogger<SuperAdminController> logger, IWhatsAppService whatsApp, IAuditLogService audit)
     {
         _mediator  = mediator;
         _context   = context;
         _logger    = logger;
         _whatsApp  = whatsApp;
+        _audit     = audit;
     }
 
     /// <summary>
@@ -904,6 +906,47 @@ public class SuperAdminController : ControllerBase
             .ToListAsync();
 
         return Ok(new { success = true, data = new { monthly, topServices } });
+    }
+    // ─── GÜVENLİK / DENETİM LOGLARI ────────────────────────────────────────
+
+    [HttpGet("audit-logs")]
+    public async Task<IActionResult> GetAuditLogs(
+        [FromQuery] int    page      = 1,
+        [FromQuery] int    pageSize  = 50,
+        [FromQuery] string? severity  = null,
+        [FromQuery] string? eventType = null,
+        [FromQuery] string? from      = null,
+        [FromQuery] string? to        = null)
+    {
+        var query = _context.AuditLogs.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(severity))
+            query = query.Where(l => l.Severity == severity);
+
+        if (!string.IsNullOrWhiteSpace(eventType))
+            query = query.Where(l => l.EventType == eventType);
+
+        if (DateTime.TryParse(from, out var fromDate))
+            query = query.Where(l => l.CreatedAt >= fromDate.ToUniversalTime());
+
+        if (DateTime.TryParse(to, out var toDate))
+            query = query.Where(l => l.CreatedAt <= toDate.ToUniversalTime().AddDays(1));
+
+        var total = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(l => l.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(l => new
+            {
+                l.Id, l.EventType, l.Severity, l.IpAddress, l.Path,
+                l.Method, l.UserId, l.TenantId, l.Description, l.CreatedAt,
+                UserAgent = l.UserAgent ?? string.Empty,
+            })
+            .ToListAsync();
+
+        return Ok(new { success = true, data = new { total, page, pageSize, items } });
     }
 }
 

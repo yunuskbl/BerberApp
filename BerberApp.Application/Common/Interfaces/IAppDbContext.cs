@@ -30,6 +30,7 @@ namespace BerberApp.Application.Common.Interfaces
         DbSet<TenantClosureEntity> TenantClosures { get; }
         DbSet<ExpenseEntity> Expenses { get; }
         DbSet<PaymentTransaction> PaymentTransactions { get; }
+        DbSet<BerberApp.Domain.Entities.AuditLog> AuditLogs { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

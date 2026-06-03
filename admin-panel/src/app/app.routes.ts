@@ -186,6 +186,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'audit-logs',
+        loadComponent: () =>
+          import('./features/super-admin/audit-logs/super-admin-audit-logs.component').then(
+            (m) => m.SuperAdminAuditLogsComponent,
+          ),
+      },
+      {
         path: '',
         redirectTo: 'tenants',
         pathMatch: 'full',

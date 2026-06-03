@@ -1,18 +1,16 @@
+using BerberApp.Application.Common.Interfaces;
+
 namespace BerberApp.Api.Middleware;
 
-/// <summary>
-/// Güvenlik denetim logu: 401/403 yanıtlarını ve şüpheli aktiviteleri kayıt altına alır.
-/// Middleware sırasında en dışta yer almalı (Program.cs'de ilk UseMiddleware).
-/// </summary>
 public class SecurityAuditMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly ILogger<SecurityAuditMiddleware> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public SecurityAuditMiddleware(RequestDelegate next, ILogger<SecurityAuditMiddleware> logger)
+    public SecurityAuditMiddleware(RequestDelegate next, IServiceScopeFactory scopeFactory)
     {
-        _next = next;
-        _logger = logger;
+        _next         = next;
+        _scopeFactory = scopeFactory;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -20,32 +18,38 @@ public class SecurityAuditMiddleware
         await _next(context);
 
         var statusCode = context.Response.StatusCode;
+        if (statusCode is not (401 or 403 or 429)) return;
 
-        // Sadece güvenlikle ilgili durum kodlarını logla
-        if (statusCode is 401 or 403 or 429)
+        var path = context.Request.Path.Value ?? "-";
+
+        // LOGIN_FAILED zaten AuthController'da loglanıyor; middleware'de çift kayıt olmasın
+        if (statusCode == 401 && path.StartsWith("/api/auth/login", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        var ip        = GetClientIp(context);
+        var method    = context.Request.Method;
+        var userAgent = context.Request.Headers.UserAgent.ToString();
+        var userId    = context.User?.FindFirst("sub")?.Value
+                     ?? context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        var (eventType, severity) = statusCode switch
         {
-            var ip        = GetClientIp(context);
-            var path      = context.Request.Path.Value ?? "-";
-            var method    = context.Request.Method;
-            var userAgent = context.Request.Headers.UserAgent.ToString();
-            if (userAgent.Length > 120) userAgent = userAgent[..120] + "…";
+            401 => ("UNAUTHORIZED",  "Warning"),
+            403 => ("FORBIDDEN",     "Warning"),
+            429 => ("RATE_LIMITED",  "Critical"),
+            _   => ("SECURITY_EVENT","Warning"),
+        };
 
-            // JWT'den kullanıcı ID'sini al (eğer token decode edilebildiyse)
-            var userId = context.User?.FindFirst("sub")?.Value
-                      ?? context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                      ?? "-";
-
-            var eventType = statusCode switch
-            {
-                401 => "UNAUTHORIZED",
-                403 => "FORBIDDEN",
-                429 => "RATE_LIMITED",
-                _   => "SECURITY_EVENT"
-            };
-
-            _logger.LogWarning(
-                "[SECURITY:{EventType}] Status={Status} Path={Path} Method={Method} IP={Ip} UserId={UserId} UA={UserAgent}",
-                eventType, statusCode, path, method, ip, userId, userAgent);
+        try
+        {
+            using var scope   = _scopeFactory.CreateScope();
+            var auditService  = scope.ServiceProvider.GetRequiredService<IAuditLogService>();
+            await auditService.LogAsync(eventType, severity, ip, path, method,
+                userId: userId, userAgent: userAgent);
+        }
+        catch
+        {
+            // Loglama hatası asıl isteği etkilemesin
         }
     }
 
