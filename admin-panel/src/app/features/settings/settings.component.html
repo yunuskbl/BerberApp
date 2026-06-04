@@ -453,6 +453,40 @@
         </div>
       </div>
 
+      <!-- ── Ayarliyo.com QR Kodu ── -->
+      <div class="settings-card">
+        <div class="card-header">
+          <div class="card-icon">📲</div>
+          <div>
+            <h3>Ayarliyo.com QR Kodu</h3>
+            <p>Müşterilerinizi Ayarliyo.com'a yönlendiren karekod</p>
+          </div>
+        </div>
+
+        <div class="qr-section">
+          <div class="booking-url">
+            <span>https://ayarliyo.com</span>
+          </div>
+
+          @if (ayarliyoQrCodeDataUrl) {
+            <div class="qr-code-box">
+              <img [src]="ayarliyoQrCodeDataUrl" alt="Ayarliyo QR Kod" class="qr-code-img"/>
+              <div class="qr-code-meta">
+                <span class="qr-code-label">Telefon kamerasıyla tarayarak Ayarliyo.com'a ulaşabilirsiniz</span>
+                <button class="btn btn-outline qr-download-btn" (click)="downloadAyarliyoQrCode()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  İndir
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
       <!-- ── Salon Kapalı Günler ── -->
       <div class="settings-card">
         <div class="card-header">

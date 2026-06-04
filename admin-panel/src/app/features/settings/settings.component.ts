@@ -74,6 +74,7 @@ export class SettingsComponent implements OnInit {
 
   // QR Kod
   qrCodeDataUrl = '';
+  ayarliyoQrCodeDataUrl = '';
 
   // Bildirim kanalı: 0 = WhatsApp, 1 = Sms
   notificationChannel: 0 | 1 = 0;
@@ -147,6 +148,7 @@ export class SettingsComponent implements OnInit {
     this.loadSalonInfo();
     this.loadPhotos();
     this.loadClosures();
+    this.generateAyarliyoQrCode();
   }
 
   /* ─── Photos ─── */
@@ -255,6 +257,24 @@ export class SettingsComponent implements OnInit {
     const link = document.createElement('a');
     link.download = 'randevu-qr.png';
     link.href = this.qrCodeDataUrl;
+    link.click();
+  }
+
+  async generateAyarliyoQrCode(): Promise<void> {
+    try {
+      this.ayarliyoQrCodeDataUrl = await QRCode.toDataURL('https://ayarliyo.com', {
+        width: 200,
+        margin: 2,
+        color: { dark: '#7c3aed', light: '#ffffff' },
+      });
+    } catch { /* silently ignore */ }
+  }
+
+  downloadAyarliyoQrCode(): void {
+    if (!this.ayarliyoQrCodeDataUrl) return;
+    const link = document.createElement('a');
+    link.download = 'ayarliyo-qr.png';
+    link.href = this.ayarliyoQrCodeDataUrl;
     link.click();
   }
 
