@@ -98,7 +98,159 @@ public class SmtpEmailService : IEmailService
         await SendAsync(toEmail, $"Hoş Geldiniz, {salonName}! — ayarlıyo", body);
     }
 
-    private async Task SendAsync(string to, string subject, string htmlBody)
+    public async Task SendAppointmentConfirmedAsync(string toEmail, string customerName, string salonName, DateTime appointmentDate, string serviceName, string staffName)
+    {
+        var dateStr = appointmentDate.ToString("dd MMMM yyyy, HH:mm", new System.Globalization.CultureInfo("tr-TR"));
+        var body = $"""
+            <!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"></head>
+            <body style="margin:0;padding:0;background:#f3f4f6;font-family:'Inter',Arial,sans-serif;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+                <tr><td align="center">
+                  <table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;padding:48px 40px;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+                    <tr><td align="center" style="padding-bottom:28px;">
+                      <span style="font-size:28px;font-weight:800;color:#111827;">ayarlıyo<span style="display:inline-block;width:8px;height:8px;background:#111827;border-radius:50%;margin-left:2px;vertical-align:middle;"></span></span>
+                    </td></tr>
+                    <tr><td style="font-size:22px;font-weight:700;color:#111827;padding-bottom:16px;">Randevunuz Onaylandı ✅</td></tr>
+                    <tr><td style="background:#f9fafb;border-radius:12px;padding:20px;margin-bottom:20px;">
+                      <p style="margin:0 0 8px;font-size:14px;color:#6b7280;">Müşteri</p>
+                      <p style="margin:0 0 16px;font-size:16px;font-weight:600;color:#111827;">{customerName}</p>
+                      <p style="margin:0 0 8px;font-size:14px;color:#6b7280;">Salon</p>
+                      <p style="margin:0 0 16px;font-size:16px;font-weight:600;color:#111827;">{salonName}</p>
+                      <p style="margin:0 0 8px;font-size:14px;color:#6b7280;">Hizmet</p>
+                      <p style="margin:0 0 16px;font-size:16px;font-weight:600;color:#111827;">{serviceName} — {staffName}</p>
+                      <p style="margin:0 0 8px;font-size:14px;color:#6b7280;">Tarih & Saat</p>
+                      <p style="margin:0;font-size:18px;font-weight:700;color:#111827;">{dateStr}</p>
+                    </td></tr>
+                    <tr><td style="font-size:13px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:20px;">
+                      Sorularınız için destek@ayarliyo.com adresine yazabilirsiniz.
+                    </td></tr>
+                  </table>
+                </td></tr>
+              </table>
+            </body></html>
+            """;
+        await SendAsync(toEmail, $"Randevunuz Onaylandı — {salonName}", body);
+    }
+
+    public async Task SendAppointmentCancelledAsync(string toEmail, string customerName, string salonName, DateTime appointmentDate)
+    {
+        var dateStr = appointmentDate.ToString("dd MMMM yyyy, HH:mm", new System.Globalization.CultureInfo("tr-TR"));
+        var body = $"""
+            <!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"></head>
+            <body style="margin:0;padding:0;background:#f3f4f6;font-family:'Inter',Arial,sans-serif;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+                <tr><td align="center">
+                  <table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;padding:48px 40px;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+                    <tr><td align="center" style="padding-bottom:28px;">
+                      <span style="font-size:28px;font-weight:800;color:#111827;">ayarlıyo<span style="display:inline-block;width:8px;height:8px;background:#111827;border-radius:50%;margin-left:2px;vertical-align:middle;"></span></span>
+                    </td></tr>
+                    <tr><td style="font-size:22px;font-weight:700;color:#111827;padding-bottom:16px;">Randevunuz İptal Edildi ❌</td></tr>
+                    <tr><td style="font-size:15px;color:#6b7280;line-height:1.6;padding-bottom:20px;">
+                      Sayın <strong>{customerName}</strong>, <strong>{dateStr}</strong> tarihli randevunuz <strong>{salonName}</strong> tarafından iptal edildi.
+                    </td></tr>
+                    <tr><td style="font-size:13px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:20px;">
+                      Yeni bir randevu almak için salona ait rezervasyon sayfasını ziyaret edebilirsiniz.
+                    </td></tr>
+                  </table>
+                </td></tr>
+              </table>
+            </body></html>
+            """;
+        await SendAsync(toEmail, $"Randevunuz İptal Edildi — {salonName}", body);
+    }
+
+    public async Task SendAppointmentReminderAsync(string toEmail, string customerName, string salonName, DateTime appointmentDate, string serviceName)
+    {
+        var dateStr = appointmentDate.ToString("dd MMMM yyyy, HH:mm", new System.Globalization.CultureInfo("tr-TR"));
+        var body = $"""
+            <!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"></head>
+            <body style="margin:0;padding:0;background:#f3f4f6;font-family:'Inter',Arial,sans-serif;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+                <tr><td align="center">
+                  <table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;padding:48px 40px;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+                    <tr><td align="center" style="padding-bottom:28px;">
+                      <span style="font-size:28px;font-weight:800;color:#111827;">ayarlıyo<span style="display:inline-block;width:8px;height:8px;background:#111827;border-radius:50%;margin-left:2px;vertical-align:middle;"></span></span>
+                    </td></tr>
+                    <tr><td style="font-size:22px;font-weight:700;color:#111827;padding-bottom:16px;">Randevu Hatırlatması 🔔</td></tr>
+                    <tr><td style="font-size:15px;color:#6b7280;line-height:1.6;padding-bottom:20px;">
+                      Sayın <strong>{customerName}</strong>, yarın <strong>{salonName}</strong>'daki <strong>{serviceName}</strong> randevunuzu hatırlatmak istedik.
+                    </td></tr>
+                    <tr><td style="background:#f9fafb;border-radius:12px;padding:16px;text-align:center;margin-bottom:20px;">
+                      <p style="margin:0;font-size:20px;font-weight:700;color:#111827;">{dateStr}</p>
+                    </td></tr>
+                    <tr><td style="font-size:13px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:20px;">
+                      İptal veya değişiklik için lütfen salonla iletişime geçin.
+                    </td></tr>
+                  </table>
+                </td></tr>
+              </table>
+            </body></html>
+            """;
+        await SendAsync(toEmail, $"Yarın Randevunuz Var — {salonName}", body);
+    }
+
+    public async Task SendSubscriptionActivatedAsync(string toEmail, string fullName, string planName, DateTime expiryDate)
+    {
+        var dateStr = expiryDate.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("tr-TR"));
+        var body = $"""
+            <!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"></head>
+            <body style="margin:0;padding:0;background:#f3f4f6;font-family:'Inter',Arial,sans-serif;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+                <tr><td align="center">
+                  <table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;padding:48px 40px;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+                    <tr><td align="center" style="padding-bottom:28px;">
+                      <span style="font-size:28px;font-weight:800;color:#111827;">ayarlıyo<span style="display:inline-block;width:8px;height:8px;background:#111827;border-radius:50%;margin-left:2px;vertical-align:middle;"></span></span>
+                    </td></tr>
+                    <tr><td style="font-size:22px;font-weight:700;color:#111827;padding-bottom:16px;">Aboneliğiniz Aktifleşti 🎉</td></tr>
+                    <tr><td style="font-size:15px;color:#6b7280;line-height:1.6;padding-bottom:20px;">
+                      Merhaba <strong>{fullName}</strong>, <strong>{planName}</strong> planınız başarıyla aktifleştirildi. Bir sonraki yenileme tarihi: <strong>{dateStr}</strong>.
+                    </td></tr>
+                    <tr><td align="center" style="padding-bottom:28px;">
+                      <a href="https://ayarliyo.com/dashboard" style="display:inline-block;padding:14px 36px;background:#111827;color:#fff;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;">Panele Git</a>
+                    </td></tr>
+                    <tr><td style="font-size:13px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:20px;">
+                      Fatura ve abonelik detayları için destek@ayarliyo.com adresine yazabilirsiniz.
+                    </td></tr>
+                  </table>
+                </td></tr>
+              </table>
+            </body></html>
+            """;
+        await SendAsync(toEmail, $"Aboneliğiniz Aktifleşti — ayarlıyo {planName}", body);
+    }
+
+    public async Task SendSubscriptionExpiryWarningAsync(string toEmail, string fullName, string salonName, int daysRemaining, DateTime expiryDate)
+    {
+        var dateStr = expiryDate.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("tr-TR"));
+        var body = $"""
+            <!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"></head>
+            <body style="margin:0;padding:0;background:#f3f4f6;font-family:'Inter',Arial,sans-serif;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+                <tr><td align="center">
+                  <table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;padding:48px 40px;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+                    <tr><td align="center" style="padding-bottom:28px;">
+                      <span style="font-size:28px;font-weight:800;color:#111827;">ayarlıyo<span style="display:inline-block;width:8px;height:8px;background:#111827;border-radius:50%;margin-left:2px;vertical-align:middle;"></span></span>
+                    </td></tr>
+                    <tr><td style="font-size:22px;font-weight:700;color:#dc2626;padding-bottom:16px;">Aboneliğiniz Sona Eriyor ⚠️</td></tr>
+                    <tr><td style="font-size:15px;color:#6b7280;line-height:1.6;padding-bottom:20px;">
+                      Merhaba <strong>{fullName}</strong>, <strong>{salonName}</strong> hesabınızın aboneliği <strong>{daysRemaining} gün içinde</strong> ({dateStr}) sona erecek.
+                      Hizmet kesintisi yaşamamak için aboneliğinizi yenileyin.
+                    </td></tr>
+                    <tr><td align="center" style="padding-bottom:28px;">
+                      <a href="https://ayarliyo.com/pricing" style="display:inline-block;padding:14px 36px;background:#dc2626;color:#fff;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;">Aboneliği Yenile</a>
+                    </td></tr>
+                    <tr><td style="font-size:13px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:20px;">
+                      Sorularınız için destek@ayarliyo.com adresine yazabilirsiniz.
+                    </td></tr>
+                  </table>
+                </td></tr>
+              </table>
+            </body></html>
+            """;
+        await SendAsync(toEmail, $"Aboneliğiniz {daysRemaining} Gün İçinde Sona Eriyor — ayarlıyo", body);
+    }
+
+    protected virtual async Task SendAsync(string to, string subject, string htmlBody)
     {
         using var client = new SmtpClient(_smtpHost, _smtpPort)
         {
