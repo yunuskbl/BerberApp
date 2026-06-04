@@ -14,6 +14,7 @@ public class SubscriptionController : BaseApiController
 {
     private readonly IAppDbContext _context;
     private readonly IIyzicoService _iyzico;
+    private readonly IEmailService _email;
     private readonly string _frontendSuccessUrl;
     private readonly string _frontendFailUrl;
 
@@ -24,11 +25,12 @@ public class SubscriptionController : BaseApiController
         { "premium",     2399m },
     };
 
-    public SubscriptionController(IMediator mediator, IAppDbContext context, IIyzicoService iyzico, IConfiguration config)
+    public SubscriptionController(IMediator mediator, IAppDbContext context, IIyzicoService iyzico, IEmailService email, IConfiguration config)
         : base(mediator)
     {
         _context            = context;
         _iyzico             = iyzico;
+        _email              = email;
         _frontendSuccessUrl = config["Iyzico:FrontendSuccessUrl"] ?? "https://ayarliyo.com/payment/success";
         _frontendFailUrl    = config["Iyzico:FrontendFailUrl"]    ?? "https://ayarliyo.com/payment/fail";
     }
@@ -91,9 +93,9 @@ public class SubscriptionController : BaseApiController
         // Pending subscription kaydı oluştur
         var planType = planKey switch
         {
-            "profesyonel" => PlanType.Standard,
-            "premium"     => PlanType.Full,
-            _             => PlanType.Basic
+            "profesyonel" => PlanType.Profesyonel,
+            "premium"     => PlanType.Premium,
+            _             => PlanType.Baslangic
         };
 
         _context.Subscriptions.Add(new Subscription
