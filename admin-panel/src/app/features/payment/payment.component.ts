@@ -42,7 +42,7 @@ export class PaymentComponent implements OnInit, AfterViewInit {
       const plan   = params.get('plan');
       const reason = params.get('reason');
 
-      if (status === 'success' || plan) {
+      if (status === 'success') {
         this.successPlan = this.planMap[plan ?? '']?.label ?? plan ?? '';
         this.state = 'success';
         return;
@@ -66,11 +66,10 @@ export class PaymentComponent implements OnInit, AfterViewInit {
 
   initiatePayment(): void {
     this.state = 'loading';
-    this.http.post<any>(`${environment.apiUrl}/payment/initiate`, { plan: this.plan }).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/subscription/checkout`, { plan: this.plan }).subscribe({
       next: res => {
         if (res.success) {
           this.checkoutHtml = this.sanitizer.bypassSecurityTrustHtml(res.data.checkoutFormContent);
-          this.price = res.data.price;
           this.state = 'form';
           setTimeout(() => this.injectScript(), 100);
         } else {
