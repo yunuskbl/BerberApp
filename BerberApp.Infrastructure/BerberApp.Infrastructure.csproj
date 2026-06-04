@@ -27,7 +27,6 @@
     <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.17.0" />
     <PackageReference Include="Twilio" Version="7.3.3" />
-    <PackageReference Include="Iyzipay" Version="2.1.42" />
   </ItemGroup>
 
 </Project>

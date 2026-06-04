@@ -184,9 +184,6 @@ public record CheckoutRequest(string Plan);
 
 public class IyzicoCallbackPayload
 {
-    [Microsoft.AspNetCore.Mvc.ModelBinders.BindProperty(Name = "token")]
     public string? Token { get; set; }
-
-    [Microsoft.AspNetCore.Mvc.ModelBinders.BindProperty(Name = "status")]
     public string? Status { get; set; }
 }
