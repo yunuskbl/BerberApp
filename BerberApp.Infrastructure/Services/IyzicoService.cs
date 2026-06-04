@@ -69,7 +69,7 @@ public class IyzicoService : IIyzicoService
             var basketItem = new BasketItem
             {
                 Id        = req.Plan,
-                Name      = $"ayarlıyo {req.Plan} Abonelik (1 Yıl)",
+                Name      = $"ayarlıyo {req.Plan} Abonelik (1 Ay)",
                 Category1 = "Yazılım",
                 Category2 = "SaaS Abonelik",
                 ItemType  = "VIRTUAL",

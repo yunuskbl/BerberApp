@@ -39,8 +39,15 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
             .HasForeignKey(x => x.TenantId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Iyzico fields
+        builder.Property(x => x.IyzicoPaymentId).HasMaxLength(100);
+        builder.Property(x => x.IyzicoConversationId).HasMaxLength(100);
+        builder.Property(x => x.CardToken).HasMaxLength(200);
+        builder.Property(x => x.CardUserKey).HasMaxLength(200);
+
         // Indexes
         builder.HasIndex(x => x.TenantId);
         builder.HasIndex(x => new { x.TenantId, x.Status });
+        builder.HasIndex(x => x.IyzicoConversationId);
     }
 }

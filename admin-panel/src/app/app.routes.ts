@@ -101,6 +101,17 @@ export const routes: Routes = [
         (m) => m.PaymentComponent,
       ),
   },
+  {
+    path: 'checkout',
+    loadComponent: () =>
+      import('./features/checkout/checkout.component').then(m => m.CheckoutComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'payment-result',
+    loadComponent: () =>
+      import('./features/payment-result/payment-result.component').then(m => m.PaymentResultComponent),
+  },
 
   // Staff Panel routes — ayrı minimal layout
   {

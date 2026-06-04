@@ -1,0 +1,27 @@
+<div class="checkout-page">
+  <div class="checkout-header">
+    <button class="back-btn" routerLink="/pricing">← Planlara Dön</button>
+    <div class="checkout-title">
+      <h2>{{ plan }} Plan Satın Al</h2>
+      <p>Aylık <strong>₺{{ price }}</strong> — İptal istediğinizde iptal edin</p>
+    </div>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Ödeme formu hazırlanıyor...</p>
+    </div>
+  } @else if (error) {
+    <div class="error-state">
+      <div class="error-icon">⚠️</div>
+      <p>{{ error }}</p>
+      <button class="retry-btn" (click)="loadCheckoutForm()">Tekrar Dene</button>
+    </div>
+  } @else {
+    <div class="form-wrapper">
+      <div class="iyzico-form" [innerHTML]="formContent"></div>
+      <p class="security-note">🔒 Ödeme bilgileriniz İyzico altyapısıyla şifreli olarak işlenmektedir.</p>
+    </div>
+  }
+</div>

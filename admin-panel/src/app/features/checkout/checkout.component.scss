@@ -1,0 +1,79 @@
+.checkout-page {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+
+.checkout-header {
+  margin-bottom: 32px;
+
+  .back-btn {
+    background: none;
+    border: none;
+    color: #7c3aed;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 12px;
+    &:hover { text-decoration: underline; }
+  }
+
+  h2 { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+  p  { font-size: 14px; color: #64748b; }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px;
+  gap: 16px;
+  color: #64748b;
+  font-size: 14px;
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #f1f5f9;
+    border-top-color: #7c3aed;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-state {
+  text-align: center;
+  padding: 60px 24px;
+  .error-icon { font-size: 48px; margin-bottom: 12px; }
+  p { color: #dc2626; font-size: 14px; margin-bottom: 20px; }
+}
+
+.retry-btn {
+  padding: 10px 24px;
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  &:hover { background: #6d28d9; }
+}
+
+.form-wrapper {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+
+.iyzico-form { min-height: 300px; }
+
+.security-note {
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 16px;
+}

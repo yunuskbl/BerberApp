@@ -110,7 +110,6 @@ builder.Services.AddScoped<IIyzicoService, BerberApp.Infrastructure.Services.Iyz
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddSingleton<IAppSettings, AppSettingsService>();
-builder.Services.AddScoped<BerberApp.Infrastructure.Services.IyzicoService>();
 builder.Services.AddHttpClient<ITranslationService, MyMemoryTranslationService>();
 builder.Services.AddHttpClient<IExchangeRateService, FrankfurterExchangeRateService>();
 

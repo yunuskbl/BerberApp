@@ -29,6 +29,12 @@ public class Subscription : BaseEntity
 
     public bool IsAutoRenewal { get; set; }
 
+    // Iyzico payment tracking
+    public string? IyzicoPaymentId { get; set; }
+    public string? IyzicoConversationId { get; set; }
+    public string? CardToken { get; set; }
+    public string? CardUserKey { get; set; }
+
     // Navigation
     public virtual Tenant Tenant { get; set; } = null!;
 

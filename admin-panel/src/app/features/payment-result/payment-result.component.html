@@ -1,0 +1,19 @@
+<div class="result-page">
+  @if (status === 'success') {
+    <div class="result-card success">
+      <div class="result-icon">✅</div>
+      <h2>Ödeme Başarılı!</h2>
+      <p>{{ plan }} planınız aktifleştirildi. Tüm özelliklere erişebilirsiniz.</p>
+      <p class="countdown">{{ countdown }} saniye içinde panele yönlendiriliyorsunuz...</p>
+      <button class="result-btn" (click)="goNow()">Şimdi Panele Git</button>
+    </div>
+  } @else {
+    <div class="result-card failure">
+      <div class="result-icon">❌</div>
+      <h2>Ödeme Başarısız</h2>
+      <p>Ödeme işlemi tamamlanamadı. Kart bilgilerinizi kontrol edip tekrar deneyin.</p>
+      <p class="countdown">{{ countdown }} saniye içinde fiyatlandırma sayfasına yönlendiriliyorsunuz...</p>
+      <button class="result-btn" (click)="goNow()">Tekrar Dene</button>
+    </div>
+  }
+</div>
