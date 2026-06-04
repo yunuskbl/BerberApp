@@ -49,6 +49,14 @@ services:
       - IletiMerkezi__Hash=${ILETIMERKEZI_HASH}
       - IletiMerkezi__Sender=${ILETIMERKEZI_SENDER}
 
+      # İyzico Ödeme
+      - Iyzico__ApiKey=${IYZICO_API_KEY}
+      - Iyzico__SecretKey=${IYZICO_SECRET_KEY}
+      - Iyzico__BaseUrl=https://sandbox-api.iyzipay.com
+      - Iyzico__CallbackUrl=https://api.ayarliyo.com/api/subscription/callback
+      - Iyzico__FrontendSuccessUrl=https://ayarliyo.com/payment/success
+      - Iyzico__FrontendFailUrl=https://ayarliyo.com/payment/fail
+
       # Email (Gmail SMTP)
       - Email__SmtpHost=smtp.gmail.com
       - Email__SmtpPort=587
