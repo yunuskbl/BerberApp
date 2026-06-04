@@ -148,6 +148,16 @@ public class SubscriptionController : BaseApiController
 
         await _context.SaveChangesAsync(ct);
 
+        var adminUser = await _context.Users
+            .Where(u => u.TenantId == sub.TenantId && u.Role == UserRole.Admin)
+            .FirstOrDefaultAsync(ct);
+        if (adminUser != null)
+            _ = _email.SendSubscriptionActivatedAsync(
+                    adminUser.Email,
+                    $"{adminUser.FirstName} {adminUser.LastName}",
+                    sub.Plan.ToString(),
+                    sub.ExpiryDate);
+
         return Redirect($"{_frontendSuccessUrl}?plan={sub.Plan}");
     }
 
