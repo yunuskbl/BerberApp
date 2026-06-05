@@ -11,18 +11,21 @@ public class AppointmentReminderJob
     private readonly IAppDbContext _context;
     private readonly IWhatsAppService _whatsAppService;
     private readonly ISmsService _smsService;
+    private readonly IEmailService _emailService;
     private readonly string _frontendBase;
 
     public AppointmentReminderJob(
         IAppDbContext context,
         IWhatsAppService whatsAppService,
         ISmsService smsService,
+        IEmailService emailService,
         IConfiguration config)
     {
-        _context      = context;
+        _context         = context;
         _whatsAppService = whatsAppService;
-        _smsService   = smsService;
-        _frontendBase = config["AppSettings:FrontendBaseUrl"] ?? "https://ayarliyo.com";
+        _smsService      = smsService;
+        _emailService    = emailService;
+        _frontendBase    = config["AppSettings:FrontendBaseUrl"] ?? "https://ayarliyo.com";
     }
 
     [AutomaticRetry(Attempts = 2)]
@@ -69,6 +72,11 @@ public class AppointmentReminderJob
                         apt.Customer.Phone, apt.Customer.FullName,
                         apt.Service.Name, apt.StartTime, salonName, mapsUrl, bookingUrl);
                 }
+
+                if (!string.IsNullOrWhiteSpace(apt.Customer?.Email))
+                    _ = _emailService.SendAppointmentReminderAsync(
+                            apt.Customer.Email, apt.Customer.FullName,
+                            salonName, apt.StartTime, apt.Service.Name);
             }
             catch { }
         }
