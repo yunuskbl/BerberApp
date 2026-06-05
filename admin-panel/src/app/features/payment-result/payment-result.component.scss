@@ -29,7 +29,9 @@ p  { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 8px; }
 
 .result-btn {
   margin-top: 24px;
-  padding: 12px 32px;
+  padding: 13px 32px;
+  min-height: 44px;
+  width: 100%;
   background: linear-gradient(135deg, #a78bfa, #7c3aed);
   color: white;
   border: none;
@@ -39,4 +41,14 @@ p  { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 8px; }
   cursor: pointer;
   transition: opacity 0.15s;
   &:hover { opacity: 0.9; }
+}
+
+@media (max-width: 480px) {
+  .result-card {
+    padding: 32px 20px;
+    border-radius: 16px;
+  }
+
+  .result-icon { font-size: 48px; margin-bottom: 14px; }
+  h2 { font-size: 20px; }
 }

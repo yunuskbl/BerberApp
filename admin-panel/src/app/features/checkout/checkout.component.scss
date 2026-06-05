@@ -13,8 +13,11 @@
     color: #7c3aed;
     font-size: 13px;
     cursor: pointer;
-    padding: 0;
-    margin-bottom: 12px;
+    padding: 8px 0;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 4px;
     &:hover { text-decoration: underline; }
   }
 
@@ -51,7 +54,8 @@
 }
 
 .retry-btn {
-  padding: 10px 24px;
+  padding: 13px 24px;
+  min-height: 44px;
   background: #7c3aed;
   color: white;
   border: none;
@@ -76,4 +80,15 @@
   font-size: 12px;
   color: #94a3b8;
   margin-top: 16px;
+}
+
+@media (max-width: 480px) {
+  .checkout-page {
+    margin: 16px auto;
+    padding: 0 12px;
+  }
+
+  .loading-state { padding: 40px 16px; }
+  .error-state   { padding: 40px 16px; }
+  .form-wrapper  { padding: 16px; }
 }

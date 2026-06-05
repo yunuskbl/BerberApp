@@ -177,7 +177,8 @@
 
 /* Buttons */
 .btn-primary {
-  padding: 11px 28px;
+  padding: 13px 28px;
+  min-height: 44px;
   background: #111;
   color: white;
   border: none;
@@ -190,7 +191,8 @@
 }
 
 .btn-outline {
-  padding: 11px 28px;
+  padding: 13px 28px;
+  min-height: 44px;
   background: white;
   color: #111;
   border: 1px solid #d1d5db;
@@ -212,5 +214,24 @@
 
   .payment-main {
     padding: 28px 20px;
+  }
+
+  #iyzico-checkout-form {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-main {
+    padding: 20px 16px;
+  }
+
+  .form-title { font-size: 18px; }
+
+  .result-actions {
+    flex-direction: column;
+    width: 100%;
+
+    button { width: 100%; }
   }
 }
