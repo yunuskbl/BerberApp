@@ -30,6 +30,8 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<AppointmentActualService> AppointmentActualServices => Set<AppointmentActualService>();
+    public DbSet<PriceDifference> PriceDifferences => Set<PriceDifference>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

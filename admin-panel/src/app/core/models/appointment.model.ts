@@ -11,6 +11,7 @@ export interface Appointment {
   status: AppointmentStatus;
   notes?: string;
   durationMinutes: number;
+  price?: number;
 }
 
 export enum AppointmentStatus {

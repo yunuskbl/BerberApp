@@ -21,6 +21,11 @@ public class Appointment : BaseEntity
     public bool ReminderSent24h { get; set; } = false;
     public bool ReminderSent1h  { get; set; } = false;
 
+    // Tamamlama alanları
+    public decimal? ActualTotalPrice { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    public string? CompletionNotes { get; set; }
+
     // Navigation
     public Tenant Tenant { get; set; } = null!;
     public Customer Customer { get; set; } = null!;
@@ -28,4 +33,5 @@ public class Appointment : BaseEntity
     public Service Service { get; set; } = null!;
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
     public ICollection<AppointmentService> AppointmentServices { get; set; } = new List<AppointmentService>();
+    public ICollection<AppointmentActualService> ActualServices { get; set; } = new List<AppointmentActualService>();
 }

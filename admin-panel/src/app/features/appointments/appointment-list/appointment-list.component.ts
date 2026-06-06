@@ -2,6 +2,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
+  FormsModule,
   FormBuilder,
   FormGroup,
   Validators,
@@ -32,6 +33,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     CustomSelectComponent,
     CustomCalendarComponent,
     TranslatePipe,
@@ -366,12 +368,59 @@ export class AppointmentListComponent implements OnInit {
     this.appointmentService.cancel(id).subscribe({ next: () => this.loadAppointments() });
   }
 
-  completeAppointment(id: string): void {
-    this.errorMessage = '';
-    this.appointmentService.complete(id).subscribe({
-      next: () => this.loadAppointments(),
+  // ─── TAMAMLA MODAL ────────────────────────────────────────
+  completingAppointment: Appointment | null = null;
+  completeSelectedServiceIds: Set<string> = new Set();
+  completeActualPrice: number | null = null;
+  completeNotes = '';
+  isCompleteSubmitting = false;
+  completeError = '';
+
+  openCompleteModal(apt: Appointment): void {
+    this.completingAppointment = apt;
+    this.completeSelectedServiceIds = new Set([apt.serviceId]);
+    this.completeActualPrice = apt.price ?? null;
+    this.completeNotes = '';
+    this.completeError = '';
+    this.isCompleteSubmitting = false;
+  }
+
+  closeCompleteModal(): void {
+    this.completingAppointment = null;
+  }
+
+  toggleCompleteService(id: string): void {
+    if (this.completeSelectedServiceIds.has(id)) {
+      this.completeSelectedServiceIds.delete(id);
+    } else {
+      this.completeSelectedServiceIds.add(id);
+    }
+    this.recalcActualPrice();
+  }
+
+  recalcActualPrice(): void {
+    let total = 0;
+    for (const svc of this.serviceList) {
+      if (this.completeSelectedServiceIds.has(svc.id)) {
+        total += svc.price ?? 0;
+      }
+    }
+    this.completeActualPrice = total > 0 ? total : null;
+  }
+
+  submitComplete(): void {
+    if (!this.completingAppointment) return;
+    this.isCompleteSubmitting = true;
+    this.completeError = '';
+    this.appointmentService.complete(this.completingAppointment.id, {
+      actualServiceIds: Array.from(this.completeSelectedServiceIds),
+      actualTotalPrice: this.completeActualPrice,
+      completionNotes: this.completeNotes || null,
+    }).subscribe({
+      next: () => { this.loadAppointments(); this.closeCompleteModal(); },
       error: (err) => {
-        this.errorMessage = err.error?.message || err.error?.errors?.[0] || 'Randevu tamamlanamadı.';
+        this.completeError = err.error?.message || err.error?.errors?.[0] || 'Randevu tamamlanamadı.';
+        this.isCompleteSubmitting = false;
       }
     });
   }

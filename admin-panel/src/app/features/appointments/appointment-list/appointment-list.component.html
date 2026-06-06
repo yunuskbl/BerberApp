@@ -114,7 +114,7 @@
               <td>
                 <div class="actions">
                   @if (apt.status === AppointmentStatus.Confirmed) {
-                    <button class="step-btn complete" (click)="completeAppointment(apt.id)">
+                    <button class="step-btn complete" (click)="openCompleteModal(apt)">
                       <span class="step-from">Onaylandı</span>
                       <span class="step-arrow">→</span>
                       <span class="step-action">Tamamla</span>
@@ -245,7 +245,7 @@
                           <button class="apt-action-btn cancel" (click)="cancelAppointment(apt.id)" title="İptal">✕</button>
                         }
                         @if (apt.status === AppointmentStatus.Confirmed) {
-                          <button class="apt-step-btn complete" (click)="completeAppointment(apt.id)">✓ Tamamla</button>
+                          <button class="apt-step-btn complete" (click)="openCompleteModal(apt)">✓ Tamamla</button>
                           <button class="apt-action-btn edit"   (click)="openEditModal(apt)" title="Düzenle">✏</button>
                           <button class="apt-action-btn cancel" (click)="cancelAppointment(apt.id)" title="İptal">✕</button>
                         }
@@ -418,6 +418,56 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+}
+<!-- ═══ TAMAMLA MODAL ═══ -->
+@if (completingAppointment) {
+  <div class="modal-overlay" (click)="closeCompleteModal()">
+    <div class="modal complete-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>Randevuyu Tamamla</h3>
+          <p class="modal-sub">{{ completingAppointment.customerName }} · {{ completingAppointment.serviceName }}</p>
+        </div>
+        <button class="drawer-close" (click)="closeCompleteModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Yapılan Hizmetler</label>
+          <div class="service-checklist">
+            @for (svc of serviceList; track svc.id) {
+              <label class="service-check-item" [class.checked]="completeSelectedServiceIds.has(svc.id)">
+                <input type="checkbox"
+                  [checked]="completeSelectedServiceIds.has(svc.id)"
+                  (change)="toggleCompleteService(svc.id)">
+                <span class="svc-name">{{ svc.name }}</span>
+                <span class="svc-price">{{ svc.price | number:'1.0-0' }} ₺</span>
+              </label>
+            }
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Toplam Tutar (₺)</label>
+          <input type="number" class="form-control" step="0.01" min="0"
+            [(ngModel)]="completeActualPrice"
+            placeholder="Otomatik hesaplanır, değiştirebilirsiniz">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tamamlama Notu</label>
+          <textarea class="form-control" rows="3" [(ngModel)]="completeNotes"
+            placeholder="Opsiyonel not..."></textarea>
+        </div>
+        @if (completeError) {
+          <div class="error-message">{{ completeError }}</div>
+        }
+        <div class="drawer-footer" style="padding: 0; margin-top: 20px;">
+          <button type="button" class="btn btn-outline" (click)="closeCompleteModal()">İptal</button>
+          <button type="button" class="btn btn-success" [disabled]="isCompleteSubmitting" (click)="submitComplete()">
+            {{ isCompleteSubmitting ? 'Kaydediliyor...' : '✓ Tamamla & Bildir' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 }

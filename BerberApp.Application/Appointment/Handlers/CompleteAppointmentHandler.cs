@@ -2,6 +2,7 @@ using BerberApp.Application.Appointment.Commands;
 using BerberApp.Application.Appointment.DTOs;
 using BerberApp.Application.Common.Exceptions;
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Domain.Entities;
 using BerberApp.Domain.Enums;
 using MediatR;
 
@@ -12,17 +13,23 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
     private readonly IGenericRepository<AppointmentEntity> _appointmentRepo;
     private readonly IGenericRepository<CustomerEntity> _customerRepo;
     private readonly IGenericRepository<ServiceEntity> _serviceRepo;
+    private readonly IGenericRepository<AppointmentActualServiceEntity> _actualServiceRepo;
+    private readonly IGenericRepository<PriceDifferenceEntity> _priceDiffRepo;
     private readonly INotificationService _notificationService;
 
     public CompleteAppointmentHandler(
         IGenericRepository<AppointmentEntity> appointmentRepo,
         IGenericRepository<CustomerEntity> customerRepo,
         IGenericRepository<ServiceEntity> serviceRepo,
+        IGenericRepository<AppointmentActualServiceEntity> actualServiceRepo,
+        IGenericRepository<PriceDifferenceEntity> priceDiffRepo,
         INotificationService notificationService)
     {
         _appointmentRepo     = appointmentRepo;
         _customerRepo        = customerRepo;
         _serviceRepo         = serviceRepo;
+        _actualServiceRepo   = actualServiceRepo;
+        _priceDiffRepo       = priceDiffRepo;
         _notificationService = notificationService;
     }
 
@@ -40,8 +47,50 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
         if (appointment.Status == AppointmentStatus.Completed)
             throw new BadRequestException("Randevu zaten tamamlanmış.");
 
-        appointment.Status = AppointmentStatus.Completed;
+        var now = DateTime.UtcNow;
+
+        appointment.Status           = AppointmentStatus.Completed;
+        appointment.CompletedAt      = now;
+        appointment.ActualTotalPrice = request.ActualTotalPrice;
+        appointment.CompletionNotes  = request.CompletionNotes;
+
         await _appointmentRepo.UpdateAsync(appointment, ct);
+
+        // Gerçekte yapılan hizmetleri kaydet
+        foreach (var serviceId in request.ActualServiceIds)
+        {
+            var svc = await _serviceRepo.GetByIdAsync(serviceId, ct);
+            if (svc is null) continue;
+
+            await _actualServiceRepo.AddAsync(new AppointmentActualService
+            {
+                AppointmentId = appointment.Id,
+                ServiceId     = serviceId,
+                Price         = svc.Price ?? 0
+            }, ct);
+        }
+
+        // Fiyat farkı kaydı
+        if (request.ActualTotalPrice.HasValue)
+        {
+            var originalService = await _serviceRepo.GetByIdAsync(appointment.ServiceId, ct);
+            var originalPrice   = originalService?.Price ?? 0;
+            var actualPrice     = request.ActualTotalPrice.Value;
+            var diff            = actualPrice - originalPrice;
+
+            if (diff != 0)
+            {
+                await _priceDiffRepo.AddAsync(new PriceDifference
+                {
+                    TenantId      = appointment.TenantId,
+                    AppointmentId = appointment.Id,
+                    OriginalPrice = originalPrice,
+                    ActualPrice   = actualPrice,
+                    Difference    = diff,
+                    CompletedAt   = now
+                }, ct);
+            }
+        }
 
         // Müşteriye değerlendirme bildirimi gönder
         if (!string.IsNullOrWhiteSpace(request.ReviewUrl))

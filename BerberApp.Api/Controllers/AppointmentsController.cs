@@ -10,6 +10,11 @@ using Microsoft.Extensions.Configuration;
 
 namespace BerberApp.Api.Controllers;
 
+public record CompleteAppointmentRequest(
+    List<Guid> ActualServiceIds,
+    decimal? ActualTotalPrice,
+    string? CompletionNotes);
+
 public class AppointmentsController : BaseApiController
 {
     private readonly IAppDbContext _context;
@@ -87,9 +92,8 @@ public class AppointmentsController : BaseApiController
     }
 
     [HttpPatch("{id}/complete")]
-    public async Task<IActionResult> Complete(Guid id)
+    public async Task<IActionResult> Complete(Guid id, [FromBody] CompleteAppointmentRequest? body)
     {
-        // Tenant subdomain'ini al → müşteriye gidecek değerlendirme linkini oluştur
         var tenantId = TenantId;
 
         string? subdomain = null;
@@ -109,9 +113,12 @@ public class AppointmentsController : BaseApiController
 
         await Mediator.Send(new CompleteAppointmentCommand
         {
-            Id        = id,
-            TenantId  = tenantId,
-            ReviewUrl = reviewUrl
+            Id               = id,
+            TenantId         = tenantId,
+            ReviewUrl        = reviewUrl,
+            ActualServiceIds = body?.ActualServiceIds ?? new(),
+            ActualTotalPrice = body?.ActualTotalPrice,
+            CompletionNotes  = body?.CompletionNotes
         });
         return Ok(new { success = true, message = "Randevu tamamlandı." });
     }
