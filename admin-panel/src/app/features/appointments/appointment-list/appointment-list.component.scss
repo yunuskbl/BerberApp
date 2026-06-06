@@ -1297,3 +1297,168 @@ select {
   color: #374151;
   margin-bottom: 8px;
 }
+
+// ─── Müşteri arama / otomatik doldurma ────────────────────
+.customer-lookup {
+  position: relative;
+
+  .customer-input-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    background: white;
+    transition: border-color 0.15s;
+    height: 44px;
+    overflow: hidden;
+
+    &:focus-within { border-color: #111827; }
+    &.has-selection { border-color: #22c55e; background: #f0fdf4; }
+
+    .lookup-icon {
+      flex-shrink: 0;
+      margin-left: 12px;
+    }
+
+    .customer-search-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 0 10px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #111827;
+
+      &::placeholder { color: #9ca3af; }
+      &.is-invalid { border-color: #ef4444; }
+    }
+
+    .lookup-clear {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #9ca3af;
+      font-size: 14px;
+      padding: 0 12px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+
+      &:hover { color: #374151; }
+    }
+  }
+
+  .customer-selected-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+
+    .selected-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #22c55e;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .selected-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #15803d;
+    }
+
+    .selected-phone {
+      font-size: 12px;
+      color: #4ade80;
+    }
+  }
+
+  .customer-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 100;
+    overflow: hidden;
+    max-height: 260px;
+    overflow-y: auto;
+
+    .customer-suggestion {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: background 0.12s;
+
+      &:hover { background: #f9fafb; }
+      &:not(:last-child) { border-bottom: 1px solid #f3f4f6; }
+
+      .suggestion-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #111827;
+        color: white;
+        font-size: 12px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .suggestion-info {
+        flex: 1;
+        min-width: 0;
+
+        .suggestion-name {
+          font-size: 13px;
+          font-weight: 600;
+          color: #111827;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .suggestion-phone {
+          font-size: 12px;
+          color: #6b7280;
+        }
+      }
+
+      .suggestion-visits {
+        font-size: 11px;
+        color: #9ca3af;
+        background: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 6px;
+        flex-shrink: 0;
+      }
+    }
+
+    .customer-no-result {
+      padding: 14px;
+      text-align: center;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+  }
+}

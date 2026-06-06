@@ -54,6 +54,11 @@ export class AppointmentListComponent implements OnInit {
   isLoadingSlots = false;
   errorMessage = '';
 
+  // ─── Müşteri arama / otomatik doldurma ────────────────────
+  customerQuery = '';
+  showCustomerDropdown = false;
+  selectedCustomer: Customer | null = null;
+
   selectedDate = new Date().toISOString().split('T')[0];
   selectedStaffId = '';
   showPendingAll = false;
@@ -118,6 +123,9 @@ export class AppointmentListComponent implements OnInit {
     const target = event.target as HTMLElement;
     if (!target.closest('.filter-date-wrapper')) {
       this.isDatePickerOpen = false;
+    }
+    if (!target.closest('.customer-lookup')) {
+      this.showCustomerDropdown = false;
     }
   }
 
@@ -270,6 +278,7 @@ export class AppointmentListComponent implements OnInit {
     this.errorMessage = '';
     this.availableSlots = [];
     this.appointmentForm.reset({ date: this.selectedDate });
+    this.clearCustomerSelection();
     this.isDrawerOpen = true;
   }
 
@@ -277,6 +286,35 @@ export class AppointmentListComponent implements OnInit {
     this.isDrawerOpen = false;
     this.availableSlots = [];
     this.appointmentForm.reset();
+    this.clearCustomerSelection();
+  }
+
+  get filteredCustomerSuggestions(): Customer[] {
+    const q = this.customerQuery.trim().toLowerCase();
+    if (!q) return [];
+    return this.customerList
+      .filter(c => c.phone.includes(q) || c.fullName.toLowerCase().includes(q))
+      .slice(0, 6);
+  }
+
+  onCustomerQueryChange(): void {
+    this.selectedCustomer = null;
+    this.appointmentForm.patchValue({ customerId: '' });
+    this.showCustomerDropdown = true;
+  }
+
+  selectCustomerSuggestion(customer: Customer): void {
+    this.selectedCustomer = customer;
+    this.customerQuery = customer.phone;
+    this.appointmentForm.patchValue({ customerId: customer.id });
+    this.showCustomerDropdown = false;
+  }
+
+  clearCustomerSelection(): void {
+    this.selectedCustomer = null;
+    this.customerQuery = '';
+    this.showCustomerDropdown = false;
+    this.appointmentForm.patchValue({ customerId: '' });
   }
 
   onFormFieldChange(): void {
