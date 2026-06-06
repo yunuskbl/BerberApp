@@ -177,7 +177,7 @@ export class DashboardComponent implements OnInit {
   }
 
   completeAppointment(id: string): void {
-    this.appointmentService.complete(id).subscribe({
+    this.appointmentService.complete(id, { actualServiceIds: [] }).subscribe({
       next: () => this.loadDashboard(),
     });
   }
