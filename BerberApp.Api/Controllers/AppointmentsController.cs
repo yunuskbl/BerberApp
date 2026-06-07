@@ -15,6 +15,13 @@ public record CompleteAppointmentRequest(
     decimal? ActualTotalPrice,
     string? CompletionNotes);
 
+public record CreateAppointmentAdminRequest(
+    Guid CustomerId,
+    Guid StaffId,
+    List<Guid> ServiceIds,
+    DateTime StartTime,
+    string? Notes);
+
 public class AppointmentsController : BaseApiController
 {
     private readonly IAppDbContext _context;
@@ -59,11 +66,67 @@ public class AppointmentsController : BaseApiController
         }));
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateAppointmentCommand command)
+    public async Task<IActionResult> Create([FromBody] CreateAppointmentAdminRequest request)
     {
-        command.TenantId = TenantId;
-        command.IsFromBookingPage = false;
-        return Created(await Mediator.Send(command));
+        if (request.ServiceIds is null || request.ServiceIds.Count == 0)
+            return BadRequest(new { message = "En az bir hizmet seçilmesi zorunludur." });
+
+        int? totalDurationMinutes = null;
+        string? serviceNamesDisplay = null;
+
+        var svcs = await _context.Services
+            .Where(s => request.ServiceIds.Contains(s.Id) && s.TenantId == TenantId)
+            .Select(s => new { s.Id, s.Name, s.DurationMinutes })
+            .ToListAsync();
+
+        if (request.ServiceIds.Count > 1)
+        {
+            var customDurs = await _context.StaffServices
+                .Where(ss => ss.StaffId == request.StaffId &&
+                             request.ServiceIds.Contains(ss.ServiceId) &&
+                             ss.CustomDurationMinutes != null)
+                .Select(ss => new { ss.ServiceId, ss.CustomDurationMinutes })
+                .ToListAsync();
+
+            totalDurationMinutes = svcs.Sum(s =>
+            {
+                var cd = customDurs.FirstOrDefault(x => x.ServiceId == s.Id);
+                return cd?.CustomDurationMinutes ?? s.DurationMinutes;
+            });
+
+            serviceNamesDisplay = string.Join(" + ", request.ServiceIds
+                .Select(id => svcs.FirstOrDefault(s => s.Id == id)?.Name)
+                .Where(n => n != null));
+        }
+
+        var command = new CreateAppointmentCommand
+        {
+            TenantId             = TenantId,
+            CustomerId           = request.CustomerId,
+            StaffId              = request.StaffId,
+            ServiceId            = request.ServiceIds.First(),
+            StartTime            = request.StartTime,
+            Notes                = request.Notes,
+            IsFromBookingPage    = false,
+            TotalDurationMinutes = totalDurationMinutes,
+            ServiceNamesDisplay  = serviceNamesDisplay,
+        };
+
+        var result = await Mediator.Send(command);
+
+        if (request.ServiceIds.Count > 0)
+        {
+            var apptServices = request.ServiceIds.Select(sid =>
+                new BerberApp.Domain.Entities.AppointmentService
+                {
+                    AppointmentId = result.Id,
+                    ServiceId     = sid
+                });
+            _context.AppointmentServices.AddRange(apptServices);
+            await _context.SaveChangesAsync();
+        }
+
+        return Created(result);
     }
 
     [HttpPut("{id}")]

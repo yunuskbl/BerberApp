@@ -73,6 +73,9 @@ export class AppointmentListComponent implements OnInit {
 
   AppointmentStatus = AppointmentStatus;
 
+  // ─── Çoklu hizmet seçimi ──────────────────────────────────
+  selectedServiceIds: Set<string> = new Set();
+
   appointmentForm: FormGroup;
 
   constructor(
@@ -84,16 +87,15 @@ export class AppointmentListComponent implements OnInit {
     public langService: LanguageService,
   ) {
     this.appointmentForm = this.fb.group({
-      customerId: ['', Validators.required],
-      staffId: ['', Validators.required],
-      serviceId: ['', Validators.required],
-      date: ['', Validators.required],
-      startTime: ['', Validators.required],
-      notes: [''],
+      customerId:  ['', Validators.required],
+      staffId:     ['', Validators.required],
+      servicesValid: [false, Validators.requiredTrue],  // en az 1 hizmet seçili mi
+      date:        ['', Validators.required],
+      startTime:   ['', Validators.required],
+      notes:       [''],
     });
     this.editForm = this.fb.group({
       staffId:   ['', Validators.required],
-      serviceId: ['', Validators.required],
       date:      ['', Validators.required],
       startTime: ['', Validators.required],
     });
@@ -277,7 +279,8 @@ export class AppointmentListComponent implements OnInit {
   openDrawer(): void {
     this.errorMessage = '';
     this.availableSlots = [];
-    this.appointmentForm.reset({ date: this.selectedDate });
+    this.selectedServiceIds = new Set();
+    this.appointmentForm.reset({ date: this.selectedDate, servicesValid: false });
     this.clearCustomerSelection();
     this.isDrawerOpen = true;
   }
@@ -285,8 +288,19 @@ export class AppointmentListComponent implements OnInit {
   closeDrawer(): void {
     this.isDrawerOpen = false;
     this.availableSlots = [];
+    this.selectedServiceIds = new Set();
     this.appointmentForm.reset();
     this.clearCustomerSelection();
+  }
+
+  toggleServiceSelection(id: string): void {
+    if (this.selectedServiceIds.has(id)) {
+      this.selectedServiceIds.delete(id);
+    } else {
+      this.selectedServiceIds.add(id);
+    }
+    this.appointmentForm.patchValue({ servicesValid: this.selectedServiceIds.size > 0 });
+    this.onFormFieldChange();
   }
 
   get filteredCustomerSuggestions(): Customer[] {
@@ -318,8 +332,11 @@ export class AppointmentListComponent implements OnInit {
   }
 
   onFormFieldChange(): void {
-    const { staffId, serviceId, date } = this.appointmentForm.value;
-    if (staffId && serviceId && date) this.loadAvailableSlots(staffId, serviceId, date);
+    const { staffId, date } = this.appointmentForm.value;
+    const firstServiceId = [...this.selectedServiceIds][0];
+    if (staffId && firstServiceId && date) {
+      this.loadAvailableSlots(staffId, firstServiceId, date);
+    }
   }
 
   loadAvailableSlots(staffId: string, serviceId: string, date: string): void {
@@ -336,14 +353,19 @@ export class AppointmentListComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.appointmentForm.invalid) return;
+    this.appointmentForm.markAllAsTouched();
+    if (this.appointmentForm.invalid || this.selectedServiceIds.size === 0) return;
     this.isSubmitting = true;
     this.errorMessage = '';
-    const { customerId, staffId, serviceId, date, startTime, notes } = this.appointmentForm.value;
-    // startTime form değeri Türkiye yerel saatinde ("HH:mm"). UTC'ye çevirerek gönder.
-    // Örn: "12:00" → "2026-05-09T12:00:00+03:00" → "2026-05-09T09:00:00.000Z"
+    const { customerId, staffId, date, startTime, notes } = this.appointmentForm.value;
     const utcStartTime = new Date(`${date}T${startTime}:00+03:00`).toISOString();
-    this.appointmentService.create({ customerId, staffId, serviceId, startTime: utcStartTime, notes }).subscribe({
+    this.appointmentService.create({
+      customerId,
+      staffId,
+      serviceIds: [...this.selectedServiceIds],
+      startTime: utcStartTime,
+      notes,
+    }).subscribe({
       next: (res) => {
         if (res.success) { this.loadAppointments(); this.closeDrawer(); }
         this.isSubmitting = false;
@@ -541,6 +563,19 @@ export class AppointmentListComponent implements OnInit {
 
   onSelectChange(field: string, value: string): void {
     this.appointmentForm.patchValue({ [field]: value });
-    if (field === 'staffId' || field === 'serviceId') this.onFormFieldChange();
+    if (field === 'staffId') this.onFormFieldChange();
+  }
+
+  get selectedServicesLabel(): string {
+    const names = this.serviceList
+      .filter(s => this.selectedServiceIds.has(s.id))
+      .map(s => s.name);
+    return names.length > 0 ? names.join(' + ') : '';
+  }
+
+  get selectedServicesTotalDuration(): number {
+    return this.serviceList
+      .filter(s => this.selectedServiceIds.has(s.id))
+      .reduce((sum, s) => sum + (s.durationMinutes ?? 0), 0);
   }
 }

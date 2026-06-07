@@ -259,7 +259,7 @@ export class CustomerListComponent implements OnInit {
     this.appointmentService.create({
       customerId: this.historyCustomer.id,
       staffId:    this.repeatingAppointment.staffId,
-      serviceId:  this.repeatingAppointment.serviceId,
+      serviceIds: [this.repeatingAppointment.serviceId],
       startTime:  this.repeatSlot,
     }).subscribe({
       next: (res) => {

@@ -343,11 +343,32 @@
 
     <div class="form-group">
       <label>{{ 'appt.service' | translate }}</label>
-      <app-custom-select [options]="serviceOptions" [placeholder]="'appt.service' | translate"
-        [value]="appointmentForm.get('serviceId')?.value"
-        [hasError]="!!appointmentForm.get('serviceId')?.invalid && !!appointmentForm.get('serviceId')?.touched"
-        (valueChange)="onSelectChange('serviceId', $event)">
-      </app-custom-select>
+      <div class="service-checklist-drawer">
+        @for (svc of serviceList; track svc.id) {
+          <label class="svc-check-row" [class.selected]="selectedServiceIds.has(svc.id)"
+                 (click)="toggleServiceSelection(svc.id)">
+            <span class="svc-check-box">
+              @if (selectedServiceIds.has(svc.id)) {
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              }
+            </span>
+            <span class="svc-check-name">{{ svc.name }}</span>
+            <span class="svc-check-meta">{{ svc.durationMinutes }} dk</span>
+            <span class="svc-check-price">{{ svc.price | number:'1.0-0' }} ₺</span>
+          </label>
+        }
+      </div>
+      @if (selectedServiceIds.size > 0) {
+        <div class="svc-selection-summary">
+          <span class="svc-sum-label">{{ selectedServiceIds.size }} hizmet</span>
+          <span class="svc-sum-dur">{{ selectedServicesTotalDuration }} dk</span>
+        </div>
+      }
+      @if (appointmentForm.get('servicesValid')?.invalid && appointmentForm.get('servicesValid')?.touched) {
+        <div class="field-error">En az bir hizmet seçin</div>
+      }
     </div>
 
     <div class="form-group">

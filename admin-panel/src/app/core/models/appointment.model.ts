@@ -30,8 +30,8 @@ export interface AvailableSlot {
 
 export interface CreateAppointmentRequest {
   customerId: string;
-  staffId: string;
-  serviceId: string;
-  startTime: string;
-  notes?: string;
+  staffId:    string;
+  serviceIds: string[];
+  startTime:  string;
+  notes?:     string;
 }

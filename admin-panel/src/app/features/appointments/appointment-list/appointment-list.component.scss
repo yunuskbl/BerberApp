@@ -1462,3 +1462,75 @@ select {
     }
   }
 }
+
+// ─── Hizmet çoklu seçim checklist (drawer) ──────────────────
+.service-checklist-drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 6px;
+  background: #fafafa;
+}
+
+.svc-check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border: 1.5px solid transparent;
+  user-select: none;
+
+  &:hover { background: #f3f4f6; }
+
+  &.selected {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+  }
+
+  .svc-check-box {
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid #d1d5db;
+    background: white;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.12s;
+  }
+
+  &.selected .svc-check-box {
+    background: #22c55e;
+    border-color: #22c55e;
+  }
+
+  .svc-check-name { flex: 1; font-size: 13px; font-weight: 500; color: #111827; }
+  .svc-check-meta { font-size: 12px; color: #9ca3af; }
+  .svc-check-price { font-size: 12px; font-weight: 600; color: #374151; }
+}
+
+.svc-selection-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  font-size: 12px;
+
+  .svc-sum-label { font-weight: 600; color: #15803d; }
+  .svc-sum-dur   { color: #4ade80; }
+}
+
+.field-error {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #dc2626;
+}
