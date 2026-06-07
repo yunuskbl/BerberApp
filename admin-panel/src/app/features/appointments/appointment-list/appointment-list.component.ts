@@ -76,6 +76,9 @@ export class AppointmentListComponent implements OnInit {
   // ─── Çoklu hizmet seçimi ──────────────────────────────────
   selectedServiceIds: Set<string> = new Set();
 
+  // Personele özel fiyat/süre overrides: serviceId → override
+  staffServiceOverrides = new Map<string, { customPrice: number | null; customCurrency: string | null; customDurationMinutes: number | null }>();
+
   appointmentForm: FormGroup;
 
   constructor(
@@ -283,6 +286,7 @@ export class AppointmentListComponent implements OnInit {
     this.errorMessage = '';
     this.availableSlots = [];
     this.selectedServiceIds = new Set();
+    this.staffServiceOverrides.clear();
     this.appointmentForm.reset({ date: this.selectedDate, servicesValid: false });
     this.clearCustomerSelection();
     this.isDrawerOpen = true;
@@ -292,6 +296,7 @@ export class AppointmentListComponent implements OnInit {
     this.isDrawerOpen = false;
     this.availableSlots = [];
     this.selectedServiceIds = new Set();
+    this.staffServiceOverrides.clear();
     this.appointmentForm.reset();
     this.clearCustomerSelection();
   }
@@ -566,7 +571,40 @@ export class AppointmentListComponent implements OnInit {
 
   onSelectChange(field: string, value: string): void {
     this.appointmentForm.patchValue({ [field]: value });
-    if (field === 'staffId') this.onFormFieldChange();
+    if (field === 'staffId') {
+      this.loadStaffServiceOverrides(value);
+      this.onFormFieldChange();
+    }
+  }
+
+  loadStaffServiceOverrides(staffId: string): void {
+    this.staffServiceOverrides.clear();
+    if (!staffId) return;
+    this.staffService.getServices(staffId).subscribe({
+      next: (res: any) => {
+        if (res.success && Array.isArray(res.data)) {
+          for (const item of res.data) {
+            this.staffServiceOverrides.set(item.serviceId, {
+              customPrice: item.customPrice ?? null,
+              customCurrency: item.customCurrency ?? null,
+              customDurationMinutes: item.customDurationMinutes ?? null,
+            });
+          }
+        }
+      },
+    });
+  }
+
+  effectivePrice(svc: Service): number {
+    return this.staffServiceOverrides.get(svc.id)?.customPrice ?? svc.price;
+  }
+
+  effectiveCurrency(svc: Service): string {
+    return this.staffServiceOverrides.get(svc.id)?.customCurrency ?? svc.currency;
+  }
+
+  effectiveDuration(svc: Service): number {
+    return this.staffServiceOverrides.get(svc.id)?.customDurationMinutes ?? svc.durationMinutes;
   }
 
   get selectedServicesLabel(): string {
@@ -579,6 +617,6 @@ export class AppointmentListComponent implements OnInit {
   get selectedServicesTotalDuration(): number {
     return this.serviceList
       .filter(s => this.selectedServiceIds.has(s.id))
-      .reduce((sum, s) => sum + (s.durationMinutes ?? 0), 0);
+      .reduce((sum, s) => sum + this.effectiveDuration(s), 0);
   }
 }

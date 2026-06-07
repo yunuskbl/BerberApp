@@ -397,8 +397,8 @@
               }
             </span>
             <span class="svc-check-name">{{ svc.name }}</span>
-            <span class="svc-check-dur">{{ svc.durationMinutes }} dk</span>
-            <span class="svc-check-price">{{ svc.price | number:'1.0-0' }} {{ svc.currency }}</span>
+            <span class="svc-check-dur">{{ effectiveDuration(svc) }} dk</span>
+            <span class="svc-check-price">{{ effectivePrice(svc) | number:'1.0-0' }} {{ effectiveCurrency(svc) }}</span>
           </label>
         }
       </div>
