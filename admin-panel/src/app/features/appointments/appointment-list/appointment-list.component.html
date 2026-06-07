@@ -398,7 +398,7 @@
             </span>
             <span class="svc-check-name">{{ svc.name }}</span>
             <span class="svc-check-dur">{{ svc.durationMinutes }} dk</span>
-            <span class="svc-check-price">{{ svc.price | number:'1.0-0' }} ₺</span>
+            <span class="svc-check-price">{{ svc.price | number:'1.0-0' }} {{ svc.currency }}</span>
           </label>
         }
       </div>
@@ -575,7 +575,7 @@
                   [checked]="completeSelectedServiceIds.has(svc.id)"
                   (change)="toggleCompleteService(svc.id)">
                 <span class="svc-name">{{ svc.name }}</span>
-                <span class="svc-price">{{ svc.price | number:'1.0-0' }} ₺</span>
+                <span class="svc-price">{{ svc.price | number:'1.0-0' }} {{ svc.currency }}</span>
               </label>
             }
           </div>
