@@ -270,41 +270,68 @@
 }
 
 <div class="drawer" [class.open]="isDrawerOpen">
+
+  <!-- Başlık -->
   <div class="drawer-header">
-    <h3>{{ 'appt.new' | translate }}</h3>
-    <button class="drawer-close" (click)="closeDrawer()">✕</button>
+    <div class="drawer-title-row">
+      <div class="drawer-title-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+      </div>
+      <div>
+        <h3>Yeni Randevu</h3>
+        <p>Tüm alanları doldurun</p>
+      </div>
+    </div>
+    <button class="drawer-close" (click)="closeDrawer()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M1 1l12 12M13 1L1 13"/>
+      </svg>
+    </button>
   </div>
 
   <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()" class="drawer-body">
-    <div class="form-group">
-      <label>{{ 'appt.customer' | translate }}</label>
+
+    <!-- ── 1. Müşteri ── -->
+    <div class="drawer-section">
+      <div class="section-label">
+        <span class="step-num">1</span>
+        Müşteri
+      </div>
       <div class="customer-lookup">
         <div class="customer-input-row" [class.has-selection]="!!selectedCustomer">
-          <svg class="lookup-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="6.5" cy="6.5" r="4" stroke="#9ca3af" stroke-width="1.5"/>
-            <path d="M11 11l2.5 2.5" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/>
+          <svg class="lookup-icon" width="15" height="15" viewBox="0 0 16 16" fill="none">
+            <circle cx="6.5" cy="6.5" r="4" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M11 11l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
           <input
             class="customer-search-input"
-            [class.is-invalid]="!!appointmentForm.get('customerId')?.invalid && !!appointmentForm.get('customerId')?.touched"
             type="text"
             [(ngModel)]="customerQuery"
             [ngModelOptions]="{standalone: true}"
             (ngModelChange)="onCustomerQueryChange()"
             (focus)="showCustomerDropdown = true"
-            placeholder="İsim veya telefon ile ara..."
+            placeholder="İsim veya telefon numarası..."
             autocomplete="off">
           @if (selectedCustomer) {
-            <button type="button" class="lookup-clear" (click)="clearCustomerSelection()" title="Temizle">✕</button>
+            <button type="button" class="lookup-clear" (click)="clearCustomerSelection()">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M1 1l8 8M9 1L1 9"/>
+              </svg>
+            </button>
           }
         </div>
         @if (selectedCustomer) {
           <div class="customer-selected-info">
             <div class="selected-avatar">{{ getInitials(selectedCustomer.fullName) }}</div>
-            <div>
+            <div class="selected-details">
               <div class="selected-name">{{ selectedCustomer.fullName }}</div>
               <div class="selected-phone">{{ selectedCustomer.phone }}</div>
             </div>
+            @if (selectedCustomer.totalVisits > 0) {
+              <span class="selected-visits">{{ selectedCustomer.totalVisits }} ziyaret</span>
+            }
           </div>
         }
         @if (showCustomerDropdown && customerQuery.trim()) {
@@ -318,22 +345,24 @@
                     <div class="suggestion-phone">{{ c.phone }}</div>
                   </div>
                   @if (c.totalVisits > 0) {
-                    <span class="suggestion-visits">{{ c.totalVisits }} ziyaret</span>
+                    <span class="suggestion-visits">{{ c.totalVisits }}</span>
                   }
                 </div>
               }
             } @else {
-              <div class="customer-no-result">
-                <span>Müşteri bulunamadı</span>
-              </div>
+              <div class="customer-no-result">Müşteri bulunamadı</div>
             }
           </div>
         }
       </div>
     </div>
 
-    <div class="form-group">
-      <label>{{ 'appt.staff' | translate }}</label>
+    <!-- ── 2. Personel ── -->
+    <div class="drawer-section">
+      <div class="section-label">
+        <span class="step-num">2</span>
+        Personel
+      </div>
       <app-custom-select [options]="staffOptions" [placeholder]="'appt.staff' | translate"
         [value]="appointmentForm.get('staffId')?.value"
         [hasError]="!!appointmentForm.get('staffId')?.invalid && !!appointmentForm.get('staffId')?.touched"
@@ -341,52 +370,67 @@
       </app-custom-select>
     </div>
 
-    <div class="form-group">
-      <label>{{ 'appt.service' | translate }}</label>
+    <!-- ── 3. Hizmetler ── -->
+    <div class="drawer-section">
+      <div class="section-label">
+        <span class="step-num">3</span>
+        Hizmetler
+        @if (selectedServiceIds.size > 0) {
+          <span class="section-badge">{{ selectedServiceIds.size }} seçildi · {{ selectedServicesTotalDuration }} dk</span>
+        }
+      </div>
       <div class="service-checklist-drawer">
         @for (svc of serviceList; track svc.id) {
           <label class="svc-check-row" [class.selected]="selectedServiceIds.has(svc.id)"
                  (click)="toggleServiceSelection(svc.id)">
             <span class="svc-check-box">
               @if (selectedServiceIds.has(svc.id)) {
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               }
             </span>
             <span class="svc-check-name">{{ svc.name }}</span>
-            <span class="svc-check-meta">{{ svc.durationMinutes }} dk</span>
+            <span class="svc-check-dur">{{ svc.durationMinutes }} dk</span>
             <span class="svc-check-price">{{ svc.price | number:'1.0-0' }} ₺</span>
           </label>
         }
       </div>
-      @if (selectedServiceIds.size > 0) {
-        <div class="svc-selection-summary">
-          <span class="svc-sum-label">{{ selectedServiceIds.size }} hizmet</span>
-          <span class="svc-sum-dur">{{ selectedServicesTotalDuration }} dk</span>
-        </div>
-      }
       @if (appointmentForm.get('servicesValid')?.invalid && appointmentForm.get('servicesValid')?.touched) {
-        <div class="field-error">En az bir hizmet seçin</div>
+        <p class="field-error">En az bir hizmet seçin</p>
       }
     </div>
 
-    <div class="form-group">
-      <label>{{ 'appt.date' | translate }}</label>
+    <!-- ── 4. Tarih ── -->
+    <div class="drawer-section">
+      <div class="section-label">
+        <span class="step-num">4</span>
+        Tarih
+      </div>
       <app-custom-calendar [minDate]="minDate" [maxDate]="maxDate"
         [value]="appointmentForm.get('date')?.value || ''"
         (valueChange)="appointmentForm.patchValue({ date: $event }); onFormFieldChange()">
       </app-custom-calendar>
     </div>
 
+    <!-- ── 5. Saat ── -->
     @if (isLoadingSlots) {
-      <div class="slots-loading">
-        <div class="spinner-sm"></div>
-        <span>{{ 'appt.loadingSlots' | translate }}</span>
+      <div class="drawer-section">
+        <div class="section-label"><span class="step-num">5</span> Saat</div>
+        <div class="slots-loading">
+          <div class="spinner-sm"></div>
+          <span>Uygun saatler yükleniyor...</span>
+        </div>
       </div>
     } @else if (availableSlots.length > 0) {
-      <div class="form-group">
-        <label>{{ 'appt.chooseTime' | translate }}</label>
+      <div class="drawer-section">
+        <div class="section-label">
+          <span class="step-num">5</span>
+          Saat
+          @if (appointmentForm.get('startTime')?.value) {
+            <span class="section-badge">{{ appointmentForm.get('startTime')?.value }} seçildi</span>
+          }
+        </div>
         <div class="slots-grid">
           @for (slot of availableSlots; track slot.startTime) {
             <button type="button" class="slot-btn"
@@ -400,15 +444,22 @@
           }
         </div>
       </div>
-    } @else if (appointmentForm.get('staffId')?.value && appointmentForm.get('serviceId')?.value && appointmentForm.get('date')?.value) {
-      <div class="no-slots">
-        <span>{{ 'booking.noSlots' | translate }}</span>
+    } @else if (appointmentForm.get('staffId')?.value && selectedServiceIds.size > 0 && appointmentForm.get('date')?.value) {
+      <div class="drawer-section">
+        <div class="section-label"><span class="step-num">5</span> Saat</div>
+        <div class="no-slots">Bu tarihte uygun saat yok.</div>
       </div>
     }
 
-    <div class="form-group">
-      <label>{{ 'common.notes' | translate }}</label>
-      <textarea formControlName="notes" [placeholder]="'appt.notePh' | translate" rows="3"></textarea>
+    <!-- ── 6. Not ── -->
+    <div class="drawer-section">
+      <div class="section-label">
+        <span class="step-num">6</span>
+        Not
+        <span class="optional-badge">opsiyonel</span>
+      </div>
+      <textarea formControlName="notes" class="drawer-textarea"
+        placeholder="Müşteriye özel not veya hatırlatma..." rows="3"></textarea>
     </div>
 
     @if (errorMessage) {
@@ -416,9 +467,17 @@
     }
 
     <div class="drawer-footer">
-      <button type="button" class="btn btn-outline" (click)="closeDrawer()">{{ 'common.cancel' | translate }}</button>
+      <button type="button" class="btn btn-outline" (click)="closeDrawer()">İptal</button>
       <button type="submit" class="btn btn-primary" [disabled]="isSubmitting || appointmentForm.invalid">
-        {{ isSubmitting ? ('common.saving' | translate) : ('appt.create' | translate) }}
+        @if (isSubmitting) {
+          <div class="btn-spinner"></div>
+          Kaydediliyor...
+        } @else {
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+          Randevu Oluştur
+        }
       </button>
     </div>
   </form>
