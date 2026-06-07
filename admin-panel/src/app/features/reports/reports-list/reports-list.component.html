@@ -185,6 +185,20 @@
           <div class="stat-value">{{ formatCurrency(earnings.weekEarnings) }}</div>
           <div class="stat-sub">{{ earnings.weekAppointments }} {{ 'reports.appt' | translate }}</div>
         </div>
+        @if (earnings.priceDifferenceCount > 0) {
+          <div class="stat-card" [class.stat-card--green]="earnings.totalPriceDifference >= 0" [class.stat-card--red]="earnings.totalPriceDifference < 0">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <div class="stat-label">Fiyat Farkı</div>
+            <div class="stat-value">
+              {{ earnings.totalPriceDifference >= 0 ? '+' : '' }}{{ formatCurrency(earnings.totalPriceDifference) }}
+            </div>
+            <div class="stat-sub">{{ earnings.priceDifferenceCount }} randevuda fark oluştu</div>
+          </div>
+        }
       </div>
 
       <!-- Para Birimine Göre Kazanç -->

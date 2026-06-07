@@ -23,6 +23,9 @@ export interface EarningsDto {
   totalExpenses:        number;
   netProfit:            number;
   expenseByCategory:    ExpenseSummaryDto[];
+  // Fiyat farkı istatistikleri
+  totalPriceDifference: number;
+  priceDifferenceCount: number;
 }
 
 export interface ExpenseSummaryDto {

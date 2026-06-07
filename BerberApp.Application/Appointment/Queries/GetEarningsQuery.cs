@@ -37,6 +37,10 @@ public class EarningsDto
     public decimal TotalExpenses { get; set; }       // Seçili dönem toplam gider (TRY)
     public decimal NetProfit { get; set; }            // TotalInTry - TotalExpenses
     public List<ExpenseSummaryDto> ExpenseByCategory { get; set; } = new();
+
+    // Fiyat farkı istatistikleri
+    public decimal TotalPriceDifference { get; set; }  // Dönem içi net fiyat farkı (+tahsilat, -indirim)
+    public int PriceDifferenceCount { get; set; }       // Fiyat farkı olan randevu sayısı
 }
 
 public class ExpenseSummaryDto
