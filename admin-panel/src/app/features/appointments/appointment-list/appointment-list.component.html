@@ -278,11 +278,58 @@
   <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()" class="drawer-body">
     <div class="form-group">
       <label>{{ 'appt.customer' | translate }}</label>
-      <app-custom-select [options]="customerOptions" [placeholder]="'appt.customer' | translate"
-        [searchable]="true" [value]="appointmentForm.get('customerId')?.value"
-        [hasError]="!!appointmentForm.get('customerId')?.invalid && !!appointmentForm.get('customerId')?.touched"
-        (valueChange)="onSelectChange('customerId', $event)">
-      </app-custom-select>
+      <div class="customer-lookup">
+        <div class="customer-input-row" [class.has-selection]="!!selectedCustomer">
+          <svg class="lookup-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="6.5" cy="6.5" r="4" stroke="#9ca3af" stroke-width="1.5"/>
+            <path d="M11 11l2.5 2.5" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <input
+            class="customer-search-input"
+            [class.is-invalid]="!!appointmentForm.get('customerId')?.invalid && !!appointmentForm.get('customerId')?.touched"
+            type="text"
+            [(ngModel)]="customerQuery"
+            [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="onCustomerQueryChange()"
+            (focus)="showCustomerDropdown = true"
+            placeholder="İsim veya telefon ile ara..."
+            autocomplete="off">
+          @if (selectedCustomer) {
+            <button type="button" class="lookup-clear" (click)="clearCustomerSelection()" title="Temizle">✕</button>
+          }
+        </div>
+        @if (selectedCustomer) {
+          <div class="customer-selected-info">
+            <div class="selected-avatar">{{ getInitials(selectedCustomer.fullName) }}</div>
+            <div>
+              <div class="selected-name">{{ selectedCustomer.fullName }}</div>
+              <div class="selected-phone">{{ selectedCustomer.phone }}</div>
+            </div>
+          </div>
+        }
+        @if (showCustomerDropdown && customerQuery.trim()) {
+          <div class="customer-dropdown">
+            @if (filteredCustomerSuggestions.length > 0) {
+              @for (c of filteredCustomerSuggestions; track c.id) {
+                <div class="customer-suggestion" (mousedown)="selectCustomerSuggestion(c)">
+                  <div class="suggestion-avatar">{{ getInitials(c.fullName) }}</div>
+                  <div class="suggestion-info">
+                    <div class="suggestion-name">{{ c.fullName }}</div>
+                    <div class="suggestion-phone">{{ c.phone }}</div>
+                  </div>
+                  @if (c.totalVisits > 0) {
+                    <span class="suggestion-visits">{{ c.totalVisits }} ziyaret</span>
+                  }
+                </div>
+              }
+            } @else {
+              <div class="customer-no-result">
+                <span>Müşteri bulunamadı</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
     </div>
 
     <div class="form-group">

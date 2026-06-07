@@ -11,6 +11,7 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
     private readonly IGenericRepository<ServiceEntity> _serviceRepo;
     private readonly IGenericRepository<StaffEntity> _staffRepo;
     private readonly IGenericRepository<ExpenseEntity> _expenseRepo;
+    private readonly IGenericRepository<PriceDifferenceEntity> _priceDiffRepo;
     private readonly IExchangeRateService _exchangeRates;
 
     public GetEarningsHandler(
@@ -18,12 +19,14 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
         IGenericRepository<ServiceEntity> serviceRepo,
         IGenericRepository<StaffEntity> staffRepo,
         IGenericRepository<ExpenseEntity> expenseRepo,
+        IGenericRepository<PriceDifferenceEntity> priceDiffRepo,
         IExchangeRateService exchangeRates)
     {
         _appointmentRepo = appointmentRepo;
         _serviceRepo = serviceRepo;
         _staffRepo = staffRepo;
         _expenseRepo = expenseRepo;
+        _priceDiffRepo = priceDiffRepo;
         _exchangeRates = exchangeRates;
     }
 
@@ -84,28 +87,37 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
         var rates = await _exchangeRates.GetRatesToTryAsync(currencies, ct);
         var rateDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
 
-        decimal GetPrice(Guid? serviceId) =>
+        decimal ServicePrice(Guid? serviceId) =>
             services.FirstOrDefault(s => s.Id == serviceId)?.Price ?? 0;
-        decimal GetPriceInTry(Guid? serviceId)
+        decimal ServicePriceInTry(Guid? serviceId)
         {
             var svc = services.FirstOrDefault(s => s.Id == serviceId);
             if (svc is null) return 0;
             return (svc.Price ?? 0) * (rates.GetValueOrDefault(svc.Currency.ToUpper(), 1m));
         }
 
-        var totalEarnings  = appointments.Sum(x => GetPrice(x.ServiceId));
-        var todayEarnings  = today.Sum(x => GetPriceInTry(x.ServiceId));
-        var weekEarnings   = thisWeek.Sum(x => GetPriceInTry(x.ServiceId));
-        var monthEarnings  = thisMonth.Sum(x => GetPriceInTry(x.ServiceId));
-        var totalInTry     = appointments.Sum(x => GetPriceInTry(x.ServiceId));
+        // ActualTotalPrice varsa onu kullan (her zaman TRY cinsinden), yoksa servis fiyatına dön
+        decimal EffectivePriceInTry(AppointmentEntity apt) =>
+            apt.ActualTotalPrice.HasValue
+                ? apt.ActualTotalPrice.Value
+                : ServicePriceInTry(apt.ServiceId);
 
-        // Para birimine göre gruplama
+        var totalEarnings  = appointments.Sum(x => x.ActualTotalPrice ?? ServicePrice(x.ServiceId));
+        var todayEarnings  = today.Sum(EffectivePriceInTry);
+        var weekEarnings   = thisWeek.Sum(EffectivePriceInTry);
+        var monthEarnings  = thisMonth.Sum(EffectivePriceInTry);
+        var totalInTry     = appointments.Sum(EffectivePriceInTry);
+
+        // Para birimine göre gruplama:
+        // ActualTotalPrice olan randevular TRY grubunda sayılır, olmayanlar kendi para biriminde
         var byCurrency = appointments
-            .GroupBy(x => services.FirstOrDefault(s => s.Id == x.ServiceId)?.Currency ?? "TRY")
+            .GroupBy(x => x.ActualTotalPrice.HasValue
+                ? "TRY"
+                : services.FirstOrDefault(s => s.Id == x.ServiceId)?.Currency ?? "TRY")
             .Select(g =>
             {
                 var currency = g.Key.ToUpper();
-                var total = g.Sum(x => GetPrice(x.ServiceId));
+                var total = g.Sum(x => x.ActualTotalPrice ?? ServicePrice(x.ServiceId));
                 var rate = rates.GetValueOrDefault(currency, 1m);
                 return new CurrencyEarningDto
                 {
@@ -125,7 +137,7 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             .Select(g => new DailyEarningDto
             {
                 Date = g.Key,
-                Earnings = g.Sum(x => services.FirstOrDefault(s => s.Id == x.ServiceId)?.Price ?? 0),
+                Earnings = g.Sum(EffectivePriceInTry),
                 AppointmentCount = g.Count()
             })
             .ToList();
@@ -136,12 +148,9 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             {
                 StaffId = g.Key.ToString(),
                 StaffName = staff.FirstOrDefault(s => s.Id == g.Key)?.FullName ?? "Unknown",
-                // TotalEarnings and Average are always in TRY so mixed-currency salons display correctly
-                TotalEarnings = g.Sum(x => GetPriceInTry(x.ServiceId)),
+                TotalEarnings = g.Sum(EffectivePriceInTry),
                 AppointmentCount = g.Count(),
-                Average = g.Count() > 0
-                    ? g.Sum(x => GetPriceInTry(x.ServiceId)) / g.Count()
-                    : 0
+                Average = g.Count() > 0 ? g.Sum(EffectivePriceInTry) / g.Count() : 0
             })
             .ToList();
 
@@ -153,10 +162,17 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
                 ServiceName = services.FirstOrDefault(s => s.Id == g.Key)?.Name ?? "Unknown",
                 Currency = services.FirstOrDefault(s => s.Id == g.Key)?.Currency ?? "TRY",
                 Price = services.FirstOrDefault(s => s.Id == g.Key)?.Price ?? 0,
-                TotalEarnings = g.Sum(x => services.FirstOrDefault(s => s.Id == x.ServiceId)?.Price ?? 0),
+                TotalEarnings = g.Sum(EffectivePriceInTry),
                 AppointmentCount = g.Count()
             })
             .ToList();
+
+        // ── Fiyat farkı istatistikleri ─────────────────────────────────────
+        var priceDiffs = await _priceDiffRepo.GetAllAsync(
+            x => tenantIds.Contains(x.TenantId) &&
+                 x.CompletedAt >= startUtc && x.CompletedAt < endUtc, ct);
+        var totalPriceDiff = priceDiffs.Sum(x => x.Difference);
+        var priceDiffCount = priceDiffs.Count;
 
         // ── Giderler (Expenses) ─────────────────────────────────────────────
         var allExpenses = await _expenseRepo.GetAllAsync(
@@ -207,7 +223,9 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             ByService = byService,
             TotalExpenses = totalExpenses,
             NetProfit = totalInTry - totalExpenses,
-            ExpenseByCategory = expenseByCategory
+            ExpenseByCategory = expenseByCategory,
+            TotalPriceDifference = totalPriceDiff,
+            PriceDifferenceCount = priceDiffCount
         };
     }
 }
