@@ -39,8 +39,21 @@ public class EarningsDto
     public List<ExpenseSummaryDto> ExpenseByCategory { get; set; } = new();
 
     // Fiyat farkı istatistikleri
-    public decimal TotalPriceDifference { get; set; }  // Dönem içi net fiyat farkı (+tahsilat, -indirim)
-    public int PriceDifferenceCount { get; set; }       // Fiyat farkı olan randevu sayısı
+    public decimal TotalPriceDifference { get; set; }
+    public int PriceDifferenceCount { get; set; }
+    public List<PriceDifferenceDetailDto> PriceDifferences { get; set; } = new();
+}
+
+public class PriceDifferenceDetailDto
+{
+    public Guid AppointmentId { get; set; }
+    public string CustomerName { get; set; } = string.Empty;
+    public string StaffName { get; set; } = string.Empty;
+    public string ServiceName { get; set; } = string.Empty;
+    public decimal OriginalPrice { get; set; }
+    public decimal ActualPrice { get; set; }
+    public decimal Difference { get; set; }
+    public DateTime CompletedAt { get; set; }
 }
 
 public class ExpenseSummaryDto

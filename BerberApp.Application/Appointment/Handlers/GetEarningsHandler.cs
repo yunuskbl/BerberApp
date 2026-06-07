@@ -10,6 +10,7 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
     private readonly IGenericRepository<AppointmentEntity> _appointmentRepo;
     private readonly IGenericRepository<ServiceEntity> _serviceRepo;
     private readonly IGenericRepository<StaffEntity> _staffRepo;
+    private readonly IGenericRepository<CustomerEntity> _customerRepo;
     private readonly IGenericRepository<ExpenseEntity> _expenseRepo;
     private readonly IGenericRepository<PriceDifferenceEntity> _priceDiffRepo;
     private readonly IExchangeRateService _exchangeRates;
@@ -18,6 +19,7 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
         IGenericRepository<AppointmentEntity> appointmentRepo,
         IGenericRepository<ServiceEntity> serviceRepo,
         IGenericRepository<StaffEntity> staffRepo,
+        IGenericRepository<CustomerEntity> customerRepo,
         IGenericRepository<ExpenseEntity> expenseRepo,
         IGenericRepository<PriceDifferenceEntity> priceDiffRepo,
         IExchangeRateService exchangeRates)
@@ -25,6 +27,7 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
         _appointmentRepo = appointmentRepo;
         _serviceRepo = serviceRepo;
         _staffRepo = staffRepo;
+        _customerRepo = customerRepo;
         _expenseRepo = expenseRepo;
         _priceDiffRepo = priceDiffRepo;
         _exchangeRates = exchangeRates;
@@ -79,8 +82,9 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
                 DateTime.SpecifyKind(monthStart.AddMonths(1), DateTimeKind.Unspecified), turkeyTz))
             .ToList();
 
-        var services = await _serviceRepo.GetAllAsync(x => tenantIds.Contains(x.TenantId), ct);
-        var staff = await _staffRepo.GetAllAsync(x => tenantIds.Contains(x.TenantId), ct);
+        var services  = await _serviceRepo.GetAllAsync(x => tenantIds.Contains(x.TenantId), ct);
+        var staff     = await _staffRepo.GetAllAsync(x => tenantIds.Contains(x.TenantId), ct);
+        var customers = await _customerRepo.GetAllAsync(x => tenantIds.Contains(x.TenantId), ct);
 
         // Döviz kurları
         var currencies = services.Select(s => s.Currency).Distinct();
@@ -174,6 +178,26 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
         var totalPriceDiff = priceDiffs.Sum(x => x.Difference);
         var priceDiffCount = priceDiffs.Count;
 
+        var appointmentMap = appointments.ToDictionary(x => x.Id);
+        var priceDiffDetails = priceDiffs
+            .OrderByDescending(x => x.CompletedAt)
+            .Select(pd =>
+            {
+                appointmentMap.TryGetValue(pd.AppointmentId, out var apt);
+                return new PriceDifferenceDetailDto
+                {
+                    AppointmentId = pd.AppointmentId,
+                    CustomerName  = customers.FirstOrDefault(c => c.Id == apt?.CustomerId)?.FullName ?? "—",
+                    StaffName     = staff.FirstOrDefault(s => s.Id == apt?.StaffId)?.FullName ?? "—",
+                    ServiceName   = services.FirstOrDefault(s => s.Id == apt?.ServiceId)?.Name ?? "—",
+                    OriginalPrice = pd.OriginalPrice,
+                    ActualPrice   = pd.ActualPrice,
+                    Difference    = pd.Difference,
+                    CompletedAt   = pd.CompletedAt,
+                };
+            })
+            .ToList();
+
         // ── Giderler (Expenses) ─────────────────────────────────────────────
         var allExpenses = await _expenseRepo.GetAllAsync(
             x => tenantIds.Contains(x.TenantId) &&
@@ -225,7 +249,8 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             NetProfit = totalInTry - totalExpenses,
             ExpenseByCategory = expenseByCategory,
             TotalPriceDifference = totalPriceDiff,
-            PriceDifferenceCount = priceDiffCount
+            PriceDifferenceCount = priceDiffCount,
+            PriceDifferences = priceDiffDetails
         };
     }
 }

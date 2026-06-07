@@ -26,6 +26,18 @@ export interface EarningsDto {
   // Fiyat farkı istatistikleri
   totalPriceDifference: number;
   priceDifferenceCount: number;
+  priceDifferences:     PriceDifferenceDetailDto[];
+}
+
+export interface PriceDifferenceDetailDto {
+  appointmentId: string;
+  customerName:  string;
+  staffName:     string;
+  serviceName:   string;
+  originalPrice: number;
+  actualPrice:   number;
+  difference:    number;
+  completedAt:   string;
 }
 
 export interface ExpenseSummaryDto {

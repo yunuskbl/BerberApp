@@ -186,7 +186,11 @@
           <div class="stat-sub">{{ earnings.weekAppointments }} {{ 'reports.appt' | translate }}</div>
         </div>
         @if (earnings.priceDifferenceCount > 0) {
-          <div class="stat-card" [class.stat-card--green]="earnings.totalPriceDifference >= 0" [class.stat-card--red]="earnings.totalPriceDifference < 0">
+          <div class="stat-card stat-card--clickable"
+               [class.stat-card--green]="earnings.totalPriceDifference >= 0"
+               [class.stat-card--red]="earnings.totalPriceDifference < 0"
+               (click)="showPriceDiffModal = true"
+               title="Detayları gör">
             <div class="stat-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
@@ -196,7 +200,7 @@
             <div class="stat-value">
               {{ earnings.totalPriceDifference >= 0 ? '+' : '' }}{{ formatCurrency(earnings.totalPriceDifference) }}
             </div>
-            <div class="stat-sub">{{ earnings.priceDifferenceCount }} randevuda fark oluştu</div>
+            <div class="stat-sub">{{ earnings.priceDifferenceCount }} randevuda fark · detay için tıkla</div>
           </div>
         }
       </div>
@@ -525,3 +529,68 @@
 
   </form>
 </div>
+
+<!-- ═══ FİYAT FARKI DETAY MODAL ═══ -->
+@if (showPriceDiffModal && earnings) {
+  <div class="modal-overlay" (click)="showPriceDiffModal = false">
+    <div class="pdiff-modal" (click)="$event.stopPropagation()">
+      <div class="pdiff-header">
+        <div>
+          <h3>Fiyat Farkı Detayları</h3>
+          <p>{{ reportStartDate }} → {{ reportEndDate }} · {{ earnings.priceDifferenceCount }} randevu</p>
+        </div>
+        <button class="pdiff-close" (click)="showPriceDiffModal = false">✕</button>
+      </div>
+
+      <div class="pdiff-summary">
+        <div class="pdiff-sum-item" [class.positive]="earnings.totalPriceDifference >= 0" [class.negative]="earnings.totalPriceDifference < 0">
+          <span class="pdiff-sum-label">Net Fark</span>
+          <span class="pdiff-sum-value">
+            {{ earnings.totalPriceDifference >= 0 ? '+' : '' }}{{ formatCurrency(earnings.totalPriceDifference) }}
+          </span>
+        </div>
+        <div class="pdiff-sum-item">
+          <span class="pdiff-sum-label">Fazla Tahsilat</span>
+          <span class="pdiff-sum-value positive">+{{ formatCurrency(positivePriceDiffTotal) }}</span>
+        </div>
+        <div class="pdiff-sum-item">
+          <span class="pdiff-sum-label">Yapılan İndirim</span>
+          <span class="pdiff-sum-value negative">{{ formatCurrency(negativePriceDiffTotal) }}</span>
+        </div>
+      </div>
+
+      <div class="pdiff-table-wrap">
+        <table class="pdiff-table">
+          <thead>
+            <tr>
+              <th>Müşteri</th>
+              <th>Personel</th>
+              <th>Hizmet</th>
+              <th>Tarih</th>
+              <th>Orijinal</th>
+              <th>Gerçek</th>
+              <th>Fark</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of earnings.priceDifferences; track row.appointmentId) {
+              <tr>
+                <td><span class="pdiff-customer">{{ row.customerName }}</span></td>
+                <td class="pdiff-muted">{{ row.staffName }}</td>
+                <td class="pdiff-muted">{{ row.serviceName }}</td>
+                <td class="pdiff-muted">{{ formatDate(row.completedAt) }}</td>
+                <td class="pdiff-muted">{{ formatCurrency(row.originalPrice) }}</td>
+                <td>{{ formatCurrency(row.actualPrice) }}</td>
+                <td>
+                  <span class="pdiff-diff-badge" [class.positive]="row.difference >= 0" [class.negative]="row.difference < 0">
+                    {{ row.difference >= 0 ? '+' : '' }}{{ formatCurrency(row.difference) }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+}

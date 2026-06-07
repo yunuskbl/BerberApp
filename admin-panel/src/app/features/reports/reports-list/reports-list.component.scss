@@ -1056,3 +1056,120 @@
     &:hover { background: #f9fafb; }
   }
 }
+
+// ─── Fiyat Farkı Modal ────────────────────────────────────────────
+.stat-card--clickable {
+  cursor: pointer;
+  &:hover { box-shadow: 0 6px 20px rgba(0,0,0,.10); transform: translateY(-1px); }
+  transition: box-shadow .2s, transform .2s;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn .15s ease;
+}
+
+.pdiff-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 820px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  overflow: hidden;
+}
+
+.pdiff-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f0f0f0;
+
+  h3 { font-size: 16px; font-weight: 700; color: #111827; margin: 0 0 4px; }
+  p  { font-size: 12px; color: #9ca3af; margin: 0; }
+}
+
+.pdiff-close {
+  width: 32px; height: 32px;
+  border-radius: 8px; border: none;
+  background: #f3f4f6; color: #6b7280;
+  font-size: 14px; cursor: pointer; flex-shrink: 0;
+  &:hover { background: #e2e8f0; }
+}
+
+.pdiff-summary {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #f0f0f0;
+
+  .pdiff-sum-item {
+    flex: 1;
+    padding: 14px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-right: 1px solid #f0f0f0;
+    &:last-child { border-right: none; }
+  }
+
+  .pdiff-sum-label { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: .4px; }
+
+  .pdiff-sum-value {
+    font-size: 18px; font-weight: 800; color: #111827;
+    &.positive { color: #059669; }
+    &.negative { color: #dc2626; }
+  }
+}
+
+.pdiff-table-wrap {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.pdiff-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    padding: 11px 16px;
+    font-size: 11px; font-weight: 600; color: #9ca3af;
+    text-transform: uppercase; letter-spacing: .4px;
+    background: #f9fafb;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 13px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid #fafafa;
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+}
+
+.pdiff-customer { font-weight: 600; color: #111827; }
+.pdiff-muted    { color: #6b7280; }
+
+.pdiff-diff-badge {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px; font-weight: 700;
+
+  &.positive { background: #dcfce7; color: #15803d; }
+  &.negative { background: #fee2e2; color: #dc2626; }
+}

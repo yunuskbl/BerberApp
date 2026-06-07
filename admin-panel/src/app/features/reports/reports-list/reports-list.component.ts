@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { EarningsService, EarningsDto } from '../../../core/services/earnings.service';
+import { EarningsService, EarningsDto, PriceDifferenceDetailDto } from '../../../core/services/earnings.service';
 import { ExpenseService, ExpenseDto } from '../../../core/services/expense.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -59,6 +59,9 @@ export class ReportsListComponent implements OnInit {
       this.setScope('branch', value.slice(7));
     }
   }
+
+  // ── Fiyat farkı modal ────────────────────────────────────────────────────
+  showPriceDiffModal = false;
 
   // ── Aktif sekme ───────────────────────────────────────────────────────────
   activeTab: 'income' | 'expense' = 'income';
@@ -214,6 +217,18 @@ export class ReportsListComponent implements OnInit {
 
   get totalExpensesInPeriod(): number {
     return this.expenses.reduce((sum, e) => sum + e.amount, 0);
+  }
+
+  get positivePriceDiffTotal(): number {
+    return (this.earnings?.priceDifferences ?? [])
+      .filter(d => d.difference > 0)
+      .reduce((sum, d) => sum + d.difference, 0);
+  }
+
+  get negativePriceDiffTotal(): number {
+    return (this.earnings?.priceDifferences ?? [])
+      .filter(d => d.difference < 0)
+      .reduce((sum, d) => sum + d.difference, 0);
   }
 
   // ── Yardımcılar ───────────────────────────────────────────────────────────
