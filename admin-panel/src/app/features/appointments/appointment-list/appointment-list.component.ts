@@ -163,11 +163,14 @@ export class AppointmentListComponent implements OnInit {
   loadAppointments(): void {
     this.isLoading = true;
     let dateStr: string | undefined;
-    if (!this.showPendingAll && this.selectedDate) {
+    let statusStr: string | undefined;
+    if (this.showPendingAll) {
+      statusStr = 'Pending';
+    } else if (this.selectedDate) {
       const [year, month, day] = this.selectedDate.split('-').map(Number);
       dateStr = new Date(Date.UTC(year, month - 1, day, 0, 0, 0)).toISOString();
     }
-    this.appointmentService.getAll(this.selectedStaffId || undefined, dateStr).subscribe({
+    this.appointmentService.getAll(this.selectedStaffId || undefined, dateStr, undefined, statusStr).subscribe({
       next: (res) => {
         if (res.success) this.appointments = res.data;
         this.isLoading = false;

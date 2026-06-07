@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using BerberApp.Application.Appointment.DTOs;
+using BerberApp.Domain.Enums;
 using MediatR;
 
 namespace BerberApp.Application.Appointment.Queries;
@@ -15,4 +16,5 @@ public class GetAllAppointmentsQuery : IRequest<List<AppointmentDto>>
     public Guid? StaffId { get; set; }
     public Guid? CustomerId { get; set; }
     public DateTime? Date { get; set; }
+    public AppointmentStatus? Status { get; set; }
 }

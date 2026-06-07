@@ -35,13 +35,18 @@ public class AppointmentsController : BaseApiController
     }
     
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] Guid? staffId, [FromQuery] DateTime? date, [FromQuery] Guid? customerId)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] Guid? staffId,
+        [FromQuery] DateTime? date,
+        [FromQuery] Guid? customerId,
+        [FromQuery] BerberApp.Domain.Enums.AppointmentStatus? status)
         => Success(await Mediator.Send(new GetAllAppointmentsQuery
         {
             TenantId   = TenantId,
             StaffId    = staffId,
             Date       = date,
             CustomerId = customerId,
+            Status     = status,
         }));
 
     [HttpGet("{id}")]

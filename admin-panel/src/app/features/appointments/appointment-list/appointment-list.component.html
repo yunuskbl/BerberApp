@@ -65,6 +65,12 @@
   <div class="card">
     @if (isLoading) {
       <div class="loading-state"><div class="spinner"></div></div>
+    } @else if (appointments.length === 0 && showPendingAll) {
+      <div class="empty-state">
+        <span class="empty-icon">✅</span>
+        <h3>Bekleyen randevu yok</h3>
+        <p>Şu an onay bekleyen randevu bulunmuyor.</p>
+      </div>
     } @else if (appointments.length === 0) {
       <div class="empty-state">
         <span class="empty-icon">📅</span>

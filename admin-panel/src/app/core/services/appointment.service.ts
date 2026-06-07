@@ -19,11 +19,13 @@ export class AppointmentService {
     staffId?: string,
     date?: string,
     customerId?: string,
+    status?: string,
   ): Observable<ApiResponse<Appointment[]>> {
     let params = new HttpParams();
     if (staffId)    params = params.set('staffId', staffId);
     if (date)       params = params.set('date', date);
     if (customerId) params = params.set('customerId', customerId);
+    if (status)     params = params.set('status', status);
     return this.http.get<ApiResponse<Appointment[]>>(this.apiUrl, { params });
   }
 

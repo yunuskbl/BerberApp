@@ -36,6 +36,9 @@ public class GetAllAppointmentsHandler : IRequestHandler<GetAllAppointmentsQuery
         if (request.CustomerId.HasValue)
             query = query.Where(x => x.CustomerId == request.CustomerId.Value);
 
+        if (request.Status.HasValue)
+            query = query.Where(x => x.Status == request.Status.Value);
+
         if (request.Date.HasValue)
         {
             // Tarih filtresi Türkiye saatine göre yapılmalı (UTC+3).
