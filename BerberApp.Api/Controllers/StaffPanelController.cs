@@ -12,6 +12,7 @@ namespace BerberApp.Api.Controllers;
 /// Sadece Role = Staff olan tokenlar erişebilir.
 /// </summary>
 [Authorize(Roles = "Staff")]
+[Route("api/staff-panel")]
 public class StaffPanelController : BaseApiController
 {
     private readonly IAppDbContext _context;
