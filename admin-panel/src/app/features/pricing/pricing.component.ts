@@ -132,14 +132,14 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
       </svg>`,
       title: 'Personel & Fiyat Yönetimi',
-      desc: 'Her personele profil fotoğrafı, biyografi ve özel hizmet fiyatı tanımlayın. Çalışma saatleri, izin günleri ve salon kapanışlarını kolayca yönetin.'
+      desc: 'Her personele profil fotoğrafı, biyografi ve hizmete özel fiyat & süre tanımlayın. Randevu oluşturulurken seçilen personelin fiyatı otomatik uygulanır; çalışma saatleri ve izin günleri personel bazında yönetilir.'
     },
     {
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.65 3.21a2 2 0 0 1 1.99-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
       </svg>`,
       title: 'Toplu WhatsApp Kampanyası',
-      desc: 'Tüm kayıtlı müşterilerinize tek tıkla kişiselleştirilmiş WhatsApp mesajı gönderin. Kampanya, indirim veya hatırlatma bildirimi için idealdir.'
+      desc: 'Kayıtlı müşterilerinize veya tüm personelinize tek tıkla WhatsApp mesajı gönderin. WhatsApp grubunuza bağlayarak toplu duyuru, kampanya ve hatırlatmaları kolayca iletin.'
     },
     {
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
