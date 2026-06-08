@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import {
   ReactiveFormsModule,
+  FormsModule,
   FormBuilder,
   FormGroup,
   Validators,
@@ -26,7 +27,7 @@ import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'app-staff-list',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, ReactiveFormsModule, TranslatePipe, CustomCalendarComponent],
+  imports: [CommonModule, CurrencyPipe, DatePipe, ReactiveFormsModule, FormsModule, TranslatePipe, CustomCalendarComponent],
   templateUrl: './staff-list.component.html',
   styleUrl: './staff-list.component.scss',
 })
@@ -83,6 +84,17 @@ export class StaffListComponent implements OnInit {
   svcErrorMessage = '';
   svcSuccessMessage = '';
 
+  // ── Toplu Mesaj ───────────────────────────────────────────────────────────
+  isBroadcastOpen      = false;
+  broadcastMessage     = '';
+  broadcastSubmitting  = false;
+  broadcastResult: { totalStaff: number; sent: number; failed: number } | null = null;
+  broadcastError       = '';
+  whatsAppGroupLink: string | null = null;
+  groupLinkInput       = '';
+  isSavingGroupLink    = false;
+  showGroupLinkInput   = false;
+
   staffForm: FormGroup;
 
   readonly days = [
@@ -123,6 +135,9 @@ export class StaffListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadStaff();
+    this.staffService.getWhatsAppGroupLink().subscribe({
+      next: (res) => { if (res.success) this.whatsAppGroupLink = res.data.whatsAppGroupLink; }
+    });
   }
 
   // ── Çalışma Saatleri ───────────────────────────────────────────────────────
@@ -643,5 +658,58 @@ export class StaffListComponent implements OnInit {
 
   getInitials(name: string): string {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  // ── Toplu Mesaj ───────────────────────────────────────────────────────────
+  openBroadcast(): void {
+    this.isBroadcastOpen   = true;
+    this.broadcastMessage  = '';
+    this.broadcastResult   = null;
+    this.broadcastError    = '';
+    this.showGroupLinkInput = false;
+    this.groupLinkInput    = this.whatsAppGroupLink ?? '';
+  }
+
+  closeBroadcast(): void {
+    this.isBroadcastOpen = false;
+  }
+
+  onBroadcastSubmit(): void {
+    if (!this.broadcastMessage.trim() || this.broadcastSubmitting) return;
+    this.broadcastSubmitting = true;
+    this.broadcastResult    = null;
+    this.broadcastError     = '';
+    this.staffService.broadcast(this.broadcastMessage.trim()).subscribe({
+      next: (res) => {
+        if (res.success) this.broadcastResult = res.data;
+        else this.broadcastError = 'Gönderim başarısız.';
+        this.broadcastSubmitting = false;
+      },
+      error: (err) => {
+        this.broadcastError = err.error?.message || 'Hata oluştu.';
+        this.broadcastSubmitting = false;
+      },
+    });
+  }
+
+  openWhatsAppGroup(): void {
+    if (!this.whatsAppGroupLink) return;
+    navigator.clipboard.writeText(this.broadcastMessage).catch(() => {});
+    window.open(this.whatsAppGroupLink, '_blank');
+  }
+
+  saveGroupLink(): void {
+    this.isSavingGroupLink = true;
+    const link = this.groupLinkInput.trim() || null;
+    this.staffService.setWhatsAppGroupLink(link).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.whatsAppGroupLink  = res.data.whatsAppGroupLink;
+          this.showGroupLinkInput = false;
+        }
+        this.isSavingGroupLink = false;
+      },
+      error: () => { this.isSavingGroupLink = false; },
+    });
   }
 }

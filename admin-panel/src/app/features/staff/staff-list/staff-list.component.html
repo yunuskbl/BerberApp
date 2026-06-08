@@ -5,9 +5,17 @@
       <h2>{{ 'page.staff' | translate }}</h2>
       <p>{{ staffList.length }} {{ 'staff.registered' | translate }}</p>
     </div>
-    <button class="btn btn-primary" (click)="openDrawer()">
-      {{ 'staff.add' | translate }}
-    </button>
+    <div class="header-actions">
+      <button class="btn btn-outline broadcast-btn" (click)="openBroadcast()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.69A2 2 0 012 .18h3a2 2 0 012 1.72c.13 1 .36 1.98.72 2.91a2 2 0 01-.45 2.11L6 8a16 16 0 006.29 6.29l1.08-1.27a2 2 0 012.11-.45c.93.36 1.91.59 2.91.72A2 2 0 0122 16.92z"/>
+        </svg>
+        Toplu Mesaj
+      </button>
+      <button class="btn btn-primary" (click)="openDrawer()">
+        {{ 'staff.add' | translate }}
+      </button>
+    </div>
   </div>
 
   <div class="card">
@@ -478,3 +486,105 @@
   }
 
 </div>
+
+<!-- ═══ TOPLU MESAJ MODAL ═══ -->
+@if (isBroadcastOpen) {
+  <div class="modal-overlay" (click)="closeBroadcast()"></div>
+  <div class="modal-box broadcast-modal">
+
+    <div class="modal-header">
+      <div class="modal-title-row">
+        <div class="modal-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.69A2 2 0 012 .18h3a2 2 0 012 1.72c.13 1 .36 1.98.72 2.91a2 2 0 01-.45 2.11L6 8a16 16 0 006.29 6.29l1.08-1.27a2 2 0 012.11-.45c.93.36 1.91.59 2.91.72A2 2 0 0122 16.92z"/>
+          </svg>
+        </div>
+        <div>
+          <h3>Personele Toplu Mesaj</h3>
+          <p>{{ staffList.length }} personel</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" (click)="closeBroadcast()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M1 1l12 12M13 1L1 13"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Mesaj alanı -->
+      <div class="broadcast-section">
+        <label class="bcast-label">Mesaj</label>
+        <textarea class="bcast-textarea" [(ngModel)]="broadcastMessage" rows="5"
+          placeholder="Tüm personele gönderilecek mesajı yazın..."></textarea>
+        <p class="bcast-hint">{{ broadcastMessage.length }} karakter</p>
+      </div>
+
+      <!-- Sonuç -->
+      @if (broadcastResult) {
+        <div class="bcast-result">
+          <span class="bcast-stat sent">✓ {{ broadcastResult.sent }} gönderildi</span>
+          @if (broadcastResult.failed > 0) {
+            <span class="bcast-stat failed">✗ {{ broadcastResult.failed }} başarısız</span>
+          }
+        </div>
+      }
+      @if (broadcastError) {
+        <div class="error-message">{{ broadcastError }}</div>
+      }
+
+      <!-- WhatsApp Grubu -->
+      <div class="broadcast-section wa-group-section">
+        <div class="wa-group-header">
+          <div class="wa-group-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+              <path d="M11.998 2C6.477 2 2 6.477 2 12c0 1.89.524 3.657 1.437 5.168L2 22l4.979-1.413A9.956 9.956 0 0011.998 22c5.523 0 10-4.477 10-10S17.521 2 11.998 2zm0 18.182a8.168 8.168 0 01-4.162-1.138l-.298-.178-3.082.875.84-3.002-.193-.307A8.17 8.17 0 013.818 12c0-4.513 3.667-8.182 8.18-8.182 4.512 0 8.18 3.669 8.18 8.182 0 4.514-3.668 8.182-8.18 8.182z"/>
+            </svg>
+            WhatsApp Grubu
+          </div>
+          <button class="wa-config-btn" (click)="showGroupLinkInput = !showGroupLinkInput">
+            {{ whatsAppGroupLink ? 'Değiştir' : 'Bağla' }}
+          </button>
+        </div>
+
+        @if (showGroupLinkInput) {
+          <div class="wa-link-input-row">
+            <input type="text" class="wa-link-input" [(ngModel)]="groupLinkInput"
+              placeholder="https://chat.whatsapp.com/...">
+            <button class="btn btn-primary btn-sm" (click)="saveGroupLink()" [disabled]="isSavingGroupLink">
+              {{ isSavingGroupLink ? '...' : 'Kaydet' }}
+            </button>
+          </div>
+        }
+
+        @if (whatsAppGroupLink) {
+          <button class="wa-open-btn" (click)="openWhatsAppGroup()" [disabled]="!broadcastMessage.trim()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+              <path d="M11.998 2C6.477 2 2 6.477 2 12c0 1.89.524 3.657 1.437 5.168L2 22l4.979-1.413A9.956 9.956 0 0011.998 22c5.523 0 10-4.477 10-10S17.521 2 11.998 2zm0 18.182a8.168 8.168 0 01-4.162-1.138l-.298-.178-3.082.875.84-3.002-.193-.307A8.17 8.17 0 013.818 12c0-4.513 3.667-8.182 8.18-8.182 4.512 0 8.18 3.669 8.18 8.182 0 4.514-3.668 8.182-8.18 8.182z"/>
+            </svg>
+            Mesajı Kopyala & Grubu Aç
+          </button>
+          <p class="wa-hint">Mesaj panonuza kopyalanır, WhatsApp grubu yeni sekmede açılır.</p>
+        } @else if (!showGroupLinkInput) {
+          <p class="wa-no-link">Henüz bir WhatsApp grubu bağlanmadı. "Bağla" ile grup davet linkini ekleyin.</p>
+        }
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeBroadcast()">İptal</button>
+      <button class="btn btn-primary" (click)="onBroadcastSubmit()"
+        [disabled]="!broadcastMessage.trim() || broadcastSubmitting">
+        @if (broadcastSubmitting) {
+          <div class="btn-spinner"></div> Gönderiliyor...
+        } @else {
+          Personellere Gönder
+        }
+      </button>
+    </div>
+  </div>
+}

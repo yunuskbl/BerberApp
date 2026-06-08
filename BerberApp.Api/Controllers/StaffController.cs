@@ -49,6 +49,33 @@ public class StaffController : BaseApiController
         return NoContent();
     }
 
+    [HttpPost("broadcast")]
+    public async Task<IActionResult> Broadcast([FromBody] BroadcastStaffRequest request)
+        => Success(await Mediator.Send(new BroadcastStaffMessageCommand
+        {
+            TenantId = TenantId,
+            Message  = request.Message,
+        }));
+
+    [HttpGet("whatsapp-group-link")]
+    public async Task<IActionResult> GetWhatsAppGroupLink()
+    {
+        var tenant = await _context.Tenants.AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == TenantId);
+        if (tenant is null) return NotFound(new { success = false, message = "Tenant bulunamadı." });
+        return Success(new { whatsAppGroupLink = tenant.WhatsAppGroupLink });
+    }
+
+    [HttpPut("whatsapp-group-link")]
+    public async Task<IActionResult> SetWhatsAppGroupLink([FromBody] SetWhatsAppGroupLinkRequest request)
+    {
+        var tenant = await _context.Tenants.FirstOrDefaultAsync(t => t.Id == TenantId);
+        if (tenant is null) return NotFound(new { success = false, message = "Tenant bulunamadı." });
+        tenant.WhatsAppGroupLink = string.IsNullOrWhiteSpace(request.Link) ? null : request.Link.Trim();
+        await _context.SaveChangesAsync();
+        return Success(new { whatsAppGroupLink = tenant.WhatsAppGroupLink });
+    }
+
     [HttpGet("{id}/services")]
     public async Task<IActionResult> GetServices(Guid id)
     {
@@ -371,4 +398,6 @@ public class StaffController : BaseApiController
 
     public record CreateStaffAccountRequest(string Email, string Password);
     public record ResetStaffPasswordRequest(string NewPassword);
+    public record BroadcastStaffRequest(string Message);
+    public record SetWhatsAppGroupLinkRequest(string? Link);
 }

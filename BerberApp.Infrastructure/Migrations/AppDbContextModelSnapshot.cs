@@ -702,6 +702,9 @@ namespace BerberApp.Infrastructure.Migrations
                     b.Property<string>("ThemeColor")
                         .HasColumnType("text");
 
+                    b.Property<string>("WhatsAppGroupLink")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 

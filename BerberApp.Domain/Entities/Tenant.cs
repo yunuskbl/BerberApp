@@ -22,6 +22,7 @@ namespace BerberApp.Domain.Entities
         public double? Longitude { get; set; }
         public bool IsActive { get; set; } = true;
         public string? ThemeColor { get; set; }
+        public string? WhatsAppGroupLink { get; set; }
         public NotificationChannel PreferredNotificationChannel { get; set; } = NotificationChannel.WhatsApp;
         public BusinessType? BusinessType { get; set; }
         public Guid? ParentTenantId { get; set; }

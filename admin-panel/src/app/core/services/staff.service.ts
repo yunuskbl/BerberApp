@@ -38,4 +38,16 @@ export class StaffService {
   setServices(staffId: string, items: { serviceId: string; customPrice: number | null; customDurationMinutes: number | null }[]): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/${staffId}/services`, { items });
   }
+
+  broadcast(message: string): Observable<ApiResponse<{ totalStaff: number; sent: number; failed: number }>> {
+    return this.http.post<ApiResponse<{ totalStaff: number; sent: number; failed: number }>>(`${this.apiUrl}/broadcast`, { message });
+  }
+
+  getWhatsAppGroupLink(): Observable<ApiResponse<{ whatsAppGroupLink: string | null }>> {
+    return this.http.get<ApiResponse<{ whatsAppGroupLink: string | null }>>(`${this.apiUrl}/whatsapp-group-link`);
+  }
+
+  setWhatsAppGroupLink(link: string | null): Observable<ApiResponse<{ whatsAppGroupLink: string | null }>> {
+    return this.http.put<ApiResponse<{ whatsAppGroupLink: string | null }>>(`${this.apiUrl}/whatsapp-group-link`, { link });
+  }
 }
