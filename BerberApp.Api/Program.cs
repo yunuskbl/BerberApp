@@ -100,6 +100,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 // Services
+builder.Services.Configure<BerberApp.Application.Common.Settings.TwilioSettings>(
+    builder.Configuration.GetSection("Twilio"));
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
 builder.Services.AddScoped<SmsService>();

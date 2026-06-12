@@ -42,6 +42,7 @@ public class AppointmentReminderJob
         var appointments = await _context.Appointments
             .Include(x => x.Customer)
             .Include(x => x.Service)
+            .Include(x => x.Staff)
             .Include(x => x.Tenant)
             .Where(x => x.StartTime >= tomorrow &&
                         x.StartTime < dayAfter &&
@@ -70,7 +71,8 @@ public class AppointmentReminderJob
                 {
                     await _whatsAppService.SendAppointmentReminderAsync(
                         apt.Customer.Phone, apt.Customer.FullName,
-                        apt.Service.Name, apt.StartTime, salonName, mapsUrl, bookingUrl);
+                        apt.Service.Name, apt.StartTime, salonName, mapsUrl, bookingUrl,
+                        staffName: apt.Staff?.FullName ?? string.Empty);
                 }
 
                 if (!string.IsNullOrWhiteSpace(apt.Customer?.Email))
