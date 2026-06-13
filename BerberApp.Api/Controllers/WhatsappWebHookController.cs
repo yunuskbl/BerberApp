@@ -1,11 +1,13 @@
+using System.Text.Json;
 using BerberApp.Application.Appointment.Commands;
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Application.Common.Settings;
 using BerberApp.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Twilio.Security;
+using Microsoft.Extensions.Options;
 
 namespace BerberApp.Api.Controllers;
 
@@ -17,54 +19,99 @@ public class WhatsappWebhookController : ControllerBase
     private readonly IMediator _mediator;
     private readonly IAppDbContext _context;
     private readonly ILogger<WhatsappWebhookController> _logger;
-    private readonly string _authToken;
+    private readonly string _verifyToken;
 
     public WhatsappWebhookController(
         IMediator mediator,
         IAppDbContext context,
         ILogger<WhatsappWebhookController> logger,
-        IConfiguration config)
+        IOptions<MetaWhatsAppSettings> metaOptions)
     {
-        _mediator = mediator;
-        _context = context;
-        _logger = logger;
-        _authToken = config["Twilio:AuthToken"]!;
+        _mediator    = mediator;
+        _context     = context;
+        _logger      = logger;
+        _verifyToken = metaOptions.Value.WebhookVerifyToken;
     }
 
-    [HttpPost("whatsapp")]
-    public async Task<IActionResult> HandleIncoming([FromForm] string From, [FromForm] string Body)
+    /// <summary>
+    /// Meta Developer Console'dan webhook doğrulama isteği.
+    /// hub.verify_token eşleşirse hub.challenge değerini döner.
+    /// </summary>
+    [HttpGet("whatsapp")]
+    public IActionResult Verify(
+        [FromQuery(Name = "hub.mode")]         string? mode,
+        [FromQuery(Name = "hub.challenge")]    string? challenge,
+        [FromQuery(Name = "hub.verify_token")] string? verifyToken)
     {
-        // Twilio imza doğrulaması — sahte webhook isteklerini engelle
-        if (!ValidateTwilioSignature())
+        if (mode == "subscribe" && verifyToken == _verifyToken && challenge is not null)
         {
-            _logger.LogWarning("Geçersiz Twilio imzası. IP: {IP}", HttpContext.Connection.RemoteIpAddress);
-            return Forbid();
+            _logger.LogInformation("Meta webhook doğrulandı.");
+            return Ok(challenge);
         }
 
-        if (string.IsNullOrWhiteSpace(From) || string.IsNullOrWhiteSpace(Body))
-            return TwimlResponse("Geçersiz istek.");
+        _logger.LogWarning("Geçersiz webhook doğrulama isteği. mode={Mode} token={Token}", mode, verifyToken);
+        return Forbid();
+    }
 
-        // "whatsapp:+905383996916" → "05383996916"
-        var senderPhone = NormalizePhone(From);
+    /// <summary>
+    /// Meta'nın gönderdiği gelen mesajlar.
+    /// İşletme sahibi ONAYLA N veya REDDET N yazınca randevu güncellenir.
+    /// </summary>
+    [HttpPost("whatsapp")]
+    public async Task<IActionResult> HandleIncoming([FromBody] JsonElement body)
+    {
+        // Meta her zaman 200 bekler — hata olsa bile 200 dön, loglayıp geç
+        try
+        {
+            var messages = ExtractMessages(body);
 
-        // Gönderen numaraya sahip tenant'ı bul
+            foreach (var (from, text) in messages)
+            {
+                await ProcessMessageAsync(from, text);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Webhook işlenirken hata oluştu.");
+        }
+
+        return Ok(new { });
+    }
+
+    // ── İç yardımcılar ───────────────────────────────────────────────────────
+
+    private async Task ProcessMessageAsync(string from, string text)
+    {
+        var senderPhone = NormalizePhone(from);
+
+        // Gönderen numaraya sahip aktif tenant'ı bul
         var tenant = await _context.Tenants
-            .FirstOrDefaultAsync(x => x.NotificationPhone != null && x.NotificationPhone == senderPhone && x.IsActive);
+            .FirstOrDefaultAsync(x => x.NotificationPhone != null &&
+                                      x.NotificationPhone == senderPhone &&
+                                      x.IsActive);
 
         if (tenant is null)
-            return TwimlResponse("Bu numara kayıtlı değil.");
+        {
+            _logger.LogInformation("Webhook: Kayıtlı tenant bulunamadı. Telefon: {Phone}", senderPhone);
+            return;
+        }
 
-        var message = Body.Trim();
-
+        var message   = text.Trim();
         bool isConfirm = message.StartsWith("ONAYLA ", StringComparison.OrdinalIgnoreCase);
         bool isCancel  = message.StartsWith("REDDET ", StringComparison.OrdinalIgnoreCase);
+
         if (!isConfirm && !isCancel)
-            return TwimlResponse("Bilinmeyen komut.\nOnaylamak: ONAYLA [numara]\nReddetmek: REDDET [numara]");
+        {
+            _logger.LogInformation("Webhook: Bilinmeyen komut '{Message}' — TenantId={TenantId}", message, tenant.Id);
+            return;
+        }
 
         var numberStr = (isConfirm ? message["ONAYLA ".Length..] : message["REDDET ".Length..]).Trim();
-
         if (!int.TryParse(numberStr, out int number) || number < 1)
-            return TwimlResponse("Geçersiz numara.");
+        {
+            _logger.LogWarning("Webhook: Geçersiz sıra numarası '{Num}'", numberStr);
+            return;
+        }
 
         var pendingAppointments = await _context.Appointments
             .Where(x => x.TenantId == tenant.Id && x.Status == AppointmentStatus.Pending)
@@ -72,65 +119,66 @@ public class WhatsappWebhookController : ControllerBase
             .ToListAsync();
 
         var appointment = pendingAppointments.ElementAtOrDefault(number - 1);
-
         if (appointment is null)
-            return TwimlResponse($"#{number} numaralı bekleyen randevu bulunamadı.");
+        {
+            _logger.LogWarning("Webhook: #{Number} numaralı bekleyen randevu yok — TenantId={TenantId}", number, tenant.Id);
+            return;
+        }
 
         if (isConfirm)
         {
             await _mediator.Send(new ConfirmAppointmentCommand { Id = appointment.Id, TenantId = tenant.Id });
             _logger.LogInformation("Webhook ile randevu onaylandı: {AppointmentId}", appointment.Id);
-            return TwimlResponse("✅ Randevu onaylandı! Müşteriye bildirim gönderildi.");
         }
         else
         {
             await _mediator.Send(new CancelAppointmentCommand { Id = appointment.Id, TenantId = tenant.Id });
             _logger.LogInformation("Webhook ile randevu reddedildi: {AppointmentId}", appointment.Id);
-            return TwimlResponse("❌ Randevu reddedildi. Müşteriye bildirim gönderildi.");
         }
     }
 
-    /// <summary>
-    /// Twilio'nun gönderdiği X-Twilio-Signature header'ını doğrular.
-    /// Nginx reverse proxy arkasında çalışmayı destekler.
-    /// </summary>
-    private bool ValidateTwilioSignature()
+    /// <summary>Meta webhook payload'undan (from, text) çiftlerini çıkarır.</summary>
+    private static List<(string from, string text)> ExtractMessages(JsonElement root)
     {
-        var twilioSignature = Request.Headers["X-Twilio-Signature"].FirstOrDefault();
-        if (string.IsNullOrEmpty(twilioSignature))
-            return false;
+        var result = new List<(string, string)>();
 
-        // Nginx reverse proxy arkasında gerçek protokol ve host'u al
-        var proto = Request.Headers["X-Forwarded-Proto"].FirstOrDefault() ?? Request.Scheme;
-        var host  = Request.Headers["X-Forwarded-Host"].FirstOrDefault()  ?? Request.Host.ToString();
-        var url   = $"{proto}://{host}{Request.Path}";
+        if (!root.TryGetProperty("entry", out var entries)) return result;
 
-        // POST parametrelerini topla
-        var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var key in Request.Form.Keys)
-            parameters[key] = Request.Form[key].ToString();
+        foreach (var entry in entries.EnumerateArray())
+        {
+            if (!entry.TryGetProperty("changes", out var changes)) continue;
 
-        var validator = new RequestValidator(_authToken);
-        return validator.Validate(url, parameters, twilioSignature);
+            foreach (var change in changes.EnumerateArray())
+            {
+                if (!change.TryGetProperty("value", out var value)) continue;
+                if (!value.TryGetProperty("messages", out var messages)) continue;
+
+                foreach (var msg in messages.EnumerateArray())
+                {
+                    if (!msg.TryGetProperty("type", out var typeEl) || typeEl.GetString() != "text") continue;
+                    if (!msg.TryGetProperty("from", out var fromEl)) continue;
+                    if (!msg.TryGetProperty("text", out var textObj)) continue;
+                    if (!textObj.TryGetProperty("body", out var bodyEl)) continue;
+
+                    var from = fromEl.GetString() ?? string.Empty;
+                    var text = bodyEl.GetString() ?? string.Empty;
+
+                    if (!string.IsNullOrWhiteSpace(from) && !string.IsNullOrWhiteSpace(text))
+                        result.Add((from, text));
+                }
+            }
+        }
+
+        return result;
     }
 
     private static string NormalizePhone(string from)
     {
-        // "whatsapp:+905383996916" → "05383996916"
-        var phone = from.Replace("whatsapp:", "").Replace(" ", "").Replace("-", "");
-        if (phone.StartsWith("+90"))
-            phone = "0" + phone[3..];
+        // Meta gönderir: "905551234567" (E.164, + olmadan)
+        // Tenant.NotificationPhone formatı: "05551234567"
+        var phone = from.Replace("+", "").Replace(" ", "").Replace("-", "");
+        if (phone.StartsWith("90") && phone.Length > 10)
+            return "0" + phone[2..];
         return phone;
-    }
-
-    private ContentResult TwimlResponse(string message)
-    {
-        var twiml = $"""
-            <?xml version="1.0" encoding="UTF-8"?>
-            <Response>
-                <Message>{message}</Message>
-            </Response>
-            """;
-        return Content(twiml, "text/xml");
     }
 }

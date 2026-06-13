@@ -1,25 +1,26 @@
+using System.Net.Http.Headers;
 using System.Text.Json;
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Application.Common.Settings;
 using Microsoft.Extensions.Options;
-using Twilio;
-using Twilio.Rest.Api.V2010.Account;
-using Twilio.Types;
 
 namespace BerberApp.Infrastructure.Services;
 
 public class WhatsAppService : IWhatsAppService
 {
-    private readonly TwilioSettings _settings;
+    private readonly HttpClient _http;
+    private readonly MetaWhatsAppSettings _settings;
     private readonly System.Globalization.CultureInfo _tr = new("tr-TR");
 
-    public WhatsAppService(IOptions<TwilioSettings> options)
+    public WhatsAppService(HttpClient http, IOptions<MetaWhatsAppSettings> options)
     {
         _settings = options.Value;
-        TwilioClient.Init(_settings.AccountSid, _settings.AuthToken);
+        _http = http;
+        _http.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", _settings.AccessToken);
     }
 
-    // ── Content Template API (5 şablon) ──────────────────────────────────────
+    // ── Şablonlu mesajlar (Meta Content Templates) ───────────────────────────
 
     public async Task SendAppointmentConfirmedAsync(
         string phone, string customerName, string serviceName,
@@ -27,17 +28,15 @@ public class WhatsAppService : IWhatsAppService
         string salonName = "", string mapsUrl = "", string bookingUrl = "")
     {
         var t = ToTurkeyTime(startTime);
-        await SendTemplateAsync(phone, "RandevuOnay", new()
-        {
-            { "1", customerName },
-            { "2", t.ToString("dd MMMM yyyy", _tr) },
-            { "3", t.ToString("HH:mm") },
-            { "4", serviceName },
-            { "5", staffName },
-            { "6", salonName },
-            { "7", mapsUrl },
-            { "8", bookingUrl },
-        });
+        await SendTemplateAsync(phone, "RandevuOnay",
+            t.ToString("dd MMMM yyyy", _tr),
+            t.ToString("HH:mm"),
+            customerName,
+            serviceName,
+            staffName,
+            salonName,
+            mapsUrl,
+            bookingUrl);
     }
 
     public async Task SendNewAppointmentRequestAsync(
@@ -45,36 +44,26 @@ public class WhatsAppService : IWhatsAppService
         string serviceName, DateTime startTime, int sequenceNumber)
     {
         var t = ToTurkeyTime(startTime);
-        await SendTemplateAsync(staffPhone, "YeniRandevuBildirimi", new()
-        {
-            { "1", sequenceNumber.ToString() },
-            { "2", customerName },
-            { "3", customerPhone },
-            { "4", serviceName },
-            { "5", t.ToString("dd MMMM yyyy", _tr) },
-            { "6", t.ToString("HH:mm") },
-        });
+        await SendTemplateAsync(staffPhone, "YeniRandevuBildirimi",
+            sequenceNumber.ToString(),
+            customerName,
+            customerPhone,
+            serviceName,
+            t.ToString("dd MMMM yyyy", _tr),
+            t.ToString("HH:mm"));
     }
 
     public async Task SendOtpAsync(string phone, string otp)
     {
-        await SendTemplateAsync(phone, "OtpDogrulama", new()
-        {
-            { "1", otp },
-        });
+        await SendTemplateAsync(phone, "OtpDogrulama", otp);
     }
 
     public async Task SendAppointmentCompletedAsync(
         string phone, string customerName, string serviceName,
         string salonName, string reviewUrl)
     {
-        await SendTemplateAsync(phone, "HizmetTamamlandi", new()
-        {
-            { "1", customerName },
-            { "2", serviceName },
-            { "3", salonName },
-            { "4", reviewUrl },
-        });
+        await SendTemplateAsync(phone, "HizmetTamamlandi",
+            customerName, serviceName, salonName, reviewUrl);
     }
 
     public async Task SendAppointmentReminderAsync(
@@ -84,17 +73,15 @@ public class WhatsAppService : IWhatsAppService
         string staffName = "")
     {
         var t = ToTurkeyTime(startTime);
-        await SendTemplateAsync(phone, "RandevuHatirlatma", new()
-        {
-            { "1", customerName },
-            { "2", "24 saat" },
-            { "3", t.ToString("dd MMMM yyyy", _tr) },
-            { "4", t.ToString("HH:mm") },
-            { "5", serviceName },
-            { "6", staffName },
-            { "7", salonName },
-            { "8", mapsUrl },
-        });
+        await SendTemplateAsync(phone, "RandevuHatirlatma",
+            customerName,
+            "24 saat",
+            t.ToString("dd MMMM yyyy", _tr),
+            t.ToString("HH:mm"),
+            serviceName,
+            staffName,
+            salonName,
+            mapsUrl);
     }
 
     public async Task SendAppointmentReminder1hAsync(
@@ -104,20 +91,18 @@ public class WhatsAppService : IWhatsAppService
         string staffName = "")
     {
         var t = ToTurkeyTime(startTime);
-        await SendTemplateAsync(phone, "RandevuHatirlatma", new()
-        {
-            { "1", customerName },
-            { "2", "1 saat" },
-            { "3", t.ToString("dd MMMM yyyy", _tr) },
-            { "4", t.ToString("HH:mm") },
-            { "5", serviceName },
-            { "6", staffName },
-            { "7", salonName },
-            { "8", mapsUrl },
-        });
+        await SendTemplateAsync(phone, "RandevuHatirlatma",
+            customerName,
+            "1 saat",
+            t.ToString("dd MMMM yyyy", _tr),
+            t.ToString("HH:mm"),
+            serviceName,
+            staffName,
+            salonName,
+            mapsUrl);
     }
 
-    // ── Serbest metin mesajları (şablon dışı) ─────────────────────────────────
+    // ── Serbest metin mesajları ───────────────────────────────────────────────
 
     public async Task SendAppointmentCancelledAsync(
         string phone, string customerName, DateTime startTime,
@@ -125,10 +110,12 @@ public class WhatsAppService : IWhatsAppService
     {
         var t           = ToTurkeyTime(startTime);
         var salonLine   = string.IsNullOrWhiteSpace(salonName)  ? "" : $"\n🏪 Salon: {salonName}";
-        var bookingLine = string.IsNullOrWhiteSpace(bookingUrl) ? " Yeni randevu için salonumuzu arayabilirsiniz." : $"\n\n🔗 *Yeni randevu almak için:*\n{bookingUrl}";
+        var bookingLine = string.IsNullOrWhiteSpace(bookingUrl)
+            ? " Yeni randevu için salonumuzu arayabilirsiniz."
+            : $"\n\n🔗 Yeni randevu almak için:\n{bookingUrl}";
 
         await SendTextAsync(phone, $"""
-            ✂ *ayarlıyo - Randevu İptali*
+            ✂ ayarlıyo - Randevu İptali
 
             Merhaba {customerName},{salonLine}
 
@@ -143,12 +130,12 @@ public class WhatsAppService : IWhatsAppService
     {
         var t           = ToTurkeyTime(startTime);
         var salonLine   = string.IsNullOrWhiteSpace(salonName)  ? "" : $"\n🏪 Salon: {salonName}";
-        var bookingLine = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $"\n\n🔗 *Yeni randevu almak için:*\n{bookingUrl}";
+        var bookingLine = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $"\n\n🔗 Yeni randevu almak için:\n{bookingUrl}";
 
         await SendTextAsync(phone, $"""
-            ✂ *ayarlıyo - Randevu Güncellendi*
+            ✂ ayarlıyo - Randevu Güncellendi
 
-            Merhaba {customerName}! 👋
+            Merhaba {customerName}!
 
             Randevunuz güncellendi. Yeni bilgiler:
 
@@ -165,28 +152,8 @@ public class WhatsAppService : IWhatsAppService
         string phone, string salonName, int currentCount, int limit, bool isFull)
     {
         var msg = isFull
-            ? $"""
-               ⚠️ *ayarlıyo - Aylık Randevu Limitiniz Doldu!*
-
-               Merhaba {salonName}!
-
-               Bu ay {limit} randevu limitinize ulaştınız. 🚫
-
-               Yeni randevular bu ay alınamayacak. Limitinizi artırmak için planınızı yükseltin.
-
-               👉 Paketinizi yükseltmek için: app.ayarliyo.com/pricing
-               """
-            : $"""
-               ⚠️ *ayarlıyo - Aylık Randevu Limitine Yaklaşıyorsunuz!*
-
-               Merhaba {salonName}!
-
-               Bu ay {currentCount}/{limit} randevu kullandınız. (%80)
-
-               Limitinize yaklaşıyorsunuz. Kesintisiz hizmet için planınızı yükseltmeyi düşünün.
-
-               👉 Paketleri incelemek için: app.ayarliyo.com/pricing
-               """;
+            ? $"⚠️ ayarlıyo - Aylık Randevu Limitiniz Doldu!\n\nMerhaba {salonName}!\n\nBu ay {limit} randevu limitinize ulaştınız. 🚫\n\nYeni randevular bu ay alınamayacak. Limitinizi artırmak için planınızı yükseltin.\n\n👉 app.ayarliyo.com/pricing"
+            : $"⚠️ ayarlıyo - Aylık Randevu Limitine Yaklaşıyorsunuz!\n\nMerhaba {salonName}!\n\nBu ay {currentCount}/{limit} randevu kullandınız. (%80)\n\nLimitinize yaklaşıyorsunuz. Kesintisiz hizmet için planınızı yükseltmeyi düşünün.\n\n👉 app.ayarliyo.com/pricing";
 
         await SendTextAsync(phone, msg);
     }
@@ -194,28 +161,8 @@ public class WhatsAppService : IWhatsAppService
     public async Task SendSubscriptionExpiryWarningAsync(string phone, string salonName, int daysLeft)
     {
         var msg = daysLeft <= 1
-            ? $"""
-               🚨 *ayarlıyo - Aboneliğiniz Yarın Sona Eriyor!*
-
-               Merhaba {salonName}!
-
-               Aboneliğiniz yarın sona erecek. 😟
-
-               Kesintisiz hizmet için aboneliğinizi hemen yenileyin.
-
-               👉 Yenilemek için: app.ayarliyo.com/payment
-               """
-            : $"""
-               ⏰ *ayarlıyo - Aboneliğiniz {daysLeft} Gün İçinde Sona Eriyor*
-
-               Merhaba {salonName}!
-
-               Aboneliğinizin sona ermesine {daysLeft} gün kaldı.
-
-               Hizmet kesintisi yaşamamak için aboneliğinizi önceden yenileyin.
-
-               👉 Yenilemek için: app.ayarliyo.com/payment
-               """;
+            ? $"🚨 ayarlıyo - Aboneliğiniz Yarın Sona Eriyor!\n\nMerhaba {salonName}!\n\nAboneliğiniz yarın sona erecek. 😟\n\nKesintisiz hizmet için aboneliğinizi hemen yenileyin.\n\n👉 app.ayarliyo.com/payment"
+            : $"⏰ ayarlıyo - Aboneliğiniz {daysLeft} Gün İçinde Sona Eriyor\n\nMerhaba {salonName}!\n\nAboneliğinizin sona ermesine {daysLeft} gün kaldı.\n\nHizmet kesintisi yaşamamak için aboneliğinizi önceden yenileyin.\n\n👉 app.ayarliyo.com/payment";
 
         await SendTextAsync(phone, msg);
     }
@@ -223,48 +170,72 @@ public class WhatsAppService : IWhatsAppService
     public async Task SendCustomMessageAsync(string phone, string message)
         => await SendTextAsync(phone, message);
 
-    // ── Özel gönderim yardımcıları ────────────────────────────────────────────
+    // ── Meta Graph API gönderim yardımcıları ─────────────────────────────────
 
-    /// <summary>Twilio Content Template API ile şablonlu mesaj gönderir.</summary>
-    private async Task SendTemplateAsync(
-        string phone, string templateKey, Dictionary<string, string> variables)
+    /// <summary>Meta Content Template ile şablonlu mesaj gönderir.</summary>
+    private async Task SendTemplateAsync(string phone, string templateKey, params string[] parameters)
     {
-        if (!_settings.Templates.TryGetValue(templateKey, out var sid))
-            throw new InvalidOperationException($"Şablon SID bulunamadı: {templateKey}");
+        if (!_settings.Templates.TryGetValue(templateKey, out var templateName))
+            throw new InvalidOperationException($"Şablon adı bulunamadı: {templateKey}");
 
-        var contentVariables = JsonSerializer.Serialize(variables);
+        var bodyParams = parameters.Select(p => new { type = "text", text = p }).ToArray();
 
-        await MessageResource.CreateAsync(
-            from: new PhoneNumber(_settings.WhatsAppFrom),
-            to:   new PhoneNumber($"whatsapp:{FormatPhone(phone)}"),
-            contentSid:       sid,
-            contentVariables: contentVariables
-        );
+        var payload = new
+        {
+            messaging_product = "whatsapp",
+            to = FormatPhone(phone),
+            type = "template",
+            template = new
+            {
+                name = templateName,
+                language = new { code = _settings.TemplateLanguage },
+                components = new[]
+                {
+                    new { type = "body", parameters = (object)bodyParams }
+                }
+            }
+        };
+
+        await PostAsync(payload);
     }
 
-    /// <summary>Şablon SID gerektirmeyen serbest metin mesajı gönderir.</summary>
+    /// <summary>Şablon gerektirmeyen serbest metin mesajı gönderir (24 saatlik oturum penceresi gerektirir).</summary>
     private async Task SendTextAsync(string phone, string body)
     {
-        // Serbest metin için eski (sandbox veya onaylı) from numarasını kullan
-        var from = !string.IsNullOrWhiteSpace(_settings.WhatsAppFrom)
-            ? _settings.WhatsAppFrom
-            : _settings.FromNumber;
+        var payload = new
+        {
+            messaging_product = "whatsapp",
+            to   = FormatPhone(phone),
+            type = "text",
+            text = new { body }
+        };
 
-        await MessageResource.CreateAsync(
-            body: body,
-            from: new PhoneNumber(from),
-            to:   new PhoneNumber($"whatsapp:{FormatPhone(phone)}")
-        );
+        await PostAsync(payload);
+    }
+
+    private async Task PostAsync(object payload)
+    {
+        var url  = $"https://graph.facebook.com/{_settings.ApiVersion}/{_settings.PhoneNumberId}/messages";
+        var json = JsonSerializer.Serialize(payload);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+        var response = await _http.PostAsync(url, content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"Meta API hatası ({(int)response.StatusCode}): {body}");
+        }
     }
 
     // ── Yardımcılar ───────────────────────────────────────────────────────────
 
     private static string FormatPhone(string phone)
     {
-        // E.164: 05551234567 → +905551234567
-        phone = phone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
-        if (phone.StartsWith("0"))       return "+90" + phone[1..];
-        if (!phone.StartsWith("+"))      return "+90" + phone;
+        // E.164 formatı (+ olmadan): 05551234567 → 905551234567
+        phone = phone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Replace("+", "");
+        if (phone.StartsWith("0"))       return "90" + phone[1..];
+        if (!phone.StartsWith("90"))     return "90" + phone;
         return phone;
     }
 
