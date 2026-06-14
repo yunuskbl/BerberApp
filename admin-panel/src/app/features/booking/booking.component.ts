@@ -127,6 +127,7 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.updatePhoneValidators();
     this.otpSent = false;
     this.otpVerified = false;
+    this.verifiedPhone = '';
     this.otpCode = '';
     this.otpError = '';
     this.otpSuccess = '';
@@ -168,6 +169,7 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   otpSent = false;
   otpVerified = false;
+  private verifiedPhone = '';
   otpCode = '';
   isSendingOtp = false;
   isVerifyingOtp = false;
@@ -213,6 +215,10 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.updatePhoneValidators();
     this.loadSalon();
     this.initPhoneLookup();
+    const prefilled = this.fullPhone;
+    if (prefilled) {
+      this.phoneSubject$.next(prefilled);
+    }
   }
 
   private loadSavedCustomer(): void {
@@ -273,6 +279,7 @@ export class BookingComponent implements OnInit, OnDestroy {
         if (res?.success && res.data) {
           this.customerFound = true;
           this.otpVerified = true;
+          this.verifiedPhone = this.fullPhone;
           this.customerForm.patchValue({
             fullName: res.data.fullName || this.customerForm.get('fullName')?.value,
           });
@@ -289,7 +296,9 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   onPhoneInput(event: Event): void {
     this.customerFound = false;
-    this.otpVerified = false;
+    if (this.fullPhone !== this.verifiedPhone) {
+      this.otpVerified = false;
+    }
     this.otpSent = false;
     this.otpCode = '';
     this.otpError = '';
