@@ -301,7 +301,7 @@ public static class SeedData
             var superAdmin = new User
             {
                 TenantId = SYSTEM_TENANT_ID,
-                Email = "superadmin@berberapp.com",
+                Email = "superadmin@ayarliyo.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
                 FirstName = "Super",
                 LastName = "Admin",
