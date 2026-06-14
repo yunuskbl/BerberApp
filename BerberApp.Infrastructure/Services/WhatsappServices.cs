@@ -41,10 +41,10 @@ public class WhatsAppService : IWhatsAppService
 
             📅 Tarih: {t.ToString("dd MMMM yyyy", _tr)}
             ⏰ Saat: {t:HH:mm}
-            💈 Hizmet: {serviceName}
+            🔹 Hizmet: {serviceName}
             👤 Personel: {staffName}{salonLine}{mapsLine}{bookLine}
 
-            Görüşmek üzere! ✂️
+            Görüşmek üzere! 👋
             """);
     }
 
@@ -59,7 +59,7 @@ public class WhatsAppService : IWhatsAppService
 
             👤 Müşteri: {customerName}
             📞 Telefon: {customerPhone}
-            💈 Hizmet: {serviceName}
+            🔹 Hizmet: {serviceName}
             📅 Tarih: {t.ToString("dd MMMM yyyy", _tr)}
             ⏰ Saat: {t:HH:mm}
 
@@ -85,9 +85,9 @@ public class WhatsAppService : IWhatsAppService
             Merhaba {customerName}!
 
             {salonName} olarak sizi aramızda görmekten mutluluk duyduk.
-            💈 Hizmet: {serviceName}{reviewLine}
+            🔹 Hizmet: {serviceName}{reviewLine}
 
-            Tekrar görüşmek üzere! ✂️
+            Tekrar görüşmek üzere! 👋
             """);
     }
 
@@ -111,9 +111,9 @@ public class WhatsAppService : IWhatsAppService
 
             📅 Tarih: {t.ToString("dd MMMM yyyy", _tr)}
             ⏰ Saat: {t:HH:mm}
-            💈 Hizmet: {serviceName}{staffLine}{salonLine}{mapsLine}
+            🔹 Hizmet: {serviceName}{staffLine}{salonLine}{mapsLine}
 
-            Görüşmek üzere! ✂️
+            Görüşmek üzere! 👋
             """);
     }
 
@@ -135,9 +135,9 @@ public class WhatsAppService : IWhatsAppService
 
             📅 Tarih: {t.ToString("dd MMMM yyyy", _tr)}
             ⏰ Saat: {t:HH:mm}
-            💈 Hizmet: {serviceName}{staffLine}{salonLine}{mapsLine}
+            🔹 Hizmet: {serviceName}{staffLine}{salonLine}{mapsLine}
 
-            Sizi bekliyoruz! ✂️
+            Sizi bekliyoruz! 👋
             """);
     }
 
@@ -154,7 +154,7 @@ public class WhatsAppService : IWhatsAppService
             : $"\n\n🔗 Yeni randevu almak için:\n{bookingUrl}";
 
         await SendTextAsync(phone, $"""
-            ✂ ayarlıyo - Randevu İptali
+            ❌ ayarlıyo - Randevu İptali
 
             Merhaba {customerName},{salonLine}
 
@@ -172,7 +172,7 @@ public class WhatsAppService : IWhatsAppService
         var bookingLine = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $"\n\n🔗 Yeni randevu almak için:\n{bookingUrl}";
 
         await SendTextAsync(phone, $"""
-            ✂ ayarlıyo - Randevu Güncellendi
+            🔄 ayarlıyo - Randevu Güncellendi
 
             Merhaba {customerName}!
 
@@ -180,10 +180,10 @@ public class WhatsAppService : IWhatsAppService
 
             📅 Tarih: {t.ToString("dd MMMM yyyy", _tr)}
             ⏰ Saat: {t:HH:mm}
-            💈 Hizmet: {serviceName}
+            🔹 Hizmet: {serviceName}
             👤 Personel: {staffName}{salonLine}{bookingLine}
 
-            Sorularınız için salonumuzu arayabilirsiniz.
+            Sorularınız için bizi arayabilirsiniz.
             """);
     }
 
