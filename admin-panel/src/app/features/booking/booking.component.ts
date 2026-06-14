@@ -272,6 +272,7 @@ export class BookingComponent implements OnInit, OnDestroy {
         this.isLookingUp = false;
         if (res?.success && res.data) {
           this.customerFound = true;
+          this.otpVerified = true;
           this.customerForm.patchValue({
             fullName: res.data.fullName || this.customerForm.get('fullName')?.value,
           });
@@ -288,10 +289,11 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   onPhoneInput(event: Event): void {
     this.customerFound = false;
-    if (this.otpSent && !this.otpVerified) {
-      this.otpSent = false;
-      this.otpCode = '';
-    }
+    this.otpVerified = false;
+    this.otpSent = false;
+    this.otpCode = '';
+    this.otpError = '';
+    this.otpSuccess = '';
     this.phoneSubject$.next(this.fullPhone);
   }
 
