@@ -39,7 +39,11 @@ public class LinkNotificationService : INotificationService
     {
         try
         {
-            var (channel, salonName, mapsUrl, bookingUrl) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, mapsUrl, bookingUrl, subdomain) = await GetTenantInfoAsync(dto.TenantId);
+            var encodedPhone   = Uri.EscapeDataString(recipient);
+            var appointmentsUrl = !string.IsNullOrWhiteSpace(subdomain)
+                ? $"{_frontendBase}/randevularim/{subdomain}?phone={encodedPhone}"
+                : string.Empty;
 
             if (channel == NotificationChannel.Sms)
             {
@@ -50,7 +54,7 @@ public class LinkNotificationService : INotificationService
             else
             {
                 await _whatsAppService.SendAppointmentConfirmedAsync(
-                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, mapsUrl, bookingUrl);
+                    recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, mapsUrl, appointmentsUrl);
                 _logger.LogInformation("[WHATSAPP] Onay bildirimi gönderildi: {Recipient}", recipient);
             }
         }
@@ -64,7 +68,7 @@ public class LinkNotificationService : INotificationService
     {
         try
         {
-            var (channel, salonName, _, bookingUrl) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, _, bookingUrl, _) = await GetTenantInfoAsync(dto.TenantId);
 
             if (channel == NotificationChannel.Sms)
             {
@@ -89,7 +93,7 @@ public class LinkNotificationService : INotificationService
     {
         try
         {
-            var (channel, salonName, _, _) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, _, _, _) = await GetTenantInfoAsync(dto.TenantId);
 
             if (channel == NotificationChannel.Sms)
             {
@@ -114,7 +118,7 @@ public class LinkNotificationService : INotificationService
     {
         try
         {
-            var (channel, salonName, _, bookingUrl) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, _, bookingUrl, _) = await GetTenantInfoAsync(dto.TenantId);
 
             if (channel == NotificationChannel.Sms)
             {
@@ -135,24 +139,26 @@ public class LinkNotificationService : INotificationService
         }
     }
 
-    private async Task<(NotificationChannel channel, string salonName, string mapsUrl, string bookingUrl)> GetTenantInfoAsync(Guid tenantId)
+    private async Task<(NotificationChannel channel, string salonName, string mapsUrl, string bookingUrl, string subdomain)> GetTenantInfoAsync(Guid tenantId)
     {
         var tenant = await _context.Tenants
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == tenantId);
 
-        var mapsUrl    = !string.IsNullOrWhiteSpace(tenant?.Subdomain)
-            ? $"{_frontendBase}/api/map/{tenant.Subdomain}"
+        var subdomain  = tenant?.Subdomain ?? string.Empty;
+        var mapsUrl    = !string.IsNullOrWhiteSpace(subdomain)
+            ? $"{_frontendBase}/api/map/{subdomain}"
             : string.Empty;
-        var bookingUrl = !string.IsNullOrWhiteSpace(tenant?.Subdomain)
-            ? $"{_frontendBase}/{tenant.Subdomain}"
+        var bookingUrl = !string.IsNullOrWhiteSpace(subdomain)
+            ? $"{_frontendBase}/book/{subdomain}"
             : string.Empty;
 
         return (
             tenant?.PreferredNotificationChannel ?? NotificationChannel.WhatsApp,
             tenant?.Name ?? string.Empty,
             mapsUrl,
-            bookingUrl
+            bookingUrl,
+            subdomain
         );
     }
 }

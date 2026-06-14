@@ -579,6 +579,56 @@ public class BookingController : ControllerBase
         public string? Comment { get; set; }
     }
 
+    // ── MY APPOINTMENTS ──────────────────────────────────────────────────────
+
+    [HttpGet("{subdomain}/my-appointments")]
+    public async Task<IActionResult> GetMyAppointments(string subdomain, [FromQuery] string phone)
+    {
+        if (string.IsNullOrWhiteSpace(phone))
+            return BadRequest(new { success = false, message = "Telefon numarası gerekli." });
+
+        var tenant = await _context.Tenants
+            .FirstOrDefaultAsync(x => x.Subdomain == subdomain && x.IsActive);
+
+        if (tenant is null)
+            return NotFound(new { success = false, message = "Salon bulunamadı." });
+
+        var normalized = NormalizePhone(phone);
+        var customers  = await _context.Customers
+            .Where(x => x.TenantId == tenant.Id)
+            .ToListAsync();
+
+        var customer = customers.FirstOrDefault(x => NormalizePhone(x.Phone) == normalized);
+        if (customer is null)
+            return Ok(new { success = true, data = Array.Empty<object>(), salonName = tenant.Name });
+
+        var turkeyTz = GetTurkeyTimeZone();
+
+        var appointments = await _context.Appointments
+            .Where(x => x.TenantId == tenant.Id && x.CustomerId == customer.Id && !x.IsDeleted)
+            .Include(x => x.Staff)
+            .Include(x => x.Service)
+            .OrderByDescending(x => x.StartTime)
+            .Take(20)
+            .ToListAsync();
+
+        var result = appointments.Select(a =>
+        {
+            var localStart = TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.SpecifyKind(a.StartTime, DateTimeKind.Utc), turkeyTz);
+            return new
+            {
+                a.Id,
+                StartTime  = localStart,
+                Status     = a.Status.ToString(),
+                ServiceName = a.Service?.Name ?? "",
+                StaffName   = a.Staff != null ? $"{a.Staff.FirstName} {a.Staff.LastName}" : "",
+            };
+        });
+
+        return Ok(new { success = true, data = result, salonName = tenant.Name });
+    }
+
     // ── CUSTOMER LOOKUP ───────────────────────────────────────────────────────
 
     [HttpGet("{subdomain}/customer-lookup")]

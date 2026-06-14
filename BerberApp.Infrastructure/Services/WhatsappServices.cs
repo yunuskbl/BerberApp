@@ -30,7 +30,7 @@ public class WhatsAppService : IWhatsAppService
         var t         = ToTurkeyTime(startTime);
         var salonLine = string.IsNullOrWhiteSpace(salonName) ? "" : $"\n🏪 Salon: {salonName}";
         var mapsLine  = string.IsNullOrWhiteSpace(mapsUrl)   ? "" : $"\n📍 Konum: {mapsUrl}";
-        var bookLine  = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $"\n🔗 Yeni Randevu: {bookingUrl}";
+        var bookLine  = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $"\n📋 Randevularım: {bookingUrl}";
 
         await SendTextAsync(phone, $"""
             ✅ ayarlıyo - Randevunuz Onaylandı!

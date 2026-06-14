@@ -67,6 +67,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'randevularim/:subdomain',
+    loadComponent: () =>
+      import('./features/my-appointments/my-appointments.component').then(
+        (m) => m.MyAppointmentsComponent,
+      ),
+  },
+  {
     path: 'randevu/:subdomain/:appointmentId',
     loadComponent: () =>
       import('./features/booking/appointment-status/appointment-status.component').then(
