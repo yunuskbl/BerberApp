@@ -622,7 +622,7 @@ public class BookingController : ControllerBase
                 StartTime  = localStart,
                 Status     = a.Status.ToString(),
                 ServiceName = a.Service?.Name ?? "",
-                StaffName   = a.Staff != null ? $"{a.Staff.FirstName} {a.Staff.LastName}" : "",
+                StaffName   = a.Staff?.FullName ?? "",
             };
         });
 
