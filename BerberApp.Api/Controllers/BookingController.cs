@@ -608,6 +608,7 @@ public class BookingController : ControllerBase
             .Where(x => x.TenantId == tenant.Id && x.CustomerId == customer.Id && !x.IsDeleted)
             .Include(x => x.Staff)
             .Include(x => x.Service)
+            .Include(x => x.AppointmentServices).ThenInclude(s => s.Service)
             .OrderByDescending(x => x.StartTime)
             .Take(20)
             .ToListAsync();
@@ -616,12 +617,18 @@ public class BookingController : ControllerBase
         {
             var localStart = TimeZoneInfo.ConvertTimeFromUtc(
                 DateTime.SpecifyKind(a.StartTime, DateTimeKind.Utc), turkeyTz);
+
+            var serviceName = a.Service?.Name
+                ?? string.Join(", ", a.AppointmentServices
+                    .Where(s => s.Service != null)
+                    .Select(s => s.Service!.Name));
+
             return new
             {
                 a.Id,
-                StartTime  = localStart,
-                Status     = a.Status.ToString(),
-                ServiceName = a.Service?.Name ?? "",
+                StartTime   = localStart,
+                Status      = a.Status.ToString(),
+                ServiceName = serviceName,
                 StaffName   = a.Staff?.FullName ?? "",
             };
         });

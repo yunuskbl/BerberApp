@@ -55,7 +55,7 @@ interface Appointment {
               @for (apt of appointments; track apt.id) {
                 <li class="item">
                   <div class="item-header">
-                    <span class="date">{{ apt.startTime | date:'d MMMM yyyy, HH:mm':'':'tr' }}</span>
+                    <span class="date">{{ formatDate(apt.startTime) }}</span>
                     <span class="badge" [class]="'badge-' + apt.status.toLowerCase()">
                       {{ statusLabel(apt.status) }}
                     </span>
@@ -138,6 +138,14 @@ export class MyAppointmentsComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  formatDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+    const h = d.getHours().toString().padStart(2, '0');
+    const m = d.getMinutes().toString().padStart(2, '0');
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}, ${h}:${m}`;
   }
 
   statusLabel(status: string): string {
