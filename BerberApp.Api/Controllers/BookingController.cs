@@ -247,18 +247,25 @@ public class BookingController : ControllerBase
         if (isSalonClosed)
             return BadRequest(new { success = false, message = "Salon bu tarihte kapalıdır." });
 
-        // Telefon doğrulanmış mı kontrol et (son 30 dakika içinde doğrulanmış OTP)
-        var verifiedOtp = await _context.OtpRecords
-            .Where(x => x.Phone == request.Phone && x.IsVerified &&
-                        x.VerifiedAt != null && x.VerifiedAt > DateTime.UtcNow.AddMinutes(-30))
-            .FirstOrDefaultAsync();
+        // Mevcut müşteri kontrolü (dönen müşteriler için OTP atlanır)
+        var existingCustomer = await _context.Customers
+            .FirstOrDefaultAsync(x => x.Phone == request.Phone && x.TenantId == tenant.Id);
 
-        if (verifiedOtp is null)
-            return BadRequest(new { success = false, message = "Telefon numarası doğrulanmamış." });
+        // Telefon doğrulanmış mı kontrol et — yalnızca yeni müşteriler için
+        if (existingCustomer is null)
+        {
+            var verifiedOtp = await _context.OtpRecords
+                .Where(x => x.Phone == request.Phone && x.IsVerified &&
+                            x.VerifiedAt != null && x.VerifiedAt > DateTime.UtcNow.AddMinutes(-30))
+                .FirstOrDefaultAsync();
 
-        // Kullanıldıktan sonra OTP kaydını sil
-        _context.OtpRecords.Remove(verifiedOtp);
-        await _context.SaveChangesAsync();
+            if (verifiedOtp is null)
+                return BadRequest(new { success = false, message = "Telefon numarası doğrulanmamış." });
+
+            // Kullanıldıktan sonra OTP kaydını sil
+            _context.OtpRecords.Remove(verifiedOtp);
+            await _context.SaveChangesAsync();
+        }
 
         // Telefon başına günlük limit kontrolü
         var turkeyTz = GetTurkeyTimeZone();
@@ -270,9 +277,6 @@ public class BookingController : ControllerBase
 
         var phone = request.Phone.Replace(" ", "").Replace("-", "");
         if (phone.StartsWith("0")) phone = "+90" + phone[1..];
-
-        var existingCustomer = await _context.Customers
-            .FirstOrDefaultAsync(x => x.Phone == request.Phone && x.TenantId == tenant.Id);
 
         if (existingCustomer != null)
         {
