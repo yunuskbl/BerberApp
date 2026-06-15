@@ -429,6 +429,6 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   }
 
   openWhatsApp(): void {
-    window.open('https://wa.me/905000000000', '_blank');
+    window.open('https://wa.me/905305606916', '_blank');
   }
 }
