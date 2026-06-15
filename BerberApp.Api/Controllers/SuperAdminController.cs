@@ -433,28 +433,50 @@ public class SuperAdminController : ControllerBase
     [HttpPost("tenants/{id}/reset-appointments")]
     public async Task<IActionResult> ResetAppointments(Guid id)
     {
-        var tenantExists = await _context.Tenants
-            .IgnoreQueryFilters()
-            .AnyAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
+        try
+        {
+            var tenantExists = await _context.Tenants
+                .IgnoreQueryFilters()
+                .AnyAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
 
-        if (!tenantExists)
-            return NotFound(new { success = false, message = "İşletme bulunamadı." });
+            if (!tenantExists)
+                return NotFound(new { success = false, message = "İşletme bulunamadı." });
 
-        var deletedReviews = await _context.Reviews
-            .IgnoreQueryFilters()
-            .Where(r => r.TenantId == id)
-            .ExecuteDeleteAsync();
+            // 1) Reviews: AppointmentId üzerinde Restrict FK var, önce sil
+            var deletedReviews = await _context.Reviews
+                .IgnoreQueryFilters()
+                .Where(r => r.TenantId == id)
+                .ExecuteDeleteAsync();
 
-        var deletedAppointments = await _context.Appointments
-            .IgnoreQueryFilters()
-            .Where(a => a.TenantId == id)
-            .ExecuteDeleteAsync();
+            // 2) PriceDifferences: AppointmentId üzerinde Restrict FK var, önce sil
+            var appointmentIds = await _context.Appointments
+                .IgnoreQueryFilters()
+                .Where(a => a.TenantId == id)
+                .Select(a => a.Id)
+                .ToListAsync();
 
-        _logger.LogInformation(
-            "Tenant {TenantId} appointments reset: {R} reviews, {A} appointments deleted",
-            id, deletedReviews, deletedAppointments);
+            var deletedPriceDiffs = await _context.PriceDifferences
+                .IgnoreQueryFilters()
+                .Where(p => appointmentIds.Contains(p.AppointmentId))
+                .ExecuteDeleteAsync();
 
-        return Ok(new { success = true, deletedReviews, deletedAppointments });
+            // 3) Randevular (AppointmentActualServices ve Notifications Cascade ile otomatik silinir)
+            var deletedAppointments = await _context.Appointments
+                .IgnoreQueryFilters()
+                .Where(a => a.TenantId == id)
+                .ExecuteDeleteAsync();
+
+            _logger.LogInformation(
+                "Tenant {TenantId} appointments reset: {R} reviews, {PD} price diffs, {A} appointments deleted",
+                id, deletedReviews, deletedPriceDiffs, deletedAppointments);
+
+            return Ok(new { success = true, deletedReviews, deletedPriceDiffs, deletedAppointments });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resetting appointments for {TenantId}", id);
+            return StatusCode(500, new { success = false, message = $"Sıfırlama başarısız: {ex.Message}" });
+        }
     }
 
     /// <summary>
@@ -472,7 +494,6 @@ public class SuperAdminController : ControllerBase
 
             // ExecuteDeleteAsync → direkt SQL DELETE, change tracker bypass
             // FK sırası kritik: Restrict constraint'leri olan tablolar önce silinmeli
-            // Reviews → Appointments (Restrict), Notifications → Appointments (Cascade), AppointmentServices → Appointments (Cascade)
 
             // 1) Reviews: AppointmentId üzerinde Restrict FK var, önce sil
             var deletedReviews = await _context.Reviews
@@ -480,7 +501,19 @@ public class SuperAdminController : ControllerBase
                 .Where(r => r.TenantId == id)
                 .ExecuteDeleteAsync();
 
-            // 2) Randevular (Notifications ve AppointmentServices DB cascade ile otomatik silinir)
+            // 2) PriceDifferences: AppointmentId üzerinde Restrict FK var, önce sil
+            var tenantAppointmentIds = await _context.Appointments
+                .IgnoreQueryFilters()
+                .Where(a => a.TenantId == id)
+                .Select(a => a.Id)
+                .ToListAsync();
+
+            await _context.PriceDifferences
+                .IgnoreQueryFilters()
+                .Where(p => tenantAppointmentIds.Contains(p.AppointmentId))
+                .ExecuteDeleteAsync();
+
+            // 3) Randevular (AppointmentActualServices ve Notifications Cascade ile otomatik silinir)
             var deletedAppointments = await _context.Appointments
                 .IgnoreQueryFilters()
                 .Where(a => a.TenantId == id)
