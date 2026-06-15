@@ -1,6 +1,6 @@
 ﻿.detail-page {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
 }
 
 .loading {
@@ -275,6 +275,14 @@ table {
   .service-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1e293b; font-size: 13px; }
   .service-name { color: #e2e8f0; }
   .service-count { color: #6366f1; font-weight: 600; }
+}
+
+// ─── Orta ekranlar ──────────────────────────────────────────────────────────
+@media (min-width: 769px) and (max-width: 1200px) {
+  .header-actions .btn {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
 }
 
 // ─── Mobile Responsive ──────────────────────────────────────────────────────

@@ -11,11 +11,19 @@
   background: #0f172a;
   min-height: 100vh;
   color: #e2e8f0;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+@media (max-width: 1400px) {
+  .sa-content {
+    padding: 20px 16px;
+  }
 }
 
 @media (max-width: 768px) {
   .sa-content {
     margin-left: 0;
-    padding: 16px 16px calc(16px + 64px + env(safe-area-inset-bottom));
+    padding: 16px 12px calc(16px + 64px + env(safe-area-inset-bottom));
   }
 }
