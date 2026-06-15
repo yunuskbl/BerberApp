@@ -106,7 +106,7 @@ export class CustomCalendarComponent implements OnInit, OnChanges {
   }
 
   get selectedLabel(): string {
-    return { tr: 'Seçilen', en: 'Selected', ru: 'Выбрано' }[this.langService.lang()] ?? 'Seçilen';
+    return { tr: 'Seçilen', en: 'Selected', ru: 'Выбрано', de: 'Ausgewählt' }[this.langService.lang()] ?? 'Seçilen';
   }
 
   buildCalendar(): void {

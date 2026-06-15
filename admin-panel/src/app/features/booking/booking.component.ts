@@ -504,7 +504,7 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   formatPrice(price: number, currency: string): string {
     const lang = this.langService.lang();
-    const unspecified = { tr: 'Belirtilmemiş', en: 'Unspecified', ru: 'Не указано' }[lang] ?? 'Belirtilmemiş';
+    const unspecified = { tr: 'Belirtilmemiş', en: 'Unspecified', ru: 'Не указано', de: 'Nicht angegeben' }[lang] ?? 'Belirtilmemiş';
     if (!price || price <= 0) return unspecified;
     return new Intl.NumberFormat(this.langService.dateLocale, {
       style: 'currency',
