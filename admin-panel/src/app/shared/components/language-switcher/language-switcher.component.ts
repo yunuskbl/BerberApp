@@ -73,6 +73,7 @@ export class LanguageSwitcherComponent {
   languages: { code: Lang; flag: string; label: string }[] = [
     { code: 'tr', flag: '🇹🇷', label: 'TR' },
     { code: 'en', flag: '🇬🇧', label: 'EN' },
+    { code: 'de', flag: '🇩🇪', label: 'DE' },
     { code: 'ru', flag: '🇷🇺', label: 'RU' },
   ];
 
