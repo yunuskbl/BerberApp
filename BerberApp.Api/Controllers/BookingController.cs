@@ -681,7 +681,7 @@ public class BookingController : ControllerBase
 
         var limit = plan switch
         {
-            BerberApp.Domain.Enums.PlanType.Baslangic   => 100,
+            BerberApp.Domain.Enums.PlanType.Baslangic   => 150,
             BerberApp.Domain.Enums.PlanType.Profesyonel => 500,
             _                                            => int.MaxValue
         };

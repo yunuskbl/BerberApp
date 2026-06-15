@@ -47,7 +47,7 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
 
         int appointmentLimit = plan switch
         {
-            PlanType.Baslangic   => 100,
+            PlanType.Baslangic   => 150,
             PlanType.Profesyonel => 500,
             _                    => int.MaxValue
         };
