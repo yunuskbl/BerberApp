@@ -37,6 +37,7 @@ public class LinkNotificationService : INotificationService
 
     public async Task SendAppointmentConfirmedAsync(string recipient, AppointmentStatusDto dto)
     {
+        Console.WriteLine($"[BİLDİRİM] SendAppointmentConfirmedAsync başladı → alıcı: {recipient}");
         try
         {
             var (channel, salonName, mapsUrl, bookingUrl, subdomain) = await GetTenantInfoAsync(dto.TenantId);
@@ -45,22 +46,27 @@ public class LinkNotificationService : INotificationService
                 ? $"{_frontendBase}/randevularim/{subdomain}?phone={encodedPhone}"
                 : string.Empty;
 
+            Console.WriteLine($"[BİLDİRİM] Kanal: {channel}, Salon: {salonName}");
+
             if (channel == NotificationChannel.Sms)
             {
                 await _smsService.SendAppointmentConfirmedAsync(
                     recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, mapsUrl, bookingUrl);
                 _logger.LogInformation("[SMS] Onay bildirimi gönderildi: {Recipient}", recipient);
+                Console.WriteLine($"[SMS] Onay bildirimi gönderildi: {recipient}");
             }
             else
             {
                 await _whatsAppService.SendAppointmentConfirmedAsync(
                     recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, mapsUrl, appointmentsUrl);
                 _logger.LogInformation("[WHATSAPP] Onay bildirimi gönderildi: {Recipient}", recipient);
+                Console.WriteLine($"[WHATSAPP] Onay bildirimi gönderildi: {recipient}");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[BİLDİRİM HATA] Onay bildirimi gönderilemedi: {Recipient}", recipient);
+            Console.WriteLine($"[BİLDİRİM HATA] Onay: {recipient} → {ex.Message}");
         }
     }
 

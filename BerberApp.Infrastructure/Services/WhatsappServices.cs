@@ -256,11 +256,16 @@ public class WhatsAppService : IWhatsAppService
         var json = JsonSerializer.Serialize(payload);
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
+        Console.WriteLine($"[META API] POST → {url}");
+        Console.WriteLine($"[META API] Payload: {json}");
+
         var response = await _http.PostAsync(url, content);
+        var body = await response.Content.ReadAsStringAsync();
+
+        Console.WriteLine($"[META API] Yanıt: {(int)response.StatusCode} → {body}");
 
         if (!response.IsSuccessStatusCode)
         {
-            var body = await response.Content.ReadAsStringAsync();
             throw new HttpRequestException($"Meta API hatası ({(int)response.StatusCode}): {body}");
         }
     }
