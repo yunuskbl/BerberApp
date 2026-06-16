@@ -552,8 +552,11 @@ export class BookingComponent implements OnInit, OnDestroy {
       next: (res) => {
         if (res.success) {
           this.otpSent = true;
-          this.otpSuccess = 'Doğrulama kodu WhatsApp ile gönderildi.';
+          this.otpSuccess = 'Doğrulama kodu gönderildi.';
           this.startTimer();
+          if (res.debugCode) {
+            this.otpCode = res.debugCode;
+          }
         }
         this.isSendingOtp = false;
       },
