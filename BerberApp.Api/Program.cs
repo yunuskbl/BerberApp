@@ -103,8 +103,7 @@ builder.Services.AddAuthorization();
 builder.Services.Configure<BerberApp.Application.Common.Settings.MetaWhatsAppSettings>(
     builder.Configuration.GetSection("Meta"));
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
-// WhatsApp devre dışı — Meta API hazır olunca AddHttpClient<IWhatsAppService, WhatsAppService>() ile değiştir
-builder.Services.AddSingleton<IWhatsAppService, NullWhatsAppService>();
+builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();
 builder.Services.AddScoped<SmsService>();
 builder.Services.AddHttpClient<ISmsService, IletimerkeziSmsService>();
 builder.Services.AddScoped<INotificationService, LinkNotificationService>();
