@@ -34,7 +34,9 @@ public class WhatsAppService : IWhatsAppService
             t.ToString("HH:mm"),
             serviceName,
             staffName,
-            string.IsNullOrWhiteSpace(salonName) ? "—" : salonName);
+            string.IsNullOrWhiteSpace(salonName) ? "—" : salonName,
+            string.IsNullOrWhiteSpace(mapsUrl) ? "—" : mapsUrl,
+            string.IsNullOrWhiteSpace(bookingUrl) ? "—" : bookingUrl);
     }
 
     public async Task SendNewAppointmentRequestAsync(
@@ -78,7 +80,8 @@ public class WhatsAppService : IWhatsAppService
             t.ToString("dd MMMM yyyy", _tr),
             t.ToString("HH:mm"),
             serviceName,
-            string.IsNullOrWhiteSpace(salonName) ? "—" : salonName);
+            string.IsNullOrWhiteSpace(salonName) ? "—" : salonName,
+            string.IsNullOrWhiteSpace(mapsUrl) ? "—" : mapsUrl);
     }
 
     public async Task SendAppointmentReminder1hAsync(
@@ -93,7 +96,8 @@ public class WhatsAppService : IWhatsAppService
             t.ToString("dd MMMM yyyy", _tr),
             t.ToString("HH:mm"),
             serviceName,
-            string.IsNullOrWhiteSpace(salonName) ? "—" : salonName);
+            string.IsNullOrWhiteSpace(salonName) ? "—" : salonName,
+            string.IsNullOrWhiteSpace(mapsUrl) ? "—" : mapsUrl);
     }
 
     public async Task SendAppointmentCancelledAsync(
@@ -119,7 +123,9 @@ public class WhatsAppService : IWhatsAppService
             t.ToString("HH:mm"),
             serviceName,
             staffName,
-            string.IsNullOrWhiteSpace(salonName) ? "—" : salonName);
+            string.IsNullOrWhiteSpace(salonName) ? "—" : salonName,
+            "—",
+            string.IsNullOrWhiteSpace(bookingUrl) ? "—" : bookingUrl);
     }
 
     public async Task SendMonthlyLimitWarningAsync(
