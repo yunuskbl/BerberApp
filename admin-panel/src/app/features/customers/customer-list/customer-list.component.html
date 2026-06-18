@@ -249,10 +249,48 @@
         <button class="drawer-close" (click)="closeBroadcast()">✕</button>
       </div>
       <div class="modal-body">
-        <p class="broadcast-info">
-          Kayıtlı <strong>{{ customerList.length }}</strong> müşteriye WhatsApp mesajı gönderilecek.
-        </p>
         @if (!broadcastResult) {
+          <!-- Hedef kitle filtresi -->
+          <div class="form-group">
+            <label>Hedef Kitle</label>
+            <select [(ngModel)]="broadcastFilter" class="form-control" [disabled]="broadcastSubmitting">
+              <option value="All">Tüm müşteriler ({{ customerList.length }} kişi)</option>
+              <option value="NotVisitedSince">Son X gün gelmeyenler</option>
+              <option value="NeverVisited">Hiç gelmeyenler</option>
+              <option value="FrequentCustomers">En az X randevusu olanlar</option>
+              <option value="RecentVisitors">Son X günde gelenler</option>
+            </select>
+          </div>
+
+          @if (broadcastFilter === 'NotVisitedSince' || broadcastFilter === 'RecentVisitors') {
+            <div class="form-group filter-param">
+              <label>{{ broadcastFilter === 'NotVisitedSince' ? 'Kaç gündür gelmeyenler?' : 'Son kaç günde gelenler?' }}</label>
+              <div class="filter-days-row">
+                <button type="button" class="days-chip" [class.active]="broadcastFilterDays === 30"  (click)="broadcastFilterDays = 30">30 gün</button>
+                <button type="button" class="days-chip" [class.active]="broadcastFilterDays === 60"  (click)="broadcastFilterDays = 60">60 gün</button>
+                <button type="button" class="days-chip" [class.active]="broadcastFilterDays === 90"  (click)="broadcastFilterDays = 90">90 gün</button>
+                <button type="button" class="days-chip" [class.active]="broadcastFilterDays === 180" (click)="broadcastFilterDays = 180">6 ay</button>
+                <input type="number" [(ngModel)]="broadcastFilterDays" min="1" max="730"
+                       class="days-input" [disabled]="broadcastSubmitting" placeholder="Gün">
+              </div>
+            </div>
+          }
+
+          @if (broadcastFilter === 'FrequentCustomers') {
+            <div class="form-group filter-param">
+              <label>Minimum randevu sayısı</label>
+              <div class="filter-days-row">
+                <button type="button" class="days-chip" [class.active]="broadcastMinAppts === 2" (click)="broadcastMinAppts = 2">2+</button>
+                <button type="button" class="days-chip" [class.active]="broadcastMinAppts === 3" (click)="broadcastMinAppts = 3">3+</button>
+                <button type="button" class="days-chip" [class.active]="broadcastMinAppts === 5" (click)="broadcastMinAppts = 5">5+</button>
+                <button type="button" class="days-chip" [class.active]="broadcastMinAppts === 10" (click)="broadcastMinAppts = 10">10+</button>
+                <input type="number" [(ngModel)]="broadcastMinAppts" min="1" max="100"
+                       class="days-input" [disabled]="broadcastSubmitting" placeholder="Adet">
+              </div>
+            </div>
+          }
+
+          <!-- Mesaj -->
           <div class="form-group">
             <label>Mesaj</label>
             <textarea
@@ -264,6 +302,7 @@
             </textarea>
             <span class="char-count">{{ broadcastMessage.length }} karakter</span>
           </div>
+
           @if (broadcastError) { <div class="error-message">{{ broadcastError }}</div> }
           <div class="modal-footer">
             <button type="button" class="btn btn-outline" (click)="closeBroadcast()">İptal</button>
@@ -282,6 +321,10 @@
             <div class="broadcast-stat broadcast-stat--fail">
               <span class="stat-num">{{ broadcastResult.failed }}</span>
               <span class="stat-label">Başarısız</span>
+            </div>
+            <div class="broadcast-stat">
+              <span class="stat-num">{{ broadcastResult.filteredCount }}</span>
+              <span class="stat-label">Hedeflenen</span>
             </div>
             <div class="broadcast-stat">
               <span class="stat-num">{{ broadcastResult.totalCustomers }}</span>

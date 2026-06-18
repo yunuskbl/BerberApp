@@ -27,25 +27,16 @@ public class WhatsAppService : IWhatsAppService
         string staffName, DateTime startTime,
         string salonName = "", string mapsUrl = "", string bookingUrl = "")
     {
-        var t         = ToTurkeyTime(startTime);
-        var salonLine = string.IsNullOrWhiteSpace(salonName) ? "" : $"\n🏪 Salon: {salonName}";
-        var mapsLine  = string.IsNullOrWhiteSpace(mapsUrl)   ? "" : $"\n📍 Konum: {mapsUrl}";
-        var bookLine  = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $"\n📋 Randevularım: {bookingUrl}";
-
-        await SendTextAsync(phone, $"""
-            ✅ ayarlıyo - Randevunuz Onaylandı!
-
-            Merhaba {customerName}!
-
-            Randevunuz başarıyla oluşturuldu.
-
-            📅 Tarih: {t.ToString("dd MMMM yyyy", _tr)}
-            ⏰ Saat: {t:HH:mm}
-            🔹 Hizmet: {serviceName}
-            👤 Personel: {staffName}{salonLine}{mapsLine}{bookLine}
-
-            Görüşmek üzere! 👋
-            """);
+        var t = ToTurkeyTime(startTime);
+        await SendTemplateAsync(phone, "RandevuOnay",
+            customerName,
+            t.ToString("dd MMMM yyyy", _tr),
+            t.ToString("HH:mm"),
+            serviceName,
+            staffName,
+            string.IsNullOrWhiteSpace(salonName) ? "—" : salonName,
+            string.IsNullOrWhiteSpace(mapsUrl) ? "—" : mapsUrl,
+            string.IsNullOrWhiteSpace(bookingUrl) ? "—" : bookingUrl);
     }
 
     public async Task SendNewAppointmentRequestAsync(
@@ -53,19 +44,12 @@ public class WhatsAppService : IWhatsAppService
         string serviceName, DateTime startTime, int sequenceNumber)
     {
         var t = ToTurkeyTime(startTime);
-
-        await SendTextAsync(staffPhone, $"""
-            🔔 ayarlıyo - Yeni Randevu Talebi #{sequenceNumber}
-
-            👤 Müşteri: {customerName}
-            📞 Telefon: {customerPhone}
-            🔹 Hizmet: {serviceName}
-            📅 Tarih: {t.ToString("dd MMMM yyyy", _tr)}
-            ⏰ Saat: {t:HH:mm}
-
-            Onaylamak için ONAYLA {sequenceNumber}
-            Reddetmek için REDDET {sequenceNumber}
-            """);
+        await SendTemplateAsync(staffPhone, "YeniRandevuBildirimi",
+            customerName,
+            customerPhone,
+            serviceName,
+            t.ToString("dd MMMM yyyy", _tr),
+            t.ToString("HH:mm"));
     }
 
     public async Task SendOtpAsync(string phone, string otp)
@@ -77,18 +61,11 @@ public class WhatsAppService : IWhatsAppService
         string phone, string customerName, string serviceName,
         string salonName, string reviewUrl)
     {
-        var reviewLine = string.IsNullOrWhiteSpace(reviewUrl) ? "" : $"\n\n⭐ Değerlendirmenizi bekliyoruz:\n{reviewUrl}";
-
-        await SendTextAsync(phone, $"""
-            🎉 ayarlıyo - Hizmetiniz Tamamlandı!
-
-            Merhaba {customerName}!
-
-            {salonName} olarak sizi aramızda görmekten mutluluk duyduk.
-            🔹 Hizmet: {serviceName}{reviewLine}
-
-            Tekrar görüşmek üzere! 👋
-            """);
+        await SendTemplateAsync(phone, "HizmetTamamlandi",
+            customerName,
+            string.IsNullOrWhiteSpace(salonName) ? "Salonumuz" : salonName,
+            serviceName,
+            string.IsNullOrWhiteSpace(reviewUrl) ? "—" : reviewUrl);
     }
 
     public async Task SendAppointmentReminderAsync(
@@ -97,24 +74,14 @@ public class WhatsAppService : IWhatsAppService
         string salonName = "", string mapsUrl = "", string bookingUrl = "",
         string staffName = "")
     {
-        var t         = ToTurkeyTime(startTime);
-        var salonLine = string.IsNullOrWhiteSpace(salonName) ? "" : $"\n🏪 Salon: {salonName}";
-        var staffLine = string.IsNullOrWhiteSpace(staffName) ? "" : $"\n👤 Personel: {staffName}";
-        var mapsLine  = string.IsNullOrWhiteSpace(mapsUrl)   ? "" : $"\n📍 Konum: {mapsUrl}";
-
-        await SendTextAsync(phone, $"""
-            ⏰ ayarlıyo - Yarınki Randevunuzu Hatırlatalım!
-
-            Merhaba {customerName}!
-
-            Randevunuz 24 saat sonra!
-
-            📅 Tarih: {t.ToString("dd MMMM yyyy", _tr)}
-            ⏰ Saat: {t:HH:mm}
-            🔹 Hizmet: {serviceName}{staffLine}{salonLine}{mapsLine}
-
-            Görüşmek üzere! 👋
-            """);
+        var t = ToTurkeyTime(startTime);
+        await SendTemplateAsync(phone, "RandevuHatirlatma",
+            customerName,
+            t.ToString("dd MMMM yyyy", _tr),
+            t.ToString("HH:mm"),
+            serviceName,
+            string.IsNullOrWhiteSpace(salonName) ? "—" : salonName,
+            string.IsNullOrWhiteSpace(mapsUrl) ? "—" : mapsUrl);
     }
 
     public async Task SendAppointmentReminder1hAsync(
@@ -123,43 +90,25 @@ public class WhatsAppService : IWhatsAppService
         string salonName = "", string mapsUrl = "", string bookingUrl = "",
         string staffName = "")
     {
-        var t         = ToTurkeyTime(startTime);
-        var salonLine = string.IsNullOrWhiteSpace(salonName) ? "" : $"\n🏪 Salon: {salonName}";
-        var staffLine = string.IsNullOrWhiteSpace(staffName) ? "" : $"\n👤 Personel: {staffName}";
-        var mapsLine  = string.IsNullOrWhiteSpace(mapsUrl)   ? "" : $"\n📍 Konum: {mapsUrl}";
-
-        await SendTextAsync(phone, $"""
-            🔔 ayarlıyo - Randevunuz 1 Saat Sonra!
-
-            Merhaba {customerName}!
-
-            📅 Tarih: {t.ToString("dd MMMM yyyy", _tr)}
-            ⏰ Saat: {t:HH:mm}
-            🔹 Hizmet: {serviceName}{staffLine}{salonLine}{mapsLine}
-
-            Sizi bekliyoruz! 👋
-            """);
+        var t = ToTurkeyTime(startTime);
+        await SendTemplateAsync(phone, "RandevuHatirlatma",
+            customerName,
+            t.ToString("dd MMMM yyyy", _tr),
+            t.ToString("HH:mm"),
+            serviceName,
+            string.IsNullOrWhiteSpace(salonName) ? "—" : salonName,
+            string.IsNullOrWhiteSpace(mapsUrl) ? "—" : mapsUrl);
     }
-
-    // ── Serbest metin mesajları ───────────────────────────────────────────────
 
     public async Task SendAppointmentCancelledAsync(
         string phone, string customerName, DateTime startTime,
         string salonName = "", string bookingUrl = "")
     {
-        var t           = ToTurkeyTime(startTime);
-        var salonLine   = string.IsNullOrWhiteSpace(salonName)  ? "" : $"\n🏪 Salon: {salonName}";
-        var bookingLine = string.IsNullOrWhiteSpace(bookingUrl)
-            ? " Yeni randevu için salonumuzu arayabilirsiniz."
-            : $"\n\n🔗 Yeni randevu almak için:\n{bookingUrl}";
-
-        await SendTextAsync(phone, $"""
-            ❌ ayarlıyo - Randevu İptali
-
-            Merhaba {customerName},{salonLine}
-
-            {t.ToString("dd MMMM yyyy", _tr)} tarihli {t:HH:mm} saatindeki randevunuz iptal edilmiştir.{bookingLine}
-            """);
+        var t = ToTurkeyTime(startTime);
+        await SendTemplateAsync(phone, "RandevuIptal",
+            customerName,
+            t.ToString("dd MMMM yyyy", _tr),
+            t.ToString("HH:mm"));
     }
 
     public async Task SendAppointmentUpdatedAsync(
@@ -167,24 +116,16 @@ public class WhatsAppService : IWhatsAppService
         string staffName, DateTime startTime,
         string salonName = "", string bookingUrl = "")
     {
-        var t           = ToTurkeyTime(startTime);
-        var salonLine   = string.IsNullOrWhiteSpace(salonName)  ? "" : $"\n🏪 Salon: {salonName}";
-        var bookingLine = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $"\n\n🔗 Yeni randevu almak için:\n{bookingUrl}";
-
-        await SendTextAsync(phone, $"""
-            🔄 ayarlıyo - Randevu Güncellendi
-
-            Merhaba {customerName}!
-
-            Randevunuz güncellendi. Yeni bilgiler:
-
-            📅 Tarih: {t.ToString("dd MMMM yyyy", _tr)}
-            ⏰ Saat: {t:HH:mm}
-            🔹 Hizmet: {serviceName}
-            👤 Personel: {staffName}{salonLine}{bookingLine}
-
-            Sorularınız için bizi arayabilirsiniz.
-            """);
+        var t = ToTurkeyTime(startTime);
+        await SendTemplateAsync(phone, "RandevuOnay",
+            customerName,
+            t.ToString("dd MMMM yyyy", _tr),
+            t.ToString("HH:mm"),
+            serviceName,
+            staffName,
+            string.IsNullOrWhiteSpace(salonName) ? "—" : salonName,
+            "—",
+            string.IsNullOrWhiteSpace(bookingUrl) ? "—" : bookingUrl);
     }
 
     public async Task SendMonthlyLimitWarningAsync(

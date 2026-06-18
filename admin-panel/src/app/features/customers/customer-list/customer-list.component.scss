@@ -128,8 +128,24 @@
 .btn-broadcast { border-color: #7c3aed; color: #7c3aed; &:hover { background: rgba(124,58,237,0.06); border-color: #7c3aed; color: #7c3aed; } }
 
 /* ── Broadcast modal ── */
-.modal--broadcast { max-width: 480px; }
+.modal--broadcast { max-width: 520px; }
 .broadcast-info { font-size: 14px; color: #6b7280; margin-bottom: 16px; strong { color: #111827; } }
+.filter-param { margin-top: -4px; }
+.filter-days-row {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px;
+}
+.days-chip {
+  padding: 5px 14px; border-radius: 20px; border: 1.5px solid #e5e7eb;
+  background: #fff; font-size: 13px; font-weight: 500; color: #374151; cursor: pointer;
+  transition: all 0.15s;
+  &:hover { border-color: #7c3aed; color: #7c3aed; }
+  &.active { background: #7c3aed; border-color: #7c3aed; color: #fff; }
+}
+.days-input {
+  width: 72px; padding: 5px 10px; border: 1.5px solid #e5e7eb; border-radius: 8px;
+  font-size: 13px; color: #111827; outline: none; text-align: center;
+  &:focus { border-color: #7c3aed; }
+}
 .broadcast-textarea { width: 100%; padding: 12px 14px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; color: #111827; resize: vertical; outline: none; box-sizing: border-box;
   &:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.08); }
   &::placeholder { color: #d1d5db; }
