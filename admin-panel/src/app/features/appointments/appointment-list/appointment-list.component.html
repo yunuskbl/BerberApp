@@ -566,40 +566,55 @@
         <button class="drawer-close" (click)="closeCompleteModal()">✕</button>
       </div>
       <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Yapılan Hizmetler</label>
-          <div class="service-checklist">
-            @for (svc of serviceList; track svc.id) {
-              <label class="service-check-item" [class.checked]="completeSelectedServiceIds.has(svc.id)">
-                <input type="checkbox"
-                  [checked]="completeSelectedServiceIds.has(svc.id)"
-                  (change)="toggleCompleteService(svc.id)">
-                <span class="svc-name">{{ svc.name }}</span>
-                <span class="svc-price">{{ svc.price | number:'1.0-0' }} {{ svc.currency }}</span>
-              </label>
-            }
+        @if (completeReceiptNumber) {
+          <!-- Başarı ekranı -->
+          <div class="complete-success">
+            <div class="complete-success-icon">✅</div>
+            <div class="complete-success-title">Randevu Tamamlandı</div>
+            <div class="complete-success-receipt">
+              <span class="receipt-label">Fiş otomatik oluşturuldu</span>
+              <span class="receipt-number-badge">{{ completeReceiptNumber }}</span>
+            </div>
           </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Toplam Tutar (₺)</label>
-          <input type="number" class="form-control" step="0.01" min="0"
-            [(ngModel)]="completeActualPrice"
-            placeholder="Otomatik hesaplanır, değiştirebilirsiniz">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Tamamlama Notu</label>
-          <textarea class="form-control" rows="3" [(ngModel)]="completeNotes"
-            placeholder="Opsiyonel not..."></textarea>
-        </div>
-        @if (completeError) {
-          <div class="error-message">{{ completeError }}</div>
+          <div class="drawer-footer" style="padding: 0; margin-top: 20px;">
+            <button type="button" class="btn btn-primary" (click)="closeCompleteModal()">Kapat</button>
+          </div>
+        } @else {
+          <div class="form-group">
+            <label class="form-label">Yapılan Hizmetler</label>
+            <div class="service-checklist">
+              @for (svc of serviceList; track svc.id) {
+                <label class="service-check-item" [class.checked]="completeSelectedServiceIds.has(svc.id)">
+                  <input type="checkbox"
+                    [checked]="completeSelectedServiceIds.has(svc.id)"
+                    (change)="toggleCompleteService(svc.id)">
+                  <span class="svc-name">{{ svc.name }}</span>
+                  <span class="svc-price">{{ svc.price | number:'1.0-0' }} {{ svc.currency }}</span>
+                </label>
+              }
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Toplam Tutar (₺)</label>
+            <input type="number" class="form-control" step="0.01" min="0"
+              [(ngModel)]="completeActualPrice"
+              placeholder="Otomatik hesaplanır, değiştirebilirsiniz">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tamamlama Notu</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="completeNotes"
+              placeholder="Opsiyonel not..."></textarea>
+          </div>
+          @if (completeError) {
+            <div class="error-message">{{ completeError }}</div>
+          }
+          <div class="drawer-footer" style="padding: 0; margin-top: 20px;">
+            <button type="button" class="btn btn-outline" (click)="closeCompleteModal()">İptal</button>
+            <button type="button" class="btn btn-success" [disabled]="isCompleteSubmitting" (click)="submitComplete()">
+              {{ isCompleteSubmitting ? 'Kaydediliyor...' : '✓ Tamamla & Bildir' }}
+            </button>
+          </div>
         }
-        <div class="drawer-footer" style="padding: 0; margin-top: 20px;">
-          <button type="button" class="btn btn-outline" (click)="closeCompleteModal()">İptal</button>
-          <button type="button" class="btn btn-success" [disabled]="isCompleteSubmitting" (click)="submitComplete()">
-            {{ isCompleteSubmitting ? 'Kaydediliyor...' : '✓ Tamamla & Bildir' }}
-          </button>
-        </div>
       </div>
     </div>
   </div>

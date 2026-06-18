@@ -5,10 +5,11 @@ using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Entities;
 using BerberApp.Domain.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace BerberApp.Application.Appointment.Handlers;
 
-public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCommand, bool>
+public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCommand, CompleteAppointmentResult>
 {
     private readonly IGenericRepository<AppointmentEntity> _appointmentRepo;
     private readonly IGenericRepository<CustomerEntity> _customerRepo;
@@ -16,6 +17,7 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
     private readonly IGenericRepository<AppointmentActualServiceEntity> _actualServiceRepo;
     private readonly IGenericRepository<PriceDifferenceEntity> _priceDiffRepo;
     private readonly INotificationService _notificationService;
+    private readonly IAppDbContext _context;
 
     public CompleteAppointmentHandler(
         IGenericRepository<AppointmentEntity> appointmentRepo,
@@ -23,7 +25,8 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
         IGenericRepository<ServiceEntity> serviceRepo,
         IGenericRepository<AppointmentActualServiceEntity> actualServiceRepo,
         IGenericRepository<PriceDifferenceEntity> priceDiffRepo,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IAppDbContext context)
     {
         _appointmentRepo     = appointmentRepo;
         _customerRepo        = customerRepo;
@@ -31,9 +34,10 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
         _actualServiceRepo   = actualServiceRepo;
         _priceDiffRepo       = priceDiffRepo;
         _notificationService = notificationService;
+        _context             = context;
     }
 
-    public async Task<bool> Handle(CompleteAppointmentCommand request, CancellationToken ct)
+    public async Task<CompleteAppointmentResult> Handle(CompleteAppointmentCommand request, CancellationToken ct)
     {
         var appointment = await _appointmentRepo.GetAsync(
             x => x.Id == request.Id && x.TenantId == request.TenantId, ct);
@@ -56,7 +60,9 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
 
         await _appointmentRepo.UpdateAsync(appointment, ct);
 
-        // Gerçekte yapılan hizmetleri kaydet
+        // Gerçekte yapılan hizmetleri kaydet ve fiş kalemleri için topla
+        var receiptItems = new List<(string Name, decimal Price)>();
+
         foreach (var serviceId in request.ActualServiceIds)
         {
             var svc = await _serviceRepo.GetByIdAsync(serviceId, ct);
@@ -68,6 +74,15 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
                 ServiceId     = serviceId,
                 Price         = svc.Price ?? 0
             }, ct);
+
+            receiptItems.Add((svc.Name, svc.Price ?? 0));
+        }
+
+        // Seçilen hizmet yoksa orijinal hizmeti kullan
+        if (!receiptItems.Any())
+        {
+            var originalSvc = await _serviceRepo.GetByIdAsync(appointment.ServiceId, ct);
+            receiptItems.Add((originalSvc?.Name ?? "Hizmet", request.ActualTotalPrice ?? originalSvc?.Price ?? 0));
         }
 
         // Fiyat farkı kaydı
@@ -92,7 +107,33 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
             }
         }
 
-        // Müşteriye değerlendirme bildirimi gönder
+        // ── Otomatik fiş oluştur ──────────────────────────────
+        var receiptNumber = await GenerateReceiptNumberAsync(appointment.TenantId, now.Year, ct);
+        var totalAmount   = request.ActualTotalPrice ?? receiptItems.Sum(x => x.Price);
+
+        // Tek kalem varsa ActualTotalPrice'ı direkt kullan
+        var items = receiptItems.Select((x, idx) =>
+        {
+            var price = receiptItems.Count == 1
+                ? totalAmount
+                : x.Price;
+            return new ReceiptItem { ServiceName = x.Name, Quantity = 1, UnitPrice = price };
+        }).ToList();
+
+        var receipt = new Receipt
+        {
+            TenantId      = appointment.TenantId,
+            CustomerId    = appointment.CustomerId,
+            AppointmentId = appointment.Id,
+            ReceiptNumber = receiptNumber,
+            TotalAmount   = totalAmount,
+            Items         = items,
+        };
+
+        _context.Receipts.Add(receipt);
+        await _context.SaveChangesAsync(ct);
+
+        // ── Müşteriye değerlendirme bildirimi gönder ──────────
         if (!string.IsNullOrWhiteSpace(request.ReviewUrl))
         {
             var customer = await _customerRepo.GetByIdAsync(appointment.CustomerId, ct);
@@ -120,6 +161,25 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
             }
         }
 
-        return true;
+        return new CompleteAppointmentResult { ReceiptNumber = receiptNumber };
+    }
+
+    private async Task<string> GenerateReceiptNumberAsync(Guid tenantId, int year, CancellationToken ct)
+    {
+        var lastNumber = await _context.Receipts
+            .Where(r => r.TenantId == tenantId && r.ReceiptNumber.StartsWith(year + "-"))
+            .OrderByDescending(r => r.ReceiptNumber)
+            .Select(r => r.ReceiptNumber)
+            .FirstOrDefaultAsync(ct);
+
+        int seq = 1;
+        if (lastNumber is not null)
+        {
+            var parts = lastNumber.Split('-');
+            if (parts.Length == 2 && int.TryParse(parts[1], out int last))
+                seq = last + 1;
+        }
+
+        return $"{year}-{seq:D4}";
     }
 }

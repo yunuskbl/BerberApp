@@ -179,7 +179,7 @@ public class AppointmentsController : BaseApiController
             ? $"{frontendBase}/rate/{subdomain}/{id}"
             : null;
 
-        await Mediator.Send(new CompleteAppointmentCommand
+        var result = await Mediator.Send(new CompleteAppointmentCommand
         {
             Id               = id,
             TenantId         = tenantId,
@@ -188,7 +188,7 @@ public class AppointmentsController : BaseApiController
             ActualTotalPrice = body?.ActualTotalPrice,
             CompletionNotes  = body?.CompletionNotes
         });
-        return Ok(new { success = true, message = "Randevu tamamlandı." });
+        return Success(new { receiptNumber = result.ReceiptNumber }, "Randevu tamamlandı.");
     }
 
 }

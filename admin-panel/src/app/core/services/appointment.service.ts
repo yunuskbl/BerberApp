@@ -75,7 +75,7 @@ export class AppointmentService {
     actualServiceIds: string[];
     actualTotalPrice?: number | null;
     completionNotes?: string | null;
-  }): Observable<any> {
-    return this.http.patch<any>(`${this.apiUrl}/${id}/complete`, body);
+  }): Observable<ApiResponse<{ receiptNumber: string }>> {
+    return this.http.patch<ApiResponse<{ receiptNumber: string }>>(`${this.apiUrl}/${id}/complete`, body);
   }
 }

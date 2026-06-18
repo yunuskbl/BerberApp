@@ -443,6 +443,7 @@ export class AppointmentListComponent implements OnInit {
   completeNotes = '';
   isCompleteSubmitting = false;
   completeError = '';
+  completeReceiptNumber = '';
 
   openCompleteModal(apt: Appointment): void {
     this.completingAppointment = apt;
@@ -450,11 +451,13 @@ export class AppointmentListComponent implements OnInit {
     this.completeActualPrice = apt.price ?? null;
     this.completeNotes = '';
     this.completeError = '';
+    this.completeReceiptNumber = '';
     this.isCompleteSubmitting = false;
   }
 
   closeCompleteModal(): void {
     this.completingAppointment = null;
+    this.completeReceiptNumber = '';
   }
 
   toggleCompleteService(id: string): void {
@@ -485,7 +488,15 @@ export class AppointmentListComponent implements OnInit {
       actualTotalPrice: this.completeActualPrice,
       completionNotes: this.completeNotes || null,
     }).subscribe({
-      next: () => { this.loadAppointments(); this.closeCompleteModal(); },
+      next: (res) => {
+        this.loadAppointments();
+        if (res?.data?.receiptNumber) {
+          this.completeReceiptNumber = res.data.receiptNumber;
+          this.isCompleteSubmitting = false;
+        } else {
+          this.closeCompleteModal();
+        }
+      },
       error: (err) => {
         this.completeError = err.error?.message || err.error?.errors?.[0] || 'Randevu tamamlanamadı.';
         this.isCompleteSubmitting = false;
