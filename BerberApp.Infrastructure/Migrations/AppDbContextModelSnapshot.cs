@@ -421,6 +421,100 @@ namespace BerberApp.Infrastructure.Migrations
                     b.ToTable("Reviews");
                 });
 
+            modelBuilder.Entity("BerberApp.Domain.Entities.Receipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AppointmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasDefaultValue("TRY");
+
+                    b.Property<Guid?>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsVoid")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ReceiptNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "ReceiptNumber")
+                        .IsUnique();
+
+                    b.ToTable("Receipts");
+                });
+
+            modelBuilder.Entity("BerberApp.Domain.Entities.ReceiptItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ReceiptId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ServiceName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceiptId");
+
+                    b.ToTable("ReceiptItems");
+                });
+
             modelBuilder.Entity("BerberApp.Domain.Entities.Service", b =>
                 {
                     b.Property<Guid>("Id")
@@ -986,6 +1080,42 @@ namespace BerberApp.Infrastructure.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("BerberApp.Domain.Entities.Receipt", b =>
+                {
+                    b.HasOne("BerberApp.Domain.Entities.Appointment", "Appointment")
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BerberApp.Domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BerberApp.Domain.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("BerberApp.Domain.Entities.ReceiptItem", b =>
+                {
+                    b.HasOne("BerberApp.Domain.Entities.Receipt", "Receipt")
+                        .WithMany("Items")
+                        .HasForeignKey("ReceiptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Receipt");
+                });
+
             modelBuilder.Entity("BerberApp.Domain.Entities.Service", b =>
                 {
                     b.HasOne("BerberApp.Domain.Entities.Tenant", "Tenant")
@@ -1098,6 +1228,11 @@ namespace BerberApp.Infrastructure.Migrations
                     b.Navigation("AppointmentServices");
 
                     b.Navigation("Notifications");
+                });
+
+            modelBuilder.Entity("BerberApp.Domain.Entities.Receipt", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("BerberApp.Domain.Entities.Customer", b =>
