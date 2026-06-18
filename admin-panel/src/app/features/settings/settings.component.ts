@@ -72,6 +72,12 @@ export class SettingsComponent implements OnInit {
   closureError = '';
   closureForm!: FormGroup;
 
+  // WhatsApp Test
+  waTestPhone   = '';
+  waTestMessage = 'Merhaba! Bu bir WhatsApp bağlantı testidir.';
+  waTestSending = false;
+  waTestResult: { success: boolean; message: string } | null = null;
+
   // QR Kod
   qrCodeDataUrl = '';
 
@@ -556,5 +562,18 @@ export class SettingsComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  sendWhatsAppTest(): void {
+    if (!this.waTestPhone.trim() || this.waTestSending) return;
+    this.waTestSending = true;
+    this.waTestResult = null;
+    this.http.post<{ success: boolean; message: string }>(
+      `${environment.apiUrl}/tenants/test-whatsapp`,
+      { phone: this.waTestPhone.trim(), message: this.waTestMessage }
+    ).subscribe({
+      next:  (res) => { this.waTestResult = res; this.waTestSending = false; },
+      error: (err) => { this.waTestResult = { success: false, message: err.error?.message || 'Bağlantı hatası.' }; this.waTestSending = false; }
+    });
   }
 }

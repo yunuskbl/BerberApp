@@ -513,6 +513,40 @@
         }
       </div>
 
+      <!-- WhatsApp Test -->
+      <div class="settings-card">
+        <div class="card-header">
+          <div class="card-icon">💬</div>
+          <div class="card-title">
+            <h3>WhatsApp Bağlantı Testi</h3>
+            <p>Belirtilen numaraya test mesajı göndererek WhatsApp entegrasyonunu doğrulayın.</p>
+          </div>
+        </div>
+        <div class="wa-test-info">
+          ℹ️ Mesajı alan kişi cevap verirse <strong>24 saatlik serbest mesaj penceresi</strong> açılır ve toplu mesaj gönderimleri o kişiye çalışır.
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Telefon Numarası</label>
+            <input type="tel" [(ngModel)]="waTestPhone" placeholder="05XX XXX XX XX" [disabled]="waTestSending">
+          </div>
+          <div class="form-group" style="flex:2">
+            <label>Mesaj</label>
+            <input type="text" [(ngModel)]="waTestMessage" [disabled]="waTestSending">
+          </div>
+        </div>
+        @if (waTestResult) {
+          <div class="alert" [class.alert-success]="waTestResult.success" [class.alert-error]="!waTestResult.success">
+            {{ waTestResult.message }}
+          </div>
+        }
+        <div class="card-actions">
+          <button class="btn btn-primary" (click)="sendWhatsAppTest()" [disabled]="!waTestPhone.trim() || waTestSending">
+            {{ waTestSending ? 'Gönderiliyor...' : '📤 Test Mesajı Gönder' }}
+          </button>
+        </div>
+      </div>
+
     </div>
   }
 </div>

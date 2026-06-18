@@ -276,4 +276,25 @@ public class TenantsController : BaseApiController
         await _context.SaveChangesAsync();
         return NoContent();
     }
+
+    [HttpPost("test-whatsapp")]
+    public async Task<IActionResult> TestWhatsApp(
+        [FromBody] TestWhatsAppRequest req,
+        [FromServices] IWhatsAppService whatsApp)
+    {
+        if (string.IsNullOrWhiteSpace(req.Phone))
+            return BadRequest(new { success = false, message = "Telefon numarası gerekli." });
+
+        try
+        {
+            await whatsApp.SendCustomMessageAsync(req.Phone, req.Message);
+            return Success<object>(null!, "WhatsApp mesajı gönderildi.");
+        }
+        catch (Exception ex)
+        {
+            return Ok(new { success = false, message = ex.Message });
+        }
+    }
 }
+
+public record TestWhatsAppRequest(string Phone, string Message);
