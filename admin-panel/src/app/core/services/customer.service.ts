@@ -33,6 +33,7 @@ export class CustomerService {
 
   broadcast(payload: {
     message: string;
+    imageUrl?: string;
     filter: string;
     filterDays?: number;
     minAppointments?: number;
@@ -40,5 +41,11 @@ export class CustomerService {
     return this.http.post<ApiResponse<{ totalCustomers: number; filteredCount: number; sent: number; failed: number }>>(
       `${this.apiUrl}/broadcast`, payload
     );
+  }
+
+  uploadBroadcastImage(file: File): Observable<ApiResponse<{ url: string }>> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<ApiResponse<{ url: string }>>(`${this.apiUrl}/broadcast/image`, form);
   }
 }

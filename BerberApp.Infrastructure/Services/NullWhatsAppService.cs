@@ -48,6 +48,6 @@ public class NullWhatsAppService : IWhatsAppService
     public Task SendSubscriptionExpiryWarningAsync(string phone, string salonName, int daysLeft)
         => Task.CompletedTask;
 
-    public Task SendCustomMessageAsync(string phone, string message)
+    public Task SendCustomMessageAsync(string phone, string message, string? imageUrl = null)
         => Task.CompletedTask;
 }

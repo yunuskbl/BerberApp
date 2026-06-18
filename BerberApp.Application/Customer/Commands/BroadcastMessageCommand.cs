@@ -15,6 +15,7 @@ public class BroadcastMessageCommand : IRequest<BroadcastMessageResult>
 {
     public Guid TenantId { get; set; }
     public string Message { get; set; } = string.Empty;
+    public string? ImageUrl { get; set; }
     public BroadcastFilter Filter { get; set; } = BroadcastFilter.All;
     public int? FilterDays { get; set; }
     public int? MinAppointments { get; set; }

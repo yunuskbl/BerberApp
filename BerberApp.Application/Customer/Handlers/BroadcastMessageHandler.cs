@@ -44,7 +44,7 @@ public class BroadcastMessageHandler : IRequestHandler<BroadcastMessageCommand, 
             if (string.IsNullOrWhiteSpace(customer.Phone)) { failed++; continue; }
             try
             {
-                await _whatsAppService.SendCustomMessageAsync(customer.Phone, request.Message);
+                await _whatsAppService.SendCustomMessageAsync(customer.Phone, request.Message, request.ImageUrl);
                 sent++;
             }
             catch

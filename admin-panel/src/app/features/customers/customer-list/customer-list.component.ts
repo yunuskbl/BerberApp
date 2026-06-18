@@ -54,9 +54,12 @@ export class CustomerListComponent implements OnInit {
   broadcastResult: { totalCustomers: number; filteredCount: number; sent: number; failed: number } | null = null;
   broadcastError       = '';
   broadcastFilter: 'All' | 'NotVisitedSince' | 'NeverVisited' | 'FrequentCustomers' | 'RecentVisitors' = 'All';
-  broadcastFilterDays  = 30;
-  broadcastMinAppts    = 3;
+  broadcastFilterDays   = 30;
+  broadcastMinAppts     = 3;
   broadcastDropdownOpen = false;
+  broadcastImageUrl     = '';
+  broadcastImageUploading = false;
+  broadcastImageError   = '';
 
   readonly broadcastFilterOptions = [
     { value: 'All',               label: 'Tüm müşteriler' },
@@ -302,10 +305,13 @@ export class CustomerListComponent implements OnInit {
     this.broadcastMessage    = '';
     this.broadcastResult     = null;
     this.broadcastError      = '';
-    this.broadcastFilter       = 'All';
-    this.broadcastFilterDays   = 30;
-    this.broadcastMinAppts     = 3;
-    this.broadcastDropdownOpen = false;
+    this.broadcastFilter          = 'All';
+    this.broadcastFilterDays      = 30;
+    this.broadcastMinAppts        = 3;
+    this.broadcastDropdownOpen    = false;
+    this.broadcastImageUrl        = '';
+    this.broadcastImageUploading  = false;
+    this.broadcastImageError      = '';
   }
 
   closeBroadcast(): void {
@@ -319,6 +325,7 @@ export class CustomerListComponent implements OnInit {
     this.broadcastError = '';
     this.customerService.broadcast({
       message:         this.broadcastMessage.trim(),
+      imageUrl:        this.broadcastImageUrl || undefined,
       filter:          this.broadcastFilter,
       filterDays:      ['NotVisitedSince', 'RecentVisitors'].includes(this.broadcastFilter) ? this.broadcastFilterDays : undefined,
       minAppointments: this.broadcastFilter === 'FrequentCustomers' ? this.broadcastMinAppts : undefined,
@@ -333,6 +340,26 @@ export class CustomerListComponent implements OnInit {
         this.broadcastSubmitting = false;
       }
     });
+  }
+
+  onBroadcastImageSelect(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.broadcastImageUploading = true;
+    this.broadcastImageError = '';
+    this.customerService.uploadBroadcastImage(file).subscribe({
+      next: (res) => {
+        if (res.success) this.broadcastImageUrl = res.data.url;
+        else this.broadcastImageError = 'Görsel yüklenemedi.';
+        this.broadcastImageUploading = false;
+      },
+      error: () => { this.broadcastImageError = 'Görsel yüklenemedi.'; this.broadcastImageUploading = false; }
+    });
+  }
+
+  removeBroadcastImage(): void {
+    this.broadcastImageUrl = '';
+    this.broadcastImageError = '';
   }
 
   // ─── HELPERS ─────────────────────────────────────────────

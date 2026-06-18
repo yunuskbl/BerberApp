@@ -147,8 +147,24 @@ public class WhatsAppService : IWhatsAppService
         await SendTextAsync(phone, msg);
     }
 
-    public async Task SendCustomMessageAsync(string phone, string message)
-        => await SendTextAsync(phone, message);
+    public async Task SendCustomMessageAsync(string phone, string message, string? imageUrl = null)
+    {
+        if (!string.IsNullOrWhiteSpace(imageUrl))
+        {
+            var payload = new
+            {
+                messaging_product = "whatsapp",
+                to   = FormatPhone(phone),
+                type = "image",
+                image = new { link = imageUrl, caption = message }
+            };
+            await PostAsync(payload);
+        }
+        else
+        {
+            await SendTextAsync(phone, message);
+        }
+    }
 
     // ── Meta Graph API gönderim yardımcıları ─────────────────────────────────
 

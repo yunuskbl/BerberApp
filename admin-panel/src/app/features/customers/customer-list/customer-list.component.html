@@ -313,6 +313,31 @@
             </div>
           }
 
+          <!-- Görsel (opsiyonel) -->
+          <div class="form-group">
+            <label>Görsel <span class="optional-label">(opsiyonel)</span></label>
+            @if (!broadcastImageUrl) {
+              <label class="image-upload-area" [class.uploading]="broadcastImageUploading">
+                <input type="file" accept="image/jpeg,image/png,image/webp"
+                       (change)="onBroadcastImageSelect($event)" [disabled]="broadcastSubmitting || broadcastImageUploading" hidden>
+                @if (broadcastImageUploading) {
+                  <span class="upload-icon">⏳</span>
+                  <span class="upload-text">Yükleniyor...</span>
+                } @else {
+                  <span class="upload-icon">🖼️</span>
+                  <span class="upload-text">Görsel ekle</span>
+                  <span class="upload-hint">JPG, PNG veya WebP · maks 5MB</span>
+                }
+              </label>
+            } @else {
+              <div class="image-preview">
+                <img [src]="broadcastImageUrl" alt="Görsel önizleme">
+                <button type="button" class="image-remove" (click)="removeBroadcastImage()">✕</button>
+              </div>
+            }
+            @if (broadcastImageError) { <div class="error-message" style="margin-top:8px">{{ broadcastImageError }}</div> }
+          </div>
+
           <!-- Mesaj -->
           <div class="form-group">
             <label>Mesaj</label>

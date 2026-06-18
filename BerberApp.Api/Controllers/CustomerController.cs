@@ -45,4 +45,36 @@ public class CustomersController : BaseApiController
         command.TenantId = TenantId;
         return Success(await Mediator.Send(command));
     }
+
+    [HttpPost("broadcast/image")]
+    [RequestSizeLimit(5_242_880)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 5_242_880)]
+    public async Task<IActionResult> UploadBroadcastImage([FromForm] IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest(new { success = false, message = "Dosya seçilmedi." });
+
+        var allowed = new Dictionary<string, string>
+        {
+            ["image/jpeg"] = ".jpg",
+            ["image/png"]  = ".png",
+            ["image/webp"] = ".webp",
+        };
+        var ct = file.ContentType?.ToLowerInvariant() ?? "";
+        if (!allowed.TryGetValue(ct, out var ext))
+            return BadRequest(new { success = false, message = "Sadece JPG, PNG veya WebP yüklenebilir." });
+
+        var dir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "broadcast");
+        Directory.CreateDirectory(dir);
+
+        var fileName = $"{Guid.NewGuid()}{ext}";
+        var filePath = Path.Combine(dir, fileName);
+        await using var stream = System.IO.File.Create(filePath);
+        await file.CopyToAsync(stream);
+
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var url = $"{baseUrl}/uploads/broadcast/{fileName}";
+
+        return Ok(new { success = true, url });
+    }
 }
