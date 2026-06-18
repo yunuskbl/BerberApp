@@ -32,6 +32,8 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<AppointmentActualService> AppointmentActualServices => Set<AppointmentActualService>();
     public DbSet<PriceDifference> PriceDifferences => Set<PriceDifference>();
+    public DbSet<Receipt> Receipts => Set<Receipt>();
+    public DbSet<ReceiptItem> ReceiptItems => Set<ReceiptItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

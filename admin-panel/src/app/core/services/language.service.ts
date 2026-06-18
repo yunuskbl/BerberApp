@@ -17,6 +17,7 @@ const T: Record<Lang, Record<string, string>> = {
     'nav.reports':      'Raporlar',
     'nav.reviews':      'Değerlendirmeler',
     'nav.branches':     'Şubeler',
+    'nav.receipts':     'Fişler',
 
     'reviews.title':    'Müşteri Değerlendirmeleri',
     'reviews.subtitle': 'Müşterilerinizin bıraktığı puan ve yorumlar',
@@ -395,6 +396,7 @@ const T: Record<Lang, Record<string, string>> = {
     'nav.reports':      'Reports',
     'nav.reviews':      'Reviews',
     'nav.branches':     'Branches',
+    'nav.receipts':     'Receipts',
 
     'reviews.title':    'Customer Reviews',
     'reviews.subtitle': 'Ratings and comments left by your customers',
@@ -761,6 +763,7 @@ const T: Record<Lang, Record<string, string>> = {
     'nav.reports':      'Отчёты',
     'nav.reviews':      'Отзывы',
     'nav.branches':     'Филиалы',
+    'nav.receipts':     'Чеки',
 
     'reviews.title':    'Отзывы клиентов',
     'reviews.subtitle': 'Оценки и комментарии ваших клиентов',
@@ -1127,6 +1130,7 @@ const T: Record<Lang, Record<string, string>> = {
     'nav.reports':      'Berichte',
     'nav.reviews':      'Bewertungen',
     'nav.branches':     'Filialen',
+    'nav.receipts':     'Quittungen',
 
     'reviews.title':    'Kundenbewertungen',
     'reviews.subtitle': 'Bewertungen und Kommentare Ihrer Kunden',

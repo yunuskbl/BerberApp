@@ -284,6 +284,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'receipts',
+        loadComponent: () =>
+          import('./features/receipts/receipts-list/receipts-list.component').then(
+            (m) => m.ReceiptsListComponent,
+          ),
+      },
+      {
         path: 'appointments',
         loadComponent: () =>
           import('./features/appointments/appointment-list/appointment-list.component').then(

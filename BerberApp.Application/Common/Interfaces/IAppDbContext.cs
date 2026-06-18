@@ -33,6 +33,8 @@ namespace BerberApp.Application.Common.Interfaces
         DbSet<BerberApp.Domain.Entities.AuditLog> AuditLogs { get; }
         DbSet<AppointmentActualServiceEntity> AppointmentActualServices { get; }
         DbSet<PriceDifferenceEntity> PriceDifferences { get; }
+        DbSet<ReceiptEntity> Receipts { get; }
+        DbSet<ReceiptItemEntity> ReceiptItems { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
