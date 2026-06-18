@@ -173,6 +173,11 @@
                   ✏ Güncelle
                 </button>
               }
+              @if (apt.status === AppointmentStatus.Completed) {
+                <button class="btn-history-action btn-history-action--receipt" (click)="openReceiptModal(apt)" title="Fiş kes">
+                  🧾 Fiş Kes
+                </button>
+              }
             </div>
           </div>
         }
@@ -333,6 +338,82 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" (click)="closeBroadcast()">Kapat</button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══ FİŞ MODAL ═══ -->
+@if (isReceiptModalOpen) {
+  <div class="modal-overlay" (click)="closeReceiptModal()">
+    <div class="modal modal--receipt" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>🧾 Fiş Kes</h3>
+        <button class="drawer-close" (click)="closeReceiptModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        @if (!createdReceipt) {
+          <!-- Müşteri bilgisi -->
+          @if (historyCustomer) {
+            <div class="receipt-customer-info">
+              <span class="receipt-customer-name">{{ historyCustomer.fullName }}</span>
+              <span class="receipt-customer-phone">{{ historyCustomer.phone }}</span>
+            </div>
+          }
+
+          <!-- Kalemler -->
+          <div class="receipt-items-section">
+            <div class="receipt-items-header">
+              <span class="receipt-items-label">Hizmetler</span>
+              <button type="button" class="btn-add-receipt-item" (click)="addReceiptItem()">+ Ekle</button>
+            </div>
+            @for (item of receiptItems; track $index; let i = $index) {
+              <div class="receipt-item-row">
+                <input class="form-input ri-name" type="text" [(ngModel)]="item.serviceName" placeholder="Hizmet adı">
+                <input class="form-input ri-qty"  type="number" [(ngModel)]="item.quantity" min="1" placeholder="Adet">
+                <div class="ri-price-wrap">
+                  <input class="form-input ri-price" type="number" [(ngModel)]="item.unitPrice" min="0" step="0.01" placeholder="Fiyat">
+                  <span class="ri-currency">₺</span>
+                </div>
+                @if (receiptItems.length > 1) {
+                  <button class="btn-remove-ri" (click)="removeReceiptItem(i)">✕</button>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Toplam -->
+          <div class="receipt-total-row">
+            <span class="receipt-total-label">Toplam</span>
+            <span class="receipt-total-amount">{{ receiptTotal.toFixed(2) }} ₺</span>
+          </div>
+
+          <!-- Not -->
+          <div class="form-group" style="margin-top:12px">
+            <label class="form-label">Not <span class="optional-label">(opsiyonel)</span></label>
+            <input type="text" class="form-input" [(ngModel)]="receiptNote" placeholder="Fiş notu...">
+          </div>
+
+          @if (receiptError) { <div class="error-message">{{ receiptError }}</div> }
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeReceiptModal()">İptal</button>
+            <button type="button" class="btn btn-primary" (click)="submitReceipt()" [disabled]="receiptSubmitting">
+              {{ receiptSubmitting ? 'Kesiliyor...' : 'Fişi Kes' }}
+            </button>
+          </div>
+        } @else {
+          <!-- Fiş başarıyla oluşturuldu -->
+          <div class="receipt-success">
+            <div class="receipt-success-icon">✅</div>
+            <div class="receipt-success-num">Fiş No: {{ createdReceipt.receiptNumber }}</div>
+            <div class="receipt-success-amount">{{ createdReceipt.totalAmount.toFixed(2) }} ₺</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeReceiptModal()">Kapat</button>
+            <button type="button" class="btn btn-primary" (click)="printCreatedReceipt()">🖨 Yazdır</button>
           </div>
         }
       </div>

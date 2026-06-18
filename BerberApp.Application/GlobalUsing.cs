@@ -18,4 +18,6 @@ global using ExpenseEntity = BerberApp.Domain.Entities.Expense;
 global using PaymentTransactionEntity = BerberApp.Domain.Entities.PaymentTransaction;
 global using AppointmentActualServiceEntity = BerberApp.Domain.Entities.AppointmentActualService;
 global using PriceDifferenceEntity = BerberApp.Domain.Entities.PriceDifference;
+global using ReceiptEntity     = BerberApp.Domain.Entities.Receipt;
+global using ReceiptItemEntity = BerberApp.Domain.Entities.ReceiptItem;
 global using BerberApp.Application.Common.Extensions;

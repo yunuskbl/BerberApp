@@ -11,6 +11,8 @@ import { Staff } from '../../../core/models/staff.model';
 import { Service } from '../../../core/models/service.model';
 import { LanguageService } from '../../../core/services/language.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { ReceiptService } from '../../../core/services/receipt.service';
+import { Receipt } from '../../../core/models/receipt.model';
 
 @Component({
   selector: 'app-customer-list',
@@ -57,6 +59,19 @@ export class CustomerListComponent implements OnInit {
   broadcastFilterDays  = 30;
   broadcastMinAppts    = 3;
 
+  // --- Fiş ---
+  isReceiptModalOpen  = false;
+  receiptAppointment: Appointment | null = null;
+  receiptItems: { serviceName: string; quantity: number; unitPrice: number }[] = [];
+  receiptNote         = '';
+  receiptSubmitting   = false;
+  receiptError        = '';
+  createdReceipt: Receipt | null = null;
+
+  get receiptTotal(): number {
+    return this.receiptItems.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
+  }
+
   // --- Tekrarla modal ---
   repeatingAppointment: Appointment | null = null;
   repeatDate   = '';
@@ -73,6 +88,7 @@ export class CustomerListComponent implements OnInit {
     private appointmentService: AppointmentService,
     private staffService:       StaffService,
     private serviceService:     ServiceService,
+    private receiptService:     ReceiptService,
     private fb: FormBuilder,
     public langService: LanguageService,
   ) {
@@ -312,6 +328,109 @@ export class CustomerListComponent implements OnInit {
         this.broadcastSubmitting = false;
       }
     });
+  }
+
+  onBroadcastImageSelect(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.broadcastImageUploading = true;
+    this.broadcastImageError = '';
+    this.customerService.uploadBroadcastImage(file).subscribe({
+      next: (res) => {
+        this.broadcastImageUploading = false;
+        if (res.success && res.data?.url) this.broadcastImageUrl = res.data.url;
+        else this.broadcastImageError = 'Görsel yüklenemedi.';
+      },
+      error: () => { this.broadcastImageError = 'Görsel yüklenemedi.'; this.broadcastImageUploading = false; }
+    });
+  }
+
+  removeBroadcastImage(): void {
+    this.broadcastImageUrl = '';
+    this.broadcastImageError = '';
+  }
+
+  // ─── FİŞ ─────────────────────────────────────────────────
+  openReceiptModal(apt: Appointment): void {
+    this.receiptAppointment = apt;
+    this.receiptNote        = '';
+    this.receiptError       = '';
+    this.receiptSubmitting  = false;
+    this.createdReceipt     = null;
+    this.receiptItems       = [{
+      serviceName: apt.serviceName,
+      quantity:    1,
+      unitPrice:   apt.price ?? 0,
+    }];
+    this.isReceiptModalOpen = true;
+  }
+
+  closeReceiptModal(): void {
+    this.isReceiptModalOpen  = false;
+    this.receiptAppointment  = null;
+    this.createdReceipt      = null;
+  }
+
+  addReceiptItem(): void {
+    this.receiptItems.push({ serviceName: '', quantity: 1, unitPrice: 0 });
+  }
+
+  removeReceiptItem(i: number): void {
+    this.receiptItems.splice(i, 1);
+  }
+
+  submitReceipt(): void {
+    if (this.receiptItems.some(i => !i.serviceName || i.unitPrice <= 0)) {
+      this.receiptError = 'Hizmet adı ve fiyat zorunludur.';
+      return;
+    }
+    this.receiptSubmitting = true;
+    this.receiptError      = '';
+    this.receiptService.create({
+      customerId:    this.historyCustomer?.id,
+      appointmentId: this.receiptAppointment?.id,
+      note:          this.receiptNote || undefined,
+      items:         this.receiptItems.map(i => ({ serviceName: i.serviceName, quantity: i.quantity, unitPrice: i.unitPrice })),
+    }).subscribe({
+      next: (res) => {
+        this.receiptSubmitting = false;
+        if (res.success) this.createdReceipt = res.data;
+        else this.receiptError = 'Hata oluştu.';
+      },
+      error: (err) => { this.receiptError = err.error?.message || 'Hata oluştu.'; this.receiptSubmitting = false; },
+    });
+  }
+
+  printCreatedReceipt(): void {
+    if (!this.createdReceipt) return;
+    const r = this.createdReceipt;
+    const itemRows = r.items.map(i =>
+      `<tr><td>${i.serviceName}</td><td style="text-align:right">${i.quantity}x</td><td style="text-align:right">${i.unitPrice.toFixed(2)}₺</td></tr>`
+    ).join('');
+    const date = new Date(r.createdAt).toLocaleDateString('tr-TR');
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+      body{font-family:monospace;font-size:13px;margin:0;padding:16px;width:280px}
+      h2{text-align:center;font-size:15px;margin:0 0 4px}
+      .sub{text-align:center;color:#666;margin-bottom:6px}
+      hr{border:none;border-top:1px dashed #999;margin:8px 0}
+      table{width:100%;border-collapse:collapse}td{padding:2px 0}
+      .total{font-weight:bold;font-size:15px}
+      .footer{text-align:center;margin-top:10px;font-size:11px;color:#888}
+    </style></head><body>
+      <h2>FİŞ</h2>
+      <div class="sub">No: ${r.receiptNumber}</div>
+      <div class="sub">Tarih: ${date}</div>
+      ${r.customerName ? `<div class="sub">Müşteri: ${r.customerName}</div>` : ''}
+      <hr><table>${itemRows}</table><hr>
+      <table><tr><td class="total">TOPLAM</td><td style="text-align:right" class="total">${r.totalAmount.toFixed(2)}₺</td></tr></table>
+      <div class="footer">Teşekkür ederiz</div>
+    </body></html>`;
+    const w = window.open('', '_blank', 'width=400,height=600');
+    if (!w) return;
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    setTimeout(() => { w.print(); w.close(); }, 400);
   }
 
   // ─── HELPERS ─────────────────────────────────────────────
