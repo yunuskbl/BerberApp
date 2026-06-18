@@ -255,7 +255,7 @@
             <label>Hedef Kitle</label>
             <div class="bc-dropdown" [class.open]="broadcastDropdownOpen" [class.disabled]="broadcastSubmitting">
               <button type="button" class="bc-dropdown__trigger"
-                (click)="broadcastDropdownOpen = !broadcastDropdownOpen"
+                (click)="broadcastDropdownOpen = !broadcastDropdownOpen; $event.stopPropagation()"
                 [disabled]="broadcastSubmitting">
                 <span>{{ broadcastFilterLabel }}</span>
                 <svg class="bc-dropdown__arrow" width="12" height="12" viewBox="0 0 12 12">
