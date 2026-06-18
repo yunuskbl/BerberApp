@@ -51,8 +51,11 @@ export class CustomerListComponent implements OnInit {
   isBroadcastOpen      = false;
   broadcastMessage     = '';
   broadcastSubmitting  = false;
-  broadcastResult: { totalCustomers: number; sent: number; failed: number } | null = null;
+  broadcastResult: { totalCustomers: number; filteredCount: number; sent: number; failed: number } | null = null;
   broadcastError       = '';
+  broadcastFilter: 'All' | 'NotVisitedSince' | 'NeverVisited' | 'FrequentCustomers' | 'RecentVisitors' = 'All';
+  broadcastFilterDays  = 30;
+  broadcastMinAppts    = 3;
 
   // --- Tekrarla modal ---
   repeatingAppointment: Appointment | null = null;
@@ -275,10 +278,13 @@ export class CustomerListComponent implements OnInit {
 
   // ─── TOPLU MESAJ ─────────────────────────────────────────
   openBroadcast(): void {
-    this.isBroadcastOpen = true;
-    this.broadcastMessage = '';
-    this.broadcastResult = null;
-    this.broadcastError = '';
+    this.isBroadcastOpen     = true;
+    this.broadcastMessage    = '';
+    this.broadcastResult     = null;
+    this.broadcastError      = '';
+    this.broadcastFilter     = 'All';
+    this.broadcastFilterDays = 30;
+    this.broadcastMinAppts   = 3;
   }
 
   closeBroadcast(): void {
@@ -290,7 +296,12 @@ export class CustomerListComponent implements OnInit {
     this.broadcastSubmitting = true;
     this.broadcastResult = null;
     this.broadcastError = '';
-    this.customerService.broadcast(this.broadcastMessage.trim()).subscribe({
+    this.customerService.broadcast({
+      message:         this.broadcastMessage.trim(),
+      filter:          this.broadcastFilter,
+      filterDays:      ['NotVisitedSince', 'RecentVisitors'].includes(this.broadcastFilter) ? this.broadcastFilterDays : undefined,
+      minAppointments: this.broadcastFilter === 'FrequentCustomers' ? this.broadcastMinAppts : undefined,
+    }).subscribe({
       next: (res) => {
         if (res.success) this.broadcastResult = res.data;
         else this.broadcastError = 'Gönderim başarısız.';
