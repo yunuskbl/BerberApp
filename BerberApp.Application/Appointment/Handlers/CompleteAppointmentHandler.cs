@@ -117,10 +117,10 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
             var price = receiptItems.Count == 1
                 ? totalAmount
                 : x.Price;
-            return new ReceiptItem { ServiceName = x.Name, Quantity = 1, UnitPrice = price };
+            return new ReceiptItemEntity { ServiceName = x.Name, Quantity = 1, UnitPrice = price };
         }).ToList();
 
-        var receipt = new Receipt
+        var receipt = new ReceiptEntity
         {
             TenantId      = appointment.TenantId,
             CustomerId    = appointment.CustomerId,
