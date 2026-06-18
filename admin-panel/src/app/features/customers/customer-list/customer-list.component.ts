@@ -56,6 +56,26 @@ export class CustomerListComponent implements OnInit {
   broadcastFilter: 'All' | 'NotVisitedSince' | 'NeverVisited' | 'FrequentCustomers' | 'RecentVisitors' = 'All';
   broadcastFilterDays  = 30;
   broadcastMinAppts    = 3;
+  broadcastDropdownOpen = false;
+
+  readonly broadcastFilterOptions = [
+    { value: 'All',               label: 'Tüm müşteriler' },
+    { value: 'NotVisitedSince',   label: 'Son X gün gelmeyenler' },
+    { value: 'NeverVisited',      label: 'Hiç gelmeyenler' },
+    { value: 'FrequentCustomers', label: 'En az X randevusu olanlar' },
+    { value: 'RecentVisitors',    label: 'Son X günde gelenler' },
+  ] as const;
+
+  get broadcastFilterLabel(): string {
+    const opt = this.broadcastFilterOptions.find(o => o.value === this.broadcastFilter);
+    if (this.broadcastFilter === 'All') return `Tüm müşteriler (${this.customerList.length} kişi)`;
+    return opt?.label ?? '';
+  }
+
+  selectBroadcastFilter(value: typeof this.broadcastFilter): void {
+    this.broadcastFilter = value;
+    this.broadcastDropdownOpen = false;
+  }
 
   // --- Tekrarla modal ---
   repeatingAppointment: Appointment | null = null;
@@ -282,9 +302,10 @@ export class CustomerListComponent implements OnInit {
     this.broadcastMessage    = '';
     this.broadcastResult     = null;
     this.broadcastError      = '';
-    this.broadcastFilter     = 'All';
-    this.broadcastFilterDays = 30;
-    this.broadcastMinAppts   = 3;
+    this.broadcastFilter       = 'All';
+    this.broadcastFilterDays   = 30;
+    this.broadcastMinAppts     = 3;
+    this.broadcastDropdownOpen = false;
   }
 
   closeBroadcast(): void {

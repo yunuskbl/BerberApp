@@ -243,7 +243,7 @@
 <!-- ═══ TOPLU MESAJ MODAL ═══ -->
 @if (isBroadcastOpen) {
   <div class="modal-overlay" (click)="closeBroadcast()">
-    <div class="modal modal--broadcast" (click)="$event.stopPropagation()">
+    <div class="modal modal--broadcast" (click)="broadcastDropdownOpen = false; $event.stopPropagation()">
       <div class="modal-header">
         <h3>📢 Toplu Mesaj Gönder</h3>
         <button class="drawer-close" (click)="closeBroadcast()">✕</button>
@@ -253,13 +253,36 @@
           <!-- Hedef kitle filtresi -->
           <div class="form-group">
             <label>Hedef Kitle</label>
-            <select [(ngModel)]="broadcastFilter" class="form-control" [disabled]="broadcastSubmitting">
-              <option value="All">Tüm müşteriler ({{ customerList.length }} kişi)</option>
-              <option value="NotVisitedSince">Son X gün gelmeyenler</option>
-              <option value="NeverVisited">Hiç gelmeyenler</option>
-              <option value="FrequentCustomers">En az X randevusu olanlar</option>
-              <option value="RecentVisitors">Son X günde gelenler</option>
-            </select>
+            <div class="bc-dropdown" [class.open]="broadcastDropdownOpen" [class.disabled]="broadcastSubmitting">
+              <button type="button" class="bc-dropdown__trigger"
+                (click)="broadcastDropdownOpen = !broadcastDropdownOpen"
+                [disabled]="broadcastSubmitting">
+                <span>{{ broadcastFilterLabel }}</span>
+                <svg class="bc-dropdown__arrow" width="12" height="12" viewBox="0 0 12 12">
+                  <path fill="#6b7280" d="M6 8L1 3h10z"/>
+                </svg>
+              </button>
+              @if (broadcastDropdownOpen) {
+                <ul class="bc-dropdown__menu" (click)="$event.stopPropagation()">
+                  @for (opt of broadcastFilterOptions; track opt.value) {
+                    <li class="bc-dropdown__item"
+                        [class.selected]="broadcastFilter === opt.value"
+                        (click)="selectBroadcastFilter(opt.value)">
+                      @if (opt.value === 'All') {
+                        Tüm müşteriler <span class="bc-dropdown__count">({{ customerList.length }} kişi)</span>
+                      } @else {
+                        {{ opt.label }}
+                      }
+                      @if (broadcastFilter === opt.value) {
+                        <svg class="bc-dropdown__check" width="14" height="14" viewBox="0 0 14 14">
+                          <path stroke="#111827" stroke-width="2" fill="none" d="M2 7l4 4 6-6"/>
+                        </svg>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
           </div>
 
           @if (broadcastFilter === 'NotVisitedSince' || broadcastFilter === 'RecentVisitors') {
