@@ -349,9 +349,9 @@ export class CustomerListComponent implements OnInit {
     this.broadcastImageError = '';
     this.customerService.uploadBroadcastImage(file).subscribe({
       next: (res) => {
-        if (res.success) this.broadcastImageUrl = res.data.url;
-        else this.broadcastImageError = 'Görsel yüklenemedi.';
         this.broadcastImageUploading = false;
+        if (res.success && res.data?.url) this.broadcastImageUrl = res.data.url;
+        else this.broadcastImageError = 'Görsel yüklenemedi.';
       },
       error: () => { this.broadcastImageError = 'Görsel yüklenemedi.'; this.broadcastImageUploading = false; }
     });

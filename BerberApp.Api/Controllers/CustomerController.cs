@@ -75,6 +75,6 @@ public class CustomersController : BaseApiController
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
         var url = $"{baseUrl}/uploads/broadcast/{fileName}";
 
-        return Ok(new { success = true, url });
+        return Success(new { url });
     }
 }
