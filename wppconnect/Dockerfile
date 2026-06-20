@@ -18,7 +18,8 @@ WORKDIR /app
 # WPPConnect Server kaynak kodunu indir ve kur
 RUN git clone --depth 1 https://github.com/wppconnect-team/wppconnect-server.git .
 RUN npm install
+RUN npm run build
 
 EXPOSE 21465
 
-CMD ["npm", "start"]
+CMD ["node", "dist/server.js"]
