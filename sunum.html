@@ -42,6 +42,8 @@
       padding: 64px 80px;
       opacity: 0; pointer-events: none;
       transform: translateX(60px);
+    }
+    body.ready .slide {
       transition: opacity .45s cubic-bezier(.4,0,.2,1), transform .45s cubic-bezier(.4,0,.2,1);
     }
     .slide.active  { opacity: 1; pointer-events: all; transform: none; }
@@ -715,17 +717,17 @@
       <div class="price-card">
         <div>
           <div style="font-size:13px;font-weight:700;margin-bottom:4px">Başlangıç</div>
-          <div style="font-size:12px;color:var(--muted)">Tek lokasyon</div>
+          <div style="font-size:12px;color:var(--muted)">Tek lokasyon, küçük salon</div>
         </div>
         <div>
-          <div class="price-num" style="color:var(--primary)">₺499</div>
+          <div class="price-num" style="color:var(--primary)">₺890</div>
           <div class="price-period">/ ay</div>
         </div>
         <div class="check-list">
           <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px">Online randevu</span></div>
           <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px">WhatsApp bildirimleri</span></div>
-          <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px">150 randevu/ay</span></div>
-          <div class="check-item"><div class="ci-icon no">✕</div><span style="font-size:13px;color:var(--muted)">Toplu mesaj</span></div>
+          <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px">Müşteri yönetimi</span></div>
+          <div class="check-item"><div class="ci-icon no">✕</div><span style="font-size:13px;color:var(--muted)">Toplu mesaj / kiosk</span></div>
         </div>
       </div>
       <div class="price-card featured" style="transform:scale(1.03);box-shadow:0 20px 60px rgba(0,0,0,.4)">
@@ -737,34 +739,34 @@
           <div style="font-size:12px;color:rgba(255,255,255,.45)">Büyüyen salonlar için</div>
         </div>
         <div>
-          <div class="price-num" style="color:#fff">₺899</div>
+          <div class="price-num" style="color:#fff">₺1.790</div>
           <div class="price-period">/ ay</div>
         </div>
         <div class="check-list">
-          <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px;color:rgba(255,255,255,.85)">Her şey dahil</span></div>
-          <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px;color:rgba(255,255,255,.85)">Sınırsız randevu</span></div>
-          <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px;color:rgba(255,255,255,.85)">Toplu WhatsApp</span></div>
+          <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px;color:rgba(255,255,255,.85)">Başlangıç dahil her şey</span></div>
+          <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px;color:rgba(255,255,255,.85)">Toplu WhatsApp kampanyası</span></div>
           <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px;color:rgba(255,255,255,.85)">Kiosk modu</span></div>
+          <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px;color:rgba(255,255,255,.85)">Gelir raporları</span></div>
         </div>
       </div>
       <div class="price-card">
         <div>
-          <div style="font-size:13px;font-weight:700;margin-bottom:4px">Kurumsal</div>
-          <div style="font-size:12px;color:var(--muted)">Çoklu şube</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">Premium</div>
+          <div style="font-size:12px;color:var(--muted)">Çoklu şube, zincir salon</div>
         </div>
         <div>
-          <div class="price-num" style="color:var(--primary)">Özel</div>
-          <div class="price-period">teklif</div>
+          <div class="price-num" style="color:var(--primary)">₺2.990</div>
+          <div class="price-period">/ ay</div>
         </div>
         <div class="check-list">
           <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px">Profesyonel dahil her şey</span></div>
           <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px">Tüm şubeler tek panel</span></div>
-          <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px">Öncelikli destek</span></div>
+          <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px">Öncelikli teknik destek</span></div>
           <div class="check-item"><div class="ci-icon yes">✓</div><span style="font-size:13px">Özel entegrasyon</span></div>
         </div>
       </div>
     </div>
-    <p style="font-size:12px;color:rgba(255,255,255,.25);margin-top:20px;text-align:center">Yıllık ödemede %20 indirim · Kurulum ücreti yok · İptal istediğiniz zaman</p>
+    <p style="font-size:12px;color:rgba(255,255,255,.25);margin-top:20px;text-align:center">KDV dahil değildir · Kurulum ücreti yok · İptal istediğiniz zaman</p>
   </div>
 
   <!-- ══════════════ 9 · GEÇİŞ SÜRECİ ══════════════ -->
@@ -905,6 +907,7 @@ document.addEventListener('touchend',   e => {
 
 buildDots();
 document.getElementById('progress').style.width = `${(1/TOTAL)*100}%`;
+setTimeout(() => document.body.classList.add('ready'), 80);
 </script>
 </body>
 </html>
