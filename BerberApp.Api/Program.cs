@@ -112,6 +112,7 @@ if (whatsAppProvider.Equals("WppConnect", StringComparison.OrdinalIgnoreCase))
     builder.Services.AddHttpClient<IWhatsAppService, WppConnectWhatsAppService>();
 else
     builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();
+builder.Services.AddHttpClient<IWppConnectManagementService, WppConnectManagementService>();
 builder.Services.AddScoped<SmsService>();
 builder.Services.AddHttpClient<ISmsService, IletimerkeziSmsService>();
 builder.Services.AddScoped<INotificationService, LinkNotificationService>();

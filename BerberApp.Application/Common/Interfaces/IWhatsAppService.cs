@@ -20,4 +20,5 @@ public interface IWhatsAppService
     Task SendMonthlyLimitWarningAsync(string phone, string salonName, int currentCount, int limit, bool isFull);
     Task SendSubscriptionExpiryWarningAsync(string phone, string salonName, int daysLeft);
     Task SendCustomMessageAsync(string phone, string message, string? imageUrl = null);
+    IWhatsAppService ForTenant(string? session, string? token);
 }

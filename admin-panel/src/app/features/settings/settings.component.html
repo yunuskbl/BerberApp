@@ -513,6 +513,49 @@
         }
       </div>
 
+      <!-- WhatsApp Oturum Bağlantısı -->
+      <div class="settings-card">
+        <div class="card-header">
+          <div class="card-icon">📱</div>
+          <div class="card-title">
+            <h3>WhatsApp Hesabınızı Bağlayın</h3>
+            <p>Müşterilerinize kendi işletme WhatsApp numaranızdan mesaj gönderin.</p>
+          </div>
+        </div>
+
+        @if (waStatus === 'loading') {
+          <div class="wa-status-row"><span class="wa-status-dot dot-loading"></span> Durum kontrol ediliyor…</div>
+        } @else if (waIsConnected) {
+          <div class="wa-status-row"><span class="wa-status-dot dot-connected"></span> <strong>Bağlı</strong> — {{ waSession }}</div>
+          <div class="card-actions">
+            <button class="btn btn-danger" (click)="disconnectWhatsApp()" [disabled]="waActionLoading">
+              {{ waActionLoading ? 'Kesiliyor…' : '🔌 Bağlantıyı Kes' }}
+            </button>
+          </div>
+        } @else {
+          <div class="wa-status-row"><span class="wa-status-dot dot-disconnected"></span> Bağlı değil</div>
+          @if (!waQrCode) {
+            <div class="card-actions">
+              <button class="btn btn-primary" (click)="connectWhatsApp()" [disabled]="waActionLoading">
+                {{ waActionLoading ? 'Başlatılıyor…' : '🔗 WhatsApp\'ı Bağla' }}
+              </button>
+            </div>
+          } @else {
+            <div class="wa-qr-container">
+              <p class="wa-qr-hint">WhatsApp uygulamanızdan <strong>Bağlı Cihazlar → Cihaz Ekle</strong> seçeneğiyle bu QR kodu okutun.</p>
+              <img [src]="waQrCode" alt="WhatsApp QR Kodu" class="wa-qr-img">
+              <div class="card-actions" style="margin-top:12px">
+                <button class="btn btn-outline" (click)="refreshWhatsAppQr()" [disabled]="waActionLoading">🔄 QR Yenile</button>
+                <button class="btn btn-success" (click)="checkWhatsAppStatus()" [disabled]="waActionLoading">✅ Bağlandım</button>
+              </div>
+            </div>
+          }
+        }
+        @if (waError) {
+          <div class="alert alert-error">{{ waError }}</div>
+        }
+      </div>
+
       <!-- WhatsApp Test -->
       <div class="settings-card">
         <div class="card-header">

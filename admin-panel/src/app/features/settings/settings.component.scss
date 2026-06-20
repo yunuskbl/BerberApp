@@ -442,6 +442,20 @@
   &:hover { background: #fecaca; }
 }
 
+.btn-success {
+  background: #dcfce7;
+  color: #16a34a;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover { background: #bbf7d0; }
+}
+
 // Logo Upload
 .logo-upload-group {
   margin-bottom: 20px;
@@ -922,4 +936,35 @@
   background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;
   padding: 10px 14px; font-size: 13px; color: #0369a1; margin-bottom: 16px;
   strong { font-weight: 600; }
+}
+
+.wa-status-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; color: #374151; margin-bottom: 16px;
+}
+
+.wa-status-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  &.dot-connected    { background: #10b981; box-shadow: 0 0 0 3px #d1fae5; }
+  &.dot-disconnected { background: #ef4444; box-shadow: 0 0 0 3px #fee2e2; }
+  &.dot-loading      { background: #f59e0b; box-shadow: 0 0 0 3px #fef3c7; animation: pulse 1s infinite; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+}
+
+.wa-qr-container {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 20px 0;
+}
+
+.wa-qr-hint {
+  font-size: 13px; color: #6b7280; text-align: center; max-width: 340px;
+  strong { color: #111827; }
+}
+
+.wa-qr-img {
+  width: 200px; height: 200px; border-radius: 8px;
+  border: 1px solid #e5e7eb; object-fit: contain;
 }

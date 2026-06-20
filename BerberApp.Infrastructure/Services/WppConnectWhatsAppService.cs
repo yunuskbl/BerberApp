@@ -32,6 +32,27 @@ public class WppConnectWhatsAppService : IWhatsAppService
         _log  = logger;
     }
 
+    private WppConnectWhatsAppService(HttpClient http, WppConnectSettings cfg, ILogger<WppConnectWhatsAppService> logger)
+    {
+        _http = http;
+        _cfg  = cfg;
+        _log  = logger;
+    }
+
+    public IWhatsAppService ForTenant(string? session, string? token)
+    {
+        if (string.IsNullOrWhiteSpace(session) || string.IsNullOrWhiteSpace(token))
+            return this;
+        var cfg = new WppConnectSettings
+        {
+            BaseUrl   = _cfg.BaseUrl,
+            SecretKey = _cfg.SecretKey,
+            Session   = session,
+            Token     = token,
+        };
+        return new WppConnectWhatsAppService(_http, cfg, _log);
+    }
+
     // ── IWhatsAppService ─────────────────────────────────────────────────────
 
     public Task SendAppointmentConfirmedAsync(

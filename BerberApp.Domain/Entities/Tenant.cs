@@ -26,6 +26,8 @@ namespace BerberApp.Domain.Entities
         public NotificationChannel PreferredNotificationChannel { get; set; } = NotificationChannel.WhatsApp;
         public BusinessType? BusinessType { get; set; }
         public Guid? ParentTenantId { get; set; }
+        public string? WppConnectSession { get; set; }
+        public string? WppConnectToken { get; set; }
 
         // Navigation
         public Tenant? ParentTenant { get; set; }

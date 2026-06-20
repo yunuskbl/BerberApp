@@ -6,6 +6,7 @@ using BerberApp.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using BerberApp.Domain.Enums;
+using BerberApp.Domain.Entities;
 
 namespace BerberApp.Api.Controllers;
 
@@ -287,13 +288,100 @@ public class TenantsController : BaseApiController
 
         try
         {
-            await whatsApp.SendCustomMessageAsync(req.Phone, req.Message);
+            // Kiracının kendi oturumunu kullan
+            var tenant = await _context.Tenants.FirstOrDefaultAsync(x => x.Id == TenantId);
+            var wa = whatsApp.ForTenant(tenant?.WppConnectSession, tenant?.WppConnectToken);
+            await wa.SendCustomMessageAsync(req.Phone, req.Message);
             return Success<object>(null!, "WhatsApp mesajı gönderildi.");
         }
         catch (Exception ex)
         {
             return Ok(new { success = false, message = ex.Message });
         }
+    }
+
+    // ── WhatsApp Oturum Yönetimi ─────────────────────────────────────────────
+
+    [HttpPost("whatsapp/connect")]
+    public async Task<IActionResult> WhatsAppConnect(
+        [FromServices] IWppConnectManagementService mgmt)
+    {
+        var tenant = await _context.Tenants.FirstOrDefaultAsync(x => x.Id == TenantId);
+        if (tenant is null) return NotFound();
+
+        var session = $"tenant-{tenant.Subdomain}";
+        try
+        {
+            var token  = await mgmt.GenerateTokenAsync(session);
+            var result = await mgmt.StartSessionAsync(session, token);
+
+            tenant.WppConnectSession = session;
+            tenant.WppConnectToken   = token;
+            await _context.SaveChangesAsync();
+
+            return Success(new { session, qrCode = result.QrCode });
+        }
+        catch (Exception ex)
+        {
+            return Ok(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet("whatsapp/qr")]
+    public async Task<IActionResult> WhatsAppQr(
+        [FromServices] IWppConnectManagementService mgmt)
+    {
+        var tenant = await _context.Tenants.FirstOrDefaultAsync(x => x.Id == TenantId);
+        if (string.IsNullOrWhiteSpace(tenant?.WppConnectSession))
+            return Ok(new { success = false, message = "Oturum başlatılmamış." });
+
+        try
+        {
+            var qr = await mgmt.GetQrCodeAsync(tenant.WppConnectSession, tenant.WppConnectToken!);
+            return Success(new { qrCode = qr });
+        }
+        catch (Exception ex)
+        {
+            return Ok(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet("whatsapp/status")]
+    public async Task<IActionResult> WhatsAppStatus(
+        [FromServices] IWppConnectManagementService mgmt)
+    {
+        var tenant = await _context.Tenants.FirstOrDefaultAsync(x => x.Id == TenantId);
+        if (string.IsNullOrWhiteSpace(tenant?.WppConnectSession))
+            return Success(new { status = "DISCONNECTED", isConnected = false, hasSession = false });
+
+        var status = await mgmt.GetStatusAsync(tenant.WppConnectSession, tenant.WppConnectToken!);
+        return Success(new
+        {
+            status,
+            isConnected = status is "CONNECTED" or "inChat" or "isLogged",
+            hasSession  = true,
+            session     = tenant.WppConnectSession
+        });
+    }
+
+    [HttpDelete("whatsapp/disconnect")]
+    public async Task<IActionResult> WhatsAppDisconnect(
+        [FromServices] IWppConnectManagementService mgmt)
+    {
+        var tenant = await _context.Tenants.FirstOrDefaultAsync(x => x.Id == TenantId);
+        if (tenant is null) return NotFound();
+
+        if (!string.IsNullOrWhiteSpace(tenant.WppConnectSession))
+        {
+            try { await mgmt.CloseSessionAsync(tenant.WppConnectSession, tenant.WppConnectToken!); }
+            catch { /* sunucu erişilemese bile DB'yi temizle */ }
+
+            tenant.WppConnectSession = null;
+            tenant.WppConnectToken   = null;
+            await _context.SaveChangesAsync();
+        }
+
+        return Success<object>(null!, "WhatsApp bağlantısı kesildi.");
     }
 }
 
