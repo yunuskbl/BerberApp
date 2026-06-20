@@ -45,7 +45,6 @@ public class WppConnectManagementService : IWppConnectManagementService
 
     public async Task<WppConnectSessionResult> StartSessionAsync(string session, string token, CancellationToken ct = default)
     {
-        // Start session
         var startUrl = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{session}/start-session";
         using var startReq = new HttpRequestMessage(HttpMethod.Post, startUrl);
         startReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -54,10 +53,22 @@ public class WppConnectManagementService : IWppConnectManagementService
             Encoding.UTF8, "application/json");
 
         var startRes = await _http.SendAsync(startReq, ct);
-        _log.LogInformation("[WPPConnect-MGMT] StartSession {Status}", (int)startRes.StatusCode);
+        var startBody = await startRes.Content.ReadAsStringAsync(ct);
+        _log.LogInformation("[WPPConnect-MGMT] StartSession {Status}: {Body}", (int)startRes.StatusCode, startBody);
 
-        // Get QR code
-        var qr = await GetQrCodeAsync(session, token, ct);
+        // QR kodu hazır olana kadar en fazla 10 kez dene (her biri 1.5s bekleme)
+        string qr = "";
+        for (int i = 0; i < 10; i++)
+        {
+            await Task.Delay(1500, ct);
+            try
+            {
+                qr = await GetQrCodeAsync(session, token, ct);
+                if (!string.IsNullOrWhiteSpace(qr)) break;
+            }
+            catch { /* henüz hazır değil, devam et */ }
+        }
+
         return new WppConnectSessionResult(session, token, qr);
     }
 
@@ -67,17 +78,34 @@ public class WppConnectManagementService : IWppConnectManagementService
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var res  = await _http.SendAsync(req, ct);
+        var res = await _http.SendAsync(req, ct);
+
+        // PNG image stream olarak dönebilir
+        var contentType = res.Content.Headers.ContentType?.MediaType ?? "";
+        if (contentType.Contains("image"))
+        {
+            var bytes = await res.Content.ReadAsByteArrayAsync(ct);
+            return $"data:{contentType};base64,{Convert.ToBase64String(bytes)}";
+        }
+
         var body = await res.Content.ReadAsStringAsync(ct);
 
         if (!res.IsSuccessStatusCode)
             throw new InvalidOperationException($"QR kodu alınamadı: {body}");
 
-        using var doc = JsonDocument.Parse(body);
-        var qr = doc.RootElement.TryGetProperty("qrcode", out var qrProp)
-            ? qrProp.GetString() ?? ""
-            : body;
-        return qr;
+        // JSON yanıtı: { "qrcode": "data:image/png;base64,..." }
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            if (doc.RootElement.TryGetProperty("qrcode", out var qrProp))
+            {
+                var qr = qrProp.GetString() ?? "";
+                if (!string.IsNullOrWhiteSpace(qr)) return qr;
+            }
+        }
+        catch { /* JSON değilse ham body'yi dön */ }
+
+        return body;
     }
 
     public async Task<string> GetStatusAsync(string session, string token, CancellationToken ct = default)
