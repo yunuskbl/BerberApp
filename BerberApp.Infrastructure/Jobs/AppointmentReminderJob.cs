@@ -69,7 +69,8 @@ public class AppointmentReminderJob
                 }
                 else
                 {
-                    await _whatsAppService.SendAppointmentReminderAsync(
+                    var wa = _whatsAppService.ForTenant(apt.Tenant?.WppConnectSession, apt.Tenant?.WppConnectToken);
+                    await wa.SendAppointmentReminderAsync(
                         apt.Customer.Phone, apt.Customer.FullName,
                         apt.Service.Name, apt.StartTime, salonName, mapsUrl, bookingUrl,
                         staffName: apt.Staff?.FullName ?? string.Empty);
