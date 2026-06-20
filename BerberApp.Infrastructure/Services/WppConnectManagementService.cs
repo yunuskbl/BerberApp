@@ -26,9 +26,8 @@ public class WppConnectManagementService : IWppConnectManagementService
 
     public async Task<string> GenerateTokenAsync(string session, CancellationToken ct = default)
     {
-        var url = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{session}/generate-token";
+        var url = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{_cfg.SecretKey}/generate-token/{session}";
         using var req = new HttpRequestMessage(HttpMethod.Post, url);
-        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _cfg.SecretKey);
         req.Content = new StringContent("{}", Encoding.UTF8, "application/json");
 
         _log.LogInformation("[WPPConnect-MGMT] GenerateToken → {Url}", url);
