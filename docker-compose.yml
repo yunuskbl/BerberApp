@@ -104,7 +104,8 @@ services:
   # → dönen "token" değerini appsettings.json → WppConnect:Token'a yazın.
   # Ardından QR almak için tarayıcıdan http://SUNUCU_IP:21465 açıp oturum başlatın.
   wppconnect:
-    image: ghcr.io/wppconnect-team/wppconnect-server:latest
+    build:
+      context: ./wppconnect
     container_name: berberapp-wppconnect
     environment:
       - SECRET_KEY=${WPPCONNECT_SECRET_KEY:-THISISMYSECURETOKEN}
