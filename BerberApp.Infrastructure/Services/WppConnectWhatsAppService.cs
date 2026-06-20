@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -8,17 +9,18 @@ using Microsoft.Extensions.Options;
 
 namespace BerberApp.Infrastructure.Services;
 
-/// <summary>
-/// IWhatsAppService → WPPConnect REST API üzerinden serbest metin mesajı gönderir.
-/// Meta Business onayı alındığında WhatsAppService'e (Meta Graph API) geçmek için
-/// sadece DI kaydını değiştirmek yeterli; bu sınıfa dokunmaya gerek kalmaz.
-/// </summary>
 public class WppConnectWhatsAppService : IWhatsAppService
 {
     private readonly HttpClient _http;
     private readonly WppConnectSettings _cfg;
     private readonly ILogger<WppConnectWhatsAppService> _log;
-    private readonly System.Globalization.CultureInfo _tr = new("tr-TR");
+
+    private enum Lang { TR, EN, RU, DE }
+
+    private static readonly CultureInfo CtrTR = new("tr-TR");
+    private static readonly CultureInfo CtrEN = new("en-US");
+    private static readonly CultureInfo CtrRU = new("ru-RU");
+    private static readonly CultureInfo CtrDE = new("de-DE");
 
     public WppConnectWhatsAppService(
         HttpClient http,
@@ -30,30 +32,53 @@ public class WppConnectWhatsAppService : IWhatsAppService
         _log  = logger;
     }
 
-    // ── IWhatsAppService ────────────────────────────────────────────────────
+    // ── IWhatsAppService ─────────────────────────────────────────────────────
 
     public Task SendAppointmentConfirmedAsync(
         string phone, string customerName, string serviceName,
         string staffName, DateTime startTime,
         string salonName = "", string mapsUrl = "", string bookingUrl = "")
     {
-        var t = ToTr(startTime);
-        var sb = new StringBuilder();
-        sb.AppendLine("✅ *Randevunuz Onaylandı!*");
-        sb.AppendLine();
-        sb.AppendLine($"Merhaba *{customerName}*! 👋");
-        sb.AppendLine();
-        sb.AppendLine($"📅 *Tarih:* {t:dd MMMM yyyy}");
-        sb.AppendLine($"⏰ *Saat:* {t:HH:mm}");
-        sb.AppendLine($"✂️ *Hizmet:* {serviceName}");
-        sb.AppendLine($"👤 *Personel:* {staffName}");
-        if (!string.IsNullOrWhiteSpace(salonName))
-            sb.AppendLine($"🏪 *Salon:* {salonName}");
-        if (!string.IsNullOrWhiteSpace(mapsUrl) && mapsUrl != "—")
-            sb.AppendLine($"\n📍 Yol tarifi: {mapsUrl}");
-        if (!string.IsNullOrWhiteSpace(bookingUrl) && bookingUrl != "—")
-            sb.AppendLine($"📋 Randevularım: {bookingUrl}");
+        var lang = DetectLang(phone);
+        var ci   = CultureFor(lang);
+        var t    = ToTr(startTime);
+        var date = t.ToString("dd MMMM yyyy", ci);
+        var time = t.ToString("HH:mm");
 
+        var (title, greeting, lDate, lTime, lService, lStaff, lSalon, lMaps, lBooking) = lang switch
+        {
+            Lang.RU => ("✅ *Ваша запись подтверждена!*",
+                        $"Здравствуйте, *{customerName}*! 👋",
+                        "📅 *Дата:*", "⏰ *Время:*", "✂️ *Услуга:*",
+                        "👤 *Мастер:*", "🏪 *Салон:*",
+                        "📍 Маршрут:", "📋 Мои записи:"),
+            Lang.DE => ("✅ *Ihr Termin ist bestätigt!*",
+                        $"Hallo *{customerName}*! 👋",
+                        "📅 *Datum:*", "⏰ *Uhrzeit:*", "✂️ *Service:*",
+                        "👤 *Mitarbeiter:*", "🏪 *Salon:*",
+                        "📍 Route:", "📋 Meine Termine:"),
+            Lang.EN => ("✅ *Your Appointment is Confirmed!*",
+                        $"Hello *{customerName}*! 👋",
+                        "📅 *Date:*", "⏰ *Time:*", "✂️ *Service:*",
+                        "👤 *Staff:*", "🏪 *Salon:*",
+                        "📍 Directions:", "📋 My Appointments:"),
+            _ =>       ("✅ *Randevunuz Onaylandı!*",
+                        $"Merhaba *{customerName}*! 👋",
+                        "📅 *Tarih:*", "⏰ *Saat:*", "✂️ *Hizmet:*",
+                        "👤 *Personel:*", "🏪 *Salon:*",
+                        "📍 Yol tarifi:", "📋 Randevularım:"),
+        };
+
+        var sb = new StringBuilder();
+        sb.AppendLine(title).AppendLine();
+        sb.AppendLine(greeting).AppendLine();
+        sb.AppendLine($"{lDate} {date}");
+        sb.AppendLine($"{lTime} {time}");
+        sb.AppendLine($"{lService} {serviceName}");
+        sb.AppendLine($"{lStaff} {staffName}");
+        if (!string.IsNullOrWhiteSpace(salonName)) sb.AppendLine($"{lSalon} {salonName}");
+        if (!string.IsNullOrWhiteSpace(mapsUrl) && mapsUrl != "—") sb.AppendLine($"\n{lMaps} {mapsUrl}");
+        if (!string.IsNullOrWhiteSpace(bookingUrl) && bookingUrl != "—") sb.AppendLine($"{lBooking} {bookingUrl}");
         return SendTextAsync(phone, sb.ToString().TrimEnd());
     }
 
@@ -63,23 +88,41 @@ public class WppConnectWhatsAppService : IWhatsAppService
         string salonName = "", string mapsUrl = "", string bookingUrl = "",
         string staffName = "")
     {
-        var t = ToTr(startTime);
-        var sb = new StringBuilder();
-        sb.AppendLine("🔔 *Randevu Hatırlatması*");
-        sb.AppendLine();
-        sb.AppendLine($"Merhaba *{customerName}*!");
-        sb.AppendLine($"Yarınki randevunuzu hatırlatmak istedik. 😊");
-        sb.AppendLine();
-        sb.AppendLine($"📅 *Tarih:* {t:dd MMMM yyyy}");
-        sb.AppendLine($"⏰ *Saat:* {t:HH:mm}");
-        sb.AppendLine($"✂️ *Hizmet:* {serviceName}");
-        if (!string.IsNullOrWhiteSpace(staffName))
-            sb.AppendLine($"👤 *Personel:* {staffName}");
-        if (!string.IsNullOrWhiteSpace(salonName))
-            sb.AppendLine($"🏪 *Salon:* {salonName}");
-        if (!string.IsNullOrWhiteSpace(mapsUrl) && mapsUrl != "—")
-            sb.AppendLine($"\n📍 Yol tarifi: {mapsUrl}");
+        var lang = DetectLang(phone);
+        var ci   = CultureFor(lang);
+        var t    = ToTr(startTime);
+        var date = t.ToString("dd MMMM yyyy", ci);
+        var time = t.ToString("HH:mm");
 
+        var (title, body, lDate, lTime, lService, lStaff, lSalon, lMaps) = lang switch
+        {
+            Lang.RU => ("🔔 *Напоминание о записи*",
+                        $"Здравствуйте, *{customerName}*!\nНапоминаем о вашей записи завтра. 😊",
+                        "📅 *Дата:*", "⏰ *Время:*", "✂️ *Услуга:*",
+                        "👤 *Мастер:*", "🏪 *Салон:*", "📍 Маршрут:"),
+            Lang.DE => ("🔔 *Terminerinnerung*",
+                        $"Hallo *{customerName}*!\nErinnerung an Ihren Termin morgen. 😊",
+                        "📅 *Datum:*", "⏰ *Uhrzeit:*", "✂️ *Service:*",
+                        "👤 *Mitarbeiter:*", "🏪 *Salon:*", "📍 Route:"),
+            Lang.EN => ("🔔 *Appointment Reminder*",
+                        $"Hello *{customerName}*!\nReminding you of your appointment tomorrow. 😊",
+                        "📅 *Date:*", "⏰ *Time:*", "✂️ *Service:*",
+                        "👤 *Staff:*", "🏪 *Salon:*", "📍 Directions:"),
+            _ =>       ("🔔 *Randevu Hatırlatması*",
+                        $"Merhaba *{customerName}*!\nYarınki randevunuzu hatırlatmak istedik. 😊",
+                        "📅 *Tarih:*", "⏰ *Saat:*", "✂️ *Hizmet:*",
+                        "👤 *Personel:*", "🏪 *Salon:*", "📍 Yol tarifi:"),
+        };
+
+        var sb = new StringBuilder();
+        sb.AppendLine(title).AppendLine();
+        sb.AppendLine(body).AppendLine();
+        sb.AppendLine($"{lDate} {date}");
+        sb.AppendLine($"{lTime} {time}");
+        sb.AppendLine($"{lService} {serviceName}");
+        if (!string.IsNullOrWhiteSpace(staffName)) sb.AppendLine($"{lStaff} {staffName}");
+        if (!string.IsNullOrWhiteSpace(salonName)) sb.AppendLine($"{lSalon} {salonName}");
+        if (!string.IsNullOrWhiteSpace(mapsUrl) && mapsUrl != "—") sb.AppendLine($"\n{lMaps} {mapsUrl}");
         return SendTextAsync(phone, sb.ToString().TrimEnd());
     }
 
@@ -89,21 +132,39 @@ public class WppConnectWhatsAppService : IWhatsAppService
         string salonName = "", string mapsUrl = "", string bookingUrl = "",
         string staffName = "")
     {
-        var t = ToTr(startTime);
-        var sb = new StringBuilder();
-        sb.AppendLine("⏰ *1 Saat Sonra Randevunuz Var!*");
-        sb.AppendLine();
-        sb.AppendLine($"Merhaba *{customerName}*!");
-        sb.AppendLine();
-        sb.AppendLine($"🕐 *Saat:* {t:HH:mm}");
-        sb.AppendLine($"✂️ *Hizmet:* {serviceName}");
-        if (!string.IsNullOrWhiteSpace(staffName))
-            sb.AppendLine($"👤 *Personel:* {staffName}");
-        if (!string.IsNullOrWhiteSpace(salonName))
-            sb.AppendLine($"🏪 *Salon:* {salonName}");
-        if (!string.IsNullOrWhiteSpace(mapsUrl) && mapsUrl != "—")
-            sb.AppendLine($"📍 {mapsUrl}");
+        var lang = DetectLang(phone);
+        var ci   = CultureFor(lang);
+        var t    = ToTr(startTime);
+        var time = t.ToString("HH:mm");
 
+        var (title, body, lTime, lService, lStaff, lSalon, lMaps) = lang switch
+        {
+            Lang.RU => ("⏰ *Ваша запись через 1 час!*",
+                        $"Здравствуйте, *{customerName}*!",
+                        "🕐 *Время:*", "✂️ *Услуга:*", "👤 *Мастер:*",
+                        "🏪 *Салон:*", "📍 Маршрут:"),
+            Lang.DE => ("⏰ *Ihr Termin ist in 1 Stunde!*",
+                        $"Hallo *{customerName}*!",
+                        "🕐 *Uhrzeit:*", "✂️ *Service:*", "👤 *Mitarbeiter:*",
+                        "🏪 *Salon:*", "📍 Route:"),
+            Lang.EN => ("⏰ *Your Appointment is in 1 Hour!*",
+                        $"Hello *{customerName}*!",
+                        "🕐 *Time:*", "✂️ *Service:*", "👤 *Staff:*",
+                        "🏪 *Salon:*", "📍 Directions:"),
+            _ =>       ("⏰ *1 Saat Sonra Randevunuz Var!*",
+                        $"Merhaba *{customerName}*!",
+                        "🕐 *Saat:*", "✂️ *Hizmet:*", "👤 *Personel:*",
+                        "🏪 *Salon:*", "📍 Yol tarifi:"),
+        };
+
+        var sb = new StringBuilder();
+        sb.AppendLine(title).AppendLine();
+        sb.AppendLine(body).AppendLine();
+        sb.AppendLine($"{lTime} {time}");
+        sb.AppendLine($"{lService} {serviceName}");
+        if (!string.IsNullOrWhiteSpace(staffName)) sb.AppendLine($"{lStaff} {staffName}");
+        if (!string.IsNullOrWhiteSpace(salonName)) sb.AppendLine($"{lSalon} {salonName}");
+        if (!string.IsNullOrWhiteSpace(mapsUrl) && mapsUrl != "—") sb.AppendLine($"{lMaps} {mapsUrl}");
         return SendTextAsync(phone, sb.ToString().TrimEnd());
     }
 
@@ -111,15 +172,33 @@ public class WppConnectWhatsAppService : IWhatsAppService
         string phone, string customerName, DateTime startTime,
         string salonName = "", string bookingUrl = "")
     {
-        var t = ToTr(startTime);
-        var sb = new StringBuilder();
-        sb.AppendLine("❌ *Randevunuz İptal Edildi*");
-        sb.AppendLine();
-        sb.AppendLine($"Merhaba *{customerName}*,");
-        sb.AppendLine($"{t:dd MMMM yyyy} tarihli {t:HH:mm} saatindeki randevunuz iptal edildi.");
-        if (!string.IsNullOrWhiteSpace(bookingUrl) && bookingUrl != "—")
-            sb.AppendLine($"\nYeni randevu almak için: {bookingUrl}");
+        var lang = DetectLang(phone);
+        var ci   = CultureFor(lang);
+        var t    = ToTr(startTime);
+        var date = t.ToString("dd MMMM yyyy", ci);
+        var time = t.ToString("HH:mm");
 
+        var (title, body, lNew) = lang switch
+        {
+            Lang.RU => ("❌ *Ваша запись отменена*",
+                        $"Здравствуйте, *{customerName}*,\nваша запись на {date} в {time} была отменена.",
+                        "Записаться снова:"),
+            Lang.DE => ("❌ *Ihr Termin wurde storniert*",
+                        $"Hallo *{customerName}*,\nIhr Termin am {date} um {time} Uhr wurde storniert.",
+                        "Neuen Termin buchen:"),
+            Lang.EN => ("❌ *Your Appointment has been Cancelled*",
+                        $"Hello *{customerName}*,\nyour appointment on {date} at {time} has been cancelled.",
+                        "Book a new appointment:"),
+            _ =>       ("❌ *Randevunuz İptal Edildi*",
+                        $"Merhaba *{customerName}*,\n{date} tarihli {time} saatindeki randevunuz iptal edildi.",
+                        "Yeni randevu almak için:"),
+        };
+
+        var sb = new StringBuilder();
+        sb.AppendLine(title).AppendLine();
+        sb.AppendLine(body);
+        if (!string.IsNullOrWhiteSpace(bookingUrl) && bookingUrl != "—")
+            sb.AppendLine($"\n{lNew} {bookingUrl}");
         return SendTextAsync(phone, sb.ToString().TrimEnd());
     }
 
@@ -128,19 +207,40 @@ public class WppConnectWhatsAppService : IWhatsAppService
         string staffName, DateTime startTime,
         string salonName = "", string bookingUrl = "")
     {
-        var t = ToTr(startTime);
-        var sb = new StringBuilder();
-        sb.AppendLine("🔄 *Randevunuz Güncellendi*");
-        sb.AppendLine();
-        sb.AppendLine($"Merhaba *{customerName}*! Randevunuz aşağıdaki şekilde güncellendi:");
-        sb.AppendLine();
-        sb.AppendLine($"📅 *Yeni Tarih:* {t:dd MMMM yyyy}");
-        sb.AppendLine($"⏰ *Yeni Saat:* {t:HH:mm}");
-        sb.AppendLine($"✂️ *Hizmet:* {serviceName}");
-        sb.AppendLine($"👤 *Personel:* {staffName}");
-        if (!string.IsNullOrWhiteSpace(salonName))
-            sb.AppendLine($"🏪 *Salon:* {salonName}");
+        var lang = DetectLang(phone);
+        var ci   = CultureFor(lang);
+        var t    = ToTr(startTime);
+        var date = t.ToString("dd MMMM yyyy", ci);
+        var time = t.ToString("HH:mm");
 
+        var (title, body, lDate, lTime, lService, lStaff, lSalon) = lang switch
+        {
+            Lang.RU => ("🔄 *Ваша запись обновлена*",
+                        $"Здравствуйте, *{customerName}*! Ваша запись была изменена:",
+                        "📅 *Новая дата:*", "⏰ *Новое время:*", "✂️ *Услуга:*",
+                        "👤 *Мастер:*", "🏪 *Салон:*"),
+            Lang.DE => ("🔄 *Ihr Termin wurde aktualisiert*",
+                        $"Hallo *{customerName}*! Ihr Termin wurde geändert:",
+                        "📅 *Neues Datum:*", "⏰ *Neue Uhrzeit:*", "✂️ *Service:*",
+                        "👤 *Mitarbeiter:*", "🏪 *Salon:*"),
+            Lang.EN => ("🔄 *Your Appointment has been Updated*",
+                        $"Hello *{customerName}*! Your appointment has been changed:",
+                        "📅 *New Date:*", "⏰ *New Time:*", "✂️ *Service:*",
+                        "👤 *Staff:*", "🏪 *Salon:*"),
+            _ =>       ("🔄 *Randevunuz Güncellendi*",
+                        $"Merhaba *{customerName}*! Randevunuz aşağıdaki şekilde güncellendi:",
+                        "📅 *Yeni Tarih:*", "⏰ *Yeni Saat:*", "✂️ *Hizmet:*",
+                        "👤 *Personel:*", "🏪 *Salon:*"),
+        };
+
+        var sb = new StringBuilder();
+        sb.AppendLine(title).AppendLine();
+        sb.AppendLine(body).AppendLine();
+        sb.AppendLine($"{lDate} {date}");
+        sb.AppendLine($"{lTime} {time}");
+        sb.AppendLine($"{lService} {serviceName}");
+        sb.AppendLine($"{lStaff} {staffName}");
+        if (!string.IsNullOrWhiteSpace(salonName)) sb.AppendLine($"{lSalon} {salonName}");
         return SendTextAsync(phone, sb.ToString().TrimEnd());
     }
 
@@ -148,20 +248,33 @@ public class WppConnectWhatsAppService : IWhatsAppService
         string phone, string customerName, string serviceName,
         string salonName, string reviewUrl)
     {
-        var sb = new StringBuilder();
-        sb.AppendLine("🙏 *Hizmetimizi Tercih Ettiğiniz İçin Teşekkürler!*");
-        sb.AppendLine();
-        sb.AppendLine($"Merhaba *{customerName}*,");
-        sb.AppendLine($"_{serviceName}_ hizmetimizi aldığınız için teşekkür ederiz.");
-        if (!string.IsNullOrWhiteSpace(salonName))
-            sb.AppendLine($"Sizi *{salonName}*'da görmek güzeldi! 💈");
-        if (!string.IsNullOrWhiteSpace(reviewUrl) && reviewUrl != "—")
-        {
-            sb.AppendLine();
-            sb.AppendLine($"⭐ Deneyiminizi değerlendirmek ister misiniz?");
-            sb.AppendLine(reviewUrl);
-        }
+        var lang = DetectLang(phone);
 
+        var (title, body, lReview) = lang switch
+        {
+            Lang.RU => ("🙏 *Спасибо, что выбрали нас!*",
+                        $"Здравствуйте, *{customerName}*!\nБлагодарим за посещение _{serviceName}_." +
+                        (!string.IsNullOrWhiteSpace(salonName) ? $" Рады были видеть вас в *{salonName}*! 💈" : ""),
+                        "⭐ Оцените нас:"),
+            Lang.DE => ("🙏 *Vielen Dank für Ihren Besuch!*",
+                        $"Hallo *{customerName}*!\nVielen Dank für die Inanspruchnahme von _{serviceName}_." +
+                        (!string.IsNullOrWhiteSpace(salonName) ? $" Es war schön, Sie in *{salonName}* zu sehen! 💈" : ""),
+                        "⭐ Bewerten Sie uns:"),
+            Lang.EN => ("🙏 *Thank You for Choosing Our Service!*",
+                        $"Hello *{customerName}*!\nThank you for using _{serviceName}_." +
+                        (!string.IsNullOrWhiteSpace(salonName) ? $" It was great to see you at *{salonName}*! 💈" : ""),
+                        "⭐ Rate your experience:"),
+            _ =>       ("🙏 *Hizmetimizi Tercih Ettiğiniz İçin Teşekkürler!*",
+                        $"Merhaba *{customerName}*!\n_{serviceName}_ hizmetimizi aldığınız için teşekkür ederiz." +
+                        (!string.IsNullOrWhiteSpace(salonName) ? $" Sizi *{salonName}*'da görmek güzeldi! 💈" : ""),
+                        "⭐ Deneyiminizi değerlendirin:"),
+        };
+
+        var sb = new StringBuilder();
+        sb.AppendLine(title).AppendLine();
+        sb.AppendLine(body);
+        if (!string.IsNullOrWhiteSpace(reviewUrl) && reviewUrl != "—")
+            sb.AppendLine($"\n{lReview}\n{reviewUrl}");
         return SendTextAsync(phone, sb.ToString().TrimEnd());
     }
 
@@ -169,81 +282,71 @@ public class WppConnectWhatsAppService : IWhatsAppService
         string staffPhone, string customerName, string customerPhone,
         string serviceName, DateTime startTime, int sequenceNumber)
     {
-        var t = ToTr(startTime);
-        var sb = new StringBuilder();
-        sb.AppendLine($"📬 *Yeni Randevu Talebi #{sequenceNumber}*");
-        sb.AppendLine();
-        sb.AppendLine($"👤 *Müşteri:* {customerName}");
-        sb.AppendLine($"📞 *Telefon:* {customerPhone}");
-        sb.AppendLine($"✂️ *Hizmet:* {serviceName}");
-        sb.AppendLine($"📅 *Tarih:* {t:dd MMMM yyyy}");
-        sb.AppendLine($"⏰ *Saat:* {t:HH:mm}");
-        sb.AppendLine();
-        sb.AppendLine("Randevuyu onaylamak için panel üzerinden işlem yapabilirsiniz.");
-
-        return SendTextAsync(staffPhone, sb.ToString().TrimEnd());
+        // Personele giden bildirim — her zaman Türkçe
+        var t   = ToTr(startTime);
+        var msg = new StringBuilder()
+            .AppendLine($"📬 *Yeni Randevu Talebi #{sequenceNumber}*").AppendLine()
+            .AppendLine($"👤 *Müşteri:* {customerName}")
+            .AppendLine($"📞 *Telefon:* {customerPhone}")
+            .AppendLine($"✂️ *Hizmet:* {serviceName}")
+            .AppendLine($"📅 *Tarih:* {t.ToString("dd MMMM yyyy", CtrTR)}")
+            .AppendLine($"⏰ *Saat:* {t:HH:mm}")
+            .AppendLine()
+            .Append("Onaylamak için panel üzerinden işlem yapabilirsiniz.")
+            .ToString();
+        return SendTextAsync(staffPhone, msg);
     }
 
     public Task SendOtpAsync(string phone, string otp)
     {
-        var msg = $"🔐 *ayarlıyo doğrulama kodunuz:*\n\n*{otp}*\n\nBu kodu kimseyle paylaşmayın.";
+        var msg = DetectLang(phone) switch
+        {
+            Lang.RU => $"🔐 *Ваш код подтверждения ayarlıyo:*\n\n*{otp}*\n\nНе сообщайте этот код никому.",
+            Lang.DE => $"🔐 *Ihr ayarlıyo Bestätigungscode:*\n\n*{otp}*\n\nTeilen Sie diesen Code nicht mit anderen.",
+            Lang.EN => $"🔐 *Your ayarlıyo verification code:*\n\n*{otp}*\n\nDo not share this code with anyone.",
+            _        => $"🔐 *ayarlıyo doğrulama kodunuz:*\n\n*{otp}*\n\nBu kodu kimseyle paylaşmayın.",
+        };
         return SendTextAsync(phone, msg);
     }
 
     public Task SendMonthlyLimitWarningAsync(
         string phone, string salonName, int currentCount, int limit, bool isFull)
     {
+        // İşletme sahibine giden bildirim — Türkçe
         var msg = isFull
-            ? $"⚠️ *ayarlıyo - Aylık Randevu Limitiniz Doldu!*\n\nMerhaba *{salonName}*!\n\nBu ay {limit} randevu limitinize ulaştınız. 🚫\n\nYeni randevular bu ay alınamayacak. Limitinizi artırmak için planınızı yükseltin.\n\n👉 app.ayarliyo.com/pricing"
+            ? $"⚠️ *ayarlıyo - Aylık Randevu Limitiniz Doldu!*\n\nMerhaba *{salonName}*!\n\nBu ay {limit} randevu limitinize ulaştınız. 🚫\n\nYeni randevular bu ay alınamayacak. Limit artırmak için planınızı yükseltin.\n\n👉 app.ayarliyo.com/pricing"
             : $"⚠️ *ayarlıyo - Aylık Randevu Limitine Yaklaşıyorsunuz!*\n\nMerhaba *{salonName}*!\n\nBu ay {currentCount}/{limit} randevu kullandınız (%80).\n\nKesintisiz hizmet için planınızı yükseltmeyi düşünün.\n\n👉 app.ayarliyo.com/pricing";
-
         return SendTextAsync(phone, msg);
     }
 
     public Task SendSubscriptionExpiryWarningAsync(string phone, string salonName, int daysLeft)
     {
+        // İşletme sahibine giden bildirim — Türkçe
         var msg = daysLeft <= 1
             ? $"🚨 *ayarlıyo - Aboneliğiniz Yarın Sona Eriyor!*\n\nMerhaba *{salonName}*!\n\nKesintisiz hizmet için aboneliğinizi hemen yenileyin.\n\n👉 app.ayarliyo.com/payment"
             : $"⏰ *ayarlıyo - Aboneliğiniz {daysLeft} Gün İçinde Sona Eriyor*\n\nMerhaba *{salonName}*!\n\nHizmet kesintisi yaşamamak için aboneliğinizi önceden yenileyin.\n\n👉 app.ayarliyo.com/payment";
-
         return SendTextAsync(phone, msg);
     }
 
     public async Task SendCustomMessageAsync(string phone, string message, string? imageUrl = null)
     {
-        // WPPConnect görsel gönderimini destekler; imageUrl varsa önce görseli gönderir
         if (!string.IsNullOrWhiteSpace(imageUrl))
-        {
             await SendImageAsync(phone, imageUrl, message);
-        }
         else
-        {
             await SendTextAsync(phone, message);
-        }
     }
 
-    // ── WPPConnect REST API çağrıları ────────────────────────────────────────
+    // ── WPPConnect REST API ──────────────────────────────────────────────────
 
     private async Task SendTextAsync(string phone, string message)
     {
-        var payload = new
-        {
-            phone   = FormatPhone(phone),
-            message,
-            isGroup = false
-        };
+        var payload = new { phone = FormatPhone(phone), message, isGroup = false };
         await PostAsync("send-message", payload);
     }
 
     private async Task SendImageAsync(string phone, string imageUrl, string caption)
     {
-        var payload = new
-        {
-            phone   = FormatPhone(phone),
-            path    = imageUrl,
-            caption,
-            isGroup = false
-        };
+        var payload = new { phone = FormatPhone(phone), path = imageUrl, caption, isGroup = false };
         await PostAsync("send-image", payload);
     }
 
@@ -263,12 +366,10 @@ public class WppConnectWhatsAppService : IWhatsAppService
         request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
         _log.LogInformation("[WPPConnect] POST → {Url}", url);
-
         try
         {
             var response = await _http.SendAsync(request);
             var body     = await response.Content.ReadAsStringAsync();
-
             if (response.IsSuccessStatusCode)
                 _log.LogInformation("[WPPConnect] OK {Status}", (int)response.StatusCode);
             else
@@ -282,14 +383,29 @@ public class WppConnectWhatsAppService : IWhatsAppService
 
     // ── Yardımcılar ──────────────────────────────────────────────────────────
 
+    private static Lang DetectLang(string phone)
+    {
+        var p = phone.Replace("+", "").Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
+        if (p.StartsWith("90") || p.StartsWith("0")) return Lang.TR;
+        if (p.StartsWith("7"))                        return Lang.RU;
+        if (p.StartsWith("49"))                       return Lang.DE;
+        return Lang.EN;
+    }
+
+    private static CultureInfo CultureFor(Lang lang) => lang switch
+    {
+        Lang.RU => CtrRU,
+        Lang.DE => CtrDE,
+        Lang.EN => CtrEN,
+        _       => CtrTR,
+    };
+
     /// <summary>WPPConnect bireysel chat formatı: 905551234567@c.us</summary>
     private static string FormatPhone(string phone)
     {
         phone = phone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Replace("+", "");
         if (phone.StartsWith("0")) phone = "90" + phone[1..];
         else if (!phone.StartsWith("90")) phone = "90" + phone;
-
-        // @c.us ekli değilse ekle
         if (!phone.Contains('@')) phone += "@c.us";
         return phone;
     }
@@ -298,15 +414,7 @@ public class WppConnectWhatsAppService : IWhatsAppService
     {
         if (utcTime.Kind != DateTimeKind.Utc)
             utcTime = DateTime.SpecifyKind(utcTime, DateTimeKind.Utc);
-        try
-        {
-            return TimeZoneInfo.ConvertTimeFromUtc(utcTime,
-                TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time"));
-        }
-        catch
-        {
-            return TimeZoneInfo.ConvertTimeFromUtc(utcTime,
-                TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul"));
-        }
+        try   { return TimeZoneInfo.ConvertTimeFromUtc(utcTime, TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time")); }
+        catch { return TimeZoneInfo.ConvertTimeFromUtc(utcTime, TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul")); }
     }
 }
