@@ -72,6 +72,13 @@ services:
       # SuperAdmin
       - SUPERADMIN_PASSWORD=${SUPERADMIN_PASSWORD}
 
+      # WPPConnect
+      - WhatsApp__Provider=WppConnect
+      - WppConnect__BaseUrl=http://wppconnect:21465
+      - WppConnect__SecretKey=${WPPCONNECT_SECRET_KEY}
+      - WppConnect__Session=ayarliyo
+      - WppConnect__Token=${WPPCONNECT_TOKEN:-}
+
       - AllowedHosts=*
     ports:
       - "8080:8080"
