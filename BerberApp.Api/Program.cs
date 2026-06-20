@@ -102,8 +102,16 @@ builder.Services.AddAuthorization();
 // Services
 builder.Services.Configure<BerberApp.Application.Common.Settings.MetaWhatsAppSettings>(
     builder.Configuration.GetSection("Meta"));
+builder.Services.Configure<BerberApp.Application.Common.Settings.WppConnectSettings>(
+    builder.Configuration.GetSection("WppConnect"));
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
-builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();
+
+// WhatsApp sağlayıcı seçimi — appsettings.json → "WhatsApp:Provider": "WppConnect" | "Meta"
+var whatsAppProvider = builder.Configuration["WhatsApp:Provider"] ?? "Meta";
+if (whatsAppProvider.Equals("WppConnect", StringComparison.OrdinalIgnoreCase))
+    builder.Services.AddHttpClient<IWhatsAppService, WppConnectWhatsAppService>();
+else
+    builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();
 builder.Services.AddScoped<SmsService>();
 builder.Services.AddHttpClient<ISmsService, IletimerkeziSmsService>();
 builder.Services.AddScoped<INotificationService, LinkNotificationService>();
