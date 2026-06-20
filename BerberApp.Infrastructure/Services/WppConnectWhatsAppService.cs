@@ -133,7 +133,6 @@ public class WppConnectWhatsAppService : IWhatsAppService
         string staffName = "")
     {
         var lang = DetectLang(phone);
-        var ci   = CultureFor(lang);
         var t    = ToTr(startTime);
         var time = t.ToString("HH:mm");
 
@@ -233,6 +232,14 @@ public class WppConnectWhatsAppService : IWhatsAppService
                         "👤 *Personel:*", "🏪 *Salon:*"),
         };
 
+        var lBooking = lang switch
+        {
+            Lang.RU => "📋 Мои записи:",
+            Lang.DE => "📋 Meine Termine:",
+            Lang.EN => "📋 My Appointments:",
+            _       => "📋 Randevularım:",
+        };
+
         var sb = new StringBuilder();
         sb.AppendLine(title).AppendLine();
         sb.AppendLine(body).AppendLine();
@@ -241,6 +248,7 @@ public class WppConnectWhatsAppService : IWhatsAppService
         sb.AppendLine($"{lService} {serviceName}");
         sb.AppendLine($"{lStaff} {staffName}");
         if (!string.IsNullOrWhiteSpace(salonName)) sb.AppendLine($"{lSalon} {salonName}");
+        if (!string.IsNullOrWhiteSpace(bookingUrl) && bookingUrl != "—") sb.AppendLine($"{lBooking} {bookingUrl}");
         return SendTextAsync(phone, sb.ToString().TrimEnd());
     }
 
@@ -404,8 +412,10 @@ public class WppConnectWhatsAppService : IWhatsAppService
     private static string FormatPhone(string phone)
     {
         phone = phone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Replace("+", "");
-        if (phone.StartsWith("0")) phone = "90" + phone[1..];
-        else if (!phone.StartsWith("90")) phone = "90" + phone;
+        // Yerel Türk numarası: 0 ile başlıyorsa veya 10 haneliyse 90 ekle
+        if (phone.StartsWith("0"))  phone = "90" + phone[1..];
+        else if (phone.Length == 10) phone = "90" + phone;
+        // 11+ haneli numaralar zaten ülke koduna sahip (90..., 7..., 49... vb.)
         if (!phone.Contains('@')) phone += "@c.us";
         return phone;
     }
