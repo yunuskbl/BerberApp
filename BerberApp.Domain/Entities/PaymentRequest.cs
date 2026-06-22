@@ -9,6 +9,7 @@ public class PaymentRequest : BaseEntity
     public string PlanName { get; set; } = string.Empty;
     public string PlanLabel { get; set; } = string.Empty;
     public decimal Amount { get; set; }
+    public int DurationDays { get; set; } = 30;
     public string ReferenceCode { get; set; } = string.Empty;
     public PaymentRequestStatus Status { get; set; } = PaymentRequestStatus.Pending;
     public string? AdminNotes { get; set; }

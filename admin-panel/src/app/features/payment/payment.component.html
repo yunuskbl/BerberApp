@@ -8,6 +8,53 @@
     </div>
   }
 
+  <!-- Faturalama Periyodu Seçimi -->
+  @if (state === 'select-billing') {
+    <div class="state-center billing-select">
+      <div class="billing-header">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">ayarlıyo</span>
+        </div>
+        <h2>Faturalama Periyodunu Seçin</h2>
+        <p>
+          <strong>{{ planLabel }} Planı</strong> için ödeme sıklığını seçin.
+        </p>
+      </div>
+
+      <div class="billing-cards">
+        <!-- Aylık -->
+        <div class="billing-card" (click)="selectBilling('monthly')">
+          <div class="billing-badge">Esnek</div>
+          <div class="billing-period">Aylık</div>
+          <div class="billing-price">₺{{ monthlyPrice | number:'1.0-0' }}</div>
+          <div class="billing-period-label">/ay</div>
+          <ul class="billing-features">
+            <li>✓ 30 günlük abonelik</li>
+            <li>✓ Dilediğinde iptal</li>
+          </ul>
+          <button class="btn-select">Aylık Seç</button>
+        </div>
+
+        <!-- Yıllık -->
+        <div class="billing-card billing-card--featured" (click)="selectBilling('annual')">
+          <div class="billing-badge billing-badge--save">%20 İndirim</div>
+          <div class="billing-period">Yıllık</div>
+          <div class="billing-price">₺{{ annualPrice | number:'1.0-0' }}</div>
+          <div class="billing-period-label">/yıl</div>
+          <div class="billing-saving">₺{{ saving | number:'1.0-0' }} tasarruf</div>
+          <ul class="billing-features">
+            <li>✓ 365 günlük abonelik</li>
+            <li>✓ %20 daha ucuz</li>
+          </ul>
+          <button class="btn-select btn-select--featured">Yıllık Seç</button>
+        </div>
+      </div>
+
+      <button class="btn-link" (click)="goToPricing()">← Planlara Dön</button>
+    </div>
+  }
+
   <!-- Banka Bilgileri + Sipariş Özeti -->
   @if (state === 'bank-info' || state === 'submitting') {
     <div class="payment-layout">
@@ -24,7 +71,7 @@
             <span class="plan-icon">{{ planMap[plan]?.icon }}</span>
             <div>
               <span class="plan-name">{{ planLabel }} Planı</span>
-              <span class="plan-period">1 Yıllık Abonelik</span>
+              <span class="plan-period">{{ billingPeriod === 'annual' ? 'Yıllık Abonelik (365 gün)' : 'Aylık Abonelik (30 gün)' }}</span>
             </div>
           </div>
           <div class="order-total">
@@ -33,7 +80,7 @@
           </div>
           <ul class="order-features">
             <li>✓ Onay sonrası anında aktif</li>
-            <li>✓ 365 gün geçerli</li>
+            <li>✓ {{ billingPeriod === 'annual' ? '365 gün geçerli' : '30 gün geçerli' }}</li>
             <li>✓ Güvenli havale</li>
           </ul>
         </div>
@@ -64,10 +111,6 @@
             <span class="bank-label">Tutar</span>
             <span class="bank-value amount">₺{{ price | number:'1.0-0' }}</span>
           </div>
-          <div class="bank-row">
-            <span class="bank-label">Açıklama</span>
-            <span class="bank-value">{{ bankInfo.description }}</span>
-          </div>
         </div>
 
         <div class="info-box">
@@ -79,7 +122,7 @@
         </div>
 
         <div class="action-row">
-          <button class="btn-outline" (click)="goToPricing()">Geri</button>
+          <button class="btn-outline" (click)="goBack()">Geri</button>
           <button class="btn-primary" (click)="confirmTransfer()" [disabled]="state === 'submitting'">
             @if (state === 'submitting') {
               <span class="btn-spinner"></span> Kaydediliyor…

@@ -991,6 +991,8 @@ public class SuperAdminController : ControllerBase
         if (!Enum.TryParse<PlanType>(payReq.PlanName, ignoreCase: true, out var planType))
             return BadRequest(new { success = false, message = $"Geçersiz plan adı: {payReq.PlanName}" });
 
+        var durationDays = payReq.DurationDays > 0 ? payReq.DurationDays : 30;
+
         // Aboneliği oluştur / güncelle
         var now = DateTime.UtcNow;
         var sub = await _context.Subscriptions
@@ -1008,7 +1010,7 @@ public class SuperAdminController : ControllerBase
                 Plan          = planType,
                 Status        = SubscriptionStatus.Active,
                 StartDate     = now,
-                ExpiryDate    = now.AddDays(req.DurationDays),
+                ExpiryDate    = now.AddDays(durationDays),
                 Price         = payReq.Amount,
                 Currency      = "TRY",
                 IsAutoRenewal = false,
@@ -1021,7 +1023,7 @@ public class SuperAdminController : ControllerBase
             var baseDate = sub.ExpiryDate > now ? sub.ExpiryDate : now;
             sub.Plan       = planType;
             sub.Status     = SubscriptionStatus.Active;
-            sub.ExpiryDate = baseDate.AddDays(req.DurationDays);
+            sub.ExpiryDate = baseDate.AddDays(durationDays);
             sub.Price      = payReq.Amount;
             sub.UpdatedAt  = now;
         }

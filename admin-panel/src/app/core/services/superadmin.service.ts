@@ -268,6 +268,7 @@ export interface PaymentRequestItem {
   planName: string;
   planLabel: string;
   amount: number;
+  durationDays: number;
   referenceCode: string;
   status: 'Pending' | 'Approved' | 'Rejected';
   adminNotes?: string;
