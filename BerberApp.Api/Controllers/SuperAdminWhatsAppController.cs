@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Net.Http.Headers;
 
 namespace BerberApp.Api.Controllers;
 
@@ -30,6 +31,15 @@ public class SuperAdminWhatsAppController : ControllerBase
         _env          = env;
     }
 
+    // Token'ı Bearer header olarak eklenmiş HttpRequestMessage oluşturur
+    private HttpRequestMessage WppRequest(HttpMethod method, string url)
+    {
+        var req = new HttpRequestMessage(method, url);
+        if (!string.IsNullOrWhiteSpace(_cfg.Token))
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _cfg.Token);
+        return req;
+    }
+
     /// <summary>Bağlantı durumunu döner</summary>
     [HttpGet("status")]
     public async Task<IActionResult> GetStatus()
@@ -40,20 +50,23 @@ public class SuperAdminWhatsAppController : ControllerBase
         try
         {
             var http = _httpFactory.CreateClient("wppconnect");
-            var url  = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{_cfg.Session}/{_cfg.Token}/check-connection-session";
-            var res  = await http.GetAsync(url);
+            var url  = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{_cfg.Session}/check-connection-session";
+            var res  = await http.SendAsync(WppRequest(HttpMethod.Get, url));
             var body = await res.Content.ReadAsStringAsync();
 
+            if (body.TrimStart().StartsWith('<'))
+                return Ok(new { connected = false, status = "ERROR", message = "WppConnect erişilemiyor." });
+
             using var doc = JsonDocument.Parse(body);
-            var status = doc.RootElement.TryGetProperty("status", out var s) ? s.GetString() : null;
+            var status    = doc.RootElement.TryGetProperty("status", out var s) ? s.GetString() : null;
             var connected = status == "CONNECTED";
 
-            return Ok(new { connected, status = status ?? "UNKNOWN", raw = body });
+            return Ok(new { connected, status = status ?? "UNKNOWN" });
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "WppConnect status check failed");
-            return Ok(new { connected = false, status = "ERROR", message = ex.Message });
+            return Ok(new { connected = false, status = "ERROR", message = "WppConnect bağlantı hatası." });
         }
     }
 
@@ -78,9 +91,10 @@ public class SuperAdminWhatsAppController : ControllerBase
         // 2. Session başlat
         try
         {
-            var startUrl  = $"{base_}/api/{_cfg.Session}/{_cfg.Token}/start-session";
-            var startBody = new StringContent("{\"waitQrCode\":true}", System.Text.Encoding.UTF8, "application/json");
-            var startRes  = await http.PostAsync(startUrl, startBody);
+            var startUrl  = $"{base_}/api/{_cfg.Session}/start-session";
+            var startReq  = WppRequest(HttpMethod.Post, startUrl);
+            startReq.Content = new StringContent("{\"waitQrCode\":true}", System.Text.Encoding.UTF8, "application/json");
+            var startRes  = await http.SendAsync(startReq);
             var startStr  = await startRes.Content.ReadAsStringAsync();
 
             if (TryExtractQr(startStr, out var qrFromStart))
@@ -105,8 +119,8 @@ public class SuperAdminWhatsAppController : ControllerBase
 
     private async Task<string?> TryGetQrCode(HttpClient http, string baseUrl)
     {
-        var url = $"{baseUrl}/api/{_cfg.Session}/{_cfg.Token}/qrcode-session";
-        var res = await http.GetAsync(url);
+        var url = $"{baseUrl}/api/{_cfg.Session}/qrcode-session";
+        var res = await http.SendAsync(WppRequest(HttpMethod.Get, url));
         if (!res.IsSuccessStatusCode) return null;
 
         var ct = res.Content.Headers.ContentType?.MediaType ?? "";
@@ -151,8 +165,10 @@ public class SuperAdminWhatsAppController : ControllerBase
         try
         {
             var http = _httpFactory.CreateClient("wppconnect");
-            var url  = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{_cfg.Session}/{_cfg.Token}/start-session";
-            var res  = await http.PostAsync(url, new StringContent("{\"waitQrCode\":true}", System.Text.Encoding.UTF8, "application/json"));
+            var url  = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{_cfg.Session}/start-session";
+            var req  = WppRequest(HttpMethod.Post, url);
+            req.Content = new StringContent("{\"waitQrCode\":true}", System.Text.Encoding.UTF8, "application/json");
+            var res  = await http.SendAsync(req);
             var body = await res.Content.ReadAsStringAsync();
             return Ok(new { success = true, raw = body });
         }
@@ -172,8 +188,10 @@ public class SuperAdminWhatsAppController : ControllerBase
         try
         {
             var http = _httpFactory.CreateClient("wppconnect");
-            var url  = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{_cfg.Session}/{_cfg.Token}/close-session";
-            var res  = await http.PostAsync(url, new StringContent("{}", System.Text.Encoding.UTF8, "application/json"));
+            var url  = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{_cfg.Session}/close-session";
+            var req  = WppRequest(HttpMethod.Post, url);
+            req.Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json");
+            var res  = await http.SendAsync(req);
             var body = await res.Content.ReadAsStringAsync();
             return Ok(new { success = true, raw = body });
         }
@@ -183,7 +201,7 @@ public class SuperAdminWhatsAppController : ControllerBase
         }
     }
 
-    /// <summary>Yeni token üretir (SecretKey gerektirir)</summary>
+    /// <summary>Yeni token üretir (SecretKey gerektirir — URL'de gider, header gerekmez)</summary>
     [HttpPost("generate-token")]
     public async Task<IActionResult> GenerateToken()
     {
@@ -197,15 +215,16 @@ public class SuperAdminWhatsAppController : ControllerBase
             var res  = await http.PostAsync(url, new StringContent("{}", System.Text.Encoding.UTF8, "application/json"));
             var body = await res.Content.ReadAsStringAsync();
 
+            if (body.TrimStart().StartsWith('<'))
+                return Ok(new { success = false, message = "WppConnect erişilemiyor veya SecretKey hatalı." });
+
             using var doc = JsonDocument.Parse(body);
             if (!doc.RootElement.TryGetProperty("token", out var t))
                 return Ok(new { success = false, message = "Token alınamadı.", raw = body });
 
             var newToken = t.GetString()!;
-
-            // appsettings.json'a otomatik kaydet
             await SaveTokenToAppSettings(newToken);
-            _logger.LogInformation("WppConnect token updated and saved to appsettings.json");
+            _logger.LogInformation("WppConnect token updated and saved");
 
             return Ok(new { success = true, token = newToken, message = "Token oluşturuldu ve kaydedildi. Şimdi QR'ı yükleyebilirsiniz." });
         }
@@ -220,8 +239,8 @@ public class SuperAdminWhatsAppController : ControllerBase
         var path = Path.Combine(_env.ContentRootPath, "appsettings.json");
         if (!System.IO.File.Exists(path)) return;
 
-        var json   = await System.IO.File.ReadAllTextAsync(path);
-        var node   = JsonNode.Parse(json)!;
+        var json = await System.IO.File.ReadAllTextAsync(path);
+        var node = JsonNode.Parse(json)!;
         node["WppConnect"]!["Token"] = token;
 
         var opts = new JsonSerializerOptions { WriteIndented = true };
