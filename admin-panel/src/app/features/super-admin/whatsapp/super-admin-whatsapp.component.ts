@@ -112,6 +112,11 @@ export class SuperAdminWhatsAppComponent implements OnInit, OnDestroy {
         if (res.success) {
           this.generatedToken = res.token ?? '';
           this.actionMsg = res.message ?? 'Token oluşturuldu.';
+          // Token kaydedildi, QR'ı otomatik yükle
+          setTimeout(() => {
+            this.status = 'disconnected';
+            this.loadQr();
+          }, 1000);
         } else {
           this.actionMsg = res.message ?? 'Token oluşturulamadı.';
         }

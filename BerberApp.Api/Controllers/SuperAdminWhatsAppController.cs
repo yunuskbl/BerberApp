@@ -2,8 +2,8 @@ using BerberApp.Application.Common.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace BerberApp.Api.Controllers;
 
@@ -13,17 +13,21 @@ namespace BerberApp.Api.Controllers;
 public class SuperAdminWhatsAppController : ControllerBase
 {
     private readonly IHttpClientFactory _httpFactory;
-    private readonly WppConnectSettings _cfg;
+    private readonly IOptionsMonitor<WppConnectSettings> _cfgMonitor;
+    private WppConnectSettings _cfg => _cfgMonitor.CurrentValue;
     private readonly ILogger<SuperAdminWhatsAppController> _logger;
+    private readonly IWebHostEnvironment _env;
 
     public SuperAdminWhatsAppController(
         IHttpClientFactory httpFactory,
-        IOptions<WppConnectSettings> options,
-        ILogger<SuperAdminWhatsAppController> logger)
+        IOptionsMonitor<WppConnectSettings> options,
+        ILogger<SuperAdminWhatsAppController> logger,
+        IWebHostEnvironment env)
     {
-        _httpFactory = httpFactory;
-        _cfg         = options.Value;
-        _logger      = logger;
+        _httpFactory  = httpFactory;
+        _cfgMonitor   = options;
+        _logger       = logger;
+        _env          = env;
     }
 
     /// <summary>Bağlantı durumunu döner</summary>
@@ -194,14 +198,33 @@ public class SuperAdminWhatsAppController : ControllerBase
             var body = await res.Content.ReadAsStringAsync();
 
             using var doc = JsonDocument.Parse(body);
-            if (doc.RootElement.TryGetProperty("token", out var t))
-                return Ok(new { success = true, token = t.GetString(), message = "Token oluşturuldu. appsettings.json → WppConnect:Token alanını güncelleyin." });
+            if (!doc.RootElement.TryGetProperty("token", out var t))
+                return Ok(new { success = false, message = "Token alınamadı.", raw = body });
 
-            return Ok(new { success = false, message = "Token alınamadı.", raw = body });
+            var newToken = t.GetString()!;
+
+            // appsettings.json'a otomatik kaydet
+            await SaveTokenToAppSettings(newToken);
+            _logger.LogInformation("WppConnect token updated and saved to appsettings.json");
+
+            return Ok(new { success = true, token = newToken, message = "Token oluşturuldu ve kaydedildi. Şimdi QR'ı yükleyebilirsiniz." });
         }
         catch (Exception ex)
         {
             return Ok(new { success = false, message = ex.Message });
         }
+    }
+
+    private async Task SaveTokenToAppSettings(string token)
+    {
+        var path = Path.Combine(_env.ContentRootPath, "appsettings.json");
+        if (!System.IO.File.Exists(path)) return;
+
+        var json   = await System.IO.File.ReadAllTextAsync(path);
+        var node   = JsonNode.Parse(json)!;
+        node["WppConnect"]!["Token"] = token;
+
+        var opts = new JsonSerializerOptions { WriteIndented = true };
+        await System.IO.File.WriteAllTextAsync(path, node.ToJsonString(opts));
     }
 }
