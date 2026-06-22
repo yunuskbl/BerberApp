@@ -4,13 +4,15 @@
   @if (state === 'loading') {
     <div class="state-center">
       <div class="spinner-ring"></div>
-      <p>Ödeme formu hazırlanıyor…</p>
+      <p>Hazırlanıyor…</p>
     </div>
   }
 
-  <!-- Form -->
-  @if (state === 'form') {
+  <!-- Banka Bilgileri + Sipariş Özeti -->
+  @if (state === 'bank-info' || state === 'submitting') {
     <div class="payment-layout">
+
+      <!-- Sol: Sipariş Özeti -->
       <div class="payment-sidebar">
         <div class="brand">
           <span class="brand-dot"></span>
@@ -19,7 +21,7 @@
         <div class="order-card">
           <p class="order-label">Sipariş Özeti</p>
           <div class="order-plan">
-            <span class="plan-icon">{{ planMap[plan] ? planMap[plan].icon : '' }}</span>
+            <span class="plan-icon">{{ planMap[plan]?.icon }}</span>
             <div>
               <span class="plan-name">{{ planLabel }} Planı</span>
               <span class="plan-period">1 Yıllık Abonelik</span>
@@ -30,27 +32,79 @@
             <span class="total-price">₺{{ price | number:'1.0-0' }}</span>
           </div>
           <ul class="order-features">
-            <li>✓ Anında aktivasyon</li>
+            <li>✓ Onay sonrası anında aktif</li>
             <li>✓ 365 gün geçerli</li>
-            <li>✓ SSL güvenli ödeme</li>
-            <li>✓ iyzico güvencesi</li>
+            <li>✓ Güvenli havale</li>
           </ul>
         </div>
       </div>
+
+      <!-- Sağ: Havale Bilgileri -->
       <div class="payment-main">
-        <h1 class="form-title">Ödeme Bilgileri</h1>
-        <p class="form-sub">Kredi/banka kartı bilgilerinizi güvenle girin.</p>
-        <div id="iyzico-checkout-form" [innerHTML]="checkoutHtml"></div>
+        <h1 class="form-title">Havale ile Ödeme</h1>
+        <p class="form-sub">
+          Aşağıdaki hesaba havale / EFT yapın, ardından "Havale Yaptım" butonuna tıklayın.
+          Ödemeniz kontrol edildikten sonra aboneliğiniz aktive edilecektir.
+        </p>
+
+        <div class="bank-card">
+          <div class="bank-row">
+            <span class="bank-label">Banka</span>
+            <span class="bank-value">{{ bankInfo.bankName }}</span>
+          </div>
+          <div class="bank-row">
+            <span class="bank-label">IBAN</span>
+            <span class="bank-value iban">{{ bankInfo.iban }}</span>
+          </div>
+          <div class="bank-row">
+            <span class="bank-label">Hesap Sahibi</span>
+            <span class="bank-value">{{ bankInfo.accountHolder }}</span>
+          </div>
+          <div class="bank-row">
+            <span class="bank-label">Tutar</span>
+            <span class="bank-value amount">₺{{ price | number:'1.0-0' }}</span>
+          </div>
+          <div class="bank-row">
+            <span class="bank-label">Açıklama</span>
+            <span class="bank-value">{{ bankInfo.description }}</span>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <span class="info-icon">ℹ️</span>
+          <p>
+            Havaleyi yaptıktan sonra aşağıdaki butona tıklayın.
+            Talebiniz oluşturulacak ve ekibimiz 24 saat içinde aboneliğinizi aktive edecektir.
+          </p>
+        </div>
+
+        <div class="action-row">
+          <button class="btn-outline" (click)="goToPricing()">Geri</button>
+          <button class="btn-primary" (click)="confirmTransfer()" [disabled]="state === 'submitting'">
+            @if (state === 'submitting') {
+              <span class="btn-spinner"></span> Kaydediliyor…
+            } @else {
+              Havale Yaptım
+            }
+          </button>
+        </div>
       </div>
+
     </div>
   }
 
-  <!-- Başarı -->
-  @if (state === 'success') {
+  <!-- Başarı: Talep alındı -->
+  @if (state === 'submitted') {
     <div class="state-center">
       <div class="result-icon success-icon">✓</div>
-      <h2>Ödeme Başarılı!</h2>
-      <p>{{ successPlan || 'Aboneliğiniz' }} aktif edildi. İyi kullanımlar 🎉</p>
+      <h2>Talebiniz Alındı!</h2>
+      <p class="ref-text">
+        Referans kodunuz: <strong class="ref-code">{{ referenceCode }}</strong>
+      </p>
+      <p class="ref-hint">
+        Havale açıklamasına bu kodu yazmanız takibi kolaylaştırır.<br>
+        Ekibimiz ödemenizi doğruladıktan sonra aboneliğiniz aktive edilecektir (genellikle 24 saat içinde).
+      </p>
       <button class="btn-primary" (click)="goToDashboard()">Panele Git</button>
     </div>
   }
@@ -59,11 +113,10 @@
   @if (state === 'fail') {
     <div class="state-center">
       <div class="result-icon fail-icon">✕</div>
-      <h2>Ödeme Başarısız</h2>
-      <p>{{ failReason || errorMessage || 'Ödeme işlemi tamamlanamadı.' }}</p>
+      <h2>Bir Hata Oluştu</h2>
+      <p>{{ errorMessage }}</p>
       <div class="result-actions">
         <button class="btn-outline" (click)="goToPricing()">Planlara Dön</button>
-        <button class="btn-primary" (click)="retry()">Tekrar Dene</button>
       </div>
     </div>
   }

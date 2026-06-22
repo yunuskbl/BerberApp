@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SuperAdminService, SuperAdminSubscription } from '../../../core/services/superadmin.service';
+import { SuperAdminService, SuperAdminSubscription, PaymentRequestItem } from '../../../core/services/superadmin.service';
 
 @Component({
   selector: 'app-super-admin-payments',
@@ -11,11 +11,30 @@ import { SuperAdminService, SuperAdminSubscription } from '../../../core/service
   styleUrl: './super-admin-payments.component.scss'
 })
 export class SuperAdminPaymentsComponent implements OnInit {
+  activeTab: 'requests' | 'subscriptions' = 'requests';
+
+  // Payment requests
+  paymentRequests: PaymentRequestItem[] = [];
+  prLoading = true;
+  prError = '';
+  prStatusFilter = 'Pending';
+  rejectModalId: string | null = null;
+  rejectNotes = '';
+  actionLoading = false;
+
+  // Subscriptions
   subscriptions: SuperAdminSubscription[] = [];
   isLoading = true;
   errorMessage = '';
   selectedStatus = '';
   searchQuery = '';
+
+  readonly prStatusOptions = [
+    { value: 'Pending',  label: 'Bekleyen' },
+    { value: 'Approved', label: 'Onaylanan' },
+    { value: 'Rejected', label: 'Reddedilen' },
+    { value: '',         label: 'Tümü' },
+  ];
 
   readonly statusOptions = [
     { value: '', label: 'Tümü' },
@@ -28,17 +47,61 @@ export class SuperAdminPaymentsComponent implements OnInit {
   constructor(private superAdminService: SuperAdminService) {}
 
   ngOnInit(): void {
-    this.load();
+    this.loadPaymentRequests();
+    this.loadSubscriptions();
   }
 
-  load(): void {
+  loadPaymentRequests(): void {
+    this.prLoading = true;
+    this.prError = '';
+    this.superAdminService.getPaymentRequests(this.prStatusFilter || undefined).subscribe({
+      next: res => {
+        if (res.success) this.paymentRequests = res.data;
+        this.prLoading = false;
+      },
+      error: () => {
+        this.prError = 'Talepler yüklenemedi.';
+        this.prLoading = false;
+      }
+    });
+  }
+
+  approve(id: string): void {
+    if (!confirm('Bu talebi onaylayacaksınız. Devam?')) return;
+    this.actionLoading = true;
+    this.superAdminService.approvePaymentRequest(id).subscribe({
+      next: () => { this.actionLoading = false; this.loadPaymentRequests(); },
+      error: () => { this.actionLoading = false; alert('Onaylama başarısız.'); }
+    });
+  }
+
+  openRejectModal(id: string): void {
+    this.rejectModalId = id;
+    this.rejectNotes = '';
+  }
+
+  confirmReject(): void {
+    if (!this.rejectModalId) return;
+    this.actionLoading = true;
+    this.superAdminService.rejectPaymentRequest(this.rejectModalId, this.rejectNotes || undefined).subscribe({
+      next: () => {
+        this.actionLoading = false;
+        this.rejectModalId = null;
+        this.loadPaymentRequests();
+      },
+      error: () => { this.actionLoading = false; alert('Red işlemi başarısız.'); }
+    });
+  }
+
+  get pendingCount(): number { return this.paymentRequests.filter(r => r.status === 'Pending').length; }
+
+  // Subscriptions
+  loadSubscriptions(): void {
     this.isLoading = true;
     this.errorMessage = '';
     this.superAdminService.getSubscriptions(this.selectedStatus || undefined).subscribe({
-      next: (res) => {
-        if (res.success) {
-          this.subscriptions = res.data;
-        }
+      next: res => {
+        if (res.success) this.subscriptions = res.data;
         this.isLoading = false;
       },
       error: () => {
@@ -59,9 +122,7 @@ export class SuperAdminPaymentsComponent implements OnInit {
   }
 
   get totalRevenue(): number {
-    return this.subscriptions
-      .filter(s => s.status === 'Active')
-      .reduce((sum, s) => sum + s.price, 0);
+    return this.subscriptions.filter(s => s.status === 'Active').reduce((sum, s) => sum + s.price, 0);
   }
 
   get activeCount(): number { return this.subscriptions.filter(s => s.status === 'Active').length; }
@@ -69,17 +130,18 @@ export class SuperAdminPaymentsComponent implements OnInit {
   get expiredCount(): number { return this.subscriptions.filter(s => s.isExpired).length; }
 
   statusClass(status: string): string {
-    const map: Record<string, string> = {
-      Active: 'active', Trial: 'trial', Expired: 'expired', Cancelled: 'cancelled'
-    };
+    const map: Record<string, string> = { Active: 'active', Trial: 'trial', Expired: 'expired', Cancelled: 'cancelled' };
     return map[status] ?? 'none';
   }
 
   statusLabel(status: string): string {
-    const map: Record<string, string> = {
-      Active: 'Aktif', Trial: 'Deneme', Expired: 'Süresi Doldu', Cancelled: 'İptal'
-    };
+    const map: Record<string, string> = { Active: 'Aktif', Trial: 'Deneme', Expired: 'Süresi Doldu', Cancelled: 'İptal' };
     return map[status] ?? status;
+  }
+
+  prStatusClass(status: string): string {
+    const map: Record<string, string> = { Pending: 'pending', Approved: 'approved', Rejected: 'rejected' };
+    return map[status] ?? '';
   }
 
   formatDate(d: string): string {

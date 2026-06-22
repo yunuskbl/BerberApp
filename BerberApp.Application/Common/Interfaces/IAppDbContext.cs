@@ -35,6 +35,7 @@ namespace BerberApp.Application.Common.Interfaces
         DbSet<PriceDifferenceEntity> PriceDifferences { get; }
         DbSet<ReceiptEntity> Receipts { get; }
         DbSet<ReceiptItemEntity> ReceiptItems { get; }
+        DbSet<BerberApp.Domain.Entities.PaymentRequest> PaymentRequests { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

@@ -376,6 +376,69 @@ namespace BerberApp.Infrastructure.Migrations
                     b.ToTable("PaymentMethods");
                 });
 
+            modelBuilder.Entity("BerberApp.Domain.Entities.PaymentRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("AdminNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasDefaultValue(false)
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PlanLabel")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasDefaultValue("")
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("PlanName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasDefaultValue("")
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ReferenceCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasDefaultValue("")
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasDefaultValue(0)
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReferenceCode")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PaymentRequests_ReferenceCode");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_PaymentRequests_TenantId");
+
+                    b.ToTable("PaymentRequests");
+                });
+
             modelBuilder.Entity("BerberApp.Domain.Entities.Review", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1260,6 +1323,17 @@ namespace BerberApp.Infrastructure.Migrations
                     b.Navigation("StaffServices");
 
                     b.Navigation("WorkingHours");
+                });
+
+            modelBuilder.Entity("BerberApp.Domain.Entities.PaymentRequest", b =>
+                {
+                    b.HasOne("BerberApp.Domain.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("BerberApp.Domain.Entities.Tenant", b =>

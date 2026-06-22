@@ -1,4 +1,5 @@
 using BerberApp.Application.Auth.Commands;
+using BerberApp.Application.Common.Interfaces;
 using BerberApp.Application.Tenant.DTOs;
 using BerberApp.Domain.Entities;
 using BerberApp.Domain.Enums;
@@ -6,7 +7,6 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using BerberApp.Application.Common.Interfaces;
 
 namespace BerberApp.Api.Controllers;
 
@@ -940,6 +940,125 @@ public class SuperAdminController : ControllerBase
 
         return Ok(new { success = true, data = new { monthly, topServices } });
     }
+    // ─── HAVALE ÖDEMESİ TALEPLERİ ───────────────────────────────────────────
+
+    [HttpGet("payment-requests")]
+    public async Task<IActionResult> GetPaymentRequests([FromQuery] string? status = null)
+    {
+        var query = _context.PaymentRequests
+            .IgnoreQueryFilters()
+            .Include(r => r.Tenant)
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(status) && Enum.TryParse<PaymentRequestStatus>(status, true, out var ps))
+            query = query.Where(r => r.Status == ps);
+
+        var list = await query
+            .OrderByDescending(r => r.CreatedAt)
+            .Select(r => new
+            {
+                r.Id,
+                r.TenantId,
+                TenantName = r.Tenant.Name,
+                r.PlanName,
+                r.PlanLabel,
+                r.Amount,
+                r.ReferenceCode,
+                Status = r.Status.ToString(),
+                r.AdminNotes,
+                r.ReviewedAt,
+                r.CreatedAt
+            })
+            .ToListAsync();
+
+        return Ok(new { success = true, data = list });
+    }
+
+    [HttpPost("payment-requests/{id}/approve")]
+    public async Task<IActionResult> ApprovePaymentRequest(Guid id, [FromBody] ApprovePaymentRequestBody req)
+    {
+        var payReq = await _context.PaymentRequests
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (payReq == null)
+            return NotFound(new { success = false, message = "Talep bulunamadı." });
+
+        if (payReq.Status != PaymentRequestStatus.Pending)
+            return BadRequest(new { success = false, message = "Bu talep zaten işlenmiş." });
+
+        if (!Enum.TryParse<PlanType>(payReq.PlanName, ignoreCase: true, out var planType))
+            return BadRequest(new { success = false, message = $"Geçersiz plan adı: {payReq.PlanName}" });
+
+        // Aboneliği oluştur / güncelle
+        var now = DateTime.UtcNow;
+        var sub = await _context.Subscriptions
+            .IgnoreQueryFilters()
+            .Where(s => s.TenantId == payReq.TenantId)
+            .OrderByDescending(s => s.StartDate)
+            .FirstOrDefaultAsync();
+
+        if (sub == null)
+        {
+            sub = new Subscription
+            {
+                Id            = Guid.NewGuid(),
+                TenantId      = payReq.TenantId,
+                Plan          = planType,
+                Status        = SubscriptionStatus.Active,
+                StartDate     = now,
+                ExpiryDate    = now.AddDays(req.DurationDays),
+                Price         = payReq.Amount,
+                Currency      = "TRY",
+                IsAutoRenewal = false,
+                CreatedAt     = now
+            };
+            _context.Subscriptions.Add(sub);
+        }
+        else
+        {
+            var baseDate = sub.ExpiryDate > now ? sub.ExpiryDate : now;
+            sub.Plan       = planType;
+            sub.Status     = SubscriptionStatus.Active;
+            sub.ExpiryDate = baseDate.AddDays(req.DurationDays);
+            sub.Price      = payReq.Amount;
+            sub.UpdatedAt  = now;
+        }
+
+        payReq.Status     = PaymentRequestStatus.Approved;
+        payReq.AdminNotes = req.AdminNotes;
+        payReq.ReviewedAt = now;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("PaymentRequest {Id} approved, tenant {TenantId} plan {Plan}", id, payReq.TenantId, payReq.PlanName);
+        return Ok(new { success = true, message = "Talep onaylandı ve abonelik aktive edildi." });
+    }
+
+    [HttpPost("payment-requests/{id}/reject")]
+    public async Task<IActionResult> RejectPaymentRequest(Guid id, [FromBody] RejectPaymentRequestBody req)
+    {
+        var payReq = await _context.PaymentRequests
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (payReq == null)
+            return NotFound(new { success = false, message = "Talep bulunamadı." });
+
+        if (payReq.Status != PaymentRequestStatus.Pending)
+            return BadRequest(new { success = false, message = "Bu talep zaten işlenmiş." });
+
+        payReq.Status     = PaymentRequestStatus.Rejected;
+        payReq.AdminNotes = req.AdminNotes;
+        payReq.ReviewedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("PaymentRequest {Id} rejected for tenant {TenantId}", id, payReq.TenantId);
+        return Ok(new { success = true, message = "Talep reddedildi." });
+    }
+
     // ─── GÜVENLİK / DENETİM LOGLARI ────────────────────────────────────────
 
     [HttpGet("audit-logs")]
@@ -1025,4 +1144,15 @@ public class PaymentMethodRequest
 public class ReplyRequest
 {
     public string Reply { get; set; } = string.Empty;
+}
+
+public class ApprovePaymentRequestBody
+{
+    public string? AdminNotes { get; set; }
+    public int DurationDays { get; set; } = 365;
+}
+
+public class RejectPaymentRequestBody
+{
+    public string? AdminNotes { get; set; }
 }

@@ -230,6 +230,21 @@ export class SuperAdminService {
     return this.http.get<ApiResponse<AppointmentStats>>(`${this.apiUrl}/tenants/${id}/appointment-stats`, { params });
   }
 
+  // Havale Ödeme Talepleri
+  getPaymentRequests(status?: string): Observable<ApiResponse<PaymentRequestItem[]>> {
+    let params = new HttpParams();
+    if (status) params = params.set('status', status);
+    return this.http.get<ApiResponse<PaymentRequestItem[]>>(`${this.apiUrl}/payment-requests`, { params });
+  }
+
+  approvePaymentRequest(id: string, adminNotes?: string, durationDays = 365): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/payment-requests/${id}/approve`, { adminNotes, durationDays });
+  }
+
+  rejectPaymentRequest(id: string, adminNotes?: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/payment-requests/${id}/reject`, { adminNotes });
+  }
+
   getAuditLogs(filters: {
     page?: number; pageSize?: number;
     severity?: string; eventType?: string;
@@ -244,6 +259,20 @@ export class SuperAdminService {
     if (filters.to)        params = params.set('to',        filters.to);
     return this.http.get<ApiResponse<AuditLogPage>>(`${this.apiUrl}/audit-logs`, { params });
   }
+}
+
+export interface PaymentRequestItem {
+  id: string;
+  tenantId: string;
+  tenantName: string;
+  planName: string;
+  planLabel: string;
+  amount: number;
+  referenceCode: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  adminNotes?: string;
+  reviewedAt?: string;
+  createdAt: string;
 }
 
 export interface AuditLogEntry {

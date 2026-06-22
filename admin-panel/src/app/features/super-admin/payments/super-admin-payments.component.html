@@ -2,124 +2,225 @@
   <div class="page-header">
     <div>
       <h2>Ödemeler & Abonelikler</h2>
-      <p>İşletmelerin abonelik durumu ve ödeme takibi</p>
+      <p>Havale talepleri ve abonelik takibi</p>
     </div>
   </div>
 
-  @if (!isLoading) {
-    <div class="stats-grid">
-      <div class="stat-card stat-card--green">
-        <div class="stat-icon">💳</div>
-        <div class="stat-content">
-          <div class="stat-label">Aktif Abonelik</div>
-          <div class="stat-value">{{ activeCount }}</div>
-        </div>
-      </div>
-      <div class="stat-card stat-card--amber">
-        <div class="stat-icon">⏳</div>
-        <div class="stat-content">
-          <div class="stat-label">Deneme</div>
-          <div class="stat-value">{{ trialCount }}</div>
-        </div>
-      </div>
-      <div class="stat-card stat-card--red">
-        <div class="stat-icon">⛔</div>
-        <div class="stat-content">
-          <div class="stat-label">Süresi Dolmuş</div>
-          <div class="stat-value">{{ expiredCount }}</div>
-        </div>
-      </div>
-      <div class="stat-card stat-card--purple">
-        <div class="stat-icon">💰</div>
-        <div class="stat-content">
-          <div class="stat-label">Aktif Gelir (TRY)</div>
-          <div class="stat-value">{{ totalRevenue | number }}</div>
-        </div>
-      </div>
-    </div>
-  }
-
-  @if (errorMessage) {
-    <div class="alert alert-error">{{ errorMessage }}</div>
-  }
-
-  <!-- Filters -->
-  <div class="filters-bar">
-    <div class="search-bar">
-      <input type="text" [(ngModel)]="searchQuery" placeholder="İşletme adı, e-posta veya plan ara..."
-        class="search-input"/>
-      @if (searchQuery) {
-        <button class="search-clear" (click)="searchQuery=''">✕</button>
+  <!-- Sekme -->
+  <div class="tab-header">
+    <button class="tab-btn" [class.active]="activeTab === 'requests'" (click)="activeTab = 'requests'">
+      Havale Talepleri
+      @if (pendingCount > 0) {
+        <span class="badge-count">{{ pendingCount }}</span>
       }
-    </div>
-    <div class="status-tabs">
-      @for (opt of statusOptions; track opt.value) {
-        <button class="tab-btn" [class.active]="selectedStatus === opt.value"
-          (click)="selectedStatus = opt.value; load()">
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'subscriptions'" (click)="activeTab = 'subscriptions'">
+      Abonelikler
+    </button>
+  </div>
+
+  <!-- ───── HAVALE TALEPLERİ ───── -->
+  @if (activeTab === 'requests') {
+
+    <div class="pr-filters">
+      @for (opt of prStatusOptions; track opt.value) {
+        <button class="pill-btn" [class.active]="prStatusFilter === opt.value"
+          (click)="prStatusFilter = opt.value; loadPaymentRequests()">
           {{ opt.label }}
         </button>
       }
     </div>
-  </div>
 
-  @if (isLoading) {
-    <div class="loading-state"><div class="spinner"></div></div>
-  } @else if (filtered.length === 0) {
-    <div class="empty-state">
-      <span class="empty-icon">💳</span>
-      <h3>Kayıt bulunamadı</h3>
-      <p>Filtre veya arama kriterini değiştirin.</p>
-    </div>
-  } @else {
-    <div class="table-wrapper">
-      <table class="payments-table">
-        <thead>
-          <tr>
-            <th>İşletme</th>
-            <th>Admin</th>
-            <th>Plan</th>
-            <th>Durum</th>
-            <th>Fiyat</th>
-            <th>Başlangıç</th>
-            <th>Bitiş</th>
-            <th>Kalan Gün</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (s of filtered; track s.id) {
-            <tr [class.expired-row]="s.isExpired">
-              <td class="tenant-cell" data-label="İşletme">
-                <div class="tenant-name">{{ s.tenantName ?? '—' }}</div>
-              </td>
-              <td class="email-cell" data-label="Admin">{{ s.adminEmail ?? '—' }}</td>
-              <td class="plan-cell" data-label="Plan">
-                <span class="badge badge--plan">{{ s.plan }}</span>
-              </td>
-              <td data-label="Durum">
-                <span [class]="'sub-badge sub-badge--' + statusClass(s.status)">
-                  {{ statusLabel(s.status) }}
-                </span>
-              </td>
-              <td class="price-cell" data-label="Fiyat">{{ formatPrice(s.price, s.currency) }}</td>
-              <td class="date-cell" data-label="Başlangıç">{{ formatDate(s.startDate) }}</td>
-              <td class="date-cell" data-label="Bitiş">
-                <span [class.text-red]="s.isExpired">{{ formatDate(s.expiryDate) }}</span>
-              </td>
-              <td class="days-cell" data-label="Kalan Gün">
-                @if (s.daysLeft != null && !s.isExpired) {
-                  <span [class.text-amber]="s.daysLeft <= 7" [class.text-red]="s.daysLeft <= 3">
-                    {{ s.daysLeft }}g
-                  </span>
-                } @else if (s.isExpired) {
-                  <span class="text-red">Doldu</span>
-                } @else {
-                  <span class="text-muted">—</span>
-                }
-              </td>
+    @if (prError) { <div class="alert alert-error">{{ prError }}</div> }
+
+    @if (prLoading) {
+      <div class="loading-state"><div class="spinner"></div></div>
+    } @else if (paymentRequests.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">📭</span>
+        <h3>Talep bulunamadı</h3>
+        <p>Seçili durumda ödeme talebi yok.</p>
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="payments-table">
+          <thead>
+            <tr>
+              <th>İşletme</th>
+              <th>Plan</th>
+              <th>Tutar</th>
+              <th>Referans Kodu</th>
+              <th>Durum</th>
+              <th>Tarih</th>
+              <th>İşlem</th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (r of paymentRequests; track r.id) {
+              <tr>
+                <td data-label="İşletme"><strong>{{ r.tenantName }}</strong></td>
+                <td data-label="Plan">
+                  <span class="badge badge--plan">{{ r.planLabel }}</span>
+                </td>
+                <td data-label="Tutar" class="price-cell">
+                  ₺{{ r.amount | number:'1.0-0' }}
+                </td>
+                <td data-label="Referans" class="ref-cell">
+                  <code>{{ r.referenceCode }}</code>
+                </td>
+                <td data-label="Durum">
+                  <span [class]="'pr-badge pr-badge--' + prStatusClass(r.status)">
+                    {{ r.status === 'Pending' ? 'Bekliyor' : r.status === 'Approved' ? 'Onaylandı' : 'Reddedildi' }}
+                  </span>
+                </td>
+                <td data-label="Tarih" class="date-cell">{{ formatDate(r.createdAt) }}</td>
+                <td data-label="İşlem" class="action-cell">
+                  @if (r.status === 'Pending') {
+                    <button class="btn-approve" (click)="approve(r.id)" [disabled]="actionLoading">Onayla</button>
+                    <button class="btn-reject"  (click)="openRejectModal(r.id)" [disabled]="actionLoading">Reddet</button>
+                  } @else {
+                    @if (r.adminNotes) {
+                      <span class="admin-note" [title]="r.adminNotes">Not: {{ r.adminNotes | slice:0:30 }}…</span>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- Red modal -->
+    @if (rejectModalId) {
+      <div class="modal-overlay" (click)="rejectModalId = null">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <h3>Talebi Reddet</h3>
+          <p>Reddetme sebebini yazabilirsiniz (isteğe bağlı):</p>
+          <textarea [(ngModel)]="rejectNotes" rows="3" placeholder="Red sebebi…" class="modal-textarea"></textarea>
+          <div class="modal-actions">
+            <button class="btn-outline-sm" (click)="rejectModalId = null">İptal</button>
+            <button class="btn-danger" (click)="confirmReject()" [disabled]="actionLoading">Reddet</button>
+          </div>
+        </div>
+      </div>
+    }
+
+  }
+
+  <!-- ───── ABONELİKLER ───── -->
+  @if (activeTab === 'subscriptions') {
+
+    @if (!isLoading) {
+      <div class="stats-grid">
+        <div class="stat-card stat-card--green">
+          <div class="stat-icon">💳</div>
+          <div class="stat-content">
+            <div class="stat-label">Aktif Abonelik</div>
+            <div class="stat-value">{{ activeCount }}</div>
+          </div>
+        </div>
+        <div class="stat-card stat-card--amber">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-content">
+            <div class="stat-label">Deneme</div>
+            <div class="stat-value">{{ trialCount }}</div>
+          </div>
+        </div>
+        <div class="stat-card stat-card--red">
+          <div class="stat-icon">⛔</div>
+          <div class="stat-content">
+            <div class="stat-label">Süresi Dolmuş</div>
+            <div class="stat-value">{{ expiredCount }}</div>
+          </div>
+        </div>
+        <div class="stat-card stat-card--purple">
+          <div class="stat-icon">💰</div>
+          <div class="stat-content">
+            <div class="stat-label">Aktif Gelir (TRY)</div>
+            <div class="stat-value">{{ totalRevenue | number }}</div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (errorMessage) { <div class="alert alert-error">{{ errorMessage }}</div> }
+
+    <div class="filters-bar">
+      <div class="search-bar">
+        <input type="text" [(ngModel)]="searchQuery" placeholder="İşletme adı, e-posta veya plan ara…" class="search-input"/>
+        @if (searchQuery) {
+          <button class="search-clear" (click)="searchQuery=''">✕</button>
+        }
+      </div>
+      <div class="status-tabs">
+        @for (opt of statusOptions; track opt.value) {
+          <button class="tab-btn" [class.active]="selectedStatus === opt.value"
+            (click)="selectedStatus = opt.value; loadSubscriptions()">
+            {{ opt.label }}
+          </button>
+        }
+      </div>
     </div>
+
+    @if (isLoading) {
+      <div class="loading-state"><div class="spinner"></div></div>
+    } @else if (filtered.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">💳</span>
+        <h3>Kayıt bulunamadı</h3>
+        <p>Filtre veya arama kriterini değiştirin.</p>
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="payments-table">
+          <thead>
+            <tr>
+              <th>İşletme</th>
+              <th>Admin</th>
+              <th>Plan</th>
+              <th>Durum</th>
+              <th>Fiyat</th>
+              <th>Başlangıç</th>
+              <th>Bitiş</th>
+              <th>Kalan Gün</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of filtered; track s.id) {
+              <tr [class.expired-row]="s.isExpired">
+                <td class="tenant-cell" data-label="İşletme">
+                  <div class="tenant-name">{{ s.tenantName ?? '—' }}</div>
+                </td>
+                <td class="email-cell" data-label="Admin">{{ s.adminEmail ?? '—' }}</td>
+                <td class="plan-cell" data-label="Plan">
+                  <span class="badge badge--plan">{{ s.plan }}</span>
+                </td>
+                <td data-label="Durum">
+                  <span [class]="'sub-badge sub-badge--' + statusClass(s.status)">{{ statusLabel(s.status) }}</span>
+                </td>
+                <td class="price-cell" data-label="Fiyat">{{ formatPrice(s.price, s.currency) }}</td>
+                <td class="date-cell" data-label="Başlangıç">{{ formatDate(s.startDate) }}</td>
+                <td class="date-cell" data-label="Bitiş">
+                  <span [class.text-red]="s.isExpired">{{ formatDate(s.expiryDate) }}</span>
+                </td>
+                <td class="days-cell" data-label="Kalan Gün">
+                  @if (s.daysLeft != null && !s.isExpired) {
+                    <span [class.text-amber]="s.daysLeft <= 7" [class.text-red]="s.daysLeft <= 3">{{ s.daysLeft }}g</span>
+                  } @else if (s.isExpired) {
+                    <span class="text-red">Doldu</span>
+                  } @else {
+                    <span class="text-muted">—</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
   }
 </div>

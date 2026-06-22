@@ -1,8 +1,7 @@
-import { Component, OnInit, AfterViewInit, SecurityContext } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -12,68 +11,58 @@ import { environment } from '../../../environments/environment';
   templateUrl: './payment.component.html',
   styleUrl: './payment.component.scss'
 })
-export class PaymentComponent implements OnInit, AfterViewInit {
+export class PaymentComponent implements OnInit {
   plan = '';
   planLabel = '';
   price = 0;
 
-  state: 'loading' | 'form' | 'success' | 'fail' = 'loading';
+  state: 'loading' | 'bank-info' | 'submitting' | 'submitted' | 'fail' = 'loading';
   errorMessage = '';
-  checkoutHtml: SafeHtml = '';
-  successPlan = '';
-  failReason = '';
+  referenceCode = '';
 
   readonly planMap: Record<string, { label: string; price: number; icon: string }> = {
     baslangic:   { label: 'Başlangıç',   price: 899,  icon: '🌱' },
     profesyonel: { label: 'Profesyonel', price: 1799, icon: '⚡' },
-    premium:     { label: 'Premium',     price: 2399, icon: '👑' },
+    premium:     { label: 'Premium',     price: 2999, icon: '👑' },
+  };
+
+  readonly bankInfo = {
+    bankName:      'Garanti Bankası',
+    iban:          'TR97 0006 2000 5770 0006 6537 82',
+    accountHolder: 'Yunus Emre Kobal',
+    description:   'ayarlıyo abonelik ödemesi',
   };
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private http: HttpClient,
-    private sanitizer: DomSanitizer
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(params => {
-      const status = params.get('status');
-      const plan   = params.get('plan');
-      const reason = params.get('reason');
-
-      if (status === 'success') {
-        this.successPlan = this.planMap[plan ?? '']?.label ?? plan ?? '';
-        this.state = 'success';
-        return;
-      }
-      if (status === 'fail') {
-        this.failReason = reason ?? 'Ödeme işlemi tamamlanamadı.';
-        this.state = 'fail';
-        return;
-      }
-
       this.plan = params.get('plan') ?? '';
       const info = this.planMap[this.plan];
       if (!info) { this.router.navigate(['/pricing']); return; }
       this.planLabel = info.label;
       this.price     = info.price;
-      this.initiatePayment();
+      this.state     = 'bank-info';
     });
   }
 
-  ngAfterViewInit(): void {}
-
-  initiatePayment(): void {
-    this.state = 'loading';
-    this.http.post<any>(`${environment.apiUrl}/subscription/checkout`, { plan: this.plan }).subscribe({
+  confirmTransfer(): void {
+    this.state = 'submitting';
+    this.http.post<any>(`${environment.apiUrl}/payment-request/submit`, {
+      planName:  this.plan,
+      planLabel: this.planLabel,
+      amount:    this.price
+    }).subscribe({
       next: res => {
         if (res.success) {
-          this.checkoutHtml = this.sanitizer.bypassSecurityTrustHtml(res.data.checkoutFormContent);
-          this.state = 'form';
-          setTimeout(() => this.injectScript(), 100);
+          this.referenceCode = res.referenceCode;
+          this.state = 'submitted';
         } else {
-          this.errorMessage = res.message ?? 'Ödeme formu yüklenemedi.';
+          this.errorMessage = res.message ?? 'Bir hata oluştu.';
           this.state = 'fail';
         }
       },
@@ -84,20 +73,6 @@ export class PaymentComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private injectScript(): void {
-    const container = document.getElementById('iyzico-checkout-form');
-    if (!container) return;
-    const scripts = container.querySelectorAll('script');
-    scripts.forEach(oldScript => {
-      const newScript = document.createElement('script');
-      Array.from(oldScript.attributes).forEach(attr =>
-        newScript.setAttribute(attr.name, attr.value));
-      newScript.textContent = oldScript.textContent;
-      oldScript.parentNode?.replaceChild(newScript, oldScript);
-    });
-  }
-
   goToDashboard(): void { this.router.navigate(['/dashboard']); }
   goToPricing():   void { this.router.navigate(['/pricing']); }
-  retry():         void { this.initiatePayment(); }
 }
