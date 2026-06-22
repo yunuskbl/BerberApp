@@ -76,7 +76,8 @@ services:
       - WhatsApp__Provider=WppConnect
       - WppConnect__BaseUrl=http://wppconnect:21465
       - WppConnect__Session=ayarliyo
-      # WppConnect__SecretKey ve WppConnect__Token appsettings.json'dan okunur
+      - WppConnect__SecretKey=${WPPCONNECT_SECRET_KEY}
+      - WppConnect__Token=${WPPCONNECT_TOKEN}
 
       - AllowedHosts=*
     ports:
