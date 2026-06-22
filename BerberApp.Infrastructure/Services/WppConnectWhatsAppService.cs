@@ -12,7 +12,9 @@ namespace BerberApp.Infrastructure.Services;
 public class WppConnectWhatsAppService : IWhatsAppService
 {
     private readonly HttpClient _http;
-    private readonly WppConnectSettings _cfg;
+    private readonly IOptionsMonitor<WppConnectSettings>? _cfgMonitor;
+    private readonly WppConnectSettings? _fixedCfg;
+    private WppConnectSettings _cfg => _fixedCfg ?? _cfgMonitor!.CurrentValue;
     private readonly ILogger<WppConnectWhatsAppService> _log;
 
     private enum Lang { TR, EN, RU, DE }
@@ -24,19 +26,19 @@ public class WppConnectWhatsAppService : IWhatsAppService
 
     public WppConnectWhatsAppService(
         HttpClient http,
-        IOptions<WppConnectSettings> options,
+        IOptionsMonitor<WppConnectSettings> options,
         ILogger<WppConnectWhatsAppService> logger)
     {
-        _http = http;
-        _cfg  = options.Value;
-        _log  = logger;
+        _http        = http;
+        _cfgMonitor  = options;
+        _log         = logger;
     }
 
     private WppConnectWhatsAppService(HttpClient http, WppConnectSettings cfg, ILogger<WppConnectWhatsAppService> logger)
     {
-        _http = http;
-        _cfg  = cfg;
-        _log  = logger;
+        _http     = http;
+        _fixedCfg = cfg;
+        _log      = logger;
     }
 
     public IWhatsAppService ForTenant(string? session, string? token)
