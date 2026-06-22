@@ -77,7 +77,6 @@ services:
       - WppConnect__BaseUrl=http://wppconnect:21465
       - WppConnect__Session=ayarliyo
       - WppConnect__SecretKey=${WPPCONNECT_SECRET_KEY}
-      - WppConnect__Token=${WPPCONNECT_TOKEN}
 
       - AllowedHosts=*
     ports:
