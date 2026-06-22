@@ -231,21 +231,31 @@
         <p class="section-sub">Tüm planlarda kurulum ücreti yok. İstediğiniz zaman plan değiştirebilirsiniz.</p>
       </div>
 
-      <!-- Billing toggle -->
-      <div class="billing-toggle">
-        <span class="toggle-label" [class.active]="!billingYearly">Aylık</span>
-        <button
-          class="toggle-switch"
-          [class.on]="billingYearly"
-          (click)="toggleBilling()"
-          aria-label="Faturalama dönemini değiştir">
-          <span class="toggle-knob"></span>
-        </button>
-        <span class="toggle-label" [class.active]="billingYearly">
-          Yıllık
-          <span class="discount-chip">%20 Tasarruf</span>
-        </span>
-      </div>
+      <!-- Billing toggle — upgrade modunda gizle -->
+      @if (!isUpgradeMode) {
+        <div class="billing-toggle">
+          <span class="toggle-label" [class.active]="!billingYearly">Aylık</span>
+          <button
+            class="toggle-switch"
+            [class.on]="billingYearly"
+            (click)="toggleBilling()"
+            aria-label="Faturalama dönemini değiştir">
+            <span class="toggle-knob"></span>
+          </button>
+          <span class="toggle-label" [class.active]="billingYearly">
+            Yıllık
+            <span class="discount-chip">%20 Tasarruf</span>
+          </span>
+        </div>
+      }
+
+      <!-- Upgrade mode: banka havalesi notu -->
+      @if (isUpgradeMode) {
+        <div class="upgrade-transfer-note">
+          <span>🏦</span>
+          <span>Ödeme banka havalesi ile yapılmaktadır. Plan seçtikten sonra IBAN bilgileri gösterilecektir.</span>
+        </div>
+      }
 
       <div class="plans-grid">
         @for (plan of plans; let i = $index; track plan.name) {
@@ -263,8 +273,8 @@
               </div>
               <div class="plan-price">
                 <span class="price-amount" [class.fading]="priceAnimating">₺{{ getDisplayPrice(plan.price) }}</span>
-                <span class="price-period">/ay{{ billingYearly ? ' (yıllık)' : '' }}</span>
-                @if (billingYearly) {
+                <span class="price-period">{{ isUpgradeMode ? '/yıl' : ('/ay' + (billingYearly ? ' (yıllık)' : '')) }}</span>
+                @if (billingYearly && !isUpgradeMode) {
                   <div class="price-original">₺{{ plan.price }}/ay yerine</div>
                 }
                 <div class="price-vat-note">KDV dahil</div>
@@ -292,13 +302,15 @@
                   [class.btn-primary]="plan.featured"
                   [class.btn-primary-light]="!plan.featured"
                   (click)="buyPlan(plan.name)">
-                  Hemen Satın Al
+                  {{ isUpgradeMode ? '🏦 Havale ile Satın Al' : 'Hemen Satın Al' }}
                 </button>
-                <button
-                  class="plan-btn btn-trial btn-outline"
-                  (click)="selectPlan(plan.name)">
-                  Ücretsiz Dene
-                </button>
+                @if (!isUpgradeMode) {
+                  <button
+                    class="plan-btn btn-trial btn-outline"
+                    (click)="selectPlan(plan.name)">
+                    Ücretsiz Dene
+                  </button>
+                }
               </div>
               <ul class="feature-list">
                 @for (feature of plan.features; track feature.name) {

@@ -1,6 +1,6 @@
-import { Component, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -57,7 +57,10 @@ const ALL_FEATURES: Feature[] = [
     ])
   ]
 })
-export class PricingComponent implements AfterViewInit, OnDestroy {
+export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
+
+  // ── Upgrade mode (coming from admin panel settings) ───────────────────────
+  isUpgradeMode = false;
 
   // ── Billing toggle ────────────────────────────────────────────────────────
   billingYearly  = false;
@@ -291,7 +294,11 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   get isLoggedIn(): boolean { return !!localStorage.getItem('accessToken'); }
 
-  constructor(private router: Router, private sanitizer: DomSanitizer) {
+  constructor(
+    private router: Router,
+    private sanitizer: DomSanitizer,
+    private route: ActivatedRoute
+  ) {
     this.appFeatures = this.rawFeatures.map(f => ({
       icon: this.sanitizer.bypassSecurityTrustHtml(f.icon),
       title: f.title,
@@ -299,7 +306,16 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     }));
   }
 
+  ngOnInit(): void {
+    this.route.queryParamMap.subscribe(params => {
+      this.isUpgradeMode = params.get('upgrade') === '1';
+    });
+  }
+
   ngAfterViewInit(): void {
+    if (this.isUpgradeMode) {
+      setTimeout(() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }), 100);
+    }
     const statsSection = document.querySelector('.stats-section');
     if (statsSection) {
       const statsObs = new IntersectionObserver(entries => {

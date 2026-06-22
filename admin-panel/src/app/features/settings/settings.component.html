@@ -331,7 +331,7 @@
             {{ planDisplayInfo.icon }} {{ planDisplayInfo.name }} Paketi
           </span>
           @if (userPlan !== 'Premium') {
-            <a routerLink="/pricing" class="btn-plan-upgrade">⬆ Paketi Yükselt</a>
+            <a routerLink="/pricing" [queryParams]="{upgrade: '1'}" class="btn-plan-upgrade">⬆ Paketi Yükselt</a>
           }
         </div>
       </div>
