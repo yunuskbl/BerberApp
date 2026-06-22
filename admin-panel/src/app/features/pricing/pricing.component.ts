@@ -156,7 +156,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
 
   plans: Plan[] = [
     {
-      name: 'baslangic', label: 'Başlangıç', price: 890,
+      name: 'baslangic', label: 'Başlangıç', price: 899,
       description: 'Tek lokasyonlu küçük işletmeler için',
       icon: '🌱', featured: false, ctaDisabled: false,
       limits: { staff: '1 Personel', appointments: '150 Randevu/Ay' },
@@ -189,7 +189,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       cta: 'Başlangıç Planı',
     },
     {
-      name: 'profesyonel', label: 'Profesyonel', price: 1790,
+      name: 'profesyonel', label: 'Profesyonel', price: 1799,
       description: 'Büyüyen tek şubeli işletmeler için',
       icon: '⚡', featured: true,
       limits: { staff: '5 Personele Kadar', appointments: '500 Randevu/Ay' },
@@ -222,7 +222,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       cta: 'Profesyonel\'e Geç',
     },
     {
-      name: 'premium', label: 'Premium', price: 2990,
+      name: 'premium', label: 'Premium', price: 2999,
       description: 'Zincir işletmeler için merkezi yönetim',
       icon: '👑', featured: false,
       limits: { staff: 'Sınırsız Personel', appointments: 'Çoklu Şube' },

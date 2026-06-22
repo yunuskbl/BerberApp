@@ -62,7 +62,9 @@ public class ConfirmAppointmentHandler : IRequestHandler<ConfirmAppointmentComma
                         StaffName = staff.FullName,
                         StartTime = appointment.StartTime,
                         EndTime = appointment.EndTime,
-                        Status = appointment.Status.ToString()
+                        Status = appointment.Status.ToString(),
+                        StaffPhone = staff.Phone,
+                        CustomerPhone = customer.Phone,
                     });
             }
             catch { /* Bildirim hatası onayı engellemesin */ }

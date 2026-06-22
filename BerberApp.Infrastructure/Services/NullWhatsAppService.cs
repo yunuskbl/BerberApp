@@ -50,4 +50,6 @@ public class NullWhatsAppService : IWhatsAppService
 
     public Task SendCustomMessageAsync(string phone, string message, string? imageUrl = null)
         => Task.CompletedTask;
+
+    public IWhatsAppService ForTenant(string? session, string? token) => this;
 }

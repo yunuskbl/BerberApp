@@ -18,5 +18,7 @@ namespace BerberApp.Application.Appointment.DTOs
         public string Status { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public string Currency { get; set; } = string.Empty;
+        public string? StaffPhone { get; set; }
+        public string? CustomerPhone { get; set; }
     }
 }

@@ -72,6 +72,12 @@ services:
       # SuperAdmin
       - SUPERADMIN_PASSWORD=${SUPERADMIN_PASSWORD}
 
+      # WPPConnect
+      - WhatsApp__Provider=WppConnect
+      - WppConnect__BaseUrl=http://wppconnect:21465
+      - WppConnect__Session=ayarliyo
+      # WppConnect__SecretKey ve WppConnect__Token appsettings.json'dan okunur
+
       - AllowedHosts=*
     ports:
       - "8080:8080"
@@ -104,7 +110,8 @@ services:
   # → dönen "token" değerini appsettings.json → WppConnect:Token'a yazın.
   # Ardından QR almak için tarayıcıdan http://SUNUCU_IP:21465 açıp oturum başlatın.
   wppconnect:
-    image: wppconnect/wppconnect-server:latest
+    build:
+      context: ./wppconnect
     container_name: berberapp-wppconnect
     environment:
       - SECRET_KEY=${WPPCONNECT_SECRET_KEY:-THISISMYSECURETOKEN}

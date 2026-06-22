@@ -40,7 +40,8 @@ public class LinkNotificationService : INotificationService
         Console.WriteLine($"[BİLDİRİM] SendAppointmentConfirmedAsync başladı → alıcı: {recipient}");
         try
         {
-            var (channel, salonName, mapsUrl, bookingUrl, subdomain) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, mapsUrl, bookingUrl, subdomain, wppSession, wppToken) = await GetTenantInfoAsync(dto.TenantId);
+            var wa = _whatsAppService.ForTenant(wppSession, wppToken);
             var encodedPhone   = Uri.EscapeDataString(recipient);
             var appointmentsUrl = !string.IsNullOrWhiteSpace(subdomain)
                 ? $"{_frontendBase}/randevularim/{subdomain}?phone={encodedPhone}"
@@ -57,10 +58,30 @@ public class LinkNotificationService : INotificationService
             }
             else
             {
-                await _whatsAppService.SendAppointmentConfirmedAsync(
+                await wa.SendAppointmentConfirmedAsync(
                     recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, mapsUrl, appointmentsUrl);
                 _logger.LogInformation("[WHATSAPP] Onay bildirimi gönderildi: {Recipient}", recipient);
                 Console.WriteLine($"[WHATSAPP] Onay bildirimi gönderildi: {recipient}");
+
+                // Personele de bildirim gönder
+                if (!string.IsNullOrWhiteSpace(dto.StaffPhone))
+                {
+                    try
+                    {
+                        await wa.SendNewAppointmentRequestAsync(
+                            dto.StaffPhone,
+                            dto.CustomerName,
+                            dto.CustomerPhone ?? "",
+                            dto.ServiceName,
+                            dto.StartTime,
+                            0);
+                        _logger.LogInformation("[WHATSAPP] Personel onay bildirimi gönderildi: {StaffPhone}", dto.StaffPhone);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "[WHATSAPP] Personel bildirimi gönderilemedi: {StaffPhone}", dto.StaffPhone);
+                    }
+                }
             }
         }
         catch (Exception ex)
@@ -74,7 +95,8 @@ public class LinkNotificationService : INotificationService
     {
         try
         {
-            var (channel, salonName, _, bookingUrl, _) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, _, bookingUrl, _, wppSession, wppToken) = await GetTenantInfoAsync(dto.TenantId);
+            var wa = _whatsAppService.ForTenant(wppSession, wppToken);
 
             if (channel == NotificationChannel.Sms)
             {
@@ -84,7 +106,7 @@ public class LinkNotificationService : INotificationService
             }
             else
             {
-                await _whatsAppService.SendAppointmentCancelledAsync(
+                await wa.SendAppointmentCancelledAsync(
                     recipient, dto.CustomerName, dto.StartTime, salonName, bookingUrl);
                 _logger.LogInformation("[WHATSAPP] İptal bildirimi gönderildi: {Recipient}", recipient);
             }
@@ -99,7 +121,8 @@ public class LinkNotificationService : INotificationService
     {
         try
         {
-            var (channel, salonName, _, _, _) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, _, _, _, wppSession, wppToken) = await GetTenantInfoAsync(dto.TenantId);
+            var wa = _whatsAppService.ForTenant(wppSession, wppToken);
 
             if (channel == NotificationChannel.Sms)
             {
@@ -109,7 +132,7 @@ public class LinkNotificationService : INotificationService
             }
             else
             {
-                await _whatsAppService.SendAppointmentCompletedAsync(
+                await wa.SendAppointmentCompletedAsync(
                     recipient, dto.CustomerName, dto.ServiceName, salonName, reviewUrl);
                 _logger.LogInformation("[WHATSAPP] Tamamlama bildirimi gönderildi: {Recipient}", recipient);
             }
@@ -124,7 +147,8 @@ public class LinkNotificationService : INotificationService
     {
         try
         {
-            var (channel, salonName, _, bookingUrl, _) = await GetTenantInfoAsync(dto.TenantId);
+            var (channel, salonName, _, bookingUrl, _, wppSession, wppToken) = await GetTenantInfoAsync(dto.TenantId);
+            var wa = _whatsAppService.ForTenant(wppSession, wppToken);
 
             if (channel == NotificationChannel.Sms)
             {
@@ -134,7 +158,7 @@ public class LinkNotificationService : INotificationService
             }
             else
             {
-                await _whatsAppService.SendAppointmentUpdatedAsync(
+                await wa.SendAppointmentUpdatedAsync(
                     recipient, dto.CustomerName, dto.ServiceName, dto.StaffName, dto.StartTime, salonName, bookingUrl);
                 _logger.LogInformation("[WHATSAPP] Güncelleme bildirimi gönderildi: {Recipient}", recipient);
             }
@@ -145,7 +169,7 @@ public class LinkNotificationService : INotificationService
         }
     }
 
-    private async Task<(NotificationChannel channel, string salonName, string mapsUrl, string bookingUrl, string subdomain)> GetTenantInfoAsync(Guid tenantId)
+    private async Task<(NotificationChannel channel, string salonName, string mapsUrl, string bookingUrl, string subdomain, string? wppSession, string? wppToken)> GetTenantInfoAsync(Guid tenantId)
     {
         var tenant = await _context.Tenants
             .AsNoTracking()
@@ -164,7 +188,9 @@ public class LinkNotificationService : INotificationService
             tenant?.Name ?? string.Empty,
             mapsUrl,
             bookingUrl,
-            subdomain
+            subdomain,
+            tenant?.WppConnectSession,
+            tenant?.WppConnectToken
         );
     }
 }

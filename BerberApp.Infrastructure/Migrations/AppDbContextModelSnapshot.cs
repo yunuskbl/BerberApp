@@ -799,6 +799,12 @@ namespace BerberApp.Infrastructure.Migrations
                     b.Property<string>("WhatsAppGroupLink")
                         .HasColumnType("text");
 
+                    b.Property<string>("WppConnectSession")
+                        .HasColumnType("text");
+
+                    b.Property<string>("WppConnectToken")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 

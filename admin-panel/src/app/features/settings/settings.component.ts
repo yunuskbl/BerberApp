@@ -78,6 +78,14 @@ export class SettingsComponent implements OnInit {
   waTestSending = false;
   waTestResult: { success: boolean; message: string } | null = null;
 
+  // WhatsApp Oturum Yönetimi
+  waStatus: 'loading' | 'connected' | 'disconnected' = 'loading';
+  waIsConnected = false;
+  waSession = '';
+  waQrCode = '';
+  waActionLoading = false;
+  waError = '';
+
   // QR Kod
   qrCodeDataUrl = '';
 
@@ -153,6 +161,7 @@ export class SettingsComponent implements OnInit {
     this.loadSalonInfo();
     this.loadPhotos();
     this.loadClosures();
+    this.checkWhatsAppStatus();
   }
 
   /* ─── Photos ─── */
@@ -562,6 +571,82 @@ export class SettingsComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  /* ─── WhatsApp Oturum ─── */
+  checkWhatsAppStatus(): void {
+    this.waError = '';
+    this.waStatus = 'loading';
+    this.http.get<any>(`${environment.apiUrl}/tenants/whatsapp/status`).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.waIsConnected = res.data.isConnected;
+          this.waSession     = res.data.session ?? '';
+          this.waStatus      = res.data.isConnected ? 'connected' : 'disconnected';
+          if (res.data.isConnected) this.waQrCode = '';
+        } else {
+          this.waStatus = 'disconnected';
+        }
+      },
+      error: () => { this.waStatus = 'disconnected'; }
+    });
+  }
+
+  connectWhatsApp(): void {
+    this.waActionLoading = true;
+    this.waError = '';
+    this.waQrCode = '';
+    this.http.post<any>(`${environment.apiUrl}/tenants/whatsapp/connect`, {}).subscribe({
+      next: (res) => {
+        this.waActionLoading = false;
+        if (res.success && res.data?.qrCode) {
+          this.waQrCode  = res.data.qrCode;
+          this.waSession = res.data.session;
+          this.waStatus  = 'disconnected';
+        } else {
+          this.waError = res.message || res.data?.message || 'Bağlantı başlatılamadı.';
+        }
+      },
+      error: (err) => {
+        this.waActionLoading = false;
+        this.waError = err.error?.message || 'Bağlantı hatası.';
+      }
+    });
+  }
+
+  refreshWhatsAppQr(): void {
+    this.waActionLoading = true;
+    this.waError = '';
+    this.http.get<any>(`${environment.apiUrl}/tenants/whatsapp/qr`).subscribe({
+      next: (res) => {
+        this.waActionLoading = false;
+        if (res.success && res.data?.qrCode) {
+          this.waQrCode = res.data.qrCode;
+        } else {
+          this.waError = res.data?.message || 'QR kodu alınamadı.';
+        }
+      },
+      error: () => { this.waActionLoading = false; this.waError = 'QR kodu alınamadı.'; }
+    });
+  }
+
+  disconnectWhatsApp(): void {
+    if (!confirm('WhatsApp bağlantısını kesmek istediğinizden emin misiniz?')) return;
+    this.waActionLoading = true;
+    this.waError = '';
+    this.http.delete<any>(`${environment.apiUrl}/tenants/whatsapp/disconnect`).subscribe({
+      next: () => {
+        this.waActionLoading = false;
+        this.waIsConnected   = false;
+        this.waSession       = '';
+        this.waQrCode        = '';
+        this.waStatus        = 'disconnected';
+      },
+      error: (err) => {
+        this.waActionLoading = false;
+        this.waError = err.error?.message || 'Bağlantı kesilemedi.';
+      }
+    });
   }
 
   sendWhatsAppTest(): void {

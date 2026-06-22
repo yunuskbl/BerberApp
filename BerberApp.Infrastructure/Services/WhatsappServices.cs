@@ -253,4 +253,7 @@ public class WhatsAppService : IWhatsAppService
                 TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul"));
         }
     }
+
+    // Meta API doesn't support per-tenant sessions — always uses global credentials
+    public IWhatsAppService ForTenant(string? session, string? token) => this;
 }
