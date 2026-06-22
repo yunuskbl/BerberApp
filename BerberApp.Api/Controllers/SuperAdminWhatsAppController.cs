@@ -53,46 +53,88 @@ public class SuperAdminWhatsAppController : ControllerBase
         }
     }
 
-    /// <summary>QR kod base64 olarak döner</summary>
+    /// <summary>Oturumu başlatır ve QR kodu döner</summary>
     [HttpGet("qr")]
     public async Task<IActionResult> GetQr()
     {
         if (string.IsNullOrWhiteSpace(_cfg.Token))
-            return BadRequest(new { success = false, message = "Token yapılandırılmamış. Önce token oluşturun." });
+            return Ok(new { success = false, message = "Token yapılandırılmamış." });
 
+        var http  = _httpFactory.CreateClient("wppconnect");
+        var base_ = _cfg.BaseUrl.TrimEnd('/');
+
+        // 1. Önce mevcut QR'ı dene
         try
         {
-            var http = _httpFactory.CreateClient("wppconnect");
-            var url  = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{_cfg.Session}/{_cfg.Token}/qrcode-session";
-            var res  = await http.GetAsync(url);
-            var body = await res.Content.ReadAsStringAsync();
+            var qr = await TryGetQrCode(http, base_);
+            if (qr != null) return Ok(new { success = true, qr });
+        }
+        catch { /* devam et */ }
 
-            // WppConnect ya image döner ya da JSON içinde base64
-            var ct = res.Content.Headers.ContentType?.MediaType ?? "";
-            if (ct.StartsWith("image/"))
-            {
-                var bytes  = await res.Content.ReadAsByteArrayAsync();
-                var base64 = Convert.ToBase64String(bytes);
-                return Ok(new { success = true, qr = $"data:{ct};base64,{base64}" });
-            }
+        // 2. Session başlat, QR gelecek
+        try
+        {
+            var startUrl  = $"{base_}/api/{_cfg.Session}/{_cfg.Token}/start-session";
+            var startBody = new StringContent("{\"waitQrCode\":true}", System.Text.Encoding.UTF8, "application/json");
+            var startRes  = await http.PostAsync(startUrl, startBody);
+            var startStr  = await startRes.Content.ReadAsStringAsync();
 
-            // JSON response — qr alanını çek
-            using var doc = JsonDocument.Parse(body);
-            if (doc.RootElement.TryGetProperty("qrcode", out var qr))
-                return Ok(new { success = true, qr = qr.GetString() });
-            if (doc.RootElement.TryGetProperty("qr", out var qr2))
-                return Ok(new { success = true, qr = qr2.GetString() });
+            if (TryExtractQr(startStr, out var qrFromStart))
+                return Ok(new { success = true, qr = qrFromStart });
 
-            return Ok(new { success = false, message = "QR alınamadı. Bağlantı zaten kurulu olabilir.", raw = body });
+            // 3. Kısa bekleme sonra tekrar dene
+            await Task.Delay(2000);
+            var qr2 = await TryGetQrCode(http, base_);
+            if (qr2 != null) return Ok(new { success = true, qr = qr2 });
+
+            return Ok(new { success = false, message = "QR henüz hazır değil. Birkaç saniye sonra tekrar deneyin." });
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "WppConnect QR fetch failed");
-            return Ok(new { success = false, message = ex.Message });
+            _logger.LogWarning(ex, "WppConnect QR/start failed");
+            return Ok(new { success = false, message = "WppConnect bağlantı hatası." });
         }
     }
 
-    /// <summary>Oturumu başlatır / yeniden başlatır</summary>
+    private async Task<string?> TryGetQrCode(HttpClient http, string baseUrl)
+    {
+        var url = $"{baseUrl}/api/{_cfg.Session}/{_cfg.Token}/qrcode-session";
+        var res = await http.GetAsync(url);
+        if (!res.IsSuccessStatusCode) return null;
+
+        var ct = res.Content.Headers.ContentType?.MediaType ?? "";
+        if (ct.StartsWith("image/"))
+        {
+            var bytes = await res.Content.ReadAsByteArrayAsync();
+            return $"data:{ct};base64,{Convert.ToBase64String(bytes)}";
+        }
+
+        var body = await res.Content.ReadAsStringAsync();
+        if (TryExtractQr(body, out var qr)) return qr;
+        return null;
+    }
+
+    private static bool TryExtractQr(string json, out string? qr)
+    {
+        qr = null;
+        if (string.IsNullOrWhiteSpace(json) || json.TrimStart().StartsWith('<')) return false;
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            foreach (var field in new[] { "qrcode", "qr", "base64Qr" })
+            {
+                if (doc.RootElement.TryGetProperty(field, out var v) && v.ValueKind == JsonValueKind.String)
+                {
+                    qr = v.GetString();
+                    return !string.IsNullOrEmpty(qr);
+                }
+            }
+        }
+        catch { /* HTML veya geçersiz JSON */ }
+        return false;
+    }
+
+    /// <summary>Oturumu başlatır</summary>
     [HttpPost("start")]
     public async Task<IActionResult> StartSession()
     {
@@ -103,7 +145,7 @@ public class SuperAdminWhatsAppController : ControllerBase
         {
             var http = _httpFactory.CreateClient("wppconnect");
             var url  = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{_cfg.Session}/{_cfg.Token}/start-session";
-            var res  = await http.PostAsync(url, new StringContent("{}", System.Text.Encoding.UTF8, "application/json"));
+            var res  = await http.PostAsync(url, new StringContent("{\"waitQrCode\":true}", System.Text.Encoding.UTF8, "application/json"));
             var body = await res.Content.ReadAsStringAsync();
             return Ok(new { success = true, raw = body });
         }
