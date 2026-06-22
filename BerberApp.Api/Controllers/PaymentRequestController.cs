@@ -10,7 +10,7 @@ using System.Linq;
 namespace BerberApp.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/payment-request")]
 [Authorize]
 public class PaymentRequestController : BaseApiController
 {
