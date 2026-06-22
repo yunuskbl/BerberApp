@@ -71,7 +71,7 @@ public class SuperAdminWhatsAppController : ControllerBase
         }
         catch { /* devam et */ }
 
-        // 2. Session başlat, QR gelecek
+        // 2. Session başlat
         try
         {
             var startUrl  = $"{base_}/api/{_cfg.Session}/{_cfg.Token}/start-session";
@@ -81,19 +81,22 @@ public class SuperAdminWhatsAppController : ControllerBase
 
             if (TryExtractQr(startStr, out var qrFromStart))
                 return Ok(new { success = true, qr = qrFromStart });
-
-            // 3. Kısa bekleme sonra tekrar dene
-            await Task.Delay(2000);
-            var qr2 = await TryGetQrCode(http, base_);
-            if (qr2 != null) return Ok(new { success = true, qr = qr2 });
-
-            return Ok(new { success = false, message = "QR henüz hazır değil. Birkaç saniye sonra tekrar deneyin." });
         }
-        catch (Exception ex)
+        catch { /* devam et */ }
+
+        // 3. QR hazır olana kadar poll et (max 20 saniye)
+        for (int i = 0; i < 5; i++)
         {
-            _logger.LogWarning(ex, "WppConnect QR/start failed");
-            return Ok(new { success = false, message = "WppConnect bağlantı hatası." });
+            await Task.Delay(4000);
+            try
+            {
+                var qr = await TryGetQrCode(http, base_);
+                if (qr != null) return Ok(new { success = true, qr });
+            }
+            catch { /* devam et */ }
         }
+
+        return Ok(new { success = false, message = "QR alınamadı. 'QR'ı Yenile' butonuna tekrar tıklayın." });
     }
 
     private async Task<string?> TryGetQrCode(HttpClient http, string baseUrl)
