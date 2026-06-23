@@ -57,11 +57,41 @@ public class SuperAdminWhatsAppController : ControllerBase
             if (body.TrimStart().StartsWith('<'))
                 return Ok(new { connected = false, status = "ERROR", message = "WppConnect erişilemiyor." });
 
-            using var doc = JsonDocument.Parse(body);
-            var status    = doc.RootElement.TryGetProperty("status", out var s) ? s.GetString() : null;
-            var connected = status == "CONNECTED";
+            // Flexible parse — status string veya boolean olabilir
+            bool connected = false;
+            string statusStr = "UNKNOWN";
 
-            return Ok(new { connected, status = status ?? "UNKNOWN" });
+            try
+            {
+                using var doc = JsonDocument.Parse(body);
+                var root = doc.RootElement;
+
+                if (root.TryGetProperty("status", out var s))
+                {
+                    if (s.ValueKind == JsonValueKind.String)
+                    {
+                        statusStr = s.GetString() ?? "UNKNOWN";
+                        connected = statusStr.Equals("CONNECTED", StringComparison.OrdinalIgnoreCase)
+                                 || statusStr.Equals("inChat",    StringComparison.OrdinalIgnoreCase);
+                    }
+                    else if (s.ValueKind == JsonValueKind.True)
+                    {
+                        statusStr = "CONNECTED"; connected = true;
+                    }
+                }
+
+                // Alternatif alan adları
+                if (!connected && root.TryGetProperty("connected", out var c))
+                    connected = c.ValueKind == JsonValueKind.True;
+            }
+            catch
+            {
+                // JSON parse edilemedi; 200 OK ise bağlı say
+                connected  = res.IsSuccessStatusCode;
+                statusStr  = connected ? "CONNECTED" : "ERROR";
+            }
+
+            return Ok(new { connected, status = statusStr });
         }
         catch (Exception ex)
         {
