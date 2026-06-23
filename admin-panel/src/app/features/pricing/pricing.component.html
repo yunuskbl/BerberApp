@@ -6,21 +6,26 @@
       <div class="nav-logo" (click)="scrollToTop()">
         <span class="logo-dot"></span>
         <span class="logo-text">ayarlıyo<span class="logo-suffix">°</span></span>
-        <span class="logo-tagline">Randevu Sistemi</span>
+        <span class="logo-tagline">{{ 'pricing.footer.randevu' | translate }}</span>
       </div>
       <nav class="nav-links">
-        <button class="nav-link" (click)="scrollTo('features')">Özellikler</button>
-        <button class="nav-link" (click)="scrollTo('pricing')">Fiyatlar</button>
-        <button class="nav-link" (click)="scrollTo('faq')">SSS</button>
-        <button class="nav-link" (click)="scrollTo('contact')">İletişim</button>
+        <button class="nav-link" (click)="scrollTo('features')">{{ 'pricing.nav.features' | translate }}</button>
+        <button class="nav-link" (click)="scrollTo('pricing')">{{ 'pricing.nav.pricing' | translate }}</button>
+        <button class="nav-link" (click)="scrollTo('faq')">{{ 'pricing.nav.faq' | translate }}</button>
+        <button class="nav-link" (click)="scrollTo('contact')">{{ 'pricing.nav.contact' | translate }}</button>
       </nav>
       <div class="nav-actions">
+        <div class="lang-switcher">
+          @for (l of langs; track l) {
+            <button class="lang-btn" [class.active]="langSvc.lang() === l" (click)="setLang(l)">{{ l.toUpperCase() }}</button>
+          }
+        </div>
         <button class="btn-nav-salons" (click)="goToSalons()">{{ 'pricing.exploreSalons' | translate }}</button>
         <button class="btn-nav-login" (click)="goToApp()">
-          {{ isLoggedIn ? 'Panele Git' : 'Giriş Yap' }}
+          {{ isLoggedIn ? ('pricing.nav.panel' | translate) : ('pricing.nav.login' | translate) }}
         </button>
         <button class="btn-nav-cta" (click)="isLoggedIn ? goToApp() : goToRegister()">
-          Hemen Başla
+          {{ 'pricing.nav.start' | translate }}
         </button>
       </div>
     </div>
@@ -28,8 +33,6 @@
 
   <!-- ══ HERO ════════════════════════════════════════════════════════════════ -->
   <section class="hero">
-
-    <!-- Aurora background blobs -->
     <div class="hero-aurora" aria-hidden="true">
       <div class="aurora-blob blob-1"></div>
       <div class="aurora-blob blob-2"></div>
@@ -40,28 +43,25 @@
       <div class="hero-content">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Türkiye'nin Online Randevu Sistemi
+          {{ 'pricing.hero.badge' | translate }}
         </div>
         <h1 class="hero-title">
-          Randevularınızı<br>
-          <span class="gradient-text">otomatikleştirin,</span><br>
-          işinize odaklanın.
+          {{ 'pricing.hero.title1' | translate }}<br>
+          <span class="gradient-text">{{ 'pricing.hero.title2' | translate }}</span><br>
+          {{ 'pricing.hero.title3' | translate }}
         </h1>
-        <p class="hero-desc">
-          Berber, kuaför, güzellik salonu, masaj merkezi, klinik ve daha fazlası için geliştirilmiş akıllı randevu sistemi.
-          Müşterileriniz 7/24 online randevu alır, WhatsApp bildirimleri otomatik gider, siz sadece işinize bakarsınız.
-        </p>
+        <p class="hero-desc">{{ 'pricing.hero.desc' | translate }}</p>
         <div class="hero-sectors">
           <span class="sector-chip">✂ Berber</span>
           <span class="sector-chip">💇 Kuaför</span>
           <span class="sector-chip">💅 Güzellik Salonu</span>
           <span class="sector-chip">🧖 Masaj & Spa</span>
           <span class="sector-chip">🦷 Diş Kliniği</span>
-          <span class="sector-chip">+ daha fazlası</span>
+          <span class="sector-chip">{{ 'pricing.hero.sectorMore' | translate }}</span>
         </div>
         <div class="hero-actions">
           <button class="btn-hero-primary" (click)="isLoggedIn ? goToApp() : goToRegister()">
-            Ücretsiz Dene
+            {{ 'pricing.hero.tryFree' | translate }}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <button class="btn-hero-secondary btn-hero-salons" (click)="goToSalons()">
@@ -69,21 +69,21 @@
             {{ 'pricing.exploreSalons' | translate }}
           </button>
           <button class="btn-hero-secondary" (click)="scrollTo('features')">
-            Özellikleri Gör
+            {{ 'pricing.hero.seeFeatures' | translate }}
           </button>
         </div>
         <div class="hero-trust">
           <div class="trust-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Kurulum ücreti yok
+            {{ 'pricing.hero.trust1' | translate }}
           </div>
           <div class="trust-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            3 dakikada kurulum
+            {{ 'pricing.hero.trust2' | translate }}
           </div>
           <div class="trust-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            İstediğin zaman iptal
+            {{ 'pricing.hero.trust3' | translate }}
           </div>
         </div>
       </div>
@@ -92,62 +92,38 @@
       <div class="hero-mockup">
         <div class="mockup-card">
           <div class="mockup-header">
-            <div class="mockup-dots">
-              <span></span><span></span><span></span>
-            </div>
+            <div class="mockup-dots"><span></span><span></span><span></span></div>
             <div class="mockup-title-bar">Admin Panel — Randevular</div>
           </div>
           <div class="mockup-body">
             <div class="mockup-stat-row">
-              <div class="mockup-stat">
-                <span class="ms-value">18</span>
-                <span class="ms-label">Bugünkü Randevu</span>
-              </div>
-              <div class="mockup-stat">
-                <span class="ms-value">⭐ 4.8</span>
-                <span class="ms-label">Ortalama Puan</span>
-              </div>
-              <div class="mockup-stat">
-                <span class="ms-value">₺9.2K</span>
-                <span class="ms-label">Aylık Gelir</span>
-              </div>
+              <div class="mockup-stat"><span class="ms-value">18</span><span class="ms-label">Bugünkü Randevu</span></div>
+              <div class="mockup-stat"><span class="ms-value">⭐ 4.8</span><span class="ms-label">Ortalama Puan</span></div>
+              <div class="mockup-stat"><span class="ms-value">₺9.2K</span><span class="ms-label">Aylık Gelir</span></div>
             </div>
             <div class="mockup-list">
               <div class="mockup-appt">
                 <div class="appt-avatar" style="background:#7c3aed20;color:#7c3aed">A</div>
-                <div class="appt-info">
-                  <span class="appt-name">Ayşe Kaya</span>
-                  <span class="appt-time">10:00 — Saç Kesimi + Boya</span>
-                </div>
+                <div class="appt-info"><span class="appt-name">Ayşe Kaya</span><span class="appt-time">10:00 — Saç Kesimi + Boya</span></div>
                 <span class="appt-status confirmed">Onaylı</span>
               </div>
               <div class="mockup-appt">
                 <div class="appt-avatar" style="background:#05966920;color:#059669">M</div>
-                <div class="appt-info">
-                  <span class="appt-name">Mehmet Demir</span>
-                  <span class="appt-time">11:30 — Sakal + Fön</span>
-                </div>
+                <div class="appt-info"><span class="appt-name">Mehmet Demir</span><span class="appt-time">11:30 — Sakal + Fön</span></div>
                 <span class="appt-status confirmed">Onaylı</span>
               </div>
               <div class="mockup-appt">
                 <div class="appt-avatar" style="background:#d9770620;color:#d97706">E</div>
-                <div class="appt-info">
-                  <span class="appt-name">Elif Şahin</span>
-                  <span class="appt-time">13:00 — Manikür</span>
-                </div>
+                <div class="appt-info"><span class="appt-name">Elif Şahin</span><span class="appt-time">13:00 — Manikür</span></div>
                 <span class="appt-status pending">Bekliyor</span>
               </div>
             </div>
             <div class="mockup-whatsapp">
-              <span class="wa-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#25d366"><path d="M20.52 3.48A11.94 11.94 0 0012 0C5.37 0 0 5.37 0 12c0 2.12.55 4.1 1.52 5.82L0 24l6.35-1.66A11.94 11.94 0 0024 12c0-3.2-1.25-6.21-3.48-8.52z"/></svg>
-              </span>
+              <span class="wa-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#25d366"><path d="M20.52 3.48A11.94 11.94 0 0012 0C5.37 0 0 5.37 0 12c0 2.12.55 4.1 1.52 5.82L0 24l6.35-1.66A11.94 11.94 0 0024 12c0-3.2-1.25-6.21-3.48-8.52z"/></svg></span>
               OTP doğrulandı · Elif Şahin +90 randevu oluşturdu
             </div>
             <div class="mockup-whatsapp mockup-wa-campaign">
-              <span class="wa-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#25d366"><path d="M20.52 3.48A11.94 11.94 0 0012 0C5.37 0 0 5.37 0 12c0 2.12.55 4.1 1.52 5.82L0 24l6.35-1.66A11.94 11.94 0 0024 12c0-3.2-1.25-6.21-3.48-8.52z"/></svg>
-              </span>
+              <span class="wa-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#25d366"><path d="M20.52 3.48A11.94 11.94 0 0012 0C5.37 0 0 5.37 0 12c0 2.12.55 4.1 1.52 5.82L0 24l6.35-1.66A11.94 11.94 0 0024 12c0-3.2-1.25-6.21-3.48-8.52z"/></svg></span>
               Kampanya gönderildi · 84 müşteriye ulaşıldı ✓
             </div>
           </div>
@@ -159,10 +135,10 @@
   <!-- ══ STATS ═══════════════════════════════════════════════════════════════ -->
   <section class="stats-section">
     <div class="stats-inner">
-      @for (stat of stats; let i = $index; track stat.label) {
+      @for (stat of stats; let i = $index; track stat.labelKey) {
         <div class="stat-item">
           <span class="stat-value">{{ animatedStats[i] }}</span>
-          <span class="stat-label">{{ stat.label }}</span>
+          <span class="stat-label">{{ stat.labelKey | translate }}</span>
         </div>
       }
     </div>
@@ -172,16 +148,16 @@
   <section class="features-section" id="features">
     <div class="section-inner">
       <div class="section-header">
-        <p class="section-eyebrow">Özellikler</p>
-        <h2 class="section-title">İşletmenizin ihtiyacı olan<br>her şey tek yerde</h2>
-        <p class="section-sub">Randevu almaktan gelir raporlamaya kadar tüm süreçlerinizi tek platformdan yönetin.</p>
+        <p class="section-eyebrow">{{ 'pricing.section.feat.eyebrow' | translate }}</p>
+        <h2 class="section-title">{{ 'pricing.section.feat.title' | translate }}</h2>
+        <p class="section-sub">{{ 'pricing.section.feat.sub' | translate }}</p>
       </div>
       <div class="features-grid">
-        @for (feat of appFeatures; track feat.title) {
+        @for (feat of appFeatures; track feat.titleKey) {
           <div class="feat-card">
             <div class="feat-icon-wrap" [innerHTML]="feat.icon"></div>
-            <h3 class="feat-title">{{ feat.title }}</h3>
-            <p class="feat-desc">{{ feat.desc }}</p>
+            <h3 class="feat-title">{{ feat.titleKey | translate }}</h3>
+            <p class="feat-desc">{{ feat.descKey | translate }}</p>
           </div>
         }
       </div>
@@ -192,30 +168,30 @@
   <section class="how-section">
     <div class="section-inner">
       <div class="section-header">
-        <p class="section-eyebrow">Nasıl Çalışır?</p>
-        <h2 class="section-title">3 adımda aktif olun</h2>
+        <p class="section-eyebrow">{{ 'pricing.how.eyebrow' | translate }}</p>
+        <h2 class="section-title">{{ 'pricing.how.title' | translate }}</h2>
       </div>
       <div class="steps-row">
         <div class="step">
           <div class="step-num">1</div>
-          <h3>Kayıt Olun</h3>
-          <p>E-posta ve telefon numaranızla 3 dakikada kaydınızı tamamlayın.</p>
+          <h3>{{ 'pricing.how.step1.title' | translate }}</h3>
+          <p>{{ 'pricing.how.step1.desc' | translate }}</p>
         </div>
         <div class="step-arrow">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
         <div class="step">
           <div class="step-num">2</div>
-          <h3>Profilinizi Kurun</h3>
-          <p>Hizmetlerinizi, personellerinizi ve çalışma saatlerinizi girin.</p>
+          <h3>{{ 'pricing.how.step2.title' | translate }}</h3>
+          <p>{{ 'pricing.how.step2.desc' | translate }}</p>
         </div>
         <div class="step-arrow">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
         <div class="step">
           <div class="step-num">3</div>
-          <h3>Linki Paylaşın</h3>
-          <p>Randevu sayfanızın linkini müşterilerinizle paylaşın. Randevular gelmeye başlasın.</p>
+          <h3>{{ 'pricing.how.step3.title' | translate }}</h3>
+          <p>{{ 'pricing.how.step3.desc' | translate }}</p>
         </div>
       </div>
     </div>
@@ -226,34 +202,28 @@
     <div class="plans-bg-glow" aria-hidden="true"></div>
     <div class="section-inner">
       <div class="section-header">
-        <p class="section-eyebrow">Fiyatlandırma</p>
-        <h2 class="section-title">İşletmenize uygun planı seçin</h2>
-        <p class="section-sub">Tüm planlarda kurulum ücreti yok. İstediğiniz zaman plan değiştirebilirsiniz.</p>
+        <p class="section-eyebrow">{{ 'pricing.plans.eyebrow' | translate }}</p>
+        <h2 class="section-title">{{ 'pricing.plans.title' | translate }}</h2>
+        <p class="section-sub">{{ 'pricing.plans.sub' | translate }}</p>
       </div>
 
-      <!-- Billing toggle — upgrade modunda gizle -->
       @if (!isUpgradeMode) {
         <div class="billing-toggle">
-          <span class="toggle-label" [class.active]="!billingYearly">Aylık</span>
-          <button
-            class="toggle-switch"
-            [class.on]="billingYearly"
-            (click)="toggleBilling()"
-            aria-label="Faturalama dönemini değiştir">
+          <span class="toggle-label" [class.active]="!billingYearly">{{ 'pricing.billing.monthly' | translate }}</span>
+          <button class="toggle-switch" [class.on]="billingYearly" (click)="toggleBilling()" aria-label="Toggle billing period">
             <span class="toggle-knob"></span>
           </button>
           <span class="toggle-label" [class.active]="billingYearly">
-            Yıllık
-            <span class="discount-chip">%20 Tasarruf</span>
+            {{ 'pricing.billing.yearly' | translate }}
+            <span class="discount-chip">{{ 'pricing.billing.save' | translate }}</span>
           </span>
         </div>
       }
 
-      <!-- Upgrade mode: banka havalesi notu -->
       @if (isUpgradeMode) {
         <div class="upgrade-transfer-note">
           <span>🏦</span>
-          <span>Ödeme banka havalesi ile yapılmaktadır. Plan seçtikten sonra IBAN bilgileri gösterilecektir.</span>
+          <span>{{ 'pricing.upgrade.note' | translate }}</span>
         </div>
       }
 
@@ -264,35 +234,35 @@
                  (mousemove)="onCardMouseMove($event)"
                  (mouseleave)="onCardMouseLeave($event)">
               @if (plan.featured) {
-                <div class="popular-badge">En Popüler</div>
+                <div class="popular-badge">{{ 'pricing.plan.popular' | translate }}</div>
               }
               <div class="plan-top">
                 <span class="plan-icon">{{ plan.icon }}</span>
-                <h2 class="plan-name">{{ plan.label }}</h2>
-                <p class="plan-desc">{{ plan.description }}</p>
+                <h2 class="plan-name">{{ plan.labelKey | translate }}</h2>
+                <p class="plan-desc">{{ plan.descKey | translate }}</p>
               </div>
               <div class="plan-price">
                 <span class="price-amount" [class.fading]="priceAnimating">₺{{ getDisplayPrice(plan.price) }}</span>
-                <span class="price-period">{{ isUpgradeMode ? '/yıl' : ('/ay' + (billingYearly ? ' (yıllık)' : '')) }}</span>
+                <span class="price-period">{{ isUpgradeMode ? ('pricing.plan.perYear' | translate) : (('pricing.plan.perMonth' | translate) + (billingYearly ? (' ' + ('pricing.billing.yearly' | translate)) : '')) }}</span>
                 @if (billingYearly && !isUpgradeMode) {
-                  <div class="price-original">₺{{ plan.price }}/ay yerine</div>
+                  <div class="price-original">₺{{ plan.price }}/{{ 'pricing.billing.monthly' | translate }}</div>
                 }
-                <div class="price-vat-note">KDV dahil</div>
+                <div class="price-vat-note">{{ 'pricing.plan.vatNote' | translate }}</div>
               </div>
               <div class="plan-limits">
                 <span class="plan-limit-badge">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                  {{ plan.limits.staff }}
+                  {{ plan.limits.staff | translate }}
                 </span>
                 @if (plan.name === 'premium') {
                   <span class="plan-limit-badge plan-limit-badge--branch">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-                    {{ plan.limits.appointments }}
+                    {{ plan.limits.appointments | translate }}
                   </span>
                 } @else {
                   <span class="plan-limit-badge">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    {{ plan.limits.appointments }}
+                    {{ plan.limits.appointments | translate }}
                   </span>
                 }
               </div>
@@ -302,13 +272,11 @@
                   [class.btn-primary]="plan.featured"
                   [class.btn-primary-light]="!plan.featured"
                   (click)="buyPlan(plan.name)">
-                  {{ isUpgradeMode ? '🏦 Havale ile Satın Al' : 'Hemen Satın Al' }}
+                  {{ isUpgradeMode ? ('pricing.plan.buyTransfer' | translate) : ('pricing.plan.buyNow' | translate) }}
                 </button>
                 @if (!isUpgradeMode) {
-                  <button
-                    class="plan-btn btn-trial btn-outline"
-                    (click)="selectPlan(plan.name)">
-                    Ücretsiz Dene
+                  <button class="plan-btn btn-trial btn-outline" (click)="selectPlan(plan.name)">
+                    {{ 'pricing.plan.tryFree' | translate }}
                   </button>
                 }
               </div>
@@ -316,7 +284,7 @@
                 @for (feature of plan.features; track feature.name) {
                   <li [class.off]="!feature.included">
                     <span class="feat-check">{{ feature.included ? '✓' : '—' }}</span>
-                    {{ feature.name }}
+                    {{ feature.name | translate }}
                   </li>
                 }
               </ul>
@@ -324,30 +292,30 @@
           </div>
         }
       </div>
-      <p class="plans-vat-footer">* Tüm fiyatlar KDV dahildir.</p>
+      <p class="plans-vat-footer">{{ 'pricing.vat' | translate }}</p>
     </div>
   </section>
 
   <!-- ══ COMPARE ═════════════════════════════════════════════════════════════ -->
   <section class="compare-section">
     <div class="section-inner">
-      <h2 class="compare-title">Detaylı Karşılaştırma</h2>
+      <h2 class="compare-title">{{ 'pricing.compare.title' | translate }}</h2>
       <div class="compare-table-wrap">
       <div class="compare-table">
         <div class="compare-row compare-head">
-          <div class="compare-feat-col">Özellik</div>
+          <div class="compare-feat-col">{{ 'pricing.compare.feat' | translate }}</div>
           @for (plan of plans; track plan.name) {
             <div class="compare-plan-col" [class.featured-col]="plan.featured">
-              {{ plan.icon }} {{ plan.label }}
+              {{ plan.icon }} {{ plan.labelKey | translate }}
             </div>
           }
         </div>
-        @for (feat of allFeatureNames; track feat) {
+        @for (featKey of allFeatureKeys; track featKey) {
           <div class="compare-row">
-            <div class="compare-feat-col">{{ feat }}</div>
+            <div class="compare-feat-col">{{ featKey | translate }}</div>
             @for (plan of plans; track plan.name) {
               <div class="compare-plan-col" [class.featured-col]="plan.featured">
-                @if (planHas(plan, feat)) {
+                @if (planHas(plan, featKey)) {
                   <span class="c-check">✓</span>
                 } @else {
                   <span class="c-cross">—</span>
@@ -365,18 +333,18 @@
   <section class="faq-section" id="faq">
     <div class="faq-inner">
       <div class="section-header">
-        <p class="section-eyebrow">SSS</p>
-        <h2 class="section-title">Sıkça Sorulan Sorular</h2>
+        <p class="section-eyebrow">{{ 'pricing.faq.eyebrow' | translate }}</p>
+        <h2 class="section-title">{{ 'pricing.faq.title' | translate }}</h2>
       </div>
       <div class="faq-list">
         @for (item of faqItems; let i = $index; track i) {
           <div class="faq-item" [class.open]="item.open">
             <button class="faq-q" (click)="toggleFAQ(i)">
-              <span>{{ item.question }}</span>
+              <span>{{ item.questionKey | translate }}</span>
               <span class="faq-arrow">{{ item.open ? '−' : '+' }}</span>
             </button>
             @if (item.open) {
-              <div class="faq-a" @fadeIn>{{ item.answer }}</div>
+              <div class="faq-a" @fadeIn>{{ item.answerKey | translate }}</div>
             }
           </div>
         }
@@ -388,57 +356,56 @@
   <section class="contact-section" id="contact">
     <div class="section-inner">
       <div class="section-header">
-        <p class="section-eyebrow">İletişim</p>
-        <h2 class="section-title">Bize Ulaşın</h2>
-        <p class="section-sub">Herhangi bir sorunuz mu var? Size en kısa sürede yanıt veririz.</p>
+        <p class="section-eyebrow">{{ 'pricing.contact.eyebrow' | translate }}</p>
+        <h2 class="section-title">{{ 'pricing.contact.title' | translate }}</h2>
+        <p class="section-sub">{{ 'pricing.contact.sub' | translate }}</p>
       </div>
       <div class="contact-grid">
         <div class="contact-card">
           <div class="contact-icon-wrap">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           </div>
-          <h3 class="contact-card-title">E-posta</h3>
-          <p class="contact-card-desc">Sorularınızı mail olarak gönderin, en geç 24 saat içinde yanıtlayalım.</p>
+          <h3 class="contact-card-title">{{ 'pricing.contact.email.title' | translate }}</h3>
+          <p class="contact-card-desc">{{ 'pricing.contact.email.desc' | translate }}</p>
           <button class="contact-card-link" (click)="openMail()">ayarliyoinfo&#64;gmail.com</button>
         </div>
         <div class="contact-card contact-card-highlight">
           <div class="contact-icon-wrap">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M20.52 3.48A11.94 11.94 0 0012 0C5.37 0 0 5.37 0 12c0 2.12.55 4.1 1.52 5.82L0 24l6.35-1.66A11.94 11.94 0 0024 12c0-3.2-1.25-6.21-3.48-8.52z" fill="#25d366"/></svg>
           </div>
-          <h3 class="contact-card-title">WhatsApp</h3>
-          <p class="contact-card-desc">Hızlı destek için WhatsApp üzerinden yazın, anında yanıt verelim.</p>
+          <h3 class="contact-card-title">{{ 'pricing.contact.wa.title' | translate }}</h3>
+          <p class="contact-card-desc">{{ 'pricing.contact.wa.desc' | translate }}</p>
           <p class="contact-card-phone">+90 530 560 69 16</p>
-          <button class="contact-card-link contact-card-link-wa" (click)="openWhatsApp()">WhatsApp ile Yaz →</button>
+          <button class="contact-card-link contact-card-link-wa" (click)="openWhatsApp()">{{ 'pricing.contact.wa.btn' | translate }}</button>
         </div>
         <div class="contact-card">
           <div class="contact-icon-wrap">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           </div>
-          <h3 class="contact-card-title">Destek Saatleri</h3>
-          <p class="contact-card-desc">Hafta içi 09:00–18:00 saatleri arasında telefon ve e-posta ile ulaşabilirsiniz.</p>
+          <h3 class="contact-card-title">{{ 'pricing.contact.hours.title' | translate }}</h3>
+          <p class="contact-card-desc">{{ 'pricing.contact.hours.desc' | translate }}</p>
           <a class="contact-card-link" href="tel:+905305606916">0530 560 69 16</a>
-          <span class="contact-card-badge">Hafta içi 09:00 – 18:00</span>
+          <span class="contact-card-badge">{{ 'pricing.contact.hours.badge' | translate }}</span>
         </div>
       </div>
-
     </div>
   </section>
 
   <!-- ══ CTA ═════════════════════════════════════════════════════════════════ -->
   <section class="cta-section">
     <div class="cta-inner">
-      <div class="cta-badge">Hemen Başlayın</div>
-      <h2>İşletmenizi dijitale taşıyın</h2>
-      <p>Kurulum ücretsiz. Dakikalar içinde aktif olun.</p>
+      <div class="cta-badge">{{ 'pricing.cta.badge' | translate }}</div>
+      <h2>{{ 'pricing.cta.title' | translate }}</h2>
+      <p>{{ 'pricing.cta.sub' | translate }}</p>
       <div class="cta-actions">
         <button class="cta-btn-primary" (click)="isLoggedIn ? goToApp() : goToRegister()">
-          Ücretsiz Başla
+          {{ 'pricing.cta.start' | translate }}
         </button>
         <button class="cta-btn-contact" (click)="scrollTo('contact')">
-          Bize Yazın →
+          {{ 'pricing.cta.contact' | translate }}
         </button>
       </div>
-      <p class="cta-email">Sorularınız için: <strong>ayarliyoinfo&#64;gmail.com</strong></p>
+      <p class="cta-email">{{ 'pricing.cta.email' | translate }} <strong>ayarliyoinfo&#64;gmail.com</strong></p>
     </div>
   </section>
 
@@ -448,14 +415,14 @@
       <div class="footer-brand">
         <span class="logo-dot"></span>
         <span class="footer-logo-text">ayarlıyo°</span>
-        <p>Türkiye'nin akıllı randevu sistemi</p>
+        <p>{{ 'pricing.footer.tagline' | translate }}</p>
       </div>
       <div class="footer-links">
-        <a routerLink="/gizlilik-politikasi">Gizlilik Politikası</a>
+        <a routerLink="/gizlilik-politikasi">{{ 'pricing.footer.privacy' | translate }}</a>
         <button class="footer-mail-btn" (click)="openMail()">ayarliyoinfo&#64;gmail.com</button>
-        <button (click)="goToApp()">{{ isLoggedIn ? 'Panele Git' : 'Giriş Yap' }}</button>
+        <button (click)="goToApp()">{{ isLoggedIn ? ('pricing.nav.panel' | translate) : ('pricing.footer.login' | translate) }}</button>
       </div>
-      <p class="footer-copy">© 2026 ayarlıyo. Tüm hakları saklıdır.</p>
+      <p class="footer-copy">{{ 'pricing.footer.copy' | translate }}</p>
     </div>
   </footer>
 
