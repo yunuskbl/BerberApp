@@ -494,6 +494,7 @@ const T: Record<Lang, Record<string, string>> = {
     'pricing.faq.12.a': 'Tüm verileriniz şifreli olarak Türkiye\'deki sunucularımızda saklanır ve düzenli olarak yedeklenir.',
 
     // Booking (public)
+    'booking.back':             'Salonlar',
     'booking.loading':          'Salon bilgileri yükleniyor...',
     'booking.notFound':         'Salon Bulunamadı',
     'booking.received':         'Randevunuz Alındı!',
@@ -1017,6 +1018,7 @@ const T: Record<Lang, Record<string, string>> = {
     'pricing.faq.12.a': 'All your data is stored encrypted on our servers in Turkey and backed up regularly.',
 
     // Booking (public)
+    'booking.back':             'Salons',
     'booking.loading':          'Loading salon info...',
     'booking.notFound':         'Salon Not Found',
     'booking.received':         'Appointment Received!',
@@ -1540,6 +1542,7 @@ const T: Record<Lang, Record<string, string>> = {
     'pricing.faq.12.a': 'Все данные хранятся в зашифрованном виде на серверах в Турции и регулярно резервируются.',
 
     // Booking (public)
+    'booking.back':             'Салоны',
     'booking.loading':          'Загрузка информации о салоне...',
     'booking.notFound':         'Салон не найден',
     'booking.received':         'Запись принята!',
@@ -2050,6 +2053,7 @@ const T: Record<Lang, Record<string, string>> = {
     'pricing.faq.12.q': 'Sind meine Daten sicher?',
     'pricing.faq.12.a': 'Alle Daten werden verschlüsselt auf Servern in der Türkei gespeichert und regelmäßig gesichert.',
 
+    'booking.back':             'Salons',
     'booking.loading':          'Saloninformationen werden geladen...',
     'booking.notFound':         'Salon nicht gefunden',
     'booking.received':         'Termin erhalten!',

@@ -7,18 +7,30 @@
 .loading-screen,
 .error-screen,
 .success-screen,
-.booking-page,
-.booking-lang-bar {
+.booking-page {
   position: relative;
   z-index: 1;
 }
 
-.booking-lang-bar {
+.booking-top-bar {
   position: fixed;
-  top: 16px;
-  right: 16px;
+  top: 0; left: 0; right: 0;
   z-index: 999;
-  display: flex;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  pointer-events: none;
+  > * { pointer-events: auto; }
+}
+
+.btn-back {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+  border: 1px solid rgba(0,0,0,0.1); border-radius: 10px;
+  font-size: 13px; font-weight: 600; color: #111;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+  &:hover { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
 }
 
 /* Salon text wrapper — masaüstü: blok (alt alta), mobil: flex kolon */
@@ -86,6 +98,7 @@ app-language-switcher {
 /* SPLIT LAYOUT */
 .booking-page {
   display: flex; min-height: 100vh; font-family: 'Inter', sans-serif;
+  padding-top: 56px; /* top bar yüksekliği */
 }
 
 .booking-left {
@@ -562,20 +575,25 @@ app-language-switcher {
   .left-scroll-area { display: none; }  /* Fotoğraf, harita, konum gizle */
   .left-summary     { display: none; }
 
-  /* Dil çubuğunu mobilde normal akışa al — fixed yerine sticky üst bar */
-  .booking-lang-bar {
+  /* Top bar mobilde: fixed → sticky tam genişlik bar */
+  .booking-top-bar {
     position: sticky;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 50;
-    display: flex;
-    justify-content: flex-end;
-    padding: 8px 14px 6px;
-    background: rgba(255, 255, 255, 0.88);
+    top: 0; left: 0; right: 0;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    pointer-events: auto;
+  }
+
+  .booking-page { padding-top: 0; }
+
+  .btn-back {
+    background: none; border: none; backdrop-filter: none;
+    padding: 4px 2px; font-size: 14px; font-weight: 700;
+    box-shadow: none;
+    &:hover { background: none; box-shadow: none; color: #555; }
   }
 
   /* Salon kimliği yatay şerit olarak */

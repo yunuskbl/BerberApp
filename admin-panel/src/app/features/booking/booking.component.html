@@ -43,8 +43,12 @@
 
 <!-- Main Booking -->
 @else {
-  <!-- Language Switcher -->
-  <div class="booking-lang-bar">
+  <!-- Top Bar: geri butonu (sol) + dil seçici (sağ) -->
+  <div class="booking-top-bar">
+    <button class="btn-back" (click)="goBack()">
+      <span>←</span>
+      <span>{{ 'booking.back' | translate }}</span>
+    </button>
     <app-language-switcher></app-language-switcher>
   </div>
 

@@ -531,6 +531,8 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   encodeURI(s: string): string { return encodeURIComponent(s); }
 
+  goBack(): void { this.router.navigate(['/salons']); }
+
   getInitials(name: string): string {
     return name
       .split(' ')
