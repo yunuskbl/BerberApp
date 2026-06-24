@@ -103,7 +103,7 @@
     <h2 class="section-title">Token Yönetimi</h2>
     <p class="section-sub">
       İlk kurulumda veya token geçersiz olduğunda yeni token oluşturun.
-      Oluşturulan token'ı <code>appsettings.json → WppConnect:Token</code> alanına yazmanız gerekir.
+      Token otomatik olarak kaydedilir, yeniden başlatmaya gerek yoktur.
     </p>
 
     <button class="btn-outline" (click)="generateToken()" [disabled]="actionLoading">
@@ -115,8 +115,7 @@
         <span class="token-label">Oluşturulan Token:</span>
         <code class="token-value">{{ generatedToken }}</code>
         <p class="token-hint">
-          ⚠️ Bu token'ı <strong>appsettings.json</strong>'a yazıp sunucuyu yeniden başlatın:
-          <br><code>docker compose restart api</code>
+          ✅ Token otomatik kaydedildi. Şimdi QR'ı tarayarak bağlantıyı kurabilirsiniz.
         </p>
       </div>
     }
