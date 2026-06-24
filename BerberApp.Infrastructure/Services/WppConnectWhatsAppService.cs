@@ -381,9 +381,27 @@ public class WppConnectWhatsAppService : IWhatsAppService
         await PostAsync("send-image", payload);
     }
 
+    private const string PersistentTokenPath = "/app/wwwroot/uploads/.wppconnect.token";
+
+    private async Task<string?> ResolveTokenAsync()
+    {
+        // Persistent file (uploads volume) takes priority — written by generate-token endpoint
+        try
+        {
+            if (File.Exists(PersistentTokenPath))
+            {
+                var t = (await File.ReadAllTextAsync(PersistentTokenPath)).Trim();
+                if (!string.IsNullOrWhiteSpace(t)) return t;
+            }
+        }
+        catch { /* ignore */ }
+        return string.IsNullOrWhiteSpace(_cfg.Token) ? null : _cfg.Token;
+    }
+
     private async Task PostAsync(string endpoint, object payload)
     {
-        if (string.IsNullOrWhiteSpace(_cfg.Token))
+        var token = await ResolveTokenAsync();
+        if (string.IsNullOrWhiteSpace(token))
         {
             _log.LogWarning("[WPPConnect] Token yapılandırılmamış. Mesaj gönderilemedi.");
             return;
@@ -393,7 +411,7 @@ public class WppConnectWhatsAppService : IWhatsAppService
         var json = JsonSerializer.Serialize(payload);
 
         using var request = new HttpRequestMessage(HttpMethod.Post, url);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _cfg.Token);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
         _log.LogInformation("[WPPConnect] POST → {Url}", url);

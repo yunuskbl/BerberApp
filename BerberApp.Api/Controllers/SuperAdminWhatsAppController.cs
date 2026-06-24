@@ -266,6 +266,19 @@ public class SuperAdminWhatsAppController : ControllerBase
 
     private async Task SaveTokenToAppSettings(string token)
     {
+        // Persist to uploads volume so token survives container rebuilds
+        var persistPath = Path.Combine(_env.WebRootPath ?? "/app/wwwroot", "uploads", ".wppconnect.token");
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(persistPath)!);
+            await System.IO.File.WriteAllTextAsync(persistPath, token);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Token kalıcı dosyaya yazılamadı: {Path}", persistPath);
+        }
+
+        // Also update appsettings.json for IOptionsMonitor hot-reload
         var path = Path.Combine(_env.ContentRootPath, "appsettings.json");
         if (!System.IO.File.Exists(path)) return;
 

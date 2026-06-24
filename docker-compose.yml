@@ -80,6 +80,7 @@ services:
       - WppConnect__BaseUrl=http://wppconnect:21465
       - WppConnect__Session=ayarliyo
       - WppConnect__SecretKey=${WPPCONNECT_SECRET_KEY}
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
 
       - AllowedHosts=*
     ports:
