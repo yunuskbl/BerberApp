@@ -93,19 +93,23 @@ public class WppConnectManagementService : IWppConnectManagementService
         if (!res.IsSuccessStatusCode)
             throw new InvalidOperationException($"QR kodu alınamadı: {body}");
 
-        // JSON yanıtı: { "qrcode": "data:image/png;base64,..." }
+        // JSON yanıtı: farklı WppConnect versiyonları farklı alan adı kullanır
         try
         {
             using var doc = JsonDocument.Parse(body);
-            if (doc.RootElement.TryGetProperty("qrcode", out var qrProp))
+            foreach (var field in new[] { "qrcode", "base64Qr", "qr" })
             {
-                var qr = qrProp.GetString() ?? "";
-                if (!string.IsNullOrWhiteSpace(qr)) return qr;
+                if (doc.RootElement.TryGetProperty(field, out var qrProp))
+                {
+                    var qr = qrProp.GetString() ?? "";
+                    if (!string.IsNullOrWhiteSpace(qr)) return qr;
+                }
             }
         }
-        catch { /* JSON değilse ham body'yi dön */ }
+        catch { /* JSON değil */ }
 
-        return body;
+        // Geçerli bir QR verisi değilse boş döndür
+        return string.Empty;
     }
 
     public async Task<string> GetStatusAsync(string session, string token, CancellationToken ct = default)

@@ -599,10 +599,16 @@ export class SettingsComponent implements OnInit {
     this.http.post<any>(`${environment.apiUrl}/tenants/whatsapp/connect`, {}).subscribe({
       next: (res) => {
         this.waActionLoading = false;
-        if (res.success && res.data?.qrCode) {
-          this.waQrCode  = res.data.qrCode;
+        const qr = res.data?.qrCode ?? '';
+        if (res.success && qr.startsWith('data:image')) {
+          this.waQrCode  = qr;
           this.waSession = res.data.session;
           this.waStatus  = 'disconnected';
+        } else if (res.success) {
+          // Oturum başladı ama QR henüz hazır değil, otomatik yenile
+          this.waSession = res.data?.session ?? '';
+          this.waStatus  = 'disconnected';
+          this.waError   = 'QR kod hazırlanıyor, lütfen "QR Yenile" butonuna basın.';
         } else {
           this.waError = res.message || res.data?.message || 'Bağlantı başlatılamadı.';
         }
