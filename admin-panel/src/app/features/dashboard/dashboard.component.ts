@@ -60,7 +60,6 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.showEmailBanner = !this.authService.isEmailVerified();
     this.loadDashboard();
   }
 
