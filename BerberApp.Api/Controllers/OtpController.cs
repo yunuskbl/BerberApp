@@ -44,7 +44,7 @@ public class OtpController : ControllerBase
 
         await _whatsAppService.SendOtpAsync(request.Phone, otp);
 
-        return Ok(new { success = true, message = "Doğrulama kodu gönderildi.", debugCode = otp });
+        return Ok(new { success = true, message = "Doğrulama kodu WhatsApp ile gönderildi." });
     }
 
     [HttpPost("verify")]
