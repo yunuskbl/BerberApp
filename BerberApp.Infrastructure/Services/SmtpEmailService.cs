@@ -250,6 +250,43 @@ public class SmtpEmailService : IEmailService
         await SendAsync(toEmail, $"Aboneliğiniz {daysRemaining} Gün İçinde Sona Eriyor — ayarlıyo", body);
     }
 
+    public async Task SendOtpAsync(string toEmail, string otp)
+    {
+        var body = $"""
+            <!DOCTYPE html>
+            <html lang="tr">
+            <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+            <body style="margin:0;padding:0;background:#f3f4f6;font-family:'Inter',Arial,sans-serif;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+                <tr><td align="center">
+                  <table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;padding:48px 40px;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+                    <tr><td align="center" style="padding-bottom:28px;">
+                      <span style="font-size:28px;font-weight:800;color:#111827;letter-spacing:-1px;">ayarlıyo<span style="display:inline-block;width:8px;height:8px;background:#111827;border-radius:50%;margin-left:2px;vertical-align:middle;"></span></span>
+                    </td></tr>
+                    <tr><td style="font-size:20px;font-weight:700;color:#111827;padding-bottom:12px;">
+                      Doğrulama Kodunuz 🔐
+                    </td></tr>
+                    <tr><td style="font-size:15px;color:#6b7280;line-height:1.6;padding-bottom:28px;">
+                      Kayıt işleminizi tamamlamak için aşağıdaki kodu kullanın. Bu kod <strong>5 dakika</strong> geçerlidir.
+                    </td></tr>
+                    <tr><td align="center" style="padding-bottom:28px;">
+                      <div style="display:inline-block;padding:20px 40px;background:#f9fafb;border:2px solid #e5e7eb;border-radius:12px;">
+                        <span style="font-size:36px;font-weight:800;color:#111827;letter-spacing:8px;">{otp}</span>
+                      </div>
+                    </td></tr>
+                    <tr><td style="font-size:13px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:20px;">
+                      Bu kodu kimseyle paylaşmayın. Eğer bu işlemi siz yapmadıysanız görmezden gelebilirsiniz.
+                    </td></tr>
+                  </table>
+                </td></tr>
+              </table>
+            </body>
+            </html>
+            """;
+
+        await SendAsync(toEmail, "Doğrulama Kodunuz — ayarlıyo", body);
+    }
+
     protected virtual async Task SendAsync(string to, string subject, string htmlBody)
     {
         using var client = new SmtpClient(_smtpHost, _smtpPort)

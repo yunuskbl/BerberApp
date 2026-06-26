@@ -131,11 +131,12 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.otpError = '';
     this.otpSuccess = '';
 
-    this.authService.sendRegistrationOtp(phone).subscribe({
+    const email = this.step2Form.get('email')?.value;
+    this.authService.sendRegistrationOtp(phone, email).subscribe({
       next: (res) => {
         if (res.success) {
           this.otpSent = true;
-          this.otpSuccess = 'Doğrulama kodu WhatsApp ile gönderildi.';
+          this.otpSuccess = 'Doğrulama kodu e-posta adresinize gönderildi.';
           this.startTimer();
         } else {
           this.otpError = res.message || 'Kod gönderilemedi.';

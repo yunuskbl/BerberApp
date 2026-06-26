@@ -12,12 +12,12 @@ namespace BerberApp.Api.Controllers;
 public class OtpController : ControllerBase
 {
     private readonly IAppDbContext _context;
-    private readonly IWhatsAppService _whatsAppService;
+    private readonly IEmailService _emailService;
 
-    public OtpController(IAppDbContext context, IWhatsAppService whatsAppService)
+    public OtpController(IAppDbContext context, IEmailService emailService)
     {
         _context = context;
-        _whatsAppService = whatsAppService;
+        _emailService = emailService;
     }
 
     [HttpPost("send")]
@@ -26,7 +26,9 @@ public class OtpController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Phone))
             return BadRequest(new { success = false, message = "Telefon numarası gerekli." });
 
-        // Mevcut OTP kayıtlarını sil
+        if (string.IsNullOrWhiteSpace(request.Email))
+            return BadRequest(new { success = false, message = "E-posta adresi gerekli." });
+
         var existing = await _context.OtpRecords
             .Where(x => x.Phone == request.Phone)
             .ToListAsync();
@@ -42,9 +44,9 @@ public class OtpController : ControllerBase
         });
         await _context.SaveChangesAsync();
 
-        await _whatsAppService.SendOtpAsync(request.Phone, otp);
+        await _emailService.SendOtpAsync(request.Email, otp);
 
-        return Ok(new { success = true, message = "Doğrulama kodu WhatsApp ile gönderildi." });
+        return Ok(new { success = true, message = "Doğrulama kodu e-posta adresinize gönderildi." });
     }
 
     [HttpPost("verify")]
@@ -69,5 +71,9 @@ public class OtpController : ControllerBase
     }
 }
 
-public class SendOtpRequest { public string Phone { get; set; } = string.Empty; }
+public class SendOtpRequest
+{
+    public string Phone { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+}
 public class VerifyOtpRequest { public string Phone { get; set; } = string.Empty; public string Code { get; set; } = string.Empty; }
