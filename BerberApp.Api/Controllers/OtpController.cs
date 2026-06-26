@@ -13,11 +13,13 @@ public class OtpController : ControllerBase
 {
     private readonly IAppDbContext _context;
     private readonly IEmailService _emailService;
+    private readonly IWhatsAppService _whatsAppService;
 
-    public OtpController(IAppDbContext context, IEmailService emailService)
+    public OtpController(IAppDbContext context, IEmailService emailService, IWhatsAppService whatsAppService)
     {
         _context = context;
         _emailService = emailService;
+        _whatsAppService = whatsAppService;
     }
 
     [HttpPost("send")]
@@ -25,9 +27,6 @@ public class OtpController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(request.Phone))
             return BadRequest(new { success = false, message = "Telefon numarası gerekli." });
-
-        if (string.IsNullOrWhiteSpace(request.Email))
-            return BadRequest(new { success = false, message = "E-posta adresi gerekli." });
 
         var existing = await _context.OtpRecords
             .Where(x => x.Phone == request.Phone)
@@ -44,9 +43,16 @@ public class OtpController : ControllerBase
         });
         await _context.SaveChangesAsync();
 
-        await _emailService.SendOtpAsync(request.Email, otp);
-
-        return Ok(new { success = true, message = "Doğrulama kodu e-posta adresinize gönderildi." });
+        if (!string.IsNullOrWhiteSpace(request.Email))
+        {
+            await _emailService.SendOtpAsync(request.Email, otp);
+            return Ok(new { success = true, message = "Doğrulama kodu e-posta adresinize gönderildi." });
+        }
+        else
+        {
+            await _whatsAppService.SendOtpAsync(request.Phone, otp);
+            return Ok(new { success = true, message = "Doğrulama kodu WhatsApp ile gönderildi." });
+        }
     }
 
     [HttpPost("verify")]
@@ -74,6 +80,6 @@ public class OtpController : ControllerBase
 public class SendOtpRequest
 {
     public string Phone { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
+    public string? Email { get; set; }
 }
 public class VerifyOtpRequest { public string Phone { get; set; } = string.Empty; public string Code { get; set; } = string.Empty; }

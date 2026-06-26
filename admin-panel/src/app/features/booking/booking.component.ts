@@ -168,7 +168,7 @@ export class BookingComponent implements OnInit, OnDestroy {
   private readonly STORAGE_KEY = 'ayarliyo_customer';
 
   otpSent = false;
-  otpVerified = true;
+  otpVerified = false;
   private verifiedPhone = '';
   otpCode = '';
   isSendingOtp = false;
@@ -296,6 +296,9 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   onPhoneInput(event: Event): void {
     this.customerFound = false;
+    if (this.fullPhone !== this.verifiedPhone) {
+      this.otpVerified = false;
+    }
     this.otpSent = false;
     this.otpCode = '';
     this.otpError = '';

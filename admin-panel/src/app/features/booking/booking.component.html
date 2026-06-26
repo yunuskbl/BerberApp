@@ -369,6 +369,18 @@
                   @if (isLookingUp) {
                     <span class="lookup-spinner"></span>
                   }
+                  @if (!otpVerified) {
+                    <button
+                      type="button"
+                      class="btn-send-otp"
+                      [disabled]="isSendingOtp || otpTimer > 0 || customerForm.get('phone')?.invalid"
+                      (click)="sendOtp()">
+                      {{ isSendingOtp ? 'Gönderiliyor...' : otpTimer > 0 ? timerDisplay : 'Kodu Gönder' }}
+                    </button>
+                  }
+                  @if (otpVerified) {
+                    <span class="otp-verified-badge">✓ Doğrulandı</span>
+                  }
                 </div>
                 @if (customerFound) {
                   <div class="customer-found-badge">{{ 'booking.customerFound' | translate }}</div>
@@ -419,11 +431,52 @@
                 }
               </div>
 
+              @if (otpError) {
+                <p class="otp-error" style="margin: 4px 0 8px;">{{ otpError }}</p>
+              }
+              @if (otpSuccess && !otpVerified) {
+                <p class="otp-success" style="margin: 4px 0 8px;">{{ otpSuccess }}</p>
+              }
+
+              @if (!otpVerified && otpSent) {
+                <div class="otp-section">
+                  <div class="otp-input-row">
+                    <input
+                      class="form-input otp-input"
+                      type="text"
+                      [(ngModel)]="otpCode"
+                      [ngModelOptions]="{standalone: true}"
+                      placeholder="6 haneli kod"
+                      maxlength="6"
+                      inputmode="numeric" />
+                    <button
+                      type="button"
+                      class="btn-otp-verify"
+                      [disabled]="isVerifyingOtp || otpCode.length < 6"
+                      (click)="verifyOtp()">
+                      {{ isVerifyingOtp ? 'Doğrulanıyor...' : 'Doğrula' }}
+                    </button>
+                  </div>
+                  <div class="otp-footer-row">
+                    @if (otpTimer > 0) {
+                      <p class="otp-timer">Kod {{ timerDisplay }} içinde geçerli.</p>
+                    }
+                    <button
+                      type="button"
+                      class="btn-otp-resend"
+                      [disabled]="otpTimer > 0 || isSendingOtp"
+                      (click)="sendOtp()">
+                      Tekrar Gönder
+                    </button>
+                  </div>
+                </div>
+              }
+
               @if (errorMessage) {
                 <div class="error-message">{{ errorMessage }}</div>
               }
 
-              <button type="submit" class="btn-submit" [disabled]="isSubmitting || customerForm.invalid  || salon?.isAtCapacity">
+              <button type="submit" class="btn-submit" [disabled]="isSubmitting || customerForm.invalid || !otpVerified || salon?.isAtCapacity">
                 {{ isSubmitting ? ('booking.submitting' | translate) : ('booking.submit' | translate) }}
               </button>
             </form>
@@ -475,7 +528,7 @@
         <button
           type="button"
           class="island-submit-btn"
-          [disabled]="isSubmitting || customerForm.invalid "
+          [disabled]="isSubmitting || customerForm.invalid || !otpVerified"
           (click)="onSubmit()">
           {{ isSubmitting ? ('booking.submitting' | translate) : ('booking.submit' | translate) }}
         </button>
