@@ -420,7 +420,7 @@ public class WppConnectWhatsAppService : IWhatsAppService
             var response = await _http.SendAsync(request);
             var body     = await response.Content.ReadAsStringAsync();
             if (response.IsSuccessStatusCode)
-                _log.LogInformation("[WPPConnect] OK {Status}", (int)response.StatusCode);
+                _log.LogInformation("[WPPConnect] OK {Status}: {Body}", (int)response.StatusCode, body);
             else
                 _log.LogError("[WPPConnect] Hata {Status}: {Body}", (int)response.StatusCode, body);
         }
