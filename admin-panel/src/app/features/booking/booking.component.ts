@@ -554,7 +554,7 @@ export class BookingComponent implements OnInit, OnDestroy {
       next: (res) => {
         if (res.success) {
           this.otpSent = true;
-          this.otpSuccess = 'Doğrulama kodu gönderildi.';
+          this.otpSuccess = res.message || 'Doğrulama kodu SMS ile gönderildi.';
           this.startTimer();
         }
         this.isSendingOtp = false;

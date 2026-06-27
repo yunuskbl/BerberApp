@@ -13,13 +13,13 @@ public class OtpController : ControllerBase
 {
     private readonly IAppDbContext _context;
     private readonly IEmailService _emailService;
-    private readonly IWhatsAppService _whatsAppService;
+    private readonly ISmsService _smsService;
 
-    public OtpController(IAppDbContext context, IEmailService emailService, IWhatsAppService whatsAppService)
+    public OtpController(IAppDbContext context, IEmailService emailService, ISmsService smsService)
     {
         _context = context;
         _emailService = emailService;
-        _whatsAppService = whatsAppService;
+        _smsService = smsService;
     }
 
     [HttpPost("send")]
@@ -50,8 +50,8 @@ public class OtpController : ControllerBase
         }
         else
         {
-            await _whatsAppService.SendOtpAsync(request.Phone, otp);
-            return Ok(new { success = true, message = "Doğrulama kodu WhatsApp ile gönderildi." });
+            await _smsService.SendOtpAsync(request.Phone, otp);
+            return Ok(new { success = true, message = "Doğrulama kodu SMS ile gönderildi." });
         }
     }
 
