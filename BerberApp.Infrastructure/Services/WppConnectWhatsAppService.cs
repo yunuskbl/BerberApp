@@ -156,7 +156,7 @@ public class WppConnectWhatsAppService : IWhatsAppService
 
         var sent = await TrySendTextAsync(phone, sb.ToString().TrimEnd());
         if (!sent)
-            await (_smsFallback?.SendAppointmentReminderAsync(phone, customerName, serviceName, startTime, salonName, mapsUrl, bookingUrl, staffName) ?? Task.CompletedTask);
+            await (_smsFallback?.SendAppointmentReminderAsync(phone, customerName, serviceName, startTime, salonName, mapsUrl, bookingUrl) ?? Task.CompletedTask);
     }
 
     public async Task SendAppointmentReminder1hAsync(
@@ -200,7 +200,7 @@ public class WppConnectWhatsAppService : IWhatsAppService
 
         var sent = await TrySendTextAsync(phone, sb.ToString().TrimEnd());
         if (!sent)
-            await (_smsFallback?.SendAppointmentReminder1hAsync(phone, customerName, serviceName, startTime, salonName, mapsUrl, bookingUrl, staffName) ?? Task.CompletedTask);
+            await (_smsFallback?.SendAppointmentReminder1hAsync(phone, customerName, serviceName, startTime, salonName, mapsUrl, bookingUrl) ?? Task.CompletedTask);
     }
 
     public async Task SendAppointmentCancelledAsync(
