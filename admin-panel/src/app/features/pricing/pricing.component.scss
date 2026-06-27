@@ -149,6 +149,30 @@ $green:        #059669;
   display: flex;
   gap: 10px;
   flex-shrink: 0;
+  align-items: center;
+}
+
+.lang-switcher {
+  display: flex;
+  gap: 2px;
+  background: rgba(124,58,237,.07);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.lang-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: .03em;
+  &:hover { color: $purple; background: rgba(124,58,237,.1); }
+  &.active { color: $purple; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
 }
 
 .btn-nav-salons {

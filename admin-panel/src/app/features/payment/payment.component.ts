@@ -14,9 +14,20 @@ import { environment } from '../../../environments/environment';
 export class PaymentComponent implements OnInit {
   plan = '';
   planLabel = '';
-  price = 0;
+  monthlyPrice = 0;
 
-  state: 'loading' | 'bank-info' | 'submitting' | 'submitted' | 'fail' = 'loading';
+  // Seçilen faturalama periyodu
+  billingPeriod: 'monthly' | 'annual' = 'monthly';
+  get price(): number {
+    return this.billingPeriod === 'annual'
+      ? Math.round(this.monthlyPrice * 12 * 0.8)
+      : this.monthlyPrice;
+  }
+  get durationDays(): number { return this.billingPeriod === 'annual' ? 365 : 30; }
+  get annualPrice(): number  { return Math.round(this.monthlyPrice * 12 * 0.8); }
+  get saving(): number       { return Math.round(this.monthlyPrice * 12 * 0.2); }
+
+  state: 'loading' | 'select-billing' | 'bank-info' | 'submitting' | 'submitted' | 'fail' = 'loading';
   errorMessage = '';
   referenceCode = '';
 
@@ -30,7 +41,6 @@ export class PaymentComponent implements OnInit {
     bankName:      'Garanti Bankası',
     iban:          'TR97 0006 2000 5770 0006 6537 82',
     accountHolder: 'Yunus Emre Kobal',
-    description:   'ayarlıyo abonelik ödemesi',
   };
 
   constructor(
@@ -44,18 +54,31 @@ export class PaymentComponent implements OnInit {
       this.plan = params.get('plan') ?? '';
       const info = this.planMap[this.plan];
       if (!info) { this.router.navigate(['/pricing']); return; }
-      this.planLabel = info.label;
-      this.price     = info.price;
-      this.state     = 'bank-info';
+      this.planLabel    = info.label;
+      this.monthlyPrice = info.price;
+
+      // Pricing sayfasından yıllık seçili geldiyse
+      if (params.get('billing') === 'yearly') {
+        this.billingPeriod = 'annual';
+      }
+
+      this.state = 'select-billing';
     });
+  }
+
+  selectBilling(period: 'monthly' | 'annual'): void {
+    this.billingPeriod = period;
+    this.state = 'bank-info';
   }
 
   confirmTransfer(): void {
     this.state = 'submitting';
+    const periodLabel = this.billingPeriod === 'annual' ? 'Yıllık' : 'Aylık';
     this.http.post<any>(`${environment.apiUrl}/payment-request/submit`, {
-      planName:  this.plan,
-      planLabel: this.planLabel,
-      amount:    this.price
+      planName:     this.plan,
+      planLabel:    `${this.planLabel} (${periodLabel})`,
+      amount:       this.price,
+      durationDays: this.durationDays
     }).subscribe({
       next: res => {
         if (res.success) {
@@ -73,6 +96,7 @@ export class PaymentComponent implements OnInit {
     });
   }
 
+  goBack(): void        { this.state = 'select-billing'; }
   goToDashboard(): void { this.router.navigate(['/dashboard']); }
   goToPricing():   void { this.router.navigate(['/pricing']); }
 }

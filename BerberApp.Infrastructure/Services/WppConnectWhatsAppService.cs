@@ -12,8 +12,11 @@ namespace BerberApp.Infrastructure.Services;
 public class WppConnectWhatsAppService : IWhatsAppService
 {
     private readonly HttpClient _http;
-    private readonly WppConnectSettings _cfg;
+    private readonly IOptionsMonitor<WppConnectSettings>? _cfgMonitor;
+    private readonly WppConnectSettings? _fixedCfg;
+    private WppConnectSettings _cfg => _fixedCfg ?? _cfgMonitor!.CurrentValue;
     private readonly ILogger<WppConnectWhatsAppService> _log;
+    private readonly ISmsService? _smsFallback;
 
     private enum Lang { TR, EN, RU, DE }
 
@@ -24,19 +27,22 @@ public class WppConnectWhatsAppService : IWhatsAppService
 
     public WppConnectWhatsAppService(
         HttpClient http,
-        IOptions<WppConnectSettings> options,
-        ILogger<WppConnectWhatsAppService> logger)
+        IOptionsMonitor<WppConnectSettings> options,
+        ILogger<WppConnectWhatsAppService> logger,
+        ISmsService? smsFallback = null)
     {
-        _http = http;
-        _cfg  = options.Value;
-        _log  = logger;
+        _http        = http;
+        _cfgMonitor  = options;
+        _log         = logger;
+        _smsFallback = smsFallback;
     }
 
-    private WppConnectWhatsAppService(HttpClient http, WppConnectSettings cfg, ILogger<WppConnectWhatsAppService> logger)
+    private WppConnectWhatsAppService(HttpClient http, WppConnectSettings cfg, ILogger<WppConnectWhatsAppService> logger, ISmsService? smsFallback)
     {
-        _http = http;
-        _cfg  = cfg;
-        _log  = logger;
+        _http        = http;
+        _fixedCfg    = cfg;
+        _log         = logger;
+        _smsFallback = smsFallback;
     }
 
     public IWhatsAppService ForTenant(string? session, string? token)
@@ -50,12 +56,12 @@ public class WppConnectWhatsAppService : IWhatsAppService
             Session   = session,
             Token     = token,
         };
-        return new WppConnectWhatsAppService(_http, cfg, _log);
+        return new WppConnectWhatsAppService(_http, cfg, _log, _smsFallback);
     }
 
     // ── IWhatsAppService ─────────────────────────────────────────────────────
 
-    public Task SendAppointmentConfirmedAsync(
+    public async Task SendAppointmentConfirmedAsync(
         string phone, string customerName, string serviceName,
         string staffName, DateTime startTime,
         string salonName = "", string mapsUrl = "", string bookingUrl = "")
@@ -100,10 +106,13 @@ public class WppConnectWhatsAppService : IWhatsAppService
         if (!string.IsNullOrWhiteSpace(salonName)) sb.AppendLine($"{lSalon} {salonName}");
         if (!string.IsNullOrWhiteSpace(mapsUrl) && mapsUrl != "—") sb.AppendLine($"\n{lMaps} {mapsUrl}");
         if (!string.IsNullOrWhiteSpace(bookingUrl) && bookingUrl != "—") sb.AppendLine($"{lBooking} {bookingUrl}");
-        return SendTextAsync(phone, sb.ToString().TrimEnd());
+
+        var sent = await TrySendTextAsync(phone, sb.ToString().TrimEnd());
+        if (!sent)
+            await (_smsFallback?.SendAppointmentConfirmedAsync(phone, customerName, serviceName, staffName, startTime, salonName, mapsUrl, bookingUrl) ?? Task.CompletedTask);
     }
 
-    public Task SendAppointmentReminderAsync(
+    public async Task SendAppointmentReminderAsync(
         string phone, string customerName, string serviceName,
         DateTime startTime,
         string salonName = "", string mapsUrl = "", string bookingUrl = "",
@@ -144,10 +153,13 @@ public class WppConnectWhatsAppService : IWhatsAppService
         if (!string.IsNullOrWhiteSpace(staffName)) sb.AppendLine($"{lStaff} {staffName}");
         if (!string.IsNullOrWhiteSpace(salonName)) sb.AppendLine($"{lSalon} {salonName}");
         if (!string.IsNullOrWhiteSpace(mapsUrl) && mapsUrl != "—") sb.AppendLine($"\n{lMaps} {mapsUrl}");
-        return SendTextAsync(phone, sb.ToString().TrimEnd());
+
+        var sent = await TrySendTextAsync(phone, sb.ToString().TrimEnd());
+        if (!sent)
+            await (_smsFallback?.SendAppointmentReminderAsync(phone, customerName, serviceName, startTime, salonName, mapsUrl, bookingUrl) ?? Task.CompletedTask);
     }
 
-    public Task SendAppointmentReminder1hAsync(
+    public async Task SendAppointmentReminder1hAsync(
         string phone, string customerName, string serviceName,
         DateTime startTime,
         string salonName = "", string mapsUrl = "", string bookingUrl = "",
@@ -185,10 +197,13 @@ public class WppConnectWhatsAppService : IWhatsAppService
         if (!string.IsNullOrWhiteSpace(staffName)) sb.AppendLine($"{lStaff} {staffName}");
         if (!string.IsNullOrWhiteSpace(salonName)) sb.AppendLine($"{lSalon} {salonName}");
         if (!string.IsNullOrWhiteSpace(mapsUrl) && mapsUrl != "—") sb.AppendLine($"{lMaps} {mapsUrl}");
-        return SendTextAsync(phone, sb.ToString().TrimEnd());
+
+        var sent = await TrySendTextAsync(phone, sb.ToString().TrimEnd());
+        if (!sent)
+            await (_smsFallback?.SendAppointmentReminder1hAsync(phone, customerName, serviceName, startTime, salonName, mapsUrl, bookingUrl) ?? Task.CompletedTask);
     }
 
-    public Task SendAppointmentCancelledAsync(
+    public async Task SendAppointmentCancelledAsync(
         string phone, string customerName, DateTime startTime,
         string salonName = "", string bookingUrl = "")
     {
@@ -219,10 +234,13 @@ public class WppConnectWhatsAppService : IWhatsAppService
         sb.AppendLine(body);
         if (!string.IsNullOrWhiteSpace(bookingUrl) && bookingUrl != "—")
             sb.AppendLine($"\n{lNew} {bookingUrl}");
-        return SendTextAsync(phone, sb.ToString().TrimEnd());
+
+        var sent = await TrySendTextAsync(phone, sb.ToString().TrimEnd());
+        if (!sent)
+            await (_smsFallback?.SendAppointmentCancelledAsync(phone, customerName, startTime, salonName, bookingUrl) ?? Task.CompletedTask);
     }
 
-    public Task SendAppointmentUpdatedAsync(
+    public async Task SendAppointmentUpdatedAsync(
         string phone, string customerName, string serviceName,
         string staffName, DateTime startTime,
         string salonName = "", string bookingUrl = "")
@@ -270,10 +288,13 @@ public class WppConnectWhatsAppService : IWhatsAppService
         sb.AppendLine($"{lStaff} {staffName}");
         if (!string.IsNullOrWhiteSpace(salonName)) sb.AppendLine($"{lSalon} {salonName}");
         if (!string.IsNullOrWhiteSpace(bookingUrl) && bookingUrl != "—") sb.AppendLine($"{lBooking} {bookingUrl}");
-        return SendTextAsync(phone, sb.ToString().TrimEnd());
+
+        var sent = await TrySendTextAsync(phone, sb.ToString().TrimEnd());
+        if (!sent)
+            await (_smsFallback?.SendAppointmentUpdatedAsync(phone, customerName, serviceName, staffName, startTime, salonName, bookingUrl) ?? Task.CompletedTask);
     }
 
-    public Task SendAppointmentCompletedAsync(
+    public async Task SendAppointmentCompletedAsync(
         string phone, string customerName, string serviceName,
         string salonName, string reviewUrl)
     {
@@ -304,14 +325,16 @@ public class WppConnectWhatsAppService : IWhatsAppService
         sb.AppendLine(body);
         if (!string.IsNullOrWhiteSpace(reviewUrl) && reviewUrl != "—")
             sb.AppendLine($"\n{lReview}\n{reviewUrl}");
-        return SendTextAsync(phone, sb.ToString().TrimEnd());
+
+        var sent = await TrySendTextAsync(phone, sb.ToString().TrimEnd());
+        if (!sent)
+            await (_smsFallback?.SendAppointmentCompletedAsync(phone, customerName, serviceName, salonName, reviewUrl) ?? Task.CompletedTask);
     }
 
     public Task SendNewAppointmentRequestAsync(
         string staffPhone, string customerName, string customerPhone,
         string serviceName, DateTime startTime, int sequenceNumber)
     {
-        // Personele giden bildirim — her zaman Türkçe
         var t   = ToTr(startTime);
         var msg = new StringBuilder()
             .AppendLine($"📬 *Yeni Randevu Talebi #{sequenceNumber}*").AppendLine()
@@ -323,10 +346,10 @@ public class WppConnectWhatsAppService : IWhatsAppService
             .AppendLine()
             .Append("Onaylamak için panel üzerinden işlem yapabilirsiniz.")
             .ToString();
-        return SendTextAsync(staffPhone, msg);
+        return TrySendTextAsync(staffPhone, msg);
     }
 
-    public Task SendOtpAsync(string phone, string otp)
+    public async Task SendOtpAsync(string phone, string otp)
     {
         var msg = DetectLang(phone) switch
         {
@@ -335,56 +358,55 @@ public class WppConnectWhatsAppService : IWhatsAppService
             Lang.EN => $"🔐 *Your ayarlıyo verification code:*\n\n*{otp}*\n\nDo not share this code with anyone.",
             _        => $"🔐 *ayarlıyo doğrulama kodunuz:*\n\n*{otp}*\n\nBu kodu kimseyle paylaşmayın.",
         };
-        return SendTextAsync(phone, msg);
+
+        var sent = await TrySendTextAsync(phone, msg);
+        if (!sent)
+            await (_smsFallback?.SendOtpAsync(phone, otp) ?? Task.CompletedTask);
     }
 
     public Task SendMonthlyLimitWarningAsync(
         string phone, string salonName, int currentCount, int limit, bool isFull)
     {
-        // İşletme sahibine giden bildirim — Türkçe
         var msg = isFull
             ? $"⚠️ *ayarlıyo - Aylık Randevu Limitiniz Doldu!*\n\nMerhaba *{salonName}*!\n\nBu ay {limit} randevu limitinize ulaştınız. 🚫\n\nYeni randevular bu ay alınamayacak. Limit artırmak için planınızı yükseltin.\n\n👉 app.ayarliyo.com/pricing"
             : $"⚠️ *ayarlıyo - Aylık Randevu Limitine Yaklaşıyorsunuz!*\n\nMerhaba *{salonName}*!\n\nBu ay {currentCount}/{limit} randevu kullandınız (%80).\n\nKesintisiz hizmet için planınızı yükseltmeyi düşünün.\n\n👉 app.ayarliyo.com/pricing";
-        return SendTextAsync(phone, msg);
+        return TrySendTextAsync(phone, msg);
     }
 
     public Task SendSubscriptionExpiryWarningAsync(string phone, string salonName, int daysLeft)
     {
-        // İşletme sahibine giden bildirim — Türkçe
         var msg = daysLeft <= 1
             ? $"🚨 *ayarlıyo - Aboneliğiniz Yarın Sona Eriyor!*\n\nMerhaba *{salonName}*!\n\nKesintisiz hizmet için aboneliğinizi hemen yenileyin.\n\n👉 app.ayarliyo.com/payment"
             : $"⏰ *ayarlıyo - Aboneliğiniz {daysLeft} Gün İçinde Sona Eriyor*\n\nMerhaba *{salonName}*!\n\nHizmet kesintisi yaşamamak için aboneliğinizi önceden yenileyin.\n\n👉 app.ayarliyo.com/payment";
-        return SendTextAsync(phone, msg);
+        return TrySendTextAsync(phone, msg);
     }
 
     public async Task SendCustomMessageAsync(string phone, string message, string? imageUrl = null)
     {
         if (!string.IsNullOrWhiteSpace(imageUrl))
-            await SendImageAsync(phone, imageUrl, message);
+            await TrySendImageAsync(phone, imageUrl, message);
         else
-            await SendTextAsync(phone, message);
+            await TrySendTextAsync(phone, message);
     }
 
     // ── WPPConnect REST API ──────────────────────────────────────────────────
 
-    private async Task SendTextAsync(string phone, string message)
+    private async Task<bool> TrySendTextAsync(string phone, string message)
     {
         var payload = new { phone = FormatPhone(phone), message, isGroup = false };
-        await PostAsync("send-message", payload);
+        return await PostAsync("send-message", payload);
     }
 
-    private async Task SendImageAsync(string phone, string imageUrl, string caption)
+    private async Task<bool> TrySendImageAsync(string phone, string imageUrl, string caption)
     {
         var payload = new { phone = FormatPhone(phone), path = imageUrl, caption, isGroup = false };
-        await PostAsync("send-image", payload);
+        return await PostAsync("send-image", payload);
     }
 
     private const string PersistentTokenPath = "/app/wwwroot/uploads/.wppconnect.token";
 
     private async Task<string?> ResolveTokenAsync()
     {
-        if (!string.IsNullOrWhiteSpace(_cfg.Token))
-            return _cfg.Token;
         try
         {
             if (File.Exists(PersistentTokenPath))
@@ -393,17 +415,17 @@ public class WppConnectWhatsAppService : IWhatsAppService
                 if (!string.IsNullOrWhiteSpace(t)) return t;
             }
         }
-        catch { /* ignore */ }
-        return null;
+        catch { }
+        return string.IsNullOrWhiteSpace(_cfg.Token) ? null : _cfg.Token;
     }
 
-    private async Task PostAsync(string endpoint, object payload)
+    private async Task<bool> PostAsync(string endpoint, object payload)
     {
         var token = await ResolveTokenAsync();
         if (string.IsNullOrWhiteSpace(token))
         {
             _log.LogWarning("[WPPConnect] Token yapılandırılmamış. Mesaj gönderilemedi.");
-            return;
+            return false;
         }
 
         var url  = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{_cfg.Session}/{endpoint}";
@@ -418,15 +440,44 @@ public class WppConnectWhatsAppService : IWhatsAppService
         {
             var response = await _http.SendAsync(request);
             var body     = await response.Content.ReadAsStringAsync();
+
             if (response.IsSuccessStatusCode)
-                _log.LogInformation("[WPPConnect] OK {Status}", (int)response.StatusCode);
+            {
+                var delivered = !IsSendFailure(body);
+                _log.LogInformation("[WPPConnect] OK {Status} delivered={Delivered}: {Body}", (int)response.StatusCode, delivered, body);
+                return delivered;
+            }
             else
+            {
                 _log.LogError("[WPPConnect] Hata {Status}: {Body}", (int)response.StatusCode, body);
+                return false;
+            }
         }
         catch (Exception ex)
         {
             _log.LogError(ex, "[WPPConnect] İstek başarısız: {Url}", url);
+            return false;
         }
+    }
+
+    private static bool IsSendFailure(string body)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            if (doc.RootElement.TryGetProperty("response", out var arr) &&
+                arr.ValueKind == JsonValueKind.Array &&
+                arr.GetArrayLength() > 0)
+            {
+                var first = arr[0];
+                if (first.TryGetProperty("isSendFailure", out var fail) && fail.GetBoolean())
+                    return true;
+                if (first.TryGetProperty("ack", out var ack) && ack.GetInt32() == -1)
+                    return true;
+            }
+        }
+        catch { }
+        return false;
     }
 
     // ── Yardımcılar ──────────────────────────────────────────────────────────
@@ -448,14 +499,11 @@ public class WppConnectWhatsAppService : IWhatsAppService
         _       => CtrTR,
     };
 
-    /// <summary>WPPConnect bireysel chat formatı: 905551234567@c.us</summary>
     private static string FormatPhone(string phone)
     {
         phone = phone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Replace("+", "");
-        // Yerel Türk numarası: 0 ile başlıyorsa veya 10 haneliyse 90 ekle
         if (phone.StartsWith("0"))  phone = "90" + phone[1..];
         else if (phone.Length == 10) phone = "90" + phone;
-        // 11+ haneli numaralar zaten ülke koduna sahip (90..., 7..., 49... vb.)
         if (!phone.Contains('@')) phone += "@c.us";
         return phone;
     }

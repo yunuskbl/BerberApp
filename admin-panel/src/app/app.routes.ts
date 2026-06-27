@@ -211,6 +211,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'whatsapp',
+        loadComponent: () =>
+          import('./features/super-admin/whatsapp/super-admin-whatsapp.component').then(
+            (m) => m.SuperAdminWhatsAppComponent,
+          ),
+      },
+      {
         path: '',
         redirectTo: 'tenants',
         pathMatch: 'full',

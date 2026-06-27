@@ -72,11 +72,15 @@ services:
       # SuperAdmin
       - SUPERADMIN_PASSWORD=${SUPERADMIN_PASSWORD}
 
+      # Docker içinde config dosyası değişikliklerini polling ile izle
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
+
       # WPPConnect
       - WhatsApp__Provider=WppConnect
       - WppConnect__BaseUrl=http://wppconnect:21465
       - WppConnect__Session=ayarliyo
-      # WppConnect__SecretKey ve WppConnect__Token appsettings.json'dan okunur
+      - WppConnect__SecretKey=${WPPCONNECT_SECRET_KEY}
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
 
       - AllowedHosts=*
     ports:

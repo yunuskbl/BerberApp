@@ -2,45 +2,49 @@ import { Component, AfterViewInit, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { LanguageService, Lang } from '../../core/services/language.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 interface Feature  { name: string; included: boolean; }
 interface PlanLimit { staff: string; appointments: string; }
 interface Plan {
-  name: string; label: string; price: number; description: string;
-  icon: string; featured: boolean; features: Feature[]; cta: string; ctaDisabled?: boolean;
+  name: string; labelKey: string; price: number; descKey: string;
+  icon: string; featured: boolean; features: Feature[]; ctaKey: string; ctaDisabled?: boolean;
   limits: PlanLimit;
 }
-interface FAQ  { question: string; answer: string; open?: boolean; }
-interface Stat { value: string; label: string; num: number; format: (n: number) => string; }
+interface FAQ  { questionKey: string; answerKey: string; open?: boolean; }
+interface Stat { value: string; labelKey: string; num: number; format: (n: number) => string; }
 
-const ALL_FEATURES: Feature[] = [
-  { name: 'Online Randevu Sayfası',            included: true },
-  { name: 'Randevu Yönetimi & Takvim',         included: true },
-  { name: 'Çoklu Hizmet Seçimi',               included: true },
-  { name: 'WhatsApp OTP Doğrulama',            included: true },
-  { name: 'Uluslararası Telefon Desteği',      included: true },
-  { name: 'QR Kod ile Randevu Linki',          included: true },
-  { name: 'Harita & Konum Entegrasyonu',       included: true },
-  { name: 'Çalışma Saati & İzin Yönetimi',    included: true },
-  { name: 'Personel Profil Fotoğrafı',         included: true },
-  { name: 'Müşteri & Personel Yönetimi',       included: true },
-  { name: 'Personele Özel Fiyatlandırma',      included: true },
-  { name: 'Hizmet & Fiyat Yönetimi',           included: true },
-  { name: 'Tema & Logo Özelleştirme',          included: true },
-  { name: 'Çoklu Dil (TR / EN / RU)',          included: true },
-  { name: 'WhatsApp Bildirimleri',              included: true },
-  { name: 'Hatırlatma (24 saat + 1 saat)',     included: true },
-  { name: 'Fotoğraf Galerisi',                 included: true },
-  { name: 'Müşteri Değerlendirme Sistemi',     included: true },
-  { name: 'Manuel Randevu Onayı',              included: true },
-  { name: 'Toplu WhatsApp Kampanyası',         included: true },
-  { name: 'Gelir & Gider Yönetimi',            included: true },
-  { name: 'Personel Girişi & Yetkilendirme',   included: true },
-  { name: 'Çoklu Şube Yönetimi',               included: true },
-  { name: 'Öncelikli Destek',                  included: true },
-];
+// Internal feature keys — shared between ALL_FEATURES and plan feature lists
+const F = {
+  onlineBooking:   'pricing.f.onlineBooking',
+  calendar:        'pricing.f.calendar',
+  multiService:    'pricing.f.multiService',
+  whatsappOtp:     'pricing.f.whatsappOtp',
+  intlPhone:       'pricing.f.intlPhone',
+  qrCode:          'pricing.f.qrCode',
+  map:             'pricing.f.map',
+  hours:           'pricing.f.hours',
+  staffPhoto:      'pricing.f.staffPhoto',
+  customerStaff:   'pricing.f.customerStaff',
+  staffPricing:    'pricing.f.staffPricing',
+  servicePrice:    'pricing.f.servicePrice',
+  theme:           'pricing.f.theme',
+  multiLang:       'pricing.f.multiLang',
+  waNotif:         'pricing.f.waNotif',
+  reminder:        'pricing.f.reminder',
+  gallery:         'pricing.f.gallery',
+  reviews:         'pricing.f.reviews',
+  manualApproval:  'pricing.f.manualApproval',
+  waCampaign:      'pricing.f.waCampaign',
+  finance:         'pricing.f.finance',
+  staffLogin:      'pricing.f.staffLogin',
+  multiBranch:     'pricing.f.multiBranch',
+  prioritySupport: 'pricing.f.prioritySupport',
+};
+
+const ALL_FEATURE_KEYS: Feature[] = Object.values(F).map(k => ({ name: k, included: true }));
 
 @Component({
   selector: 'app-pricing',
@@ -59,250 +63,133 @@ const ALL_FEATURES: Feature[] = [
 })
 export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  // ── Upgrade mode (coming from admin panel settings) ───────────────────────
   isUpgradeMode = false;
-
-  // ── Billing toggle ────────────────────────────────────────────────────────
   billingYearly  = false;
   priceAnimating = false;
 
-  // ── Stats counter ─────────────────────────────────────────────────────────
   stats: Stat[] = [
-    { value: '200+', label: 'Aktif İşletme',      num: 200, format: n => `${n}+`   },
-    { value: '15K+', label: 'Aylık Randevu',       num: 15,  format: n => `${n}K+`  },
-    { value: '%98',  label: 'Müşteri Memnuniyeti', num: 98,  format: n => `%${n}`   },
-    { value: '3 dk', label: 'Kurulum Süresi',      num: 3,   format: n => `${n} dk` },
+    { value: '200+', labelKey: 'pricing.stat.businesses',   num: 200, format: n => `${n}+`   },
+    { value: '15K+', labelKey: 'pricing.stat.appointments', num: 15,  format: n => `${n}K+`  },
+    { value: '%98',  labelKey: 'pricing.stat.satisfaction', num: 98,  format: n => `%${n}`   },
+    { value: '3 dk', labelKey: 'pricing.stat.setupTime',    num: 3,   format: n => `${n} dk` },
   ];
   animatedStats = this.stats.map(s => s.format(0));
 
-  // ── Card entry animation ──────────────────────────────────────────────────
   cardVisible: boolean[] = [false, false, false, false, false, false, false];
 
   private observers: IntersectionObserver[] = [];
 
-  // ── Feature list ──────────────────────────────────────────────────────────
-  private rawFeatures = [
-    {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2"/>
-        <line x1="16" y1="2" x2="16" y2="6"/>
-        <line x1="8" y1="2" x2="8" y2="6"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
-        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
-      </svg>`,
-      title: 'Online Randevu Sayfası',
-      desc: 'Müşteriler 7/24 kendi linkinden randevu alır; personel, hizmet, tarih ve saat seçer. Telefon trafiği sıfıra iner, doluluk artar.'
-    },
-    {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 11l3 3L22 4"/>
-        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-      </svg>`,
-      title: 'Çoklu Hizmet Seçimi',
-      desc: 'Müşteriler tek randevuda birden fazla hizmet seçebilir. Toplam süre ve ücret otomatik hesaplanır, uygun saatler buna göre gösterilir.'
-    },
-    {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        <line x1="9" y1="10" x2="15" y2="10"/>
-        <line x1="9" y1="14" x2="13" y2="14"/>
-      </svg>`,
-      title: 'WhatsApp Bildirimleri',
-      desc: 'Randevu onayı, 24 saat ve 1 saat öncesi hatırlatma, iptal ve tamamlanma mesajları WhatsApp\'tan otomatik gider. Ek kurulum gerekmez.'
-    },
-    {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-      </svg>`,
-      title: 'Değerlendirme Sistemi',
-      desc: 'Hizmet tamamlandığında müşteriye otomatik puan linki gönderilir. Yorumlar ve puanlar salon keşif sayfasında yayınlanır.'
-    },
-    {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="18" y1="20" x2="18" y2="10"/>
-        <line x1="12" y1="20" x2="12" y2="4"/>
-        <line x1="6"  y1="20" x2="6"  y2="14"/>
-        <line x1="2"  y1="20" x2="22" y2="20"/>
-      </svg>`,
-      title: 'Gelir & Gider Yönetimi',
-      desc: 'Gelir, gider ve net kâr raporlarına tek ekrandan ulaşın. Kategori bazlı gider takibi ve tarih aralığı filtresiyle finansal durumunuzu anlık görün.'
-    },
-    {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>`,
-      title: 'Personel & Fiyat Yönetimi',
-      desc: 'Her personele profil fotoğrafı, biyografi ve hizmete özel fiyat & süre tanımlayın. Randevu oluşturulurken seçilen personelin fiyatı otomatik uygulanır; çalışma saatleri ve izin günleri personel bazında yönetilir.'
-    },
-    {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.65 3.21a2 2 0 0 1 1.99-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-      </svg>`,
-      title: 'Toplu WhatsApp Kampanyası',
-      desc: 'Kayıtlı müşterilerinize veya tüm personelinize tek tıkla WhatsApp mesajı gönderin. WhatsApp grubunuza bağlayarak toplu duyuru, kampanya ve hatırlatmaları kolayca iletin.'
-    },
-    {
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-        <circle cx="12" cy="16" r="1" fill="currentColor"/>
-      </svg>`,
-      title: 'Personel Girişi & Yetki',
-      desc: 'Her personele ayrı giriş hesabı tanımlayın. Personel yalnızca kendi randevularını, çalışma saatlerini ve izin günlerini görür; müşteri ve finans verileri admin\'de kalır.'
-    },
+  private rawFeatureKeys = [
+    { cardKey: 'booking',      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>` },
+    { cardKey: 'multiService', icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>` },
+    { cardKey: 'waNotif',      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/></svg>` },
+    { cardKey: 'reviews',      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` },
+    { cardKey: 'finance',      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>` },
+    { cardKey: 'staffPrice',   icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+    { cardKey: 'waCampaign',   icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.65 3.21a2 2 0 0 1 1.99-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>` },
+    { cardKey: 'staffLogin',   icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>` },
   ];
 
-  appFeatures: Array<{ icon: SafeHtml; title: string; desc: string }> = [];
+  appFeatures: Array<{ icon: SafeHtml; titleKey: string; descKey: string }> = [];
 
   plans: Plan[] = [
     {
-      name: 'baslangic', label: 'Başlangıç', price: 899,
-      description: 'Tek lokasyonlu küçük işletmeler için',
+      name: 'baslangic', labelKey: 'pricing.plan.baslangic.label', price: 899,
+      descKey: 'pricing.plan.baslangic.desc',
       icon: '🌱', featured: false, ctaDisabled: false,
-      limits: { staff: '1 Personel', appointments: '150 Randevu/Ay' },
+      limits: { staff: 'pricing.plan.baslangic.staff', appointments: 'pricing.plan.baslangic.appts' },
       features: [
-        { name: 'Online Randevu Sayfası',           included: true  },
-        { name: 'Randevu Yönetimi & Takvim',        included: true  },
-        { name: 'Çoklu Hizmet Seçimi',              included: true  },
-        { name: 'WhatsApp OTP Doğrulama',           included: true  },
-        { name: 'Uluslararası Telefon Desteği',     included: true  },
-        { name: 'QR Kod ile Randevu Linki',         included: true  },
-        { name: 'Harita & Konum Entegrasyonu',      included: true  },
-        { name: 'Çalışma Saati & İzin Yönetimi',   included: true  },
-        { name: 'Personel Profil Fotoğrafı',        included: true  },
-        { name: 'Müşteri & Personel Yönetimi',      included: true  },
-        { name: 'Personele Özel Fiyatlandırma',     included: true  },
-        { name: 'Hizmet & Fiyat Yönetimi',          included: true  },
-        { name: 'Tema & Logo Özelleştirme',         included: true  },
-        { name: 'Çoklu Dil (TR / EN / RU)',         included: true  },
-        { name: 'WhatsApp Bildirimleri',             included: true  },
-        { name: 'Hatırlatma (24 saat + 1 saat)',    included: true  },
-        { name: 'Fotoğraf Galerisi',                included: true  },
-        { name: 'Müşteri Değerlendirme Sistemi',    included: true  },
-        { name: 'Manuel Randevu Onayı',             included: true  },
-        { name: 'Toplu WhatsApp Kampanyası',        included: false },
-        { name: 'Gelir & Gider Yönetimi',           included: false },
-        { name: 'Personel Girişi & Yetkilendirme',  included: false },
-        { name: 'Çoklu Şube Yönetimi',              included: false },
-        { name: 'Öncelikli Destek',                 included: false },
+        { name: F.onlineBooking,  included: true  },
+        { name: F.calendar,       included: true  },
+        { name: F.multiService,   included: true  },
+        { name: F.whatsappOtp,    included: true  },
+        { name: F.intlPhone,      included: true  },
+        { name: F.qrCode,         included: true  },
+        { name: F.map,            included: true  },
+        { name: F.hours,          included: true  },
+        { name: F.staffPhoto,     included: true  },
+        { name: F.customerStaff,  included: true  },
+        { name: F.staffPricing,   included: true  },
+        { name: F.servicePrice,   included: true  },
+        { name: F.theme,          included: true  },
+        { name: F.multiLang,      included: true  },
+        { name: F.waNotif,        included: true  },
+        { name: F.reminder,       included: true  },
+        { name: F.gallery,        included: true  },
+        { name: F.reviews,        included: true  },
+        { name: F.manualApproval, included: true  },
+        { name: F.waCampaign,     included: false },
+        { name: F.finance,        included: false },
+        { name: F.staffLogin,     included: false },
+        { name: F.multiBranch,    included: false },
+        { name: F.prioritySupport,included: false },
       ],
-      cta: 'Başlangıç Planı',
+      ctaKey: 'pricing.plan.baslangic.cta',
     },
     {
-      name: 'profesyonel', label: 'Profesyonel', price: 1799,
-      description: 'Büyüyen tek şubeli işletmeler için',
+      name: 'profesyonel', labelKey: 'pricing.plan.profesyonel.label', price: 1799, descKey: 'pricing.plan.profesyonel.desc',
       icon: '⚡', featured: true,
-      limits: { staff: '5 Personele Kadar', appointments: '500 Randevu/Ay' },
+      limits: { staff: 'pricing.plan.profesyonel.staff', appointments: 'pricing.plan.profesyonel.appts' },
       features: [
-        { name: 'Online Randevu Sayfası',           included: true  },
-        { name: 'Randevu Yönetimi & Takvim',        included: true  },
-        { name: 'Çoklu Hizmet Seçimi',              included: true  },
-        { name: 'WhatsApp OTP Doğrulama',           included: true  },
-        { name: 'Uluslararası Telefon Desteği',     included: true  },
-        { name: 'QR Kod ile Randevu Linki',         included: true  },
-        { name: 'Harita & Konum Entegrasyonu',      included: true  },
-        { name: 'Çalışma Saati & İzin Yönetimi',   included: true  },
-        { name: 'Personel Profil Fotoğrafı',        included: true  },
-        { name: 'Müşteri & Personel Yönetimi',      included: true  },
-        { name: 'Personele Özel Fiyatlandırma',     included: true  },
-        { name: 'Hizmet & Fiyat Yönetimi',          included: true  },
-        { name: 'Tema & Logo Özelleştirme',         included: true  },
-        { name: 'Çoklu Dil (TR / EN / RU)',         included: true  },
-        { name: 'WhatsApp Bildirimleri',             included: true  },
-        { name: 'Hatırlatma (24 saat + 1 saat)',    included: true  },
-        { name: 'Fotoğraf Galerisi',                included: true  },
-        { name: 'Müşteri Değerlendirme Sistemi',    included: true  },
-        { name: 'Manuel Randevu Onayı',             included: true  },
-        { name: 'Toplu WhatsApp Kampanyası',        included: true  },
-        { name: 'Gelir & Gider Yönetimi',           included: true  },
-        { name: 'Personel Girişi & Yetkilendirme',  included: true  },
-        { name: 'Çoklu Şube Yönetimi',              included: false },
-        { name: 'Öncelikli Destek',                 included: false },
+        { name: F.onlineBooking,  included: true  },
+        { name: F.calendar,       included: true  },
+        { name: F.multiService,   included: true  },
+        { name: F.whatsappOtp,    included: true  },
+        { name: F.intlPhone,      included: true  },
+        { name: F.qrCode,         included: true  },
+        { name: F.map,            included: true  },
+        { name: F.hours,          included: true  },
+        { name: F.staffPhoto,     included: true  },
+        { name: F.customerStaff,  included: true  },
+        { name: F.staffPricing,   included: true  },
+        { name: F.servicePrice,   included: true  },
+        { name: F.theme,          included: true  },
+        { name: F.multiLang,      included: true  },
+        { name: F.waNotif,        included: true  },
+        { name: F.reminder,       included: true  },
+        { name: F.gallery,        included: true  },
+        { name: F.reviews,        included: true  },
+        { name: F.manualApproval, included: true  },
+        { name: F.waCampaign,     included: true  },
+        { name: F.finance,        included: true  },
+        { name: F.staffLogin,     included: true  },
+        { name: F.multiBranch,    included: false },
+        { name: F.prioritySupport,included: false },
       ],
-      cta: 'Profesyonel\'e Geç',
+      ctaKey: 'pricing.plan.profesyonel.cta',
     },
     {
-      name: 'premium', label: 'Premium', price: 2999,
-      description: 'Zincir işletmeler için merkezi yönetim',
+      name: 'premium', labelKey: 'pricing.plan.premium.label', price: 2999,
+      descKey: 'pricing.plan.premium.desc',
       icon: '👑', featured: false,
-      limits: { staff: 'Sınırsız Personel', appointments: 'Çoklu Şube' },
-      features: ALL_FEATURES,
-      cta: 'Premium\'a Geç',
+      limits: { staff: 'pricing.plan.premium.staff', appointments: 'pricing.plan.premium.appts' },
+      features: ALL_FEATURE_KEYS,
+      ctaKey: 'pricing.plan.premium.cta',
     },
   ];
 
-  allFeatureNames = ALL_FEATURES.map(f => f.name);
+  allFeatureKeys = Object.values(F);
 
-  faqItems: FAQ[] = [
-    {
-      question: 'Hangi tür işletmeler kullanabilir?',
-      answer: 'Randevu alan her tür hizmet işletmesi için uygundur: berber, kuaför, güzellik salonu, masaj & spa, diş kliniği, klinik, dövme stüdyosu, fotoğrafçı, danışmanlık ofisi ve daha fazlası. Hizmetlerinizi ve çalışma saatlerinizi sisteme girmeniz yeterli.',
-    },
-    {
-      question: 'Kayıt olmak için ne gerekiyor?',
-      answer: 'Sadece bir e-posta adresi ve telefon numarası yeterli. 3 dakikada sisteme kayıt olup randevu almaya başlayabilirsiniz.',
-    },
-    {
-      question: 'WhatsApp OTP doğrulama nasıl çalışıyor?',
-      answer: 'Müşteri randevu alırken telefon numarasını girer, sisteme "Kodu Gönder" ile 6 haneli bir doğrulama kodu WhatsApp üzerinden iletilir. Kodu doğrulayan müşteri randevuyu tamamlayabilir. Bu sayede sahte veya hatalı numaralarla randevu alınması engellenir. Türkiye başta olmak üzere 13 ülke alan kodu desteklenir.',
-    },
-    {
-      question: 'WhatsApp bildirimleri nasıl çalışıyor?',
-      answer: 'Randevu oluşturulduğunda onay, 24 saat ve 1 saat öncesi hatırlatma, randevu tamamlandığında değerlendirme linki ve iptal durumunda bilgi mesajı müşterinize otomatik WhatsApp\'tan gönderilir. İşletme sahibine de yeni randevu geldiğinde anlık bildirim iletilir. Ek kurulum gerekmez.',
-    },
-    {
-      question: 'Toplu WhatsApp mesajı özelliği ne işe yarar?',
-      answer: 'Profesyonel ve Premium planlarda, kayıtlı tüm müşterilerinize tek tıkla özel bir WhatsApp mesajı gönderebilirsiniz. Kampanya duyurusu, indirim bildirimi veya tatil tebriki gibi iletişimlerde kullanabilirsiniz. Mesaj kaç kişiye ulaştı, kaç gönderim başarısız oldu diye sonuç özeti gösterilir.',
-    },
-    {
-      question: 'Müşteri birden fazla hizmet alabilir mi?',
-      answer: 'Evet. Müşteriler randevu alırken birden fazla hizmet seçebilir. Sistem toplam süreyi ve toplam ücreti otomatik hesaplar, uygun zaman dilimlerini buna göre gösterir.',
-    },
-    {
-      question: 'Personel ve randevu limitleri nedir?',
-      answer: 'Başlangıç planında 1 personel ve ayda 150 randevu desteklenir. Profesyonel planda 5 personele kadar ve ayda 500 randevu desteklenir. Premium planda personel ve randevu sınırı yoktur. Aylık limite yaklaşıldığında otomatik uyarı alırsınız.',
-    },
-    {
-      question: 'Randevuları manuel onaylamak istiyorum, mümkün mü?',
-      answer: 'Manuel randevu onayı tüm planlarda (Başlangıç dahil) mevcuttur. Manuel modda müşteri randevu talebi oluşturur; siz onayladığınızda müşteriye WhatsApp bildirim gönderilir. Bu mod özellikle yoğun dönemlerde veya kapasite kontrolü gerektiren işletmeler için idealdir. Otomatik modda ise randevu anında onaylanır.',
-    },
-    {
-      question: 'Birden fazla şubem var, sistemi kullanabilir miyim?',
-      answer: 'Premium planda çoklu şube yönetimi dahildir. Her şubenin kendi personeli, çalışma saatleri ve randevuları ayrı ayrı yönetilir; tüm şubelerinizi tek panel üzerinden takip edebilirsiniz. Başlangıç ve Profesyonel planlar tek şube içindir.',
-    },
-    {
-      question: 'Personelime ayrı giriş hesabı tanımlayabilir miyim?',
-      answer: 'Profesyonel ve Premium planlarda her personel için ayrı e-posta/şifre hesabı oluşturabilirsiniz. Personel yalnızca kendi randevularını, çalışma saatlerini ve izin günlerini görür. Müşteri iletişim bilgileri ve finansal veriler admin tarafında korunur.',
-    },
-    {
-      question: 'Gelir ve gider takibi nasıl çalışıyor?',
-      answer: 'Profesyonel ve Premium planlarda gelir & gider yönetimi dahildir. Giderlerinizi kategori bazlı (kira, elektrik, malzeme vb.) ekleyebilir, seçtiğiniz tarih aralığında toplam gelir, gider ve net kâr/zarar özetini anında görebilirsiniz.',
-    },
-    {
-      question: 'İstediğim zaman plan değiştirebilir miyim?',
-      answer: 'Evet! İstediğiniz zaman planınızı yükseltebilirsiniz. Değişiklik anında geçerli olur.',
-    },
-    {
-      question: 'Verilerim güvende mi?',
-      answer: 'Tüm verileriniz şifreli olarak Türkiye\'deki sunucularımızda saklanır ve düzenli olarak yedeklenir.',
-    },
-  ];
+  faqItems: FAQ[] = Array.from({ length: 13 }, (_, i) => ({
+    questionKey: `pricing.faq.${i}.q`,
+    answerKey:   `pricing.faq.${i}.a`,
+    open: false,
+  }));
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  langs: Lang[] = ['tr', 'en', 'ru', 'de'];
+
   get isLoggedIn(): boolean { return !!localStorage.getItem('accessToken'); }
 
   constructor(
     private router: Router,
     private sanitizer: DomSanitizer,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    public langSvc: LanguageService,
   ) {
-    this.appFeatures = this.rawFeatures.map(f => ({
-      icon: this.sanitizer.bypassSecurityTrustHtml(f.icon),
-      title: f.title,
-      desc: f.desc,
+    this.appFeatures = this.rawFeatureKeys.map(f => ({
+      icon:     this.sanitizer.bypassSecurityTrustHtml(f.icon),
+      titleKey: `pricing.card.${f.cardKey}.title`,
+      descKey:  `pricing.card.${f.cardKey}.desc`,
     }));
   }
 
@@ -346,7 +233,6 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
     this.observers.forEach(o => o.disconnect());
   }
 
-  // ── Counter animation ─────────────────────────────────────────────────────
   animateCounter(index: number, target: number, format: (n: number) => string): void {
     const STEPS = 60;
     let step = 0;
@@ -359,7 +245,6 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 33);
   }
 
-  // ── Billing ───────────────────────────────────────────────────────────────
   getDisplayPrice(basePrice: number): number {
     return this.billingYearly ? Math.round(basePrice * 0.8) : basePrice;
   }
@@ -372,7 +257,6 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 150);
   }
 
-  // ── 3-D card tilt ─────────────────────────────────────────────────────────
   onCardMouseMove(event: MouseEvent): void {
     const card = event.currentTarget as HTMLElement;
     card.style.transition = 'box-shadow 0.15s';
@@ -393,7 +277,6 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
     card.style.boxShadow  = '';
   }
 
-  // ── Navigation ────────────────────────────────────────────────────────────
   goToApp(): void {
     this.router.navigate([this.isLoggedIn ? '/dashboard' : '/login']);
   }
@@ -436,8 +319,8 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleFAQ(i: number): void { this.faqItems[i].open = !this.faqItems[i].open; }
 
-  planHas(plan: Plan, featureName: string): boolean {
-    return plan.features.find(f => f.name === featureName)?.included ?? false;
+  planHas(plan: Plan, featureKey: string): boolean {
+    return plan.features.find(f => f.name === featureKey)?.included ?? false;
   }
 
   openMail(): void {
@@ -446,5 +329,9 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   openWhatsApp(): void {
     window.open('https://wa.me/905305606916', '_blank');
+  }
+
+  setLang(l: Lang): void {
+    this.langSvc.setLang(l);
   }
 }

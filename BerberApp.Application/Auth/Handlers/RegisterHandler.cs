@@ -76,9 +76,6 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
         };
         _context.Tenants.Add(tenant);
 
-        // Email doğrulama token'ı oluştur
-        var emailToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
-
         // Admin kullanıcı oluştur
         var user = new User
         {
@@ -88,10 +85,8 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
             LastName = request.LastName,
             Phone = request.Phone,
             Role = UserRole.Admin,
-            IsVerified = true, // telefon doğrulandı
+            IsVerified = true,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            EmailVerificationToken = emailToken,
-            EmailVerificationTokenExpiry = DateTime.UtcNow.AddHours(24)
         };
         _context.Users.Add(user);
 
@@ -119,13 +114,9 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
         user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
         await _context.SaveChangesAsync(ct);
 
-        // Email doğrulama ve hoşgeldin emaili gönder (arka planda, başarısız olursa kayıt engelleme)
-        var verificationUrl = $"{_appSettings.FrontendBaseUrl}/email-dogrula?token={emailToken}";
+        // Hoşgeldin emaili gönder (arka planda, başarısız olursa kayıt engelleme)
         var fullName = $"{request.FirstName} {request.LastName}";
-        _ = Task.WhenAll(
-            _emailService.SendEmailVerificationAsync(request.Email, fullName, verificationUrl),
-            _emailService.SendWelcomeEmailAsync(request.Email, fullName, request.TenantName)
-        );
+        _ = _emailService.SendWelcomeEmailAsync(request.Email, fullName, request.TenantName);
 
         return new LoginResponse
         {
@@ -140,7 +131,7 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
             IsOnTrial = true,
             TrialEndsAt = trialEnd,
             SubscriptionExpired = false,
-            IsEmailVerified = false,
+            IsEmailVerified = true,
         };
     }
 }

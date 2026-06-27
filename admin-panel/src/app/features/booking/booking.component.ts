@@ -531,6 +531,8 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   encodeURI(s: string): string { return encodeURIComponent(s); }
 
+  goBack(): void { this.router.navigate(['/salons']); }
+
   getInitials(name: string): string {
     return name
       .split(' ')
@@ -552,11 +554,8 @@ export class BookingComponent implements OnInit, OnDestroy {
       next: (res) => {
         if (res.success) {
           this.otpSent = true;
-          this.otpSuccess = 'Doğrulama kodu gönderildi.';
+          this.otpSuccess = res.message || 'Doğrulama kodu SMS ile gönderildi.';
           this.startTimer();
-          if (res.debugCode) {
-            this.otpCode = res.debugCode;
-          }
         }
         this.isSendingOtp = false;
       },

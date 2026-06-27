@@ -47,6 +47,144 @@
   justify-content: center;
 }
 
+/* Billing selection */
+.billing-select {
+  gap: 24px;
+  padding: 48px 24px;
+}
+
+.billing-header {
+  text-align: center;
+
+  .brand { justify-content: center; margin-bottom: 20px; }
+  h2 { font-size: 22px; font-weight: 700; margin: 0 0 6px; color: #111; }
+  p  { font-size: 14px; color: #6b7280; margin: 0; }
+}
+
+.billing-cards {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.billing-card {
+  position: relative;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover { border-color: #111; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+  &--featured {
+    border-color: #111;
+    background: #fafafa;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+}
+
+.billing-badge {
+  position: absolute;
+  top: -12px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
+  &--save {
+    background: #d1fae5;
+    color: #059669;
+  }
+}
+
+.billing-period {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+
+.billing-price {
+  font-size: 32px;
+  font-weight: 800;
+  color: #111;
+  line-height: 1;
+}
+
+.billing-period-label {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-top: -2px;
+}
+
+.billing-saving {
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+  background: #d1fae5;
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+.billing-features {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 12px;
+  width: 100%;
+
+  li {
+    font-size: 12px;
+    color: #6b7280;
+    padding: 3px 0;
+    text-align: center;
+  }
+}
+
+.btn-select {
+  width: 100%;
+  padding: 11px 0;
+  background: #f3f4f6;
+  color: #111;
+  border: none;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover { background: #e5e7eb; }
+
+  &--featured {
+    background: #111;
+    color: white;
+    &:hover { opacity: 0.85; }
+  }
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  &:hover { color: #111; }
+}
+
 /* Payment layout */
 .payment-layout {
   flex: 1;

@@ -45,18 +45,36 @@ public class WppConnectManagementService : IWppConnectManagementService
 
     public async Task<WppConnectSessionResult> StartSessionAsync(string session, string token, CancellationToken ct = default)
     {
-        var startUrl = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{session}/start-session";
+        var base_ = _cfg.BaseUrl.TrimEnd('/');
+
+        // Varsa eski session'ı kapat (CLOSED state'ten temiz başlayalım)
+        try
+        {
+            var closeReq = new HttpRequestMessage(HttpMethod.Post, $"{base_}/api/{session}/close-session");
+            closeReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            closeReq.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+            await _http.SendAsync(closeReq, ct);
+            await Task.Delay(1000, ct);
+        }
+        catch { /* görmezden gel */ }
+
+        // waitQrCode: true → WppConnect QR hazır olana kadar bekler
+        var startUrl = $"{base_}/api/{session}/start-session";
         using var startReq = new HttpRequestMessage(HttpMethod.Post, startUrl);
         startReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         startReq.Content = new StringContent(
-            JsonSerializer.Serialize(new { waitForLogin = false }),
+            JsonSerializer.Serialize(new { waitQrCode = true }),
             Encoding.UTF8, "application/json");
 
         var startRes = await _http.SendAsync(startReq, ct);
         var startBody = await startRes.Content.ReadAsStringAsync(ct);
         _log.LogInformation("[WPPConnect-MGMT] StartSession {Status}: {Body}", (int)startRes.StatusCode, startBody);
 
-        // QR kodu hazır olana kadar en fazla 10 kez dene (her biri 1.5s bekleme)
+        // start-session yanıtından QR çıkarmayı dene
+        if (TryExtractQr(startBody, out var qrFromStart) && !string.IsNullOrWhiteSpace(qrFromStart))
+            return new WppConnectSessionResult(session, token, qrFromStart);
+
+        // Yanıtta QR yoksa poll et (max 15 saniye)
         string qr = "";
         for (int i = 0; i < 10; i++)
         {
@@ -70,6 +88,26 @@ public class WppConnectManagementService : IWppConnectManagementService
         }
 
         return new WppConnectSessionResult(session, token, qr);
+    }
+
+    private static bool TryExtractQr(string body, out string qr)
+    {
+        qr = string.Empty;
+        if (string.IsNullOrWhiteSpace(body) || body.TrimStart().StartsWith('<')) return false;
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            foreach (var field in new[] { "qrcode", "base64Qr", "qr" })
+            {
+                if (doc.RootElement.TryGetProperty(field, out var v) && v.ValueKind == JsonValueKind.String)
+                {
+                    qr = v.GetString() ?? string.Empty;
+                    if (!string.IsNullOrWhiteSpace(qr)) return true;
+                }
+            }
+        }
+        catch { /* geçersiz JSON */ }
+        return false;
     }
 
     public async Task<string> GetQrCodeAsync(string session, string token, CancellationToken ct = default)
@@ -93,19 +131,23 @@ public class WppConnectManagementService : IWppConnectManagementService
         if (!res.IsSuccessStatusCode)
             throw new InvalidOperationException($"QR kodu alınamadı: {body}");
 
-        // JSON yanıtı: { "qrcode": "data:image/png;base64,..." }
+        // JSON yanıtı: farklı WppConnect versiyonları farklı alan adı kullanır
         try
         {
             using var doc = JsonDocument.Parse(body);
-            if (doc.RootElement.TryGetProperty("qrcode", out var qrProp))
+            foreach (var field in new[] { "qrcode", "base64Qr", "qr" })
             {
-                var qr = qrProp.GetString() ?? "";
-                if (!string.IsNullOrWhiteSpace(qr)) return qr;
+                if (doc.RootElement.TryGetProperty(field, out var qrProp))
+                {
+                    var qr = qrProp.GetString() ?? "";
+                    if (!string.IsNullOrWhiteSpace(qr)) return qr;
+                }
             }
         }
-        catch { /* JSON değilse ham body'yi dön */ }
+        catch { /* JSON değil */ }
 
-        return body;
+        // Geçerli bir QR verisi değilse boş döndür
+        return string.Empty;
     }
 
     public async Task<string> GetStatusAsync(string session, string token, CancellationToken ct = default)

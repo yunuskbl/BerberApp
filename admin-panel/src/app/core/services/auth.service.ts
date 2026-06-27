@@ -59,8 +59,8 @@ export class AuthService {
     );
   }
 
-  sendRegistrationOtp(phone: string): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/otp/send`, { phone });
+  sendRegistrationOtp(phone: string, email: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/otp/send`, { phone, email });
   }
 
   verifyRegistrationOtp(phone: string, code: string): Observable<any> {

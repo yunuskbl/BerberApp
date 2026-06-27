@@ -281,16 +281,25 @@ public class TenantsController : BaseApiController
     [HttpPost("test-whatsapp")]
     public async Task<IActionResult> TestWhatsApp(
         [FromBody] TestWhatsAppRequest req,
-        [FromServices] IWhatsAppService whatsApp)
+        [FromServices] IWhatsAppService whatsApp,
+        [FromServices] IWppConnectManagementService mgmt)
     {
         if (string.IsNullOrWhiteSpace(req.Phone))
             return BadRequest(new { success = false, message = "Telefon numarası gerekli." });
 
         try
         {
-            // Kiracının kendi oturumunu kullan
             var tenant = await _context.Tenants.FirstOrDefaultAsync(x => x.Id == TenantId);
-            var wa = whatsApp.ForTenant(tenant?.WppConnectSession, tenant?.WppConnectToken);
+
+            if (string.IsNullOrWhiteSpace(tenant?.WppConnectSession) || string.IsNullOrWhiteSpace(tenant?.WppConnectToken))
+                return Ok(new { success = false, message = "Önce WhatsApp'ı bağlayın (Ayarlar → WhatsApp Hesabınızı Bağlayın)." });
+
+            // Session durumunu kontrol et
+            var status = await mgmt.GetStatusAsync(tenant.WppConnectSession, tenant.WppConnectToken);
+            if (status is not ("CONNECTED" or "inChat" or "isLogged"))
+                return Ok(new { success = false, message = $"WhatsApp oturumu bağlı değil (durum: {status}). Lütfen yeniden bağlanın." });
+
+            var wa = whatsApp.ForTenant(tenant.WppConnectSession, tenant.WppConnectToken);
             await wa.SendCustomMessageAsync(req.Phone, req.Message);
             return Success<object>(null!, "WhatsApp mesajı gönderildi.");
         }

@@ -385,6 +385,10 @@ namespace BerberApp.Infrastructure.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric(18,2)");
 
+                    b.Property<int>("DurationDays")
+                        .HasDefaultValue(30)
+                        .HasColumnType("integer");
+
                     b.Property<string>("AdminNotes")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");

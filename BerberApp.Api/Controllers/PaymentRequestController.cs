@@ -36,8 +36,11 @@ public class PaymentRequestController : BaseApiController
         var tenantId = TenantId;
 
         // Aynı plan için bekleyen talep var mı kontrol et
+        if (dto.DurationDays != 30 && dto.DurationDays != 365)
+            return BadRequest(new { success = false, message = "Geçersiz abonelik süresi." });
+
         var existing = await _context.PaymentRequests
-            .Where(r => r.TenantId == tenantId && r.PlanName == dto.PlanName && r.Status == PaymentRequestStatus.Pending)
+            .Where(r => r.TenantId == tenantId && r.PlanName == dto.PlanName && r.DurationDays == dto.DurationDays && r.Status == PaymentRequestStatus.Pending)
             .FirstOrDefaultAsync();
 
         if (existing != null)
@@ -52,6 +55,7 @@ public class PaymentRequestController : BaseApiController
             PlanName      = dto.PlanName,
             PlanLabel     = dto.PlanLabel,
             Amount        = dto.Amount,
+            DurationDays  = dto.DurationDays,
             ReferenceCode = refCode,
             Status        = PaymentRequestStatus.Pending,
             CreatedAt     = DateTime.UtcNow
@@ -104,7 +108,8 @@ public class PaymentRequestController : BaseApiController
 
 public class SubmitPaymentRequestDto
 {
-    public string PlanName  { get; set; } = string.Empty;
-    public string PlanLabel { get; set; } = string.Empty;
-    public decimal Amount   { get; set; }
+    public string PlanName   { get; set; } = string.Empty;
+    public string PlanLabel  { get; set; } = string.Empty;
+    public decimal Amount    { get; set; }
+    public int DurationDays  { get; set; } = 30;
 }

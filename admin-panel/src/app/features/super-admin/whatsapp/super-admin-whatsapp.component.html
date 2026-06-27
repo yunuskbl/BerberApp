@@ -1,0 +1,123 @@
+<div class="wa-page">
+  <div class="wa-header">
+    <h1 class="wa-title">WhatsApp Yönetimi</h1>
+    <p class="wa-sub">WppConnect oturumunu buradan yönetebilirsiniz.</p>
+  </div>
+
+  <!-- Durum Kartı -->
+  <div class="status-card">
+    <div class="status-row">
+      <span class="status-label">Bağlantı Durumu</span>
+
+      @if (status === 'loading') {
+        <span class="status-badge loading">
+          <span class="pulse"></span> Kontrol ediliyor…
+        </span>
+      }
+      @if (status === 'connected') {
+        <span class="status-badge connected">
+          <span class="dot green"></span> Bağlı
+        </span>
+      }
+      @if (status === 'disconnected') {
+        <span class="status-badge disconnected">
+          <span class="dot red"></span> Bağlı Değil
+        </span>
+      }
+      @if (status === 'no_token') {
+        <span class="status-badge no-token">
+          <span class="dot orange"></span> Token Yok
+        </span>
+      }
+      @if (status === 'error') {
+        <span class="status-badge error">
+          <span class="dot red"></span> Bağlanılamıyor
+        </span>
+      }
+    </div>
+
+    @if (statusRaw) {
+      <div class="status-raw">WppConnect: {{ statusRaw }}</div>
+    }
+
+    <div class="status-actions">
+      <button class="btn-refresh" (click)="checkStatus()" title="Durumu yenile">↻ Yenile</button>
+
+      @if (status === 'connected') {
+        <button class="btn-danger" (click)="disconnect()" [disabled]="actionLoading">
+          Bağlantıyı Kes
+        </button>
+      }
+      @if (status === 'disconnected' || status === 'error') {
+        <button class="btn-primary" (click)="startSession()" [disabled]="actionLoading">
+          Oturumu Başlat
+        </button>
+      }
+    </div>
+
+    @if (actionMsg) {
+      <div class="action-msg">{{ actionMsg }}</div>
+    }
+  </div>
+
+  <!-- QR Kodu -->
+  @if (status === 'disconnected' || status === 'error') {
+    <div class="qr-card">
+      <h2 class="section-title">QR Kod ile Bağlan</h2>
+      <p class="section-sub">
+        Telefonda <strong>WhatsApp → Ayarlar → Bağlı Cihazlar → Cihaz Ekle</strong> yolunu izleyip aşağıdaki QR'ı okutun.
+      </p>
+
+      <div class="qr-area">
+        @if (qrLoading) {
+          <div class="qr-placeholder">
+            <div class="spinner"></div>
+            <span>QR yükleniyor…</span>
+          </div>
+        } @else if (qrImage) {
+          <img [src]="qrImage" alt="WhatsApp QR" class="qr-img" />
+          <p class="qr-hint">QR kod 20 saniyede bir otomatik yenilenir.</p>
+        } @else if (qrError) {
+          <div class="qr-error">
+            <span>⚠️ {{ qrError }}</span>
+            <button class="btn-outline" (click)="refreshQr()">Tekrar Dene</button>
+          </div>
+        }
+      </div>
+
+      <button class="btn-outline" (click)="refreshQr()" [disabled]="qrLoading">↻ QR'ı Yenile</button>
+    </div>
+  }
+
+  <!-- Bağlı ise bilgi -->
+  @if (status === 'connected') {
+    <div class="connected-card">
+      <div class="conn-icon">✅</div>
+      <h2>WhatsApp Bağlı</h2>
+      <p>Randevu hatırlatmaları ve bildirimler aktif olarak gönderiliyor.</p>
+    </div>
+  }
+
+  <!-- Token Yönetimi -->
+  <div class="token-card">
+    <h2 class="section-title">Token Yönetimi</h2>
+    <p class="section-sub">
+      İlk kurulumda veya token geçersiz olduğunda yeni token oluşturun.
+      Token otomatik olarak kaydedilir, yeniden başlatmaya gerek yoktur.
+    </p>
+
+    <button class="btn-outline" (click)="generateToken()" [disabled]="actionLoading">
+      @if (actionLoading) { ⏳ İşleniyor… } @else { 🔑 Token Oluştur }
+    </button>
+
+    @if (generatedToken) {
+      <div class="token-result">
+        <span class="token-label">Oluşturulan Token:</span>
+        <code class="token-value">{{ generatedToken }}</code>
+        <p class="token-hint">
+          ✅ Token otomatik kaydedildi. Şimdi QR'ı tarayarak bağlantıyı kurabilirsiniz.
+        </p>
+      </div>
+    }
+  </div>
+</div>
