@@ -431,6 +431,12 @@
                 }
               </div>
 
+              @if (!otpVerified && !otpSent && customerForm.get('email')?.value) {
+                <p class="otp-hint-email" style="font-size:12px;color:#6b7280;margin:4px 0 6px;">
+                  Kod <strong>{{ customerForm.get('email')?.value }}</strong> adresine gönderilecek.
+                </p>
+              }
+
               @if (otpError) {
                 <p class="otp-error" style="margin: 4px 0 8px;">{{ otpError }}</p>
               }

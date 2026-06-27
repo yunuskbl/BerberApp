@@ -135,8 +135,8 @@ export class BookingApiService {
     return this.http.get(`${this.apiUrl}/booking/${subdomain}/my-appointments`, { params });
   }
 
-  sendOtp(phone: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/otp/send`, { phone });
+  sendOtp(phone: string, email?: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/otp/send`, { phone, email: email || null });
   }
 
   verifyOtp(phone: string, code: string): Observable<any> {

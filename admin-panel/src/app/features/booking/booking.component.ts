@@ -550,11 +550,12 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.otpError = '';
     this.otpSuccess = '';
 
-    this.bookingService.sendOtp(phone).subscribe({
+    const email = this.customerForm.get('email')?.value?.trim() || '';
+    this.bookingService.sendOtp(phone, email || undefined).subscribe({
       next: (res) => {
         if (res.success) {
           this.otpSent = true;
-          this.otpSuccess = res.message || 'Doğrulama kodu SMS ile gönderildi.';
+          this.otpSuccess = res.message || (email ? 'Doğrulama kodu e-posta adresinize gönderildi.' : 'Doğrulama kodu SMS ile gönderildi.');
           this.startTimer();
         }
         this.isSendingOtp = false;
