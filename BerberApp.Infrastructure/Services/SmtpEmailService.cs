@@ -296,14 +296,23 @@ public class SmtpEmailService : IEmailService
             DeliveryMethod = SmtpDeliveryMethod.Network
         };
 
+        var plainText = System.Text.RegularExpressions.Regex.Replace(htmlBody, "<[^>]+>", "").Trim();
+
         using var message = new MailMessage
         {
-            From = new MailAddress(_fromAddress, _fromName),
-            Subject = subject,
-            Body = htmlBody,
-            IsBodyHtml = true,
+            From       = new MailAddress(_fromAddress, _fromName),
+            Subject    = subject,
+            IsBodyHtml = false,
+            Body       = plainText,
         };
         message.To.Add(to);
+        message.Headers.Add("X-Mailer", "ayarliyo");
+        message.Headers.Add("Precedence", "transactional");
+
+        var htmlView  = AlternateView.CreateAlternateViewFromString(htmlBody,  null, "text/html");
+        var plainView = AlternateView.CreateAlternateViewFromString(plainText, null, "text/plain");
+        message.AlternateViews.Add(plainView);
+        message.AlternateViews.Add(htmlView);
 
         await client.SendMailAsync(message);
     }
