@@ -549,6 +549,9 @@
             <div class="wa-qr-container">
               <p class="wa-qr-hint">WhatsApp uygulamanızdan <strong>Bağlı Cihazlar → Cihaz Ekle</strong> seçeneğiyle bu QR kodu okutun.</p>
               <img [src]="waQrCode" alt="WhatsApp QR Kodu" class="wa-qr-img">
+              @if (waQrCountdown > 0) {
+                <p style="font-size:.75rem;color:#6b7280;margin:6px 0 0;text-align:center">QR {{ waQrCountdown }}s sonra otomatik yenilenir</p>
+              }
               <div class="card-actions" style="margin-top:12px">
                 <button class="btn btn-outline" (click)="refreshWhatsAppQr()" [disabled]="waActionLoading">🔄 QR Yenile</button>
                 <button class="btn btn-success" (click)="checkWhatsAppStatus()" [disabled]="waActionLoading">✅ Bağlandım</button>

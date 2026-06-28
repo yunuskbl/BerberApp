@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -44,7 +44,7 @@ function numberValidator(ctrl: AbstractControl): ValidationErrors | null {
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })
-export class SettingsComponent implements OnInit {
+export class SettingsComponent implements OnInit, OnDestroy {
   isLoading = true;
   isSaving = false;
   isChangingPass = false;
@@ -85,6 +85,9 @@ export class SettingsComponent implements OnInit {
   waQrCode = '';
   waActionLoading = false;
   waError = '';
+  waQrCountdown = 0;
+  private qrRefreshTimer: ReturnType<typeof setInterval> | null = null;
+  private qrCountdownTimer: ReturnType<typeof setInterval> | null = null;
 
   // QR Kod
   qrCodeDataUrl = '';
@@ -162,6 +165,33 @@ export class SettingsComponent implements OnInit {
     this.loadPhotos();
     this.loadClosures();
     this.checkWhatsAppStatus();
+  }
+
+  ngOnDestroy(): void {
+    this.stopQrAutoRefresh();
+  }
+
+  private startQrAutoRefresh(): void {
+    this.stopQrAutoRefresh();
+    this.waQrCountdown = 20;
+    this.qrCountdownTimer = setInterval(() => {
+      this.waQrCountdown--;
+      if (this.waQrCountdown <= 0) this.waQrCountdown = 20;
+    }, 1000);
+    this.qrRefreshTimer = setInterval(() => {
+      if (!this.waIsConnected && this.waQrCode) {
+        this.refreshWhatsAppQr();
+        this.waQrCountdown = 20;
+      } else {
+        this.stopQrAutoRefresh();
+      }
+    }, 20000);
+  }
+
+  private stopQrAutoRefresh(): void {
+    if (this.qrRefreshTimer) { clearInterval(this.qrRefreshTimer); this.qrRefreshTimer = null; }
+    if (this.qrCountdownTimer) { clearInterval(this.qrCountdownTimer); this.qrCountdownTimer = null; }
+    this.waQrCountdown = 0;
   }
 
   /* ─── Photos ─── */
@@ -610,11 +640,13 @@ export class SettingsComponent implements OnInit {
           this.waStatus      = 'connected';
           this.waQrCode      = '';
           this.waError       = '';
+          this.stopQrAutoRefresh();
         } else {
           const qr = res.data?.qrCode ?? '';
           if (qr.startsWith('data:image')) {
             this.waQrCode = qr;
             this.waStatus = 'disconnected';
+            this.startQrAutoRefresh();
           } else {
             this.waStatus = 'disconnected';
             this.waError  = 'QR kod hazırlanıyor…';
@@ -638,6 +670,7 @@ export class SettingsComponent implements OnInit {
         if (res.success && res.data?.qrCode) {
           this.waQrCode = res.data.qrCode;
           this.waError  = '';
+          if (!this.qrRefreshTimer) this.startQrAutoRefresh();
         } else {
           this.waError = 'QR kodu henüz hazır değil. "QR Yenile" butonuna tekrar basın.';
         }
@@ -660,6 +693,7 @@ export class SettingsComponent implements OnInit {
         this.waSession       = '';
         this.waQrCode        = '';
         this.waStatus        = 'disconnected';
+        this.stopQrAutoRefresh();
       },
       error: (err) => {
         this.waActionLoading = false;
