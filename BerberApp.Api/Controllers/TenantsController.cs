@@ -321,6 +321,16 @@ public class TenantsController : BaseApiController
         var session = $"tenant-{tenant.Subdomain}";
         try
         {
+            // Close existing session with OLD token before generating a new one.
+            // Without this, WppConnect keeps the old session alive and start-session
+            // returns {"status":null,"qrcode":null} immediately instead of generating a QR.
+            if (!string.IsNullOrWhiteSpace(tenant.WppConnectSession) && !string.IsNullOrWhiteSpace(tenant.WppConnectToken))
+            {
+                try { await mgmt.CloseSessionAsync(tenant.WppConnectSession, tenant.WppConnectToken); }
+                catch { /* ignore — old token may already be invalid */ }
+                await Task.Delay(1000);
+            }
+
             var token  = await mgmt.GenerateTokenAsync(session);
             var result = await mgmt.StartSessionAsync(session, token);
 

@@ -383,10 +383,12 @@ public class WppConnectWhatsAppService : IWhatsAppService
 
     public async Task SendCustomMessageAsync(string phone, string message, string? imageUrl = null)
     {
-        if (!string.IsNullOrWhiteSpace(imageUrl))
-            await TrySendImageAsync(phone, imageUrl, message);
-        else
-            await TrySendTextAsync(phone, message);
+        var ok = !string.IsNullOrWhiteSpace(imageUrl)
+            ? await TrySendImageAsync(phone, imageUrl, message)
+            : await TrySendTextAsync(phone, message);
+
+        if (!ok)
+            throw new InvalidOperationException("WhatsApp mesajı gönderilemedi. Session bağlı olmayabilir veya numara geçersiz.");
     }
 
     // ── WPPConnect REST API ──────────────────────────────────────────────────
@@ -407,6 +409,11 @@ public class WppConnectWhatsAppService : IWhatsAppService
 
     private async Task<string?> ResolveTokenAsync()
     {
+        // Tenant instances use a fixed token — never read the superadmin persistent file
+        if (_fixedCfg != null)
+            return string.IsNullOrWhiteSpace(_fixedCfg.Token) ? null : _fixedCfg.Token;
+
+        // Superadmin: persistent file takes precedence over appsettings
         try
         {
             if (File.Exists(PersistentTokenPath))
