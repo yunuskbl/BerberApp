@@ -12,6 +12,7 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { LanguageService } from '../../../core/services/language.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { LogoComponent } from '../../../shared/components/logo/logo.component';
 
 /* Turkish phone validator */
 function phoneValidator(ctrl: AbstractControl): ValidationErrors | null {
@@ -40,7 +41,7 @@ function numberValidator(ctrl: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslatePipe, LogoComponent],
   templateUrl: './forgot-password.component.html',
   styleUrl: './forgot-password.component.scss',
 })
