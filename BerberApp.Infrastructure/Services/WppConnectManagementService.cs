@@ -97,7 +97,7 @@ public class WppConnectManagementService : IWppConnectManagementService
         try
         {
             using var doc = JsonDocument.Parse(body);
-            foreach (var field in new[] { "qrcode", "base64Qr", "qr" })
+            foreach (var field in new[] { "qrcode", "base64Qr", "qr", "urlCode" })
             {
                 if (doc.RootElement.TryGetProperty(field, out var v) && v.ValueKind == JsonValueKind.String)
                 {
@@ -135,7 +135,7 @@ public class WppConnectManagementService : IWppConnectManagementService
         try
         {
             using var doc = JsonDocument.Parse(body);
-            foreach (var field in new[] { "qrcode", "base64Qr", "qr" })
+            foreach (var field in new[] { "qrcode", "base64Qr", "qr", "urlCode" })
             {
                 if (doc.RootElement.TryGetProperty(field, out var qrProp))
                 {

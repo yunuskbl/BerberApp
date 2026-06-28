@@ -605,10 +605,11 @@ export class SettingsComponent implements OnInit {
           this.waSession = res.data.session;
           this.waStatus  = 'disconnected';
         } else if (res.success) {
-          // Oturum başladı ama QR henüz hazır değil, otomatik yenile
+          // Oturum başladı ama QR henüz hazır değil — 3 saniye sonra otomatik dene
           this.waSession = res.data?.session ?? '';
           this.waStatus  = 'disconnected';
-          this.waError   = 'QR kod hazırlanıyor, lütfen "QR Yenile" butonuna basın.';
+          this.waError   = 'QR kod hazırlanıyor…';
+          setTimeout(() => this.refreshWhatsAppQr(), 3000);
         } else {
           this.waError = res.message || res.data?.message || 'Bağlantı başlatılamadı.';
         }
@@ -628,11 +629,15 @@ export class SettingsComponent implements OnInit {
         this.waActionLoading = false;
         if (res.success && res.data?.qrCode) {
           this.waQrCode = res.data.qrCode;
+          this.waError  = '';
         } else {
-          this.waError = res.data?.message || 'QR kodu alınamadı.';
+          this.waError = 'QR kodu henüz hazır değil. "QR Yenile" butonuna tekrar basın.';
         }
       },
-      error: () => { this.waActionLoading = false; this.waError = 'QR kodu alınamadı.'; }
+      error: () => {
+        this.waActionLoading = false;
+        this.waError = 'QR kodu alınamadı. "QR Yenile" butonuna tekrar basın.';
+      }
     });
   }
 

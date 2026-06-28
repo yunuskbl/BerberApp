@@ -537,8 +537,13 @@
           @if (!waQrCode) {
             <div class="card-actions">
               <button class="btn btn-primary" (click)="connectWhatsApp()" [disabled]="waActionLoading">
-                {{ waActionLoading ? 'Başlatılıyor…' : '🔗 WhatsApp\'ı Bağla' }}
+                {{ waActionLoading ? 'Başlatılıyor…' : (waSession ? '🔄 Yeniden Bağlan' : '🔗 WhatsApp\'ı Bağla') }}
               </button>
+              @if (waSession && !waActionLoading) {
+                <button class="btn btn-outline" (click)="refreshWhatsAppQr()" [disabled]="waActionLoading">
+                  🔄 QR Yenile
+                </button>
+              }
             </div>
           } @else {
             <div class="wa-qr-container">
