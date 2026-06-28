@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AYD Organizasyon — Toptan Satış | Tasarım 2: Beyaz Minimal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary:   #0f172a;
+      --primary2:  #1e293b;
+      --accent:    #e63946;
+      --accent2:   #c1121f;
+      --blue:      #0ea5e9;
+      --white:     #ffffff;
+      --gray-50:   #f8fafc;
+      --gray-100:  #f1f5f9;
+      --gray-200:  #e2e8f0;
+      --gray-400:  #94a3b8;
+      --gray-600:  #475569;
+      --gray-800:  #1e293b;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--white);
+      color: var(--primary);
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: var(--primary);
+      color: #94a3b8;
+      font-size: 12.5px;
+      padding: 10px 0;
+      text-align: center;
+    }
+    .topbar strong { color: var(--white); }
+    .topbar a { color: var(--blue); text-decoration: none; margin-left: 8px; }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .header-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; align-items: center;
+      padding: 0 32px; height: 68px;
+      gap: 48px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-mark {
+      width: 38px; height: 38px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--white);
+      font-weight: 800; font-size: 16px;
+    }
+    .logo-info strong { display: block; font-size: 16px; font-weight: 700; color: var(--primary); }
+    .logo-info small { font-size: 10.5px; color: var(--gray-400); letter-spacing: 0.08em; text-transform: uppercase; }
+
+    .search-bar {
+      flex: 1; max-width: 480px;
+      display: flex;
+      background: var(--gray-50);
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .search-bar:focus-within { border-color: var(--accent); }
+    .search-bar input {
+      flex: 1; border: none; background: transparent;
+      padding: 10px 14px; font-size: 13.5px;
+      color: var(--primary);
+      font-family: 'Inter', sans-serif;
+      outline: none;
+    }
+    .search-bar button {
+      background: var(--accent); border: none; cursor: pointer;
+      padding: 0 18px; color: var(--white);
+      font-size: 16px;
+      transition: background .2s;
+    }
+    .search-bar button:hover { background: var(--accent2); }
+
+    nav { display: flex; align-items: center; gap: 24px; margin-left: auto; }
+    nav a {
+      font-size: 13.5px; font-weight: 500;
+      color: var(--gray-600);
+      text-decoration: none;
+      transition: color .2s;
+      white-space: nowrap;
+    }
+    nav a:hover { color: var(--accent); }
+    .nav-active { color: var(--accent) !important; font-weight: 600 !important; }
+
+    .header-btns { display: flex; gap: 10px; }
+    .btn-sm {
+      padding: 8px 18px;
+      border-radius: 7px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all .2s;
+    }
+    .btn-ghost {
+      background: transparent;
+      border: 1.5px solid var(--gray-200);
+      color: var(--primary);
+    }
+    .btn-ghost:hover { border-color: var(--primary); }
+    .btn-red {
+      background: var(--accent);
+      border: none; color: var(--white);
+    }
+    .btn-red:hover { background: var(--accent2); }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary2) 100%);
+      color: var(--white);
+      padding: 80px 32px;
+      position: relative; overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute; right: -100px; top: -100px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(230,57,70,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 420px;
+      gap: 60px; align-items: center;
+      position: relative; z-index: 1;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(230,57,70,0.2);
+      border: 1px solid rgba(230,57,70,0.4);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 11.5px; font-weight: 600;
+      color: #fca5a5;
+      margin-bottom: 24px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: 48px; font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+    .hero h1 .highlight { color: var(--accent); }
+    .hero p {
+      font-size: 15.5px; line-height: 1.75;
+      color: #94a3b8;
+      margin-bottom: 36px;
+      max-width: 500px;
+    }
+    .hero-cta { display: flex; gap: 14px; }
+    .btn-primary-lg {
+      background: var(--accent);
+      color: var(--white);
+      padding: 13px 32px;
+      border-radius: 8px;
+      font-size: 14.5px; font-weight: 700;
+      border: none; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background .2s;
+    }
+    .btn-primary-lg:hover { background: var(--accent2); }
+    .btn-secondary-lg {
+      background: rgba(255,255,255,0.08);
+      color: var(--white);
+      padding: 13px 28px;
+      border-radius: 8px;
+      font-size: 14.5px; font-weight: 500;
+      border: 1px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background .2s;
+    }
+    .btn-secondary-lg:hover { background: rgba(255,255,255,0.14); }
+    .hero-kpis {
+      display: flex; gap: 0;
+      margin-top: 48px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 40px;
+    }
+    .kpi {
+      flex: 1;
+      padding-right: 32px;
+      border-right: 1px solid rgba(255,255,255,0.08);
+    }
+    .kpi:last-child { border-right: none; padding-right: 0; padding-left: 32px; }
+    .kpi:not(:first-child):not(:last-child) { padding-left: 32px; }
+    .kpi strong { display: block; font-size: 30px; font-weight: 800; color: var(--accent); }
+    .kpi span { font-size: 12.5px; color: #64748b; margin-top: 2px; display: block; }
+
+    /* ── HERO SIDEBAR CARD ── */
+    .hero-sidebar { display: flex; flex-direction: column; gap: 14px; }
+    .sidebar-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .sc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .sc-title { font-size: 13px; font-weight: 600; }
+    .sc-badge {
+      background: rgba(230,57,70,0.2); color: #fca5a5;
+      font-size: 10.5px; font-weight: 600;
+      padding: 3px 9px; border-radius: 100px;
+    }
+    .sc-badge.green { background: rgba(34,197,94,0.15); color: #86efac; }
+    .product-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .product-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .pr-thumb {
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .pr-info { flex: 1; }
+    .pr-name { font-size: 12.5px; font-weight: 500; }
+    .pr-cat { font-size: 11px; color: #64748b; }
+    .pr-price { font-size: 13.5px; font-weight: 700; color: var(--accent); }
+
+    /* ── STRIP ── */
+    .strip {
+      background: var(--accent);
+      color: var(--white);
+      padding: 18px 32px;
+      display: flex; align-items: center; justify-content: center; gap: 40px;
+    }
+    .strip-item { display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 500; }
+    .strip-item span { font-size: 18px; }
+
+    /* ── MAIN CONTENT ── */
+    .main-container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+
+    /* ── CAT TABS ── */
+    .cat-tabs-section { padding: 64px 0 0; }
+    .section-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 32px; }
+    .sh-left .label {
+      font-size: 11.5px; font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .sh-left h2 {
+      font-size: 30px; font-weight: 800;
+      color: var(--primary);
+    }
+    .see-all {
+      font-size: 13.5px; font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1.5px solid var(--gray-200);
+      padding: 8px 18px;
+      border-radius: 7px;
+      transition: all .2s;
+    }
+    .see-all:hover { border-color: var(--accent); background: rgba(230,57,70,0.04); }
+
+    .cat-list {
+      display: flex; gap: 12px;
+      overflow-x: auto; padding-bottom: 8px;
+      margin-bottom: 32px;
+      scrollbar-width: none;
+    }
+    .cat-list::-webkit-scrollbar { display: none; }
+    .cat-pill {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 18px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 100px;
+      font-size: 13px; font-weight: 500;
+      color: var(--gray-600);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .2s;
+      background: var(--white);
+    }
+    .cat-pill:hover { border-color: var(--accent); color: var(--accent); }
+    .cat-pill.active {
+      background: var(--accent); border-color: var(--accent);
+      color: var(--white); font-weight: 600;
+    }
+    .cat-pill .emoji { font-size: 15px; }
+
+    /* ── PRODUCT GRID ── */
+    .prod-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      padding-bottom: 64px;
+    }
+    .prod-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all .25s;
+      cursor: pointer;
+    }
+    .prod-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 8px 32px rgba(230,57,70,0.1);
+      transform: translateY(-3px);
+    }
+    .prod-img {
+      height: 180px;
+      background: var(--gray-50);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 52px;
+      border-bottom: 1.5px solid var(--gray-200);
+      position: relative;
+    }
+    .prod-tag {
+      position: absolute; top: 10px; left: 10px;
+      background: var(--accent); color: var(--white);
+      font-size: 10px; font-weight: 700;
+      padding: 3px 8px; border-radius: 4px;
+      letter-spacing: 0.04em;
+    }
+    .prod-tag.blue { background: var(--blue); }
+    .prod-tag.green { background: #16a34a; }
+    .prod-body { padding: 16px; }
+    .prod-cat { font-size: 11px; color: var(--gray-400); font-weight: 500; margin-bottom: 5px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .prod-name { font-size: 14px; font-weight: 600; color: var(--primary); margin-bottom: 12px; line-height: 1.4; }
+    .prod-footer { display: flex; align-items: center; justify-content: space-between; }
+    .prod-price strong { display: block; font-size: 18px; font-weight: 800; color: var(--accent); }
+    .prod-price small { font-size: 11px; color: var(--gray-400); }
+    .prod-min { font-size: 11px; color: var(--gray-400); text-align: right; }
+    .prod-min strong { display: block; color: var(--primary); font-size: 12.5px; }
+    .btn-cart {
+      width: 100%; margin-top: 12px;
+      background: var(--gray-50);
+      border: 1.5px solid var(--gray-200);
+      color: var(--primary);
+      padding: 9px;
+      border-radius: 7px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all .2s;
+    }
+    .btn-cart:hover { background: var(--accent); border-color: var(--accent); color: var(--white); }
+
+    /* ── BANNER ── */
+    .banner-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 20px; padding: 0 0 64px;
+    }
+    .banner {
+      border-radius: 14px;
+      padding: 40px 36px;
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+      min-height: 200px;
+      position: relative; overflow: hidden;
+    }
+    .banner-dark {
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      color: var(--white);
+    }
+    .banner-red {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: var(--white);
+    }
+    .banner-emoji {
+      position: absolute; right: 24px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 80px; opacity: 0.25;
+    }
+    .banner small { font-size: 11.5px; font-weight: 600; opacity: 0.7; letter-spacing: 0.08em; text-transform: uppercase; }
+    .banner h3 { font-size: 26px; font-weight: 800; margin: 8px 0 4px; }
+    .banner p { font-size: 13.5px; opacity: 0.75; }
+    .banner-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--white);
+      font-size: 13.5px; font-weight: 600;
+      text-decoration: none;
+      background: rgba(255,255,255,0.15);
+      padding: 9px 18px; border-radius: 7px;
+      margin-top: 20px;
+      width: fit-content;
+      transition: background .2s;
+    }
+    .banner-link:hover { background: rgba(255,255,255,0.25); }
+
+    /* ── TRUST ── */
+    .trust-section { padding: 64px 0; border-top: 1.5px solid var(--gray-100); }
+    .trust-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; }
+    .trust-card {
+      text-align: center;
+      padding: 28px 20px;
+    }
+    .trust-icon { font-size: 36px; margin-bottom: 12px; }
+    .trust-num { font-size: 26px; font-weight: 800; color: var(--primary); margin-bottom: 4px; }
+    .trust-label { font-size: 12.5px; color: var(--gray-400); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--primary);
+      color: #94a3b8;
+      padding: 60px 32px 0;
+    }
+    .footer-inner { max-width: 1280px; margin: 0 auto; }
+    .footer-top {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+      gap: 40px;
+      padding-bottom: 48px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .footer-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .footer-logo .logo-mark { background: var(--accent); }
+    .footer-logo strong { color: var(--white); font-size: 15.5px; }
+    .fb-desc { font-size: 13px; line-height: 1.7; margin-bottom: 20px; }
+    .footer-contact { display: flex; flex-direction: column; gap: 8px; }
+    .fc-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+    .fc-item strong { color: var(--white); }
+    .footer-col h4 { color: var(--white); font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+    .footer-col a { display: block; font-size: 12.5px; color: #64748b; text-decoration: none; margin-bottom: 9px; transition: color .2s; }
+    .footer-col a:hover { color: var(--accent); }
+    .footer-bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 24px 0;
+      font-size: 12px; color: #475569;
+    }
+    .footer-bottom a { color: #475569; text-decoration: none; }
+    .footer-bottom a:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <strong>🎉 Temmuz Kampanyası:</strong> 100.000 TL üzeri siparişlerde %8 indirim + ücretsiz kargo!
+    <a href="#">Detaylar →</a>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <a href="#" class="logo">
+        <div class="logo-mark">A</div>
+        <div class="logo-info">
+          <strong>AYD Organizasyon</strong>
+          <small>Toptan Satış B2B</small>
+        </div>
+      </a>
+      <div class="search-bar">
+        <input type="text" placeholder="Ürün, kategori veya marka ara..." />
+        <button>🔍</button>
+      </div>
+      <nav>
+        <a href="#" class="nav-active">Katalog</a>
+        <a href="#">Animasyon</a>
+        <a href="#">Kampanyalar</a>
+        <a href="#">Hizmetler</a>
+        <a href="#">İletişim</a>
+      </nav>
+      <div class="header-btns">
+        <button class="btn-sm btn-ghost">Giriş Yap</button>
+        <button class="btn-sm btn-red">Toptan Üye Ol</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-tag">🏆 Türkiye'nin #1 Animasyon Tedarikçisi</div>
+        <h1>Organizasyon<br/>Ekipmanlarında<br/><span class="highlight">Toptan Güç</span></h1>
+        <p>Otel, tatil köyü ve etkinlik firmalarının güvendiği profesyonel animasyon ekipmanları. Sertifikalı ürünler, rekabetçi fiyatlar, hızlı teslimat.</p>
+        <div class="hero-cta">
+          <button class="btn-primary-lg">Kataloga Gözat</button>
+          <button class="btn-secondary-lg">Bayi Ol →</button>
+        </div>
+        <div class="hero-kpis">
+          <div class="kpi">
+            <strong>2.400+</strong>
+            <span>Ürün Çeşidi</span>
+          </div>
+          <div class="kpi">
+            <strong>850+</strong>
+            <span>Aktif Bayi</span>
+          </div>
+          <div class="kpi">
+            <strong>48 saat</strong>
+            <span>Kargo Garantisi</span>
+          </div>
+          <div class="kpi">
+            <strong>18 Yıl</strong>
+            <span>Sektör Deneyimi</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-sidebar">
+        <div class="sidebar-card">
+          <div class="sc-header">
+            <span class="sc-title">🔥 Bu Hafta En Çok Satan</span>
+            <span class="sc-badge">7 ürün</span>
+          </div>
+          <div class="product-row">
+            <div class="pr-thumb">🎭</div>
+            <div class="pr-info">
+              <div class="pr-name">Palyaço Kostüm Seti</div>
+              <div class="pr-cat">Kostüm & Kıyafet</div>
+            </div>
+            <div class="pr-price">₺485</div>
+          </div>
+          <div class="product-row">
+            <div class="pr-thumb">🎵</div>
+            <div class="pr-info">
+              <div class="pr-name">LED Sahne Işık Seti</div>
+              <div class="pr-cat">Ses & Işık</div>
+            </div>
+            <div class="pr-price">₺2.850</div>
+          </div>
+          <div class="product-row">
+            <div class="pr-thumb">🎠</div>
+            <div class="pr-info">
+              <div class="pr-name">Çocuk Aktivite Kiti</div>
+              <div class="pr-cat">Oyun Setleri</div>
+            </div>
+            <div class="pr-price">₺340</div>
+          </div>
+        </div>
+        <div class="sidebar-card">
+          <div class="sc-header">
+            <span class="sc-title">📦 Stok Durumu</span>
+            <span class="sc-badge green">Güncellendi</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; font-size:12.5px;">
+              <span style="color:#94a3b8;">Kostüm</span>
+              <span style="color:#4ade80; font-weight:600;">✓ Stokta</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:12.5px;">
+              <span style="color:#94a3b8;">Sahne Ekipmanı</span>
+              <span style="color:#4ade80; font-weight:600;">✓ Stokta</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:12.5px;">
+              <span style="color:#94a3b8;">LED Işık Setleri</span>
+              <span style="color:#fb923c; font-weight:600;">⚠ Sınırlı</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STRIP -->
+  <div class="strip">
+    <div class="strip-item"><span>🚚</span> Türkiye Geneli 48 Saat Kargo</div>
+    <div class="strip-item"><span>✅</span> CE & ISO Sertifikalı Ürünler</div>
+    <div class="strip-item"><span>💳</span> 90 Gün Vadeli Ödeme</div>
+    <div class="strip-item"><span>🎯</span> Özel Logo Baskı Hizmeti</div>
+    <div class="strip-item"><span>📞</span> Kurumsal Satış Hattı 7/24</div>
+  </div>
+
+  <!-- PRODUCTS -->
+  <div class="main-container">
+    <div class="cat-tabs-section">
+      <div class="section-header">
+        <div class="sh-left">
+          <div class="label">Ürün Kataloğu</div>
+          <h2>Animasyon Ekipmanları</h2>
+        </div>
+        <a href="#" class="see-all">Tüm Ürünleri Gör →</a>
+      </div>
+      <div class="cat-list">
+        <div class="cat-pill active"><span class="emoji">⭐</span> Tümü</div>
+        <div class="cat-pill"><span class="emoji">🎭</span> Kostüm & Kıyafet</div>
+        <div class="cat-pill"><span class="emoji">🎪</span> Sahne & Dekor</div>
+        <div class="cat-pill"><span class="emoji">🎵</span> Ses & Işık</div>
+        <div class="cat-pill"><span class="emoji">🎠</span> Çocuk Oyun</div>
+        <div class="cat-pill"><span class="emoji">🎉</span> Parti Malzemesi</div>
+        <div class="cat-pill"><span class="emoji">🎨</span> Makyaj</div>
+        <div class="cat-pill"><span class="emoji">🎯</span> Aktivite</div>
+      </div>
+      <div class="prod-grid">
+        <div class="prod-card">
+          <div class="prod-img">🎭<span class="prod-tag">Çok Satan</span></div>
+          <div class="prod-body">
+            <div class="prod-cat">Kostüm & Kıyafet</div>
+            <div class="prod-name">Profesyonel Palyaço Kostüm Seti (5 Parça)</div>
+            <div class="prod-footer">
+              <div class="prod-price">
+                <strong>₺485</strong>
+                <small>adet + KDV</small>
+              </div>
+              <div class="prod-min">
+                <span>Min. sipariş</span>
+                <strong>10 adet</strong>
+              </div>
+            </div>
+            <button class="btn-cart">+ Sepete Ekle</button>
+          </div>
+        </div>
+        <div class="prod-card">
+          <div class="prod-img">🎪<span class="prod-tag blue">Yeni</span></div>
+          <div class="prod-body">
+            <div class="prod-cat">Sahne & Dekor</div>
+            <div class="prod-name">Şişme Balon Sahne Kapısı – Renkli XL</div>
+            <div class="prod-footer">
+              <div class="prod-price">
+                <strong>₺1.250</strong>
+                <small>adet + KDV</small>
+              </div>
+              <div class="prod-min">
+                <span>Min. sipariş</span>
+                <strong>5 adet</strong>
+              </div>
+            </div>
+            <button class="btn-cart">+ Sepete Ekle</button>
+          </div>
+        </div>
+        <div class="prod-card">
+          <div class="prod-img">🎵<span class="prod-tag">Popüler</span></div>
+          <div class="prod-body">
+            <div class="prod-cat">Ses & Işık</div>
+            <div class="prod-name">RGB LED Sahne Işık Seti (12'li Profesyonel)</div>
+            <div class="prod-footer">
+              <div class="prod-price">
+                <strong>₺2.850</strong>
+                <small>set + KDV</small>
+              </div>
+              <div class="prod-min">
+                <span>Min. sipariş</span>
+                <strong>3 set</strong>
+              </div>
+            </div>
+            <button class="btn-cart">+ Sepete Ekle</button>
+          </div>
+        </div>
+        <div class="prod-card">
+          <div class="prod-img">🎠<span class="prod-tag green">Stokta</span></div>
+          <div class="prod-body">
+            <div class="prod-cat">Çocuk Oyun</div>
+            <div class="prod-name">Çocuk Aktivite ve Eğlence Seti (20 Oyun)</div>
+            <div class="prod-footer">
+              <div class="prod-price">
+                <strong>₺340</strong>
+                <small>set + KDV</small>
+              </div>
+              <div class="prod-min">
+                <span>Min. sipariş</span>
+                <strong>20 set</strong>
+              </div>
+            </div>
+            <button class="btn-cart">+ Sepete Ekle</button>
+          </div>
+        </div>
+        <div class="prod-card">
+          <div class="prod-img">🎉</div>
+          <div class="prod-body">
+            <div class="prod-cat">Parti Malzemesi</div>
+            <div class="prod-name">Biodegradable Konfeti Topu Seti (50'li Kutu)</div>
+            <div class="prod-footer">
+              <div class="prod-price">
+                <strong>₺92</strong>
+                <small>adet + KDV</small>
+              </div>
+              <div class="prod-min">
+                <span>Min. sipariş</span>
+                <strong>50 adet</strong>
+              </div>
+            </div>
+            <button class="btn-cart">+ Sepete Ekle</button>
+          </div>
+        </div>
+        <div class="prod-card">
+          <div class="prod-img">🎨<span class="prod-tag blue">CE Sertifikalı</span></div>
+          <div class="prod-body">
+            <div class="prod-cat">Makyaj & Boya</div>
+            <div class="prod-name">Profesyonel Yüz Boyası Seti (12 Renk Palet)</div>
+            <div class="prod-footer">
+              <div class="prod-price">
+                <strong>₺185</strong>
+                <small>set + KDV</small>
+              </div>
+              <div class="prod-min">
+                <span>Min. sipariş</span>
+                <strong>30 set</strong>
+              </div>
+            </div>
+            <button class="btn-cart">+ Sepete Ekle</button>
+          </div>
+        </div>
+        <div class="prod-card">
+          <div class="prod-img">🎯</div>
+          <div class="prod-body">
+            <div class="prod-cat">Aktivite Ekipmanı</div>
+            <div class="prod-name">Açık Alan Oyun Paketi – Resort Edition</div>
+            <div class="prod-footer">
+              <div class="prod-price">
+                <strong>₺4.200</strong>
+                <small>paket + KDV</small>
+              </div>
+              <div class="prod-min">
+                <span>Min. sipariş</span>
+                <strong>2 paket</strong>
+              </div>
+            </div>
+            <button class="btn-cart">+ Sepete Ekle</button>
+          </div>
+        </div>
+        <div class="prod-card">
+          <div class="prod-img">🎁<span class="prod-tag">Fırsat</span></div>
+          <div class="prod-body">
+            <div class="prod-cat">Promosyon</div>
+            <div class="prod-name">Kurumsal Promosyon Çantası (Logo Baskılı)</div>
+            <div class="prod-footer">
+              <div class="prod-price">
+                <strong>₺38</strong>
+                <small>adet + KDV</small>
+              </div>
+              <div class="prod-min">
+                <span>Min. sipariş</span>
+                <strong>100 adet</strong>
+              </div>
+            </div>
+            <button class="btn-cart">+ Sepete Ekle</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BANNERS -->
+    <div class="banner-grid">
+      <div class="banner banner-dark">
+        <div>
+          <small>Yeni Üyeler İçin</small>
+          <h3>İlk Siparişte %10 İndirim</h3>
+          <p>Toptan üyelik başvurusu onaylanan firmalara özel hoş geldin indirimi.</p>
+          <a href="#" class="banner-link">Hemen Üye Ol →</a>
+        </div>
+        <div class="banner-emoji">🎉</div>
+      </div>
+      <div class="banner banner-red">
+        <div>
+          <small>Özel Üretim Hizmeti</small>
+          <h3>Kurumsal Logo Baskı</h3>
+          <p>Kostüm, çanta ve ekipmanlarınıza firma logonuzu baskılatın.</p>
+          <a href="#" class="banner-link">Teklif Al →</a>
+        </div>
+        <div class="banner-emoji">🏷️</div>
+      </div>
+    </div>
+
+    <!-- TRUST -->
+    <div class="trust-section">
+      <div class="trust-grid">
+        <div class="trust-card">
+          <div class="trust-icon">🏆</div>
+          <div class="trust-num">18 Yıl</div>
+          <div class="trust-label">Sektör Deneyimi</div>
+        </div>
+        <div class="trust-card">
+          <div class="trust-icon">🤝</div>
+          <div class="trust-num">850+</div>
+          <div class="trust-label">Aktif Bayi</div>
+        </div>
+        <div class="trust-card">
+          <div class="trust-icon">📦</div>
+          <div class="trust-num">2.400+</div>
+          <div class="trust-label">Ürün Çeşidi</div>
+        </div>
+        <div class="trust-card">
+          <div class="trust-icon">✅</div>
+          <div class="trust-num">%99.4</div>
+          <div class="trust-label">Müşteri Memnuniyeti</div>
+        </div>
+        <div class="trust-card">
+          <div class="trust-icon">🚚</div>
+          <div class="trust-num">48 Saat</div>
+          <div class="trust-label">Kargo Garantisi</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div>
+          <div class="footer-logo">
+            <div class="logo-mark">A</div>
+            <strong>AYD Organizasyon</strong>
+          </div>
+          <p class="fb-desc">Animasyon ve organizasyon ekipmanlarında Türkiye'nin güvenilir toptan tedarikçisi. Profesyonel hizmet, rekabetçi fiyat.</p>
+          <div class="footer-contact">
+            <div class="fc-item"><strong>📞</strong> +90 212 XXX XX XX</div>
+            <div class="fc-item"><strong>✉️</strong> toptan@aydorganizasyon.com</div>
+            <div class="fc-item"><strong>📍</strong> İstanbul, Türkiye</div>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Ürünler</h4>
+          <a href="#">Kostüm & Kıyafet</a>
+          <a href="#">Sahne Ekipmanları</a>
+          <a href="#">Ses & Işık</a>
+          <a href="#">Oyun Setleri</a>
+          <a href="#">Parti Malzemeleri</a>
+        </div>
+        <div class="footer-col">
+          <h4>Hizmetler</h4>
+          <a href="#">Logo Baskı</a>
+          <a href="#">Özel Üretim</a>
+          <a href="#">Kargo & Lojistik</a>
+          <a href="#">Sertifika Hizmetleri</a>
+        </div>
+        <div class="footer-col">
+          <h4>Kurumsal</h4>
+          <a href="#">Hakkımızda</a>
+          <a href="#">Toptan Üyelik</a>
+          <a href="#">Referanslar</a>
+          <a href="#">Kariyer</a>
+        </div>
+        <div class="footer-col">
+          <h4>Yardım</h4>
+          <a href="#">SSS</a>
+          <a href="#">İade Politikası</a>
+          <a href="#">Kargo Takip</a>
+          <a href="#">İletişim</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2024 AYD Organizasyon. Tüm hakları saklıdır.</p>
+        <div style="display:flex; gap:20px;">
+          <a href="#">Gizlilik Politikası</a>
+          <a href="#">Kullanım Koşulları</a>
+          <a href="#">KVKK Aydınlatma</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
