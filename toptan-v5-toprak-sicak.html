@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AYD Organizasyon — Tasarım 5: Sıcak Toprak</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --terra:    #c25c2a;
+      --terra2:   #e07040;
+      --terra3:   #f08050;
+      --earth:    #7a4028;
+      --sand:     #f5ead8;
+      --sand2:    #ede0c4;
+      --cream:    #faf6ef;
+      --warm-bg:  #fff9f2;
+      --olive:    #6b7c3b;
+      --olive2:   #8a9e4e;
+      --brown:    #3d2510;
+      --brown2:   #5c3820;
+      --muted:    #9c7a60;
+      --text:     #2d1a0a;
+      --border:   rgba(194,92,42,0.15);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Nunito', sans-serif; background: var(--warm-bg); color: var(--text); }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: var(--brown);
+      color: var(--sand2);
+      padding: 9px 40px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12.5px;
+    }
+    .topbar-items { display: flex; gap: 28px; }
+    .tb-item { display: flex; align-items: center; gap: 7px; }
+    .topbar a { color: var(--terra3); text-decoration: none; font-weight: 700; }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--cream);
+      border-bottom: 2px solid var(--sand2);
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 16px rgba(61,37,16,0.07);
+    }
+    .h-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; align-items: center;
+      padding: 0 40px; height: 72px;
+      gap: 32px;
+    }
+    .logo { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+    .logo-emblem {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--terra), var(--terra2));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Lora', serif;
+      font-size: 20px; font-weight: 700;
+      color: var(--cream);
+      box-shadow: 0 4px 12px rgba(194,92,42,0.3);
+    }
+    .logo-words strong { display: block; font-size: 18px; font-weight: 800; color: var(--brown); font-family: 'Lora', serif; }
+    .logo-words small { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
+    nav { display: flex; gap: 2px; margin-left: auto; }
+    nav a {
+      font-size: 14px; font-weight: 600;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 8px 16px; border-radius: 8px;
+      transition: all .2s;
+    }
+    nav a:hover { color: var(--terra); background: rgba(194,92,42,0.07); }
+    nav a.act { color: var(--terra); }
+
+    .h-right { display: flex; gap: 10px; }
+    .btn-h-ghost {
+      border: 2px solid var(--sand2); background: transparent;
+      color: var(--brown); padding: 9px 20px; border-radius: 8px;
+      font-size: 13.5px; font-weight: 700;
+      cursor: pointer; font-family: 'Nunito', sans-serif;
+      transition: all .2s;
+    }
+    .btn-h-ghost:hover { border-color: var(--terra); color: var(--terra); }
+    .btn-h-terra {
+      background: linear-gradient(135deg, var(--terra), var(--terra2));
+      border: none; color: var(--cream);
+      padding: 9px 20px; border-radius: 8px;
+      font-size: 13.5px; font-weight: 700;
+      cursor: pointer; font-family: 'Nunito', sans-serif;
+      box-shadow: 0 3px 12px rgba(194,92,42,0.3);
+      transition: opacity .2s;
+    }
+    .btn-h-terra:hover { opacity: 0.88; }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(160deg, var(--brown) 0%, var(--earth) 50%, #4a2c18 100%);
+      position: relative; overflow: hidden;
+    }
+    .hero-texture {
+      position: absolute; inset: 0;
+      background-image:
+        radial-gradient(ellipse 60% 50% at 85% 50%, rgba(194,92,42,0.2) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 60% at 10% 80%, rgba(107,124,59,0.15) 0%, transparent 60%);
+    }
+    .hero-dots {
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(245,234,216,0.06) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+    .hero-grid {
+      max-width: 1280px; margin: 0 auto;
+      padding: 90px 40px 80px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center;
+      position: relative; z-index: 1;
+    }
+    .hero-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(245,234,216,0.12);
+      border: 1px solid rgba(245,234,216,0.2);
+      border-radius: 100px; padding: 7px 16px;
+      margin-bottom: 26px;
+    }
+    .hero-pill span { font-size: 12px; font-weight: 700; color: var(--sand); letter-spacing: 0.06em; text-transform: uppercase; }
+    .hero-pill .star { color: var(--terra3); font-size: 14px; }
+    .hero h1 {
+      font-family: 'Lora', serif;
+      font-size: 52px; line-height: 1.12;
+      color: var(--sand);
+      margin-bottom: 22px;
+    }
+    .hero h1 em { font-style: italic; color: var(--terra3); }
+    .hero p {
+      font-size: 16px; line-height: 1.8;
+      color: rgba(245,234,216,0.7);
+      margin-bottom: 38px; max-width: 460px;
+    }
+    .hero-btns { display: flex; gap: 14px; }
+    .btn-terra-lg {
+      background: linear-gradient(135deg, var(--terra), var(--terra2));
+      color: var(--cream); padding: 14px 36px;
+      border-radius: 10px; font-size: 15px; font-weight: 800;
+      border: none; cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      box-shadow: 0 6px 20px rgba(194,92,42,0.4);
+      transition: all .2s;
+    }
+    .btn-terra-lg:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(194,92,42,0.5); }
+    .btn-sand-lg {
+      background: rgba(245,234,216,0.1);
+      color: var(--sand); padding: 14px 28px;
+      border-radius: 10px; font-size: 15px; font-weight: 600;
+      border: 2px solid rgba(245,234,216,0.2);
+      cursor: pointer; font-family: 'Nunito', sans-serif;
+      transition: all .2s;
+    }
+    .btn-sand-lg:hover { background: rgba(245,234,216,0.18); border-color: rgba(245,234,216,0.4); }
+
+    .hero-nums {
+      display: flex; gap: 40px;
+      margin-top: 52px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(245,234,216,0.15);
+    }
+    .hn-item strong { display: block; font-family: 'Lora', serif; font-size: 30px; color: var(--terra3); }
+    .hn-item span { font-size: 12.5px; color: rgba(245,234,216,0.55); margin-top: 3px; display: block; }
+
+    /* ── HERO CARD ── */
+    .hero-card {
+      background: rgba(255,249,242,0.07);
+      border: 1px solid rgba(245,234,216,0.15);
+      border-radius: 18px;
+      backdrop-filter: blur(12px);
+      padding: 28px;
+    }
+    .hc-title { font-family: 'Lora', serif; font-size: 16px; color: var(--sand); margin-bottom: 18px; }
+    .hc-items { display: flex; flex-direction: column; gap: 0; }
+    .hc-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(245,234,216,0.08);
+    }
+    .hc-item:last-child { border-bottom: none; }
+    .hci-emoji { font-size: 24px; }
+    .hci-info { flex: 1; }
+    .hci-name { font-size: 13.5px; font-weight: 600; color: var(--sand); }
+    .hci-cat { font-size: 11.5px; color: rgba(245,234,216,0.4); margin-top: 2px; }
+    .hci-price { font-family: 'Lora', serif; font-size: 18px; font-weight: 700; color: var(--terra3); }
+    .hci-badge {
+      font-size: 10px; font-weight: 700;
+      padding: 3px 8px; border-radius: 100px;
+      background: rgba(107,124,59,0.2); color: var(--olive2);
+      border: 1px solid rgba(107,124,59,0.3);
+    }
+    .hci-badge.low { background: rgba(194,92,42,0.2); color: var(--terra3); border-color: rgba(194,92,42,0.3); }
+    .hc-footer {
+      margin-top: 18px; padding-top: 18px;
+      border-top: 1px solid rgba(245,234,216,0.1);
+      text-align: center;
+    }
+    .hc-footer button {
+      background: var(--terra); color: var(--cream);
+      border: none; padding: 11px 32px; border-radius: 8px;
+      font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: 'Nunito', sans-serif;
+      width: 100%; transition: opacity .2s;
+    }
+    .hc-footer button:hover { opacity: 0.88; }
+
+    /* ── STRIP ── */
+    .strip {
+      background: var(--sand2);
+      border-top: 2px solid var(--sand);
+      border-bottom: 2px solid var(--sand);
+      padding: 0 40px;
+    }
+    .strip-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(5,1fr);
+    }
+    .si {
+      display: flex; align-items: center; gap: 12px;
+      padding: 20px 24px;
+      border-right: 1px solid rgba(194,92,42,0.12);
+    }
+    .si:last-child { border-right: none; }
+    .si-icon {
+      width: 36px; height: 36px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--terra), var(--terra2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+    .si-text strong { display: block; font-size: 13px; font-weight: 700; color: var(--brown); }
+    .si-text span { font-size: 11.5px; color: var(--muted); }
+
+    /* ── MAIN ── */
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 0 40px; }
+
+    .sh { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; }
+    .sh-left .lbl { font-size: 11.5px; font-weight: 700; color: var(--terra); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+    .sh-left .ttl { font-family: 'Lora', serif; font-size: 32px; color: var(--brown); }
+    .see-link {
+      font-size: 13.5px; font-weight: 700; color: var(--terra);
+      text-decoration: none; border: 2px solid var(--sand2);
+      padding: 9px 20px; border-radius: 8px;
+      transition: all .2s;
+    }
+    .see-link:hover { border-color: var(--terra); background: rgba(194,92,42,0.05); }
+
+    /* CATEGORIES */
+    .cats { padding: 72px 0 0; }
+    .cat-g { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+    .cat-block {
+      background: var(--cream);
+      border: 2px solid var(--sand2);
+      border-radius: 14px;
+      padding: 28px 22px;
+      text-align: center;
+      text-decoration: none; color: inherit;
+      display: block; cursor: pointer;
+      transition: all .25s;
+    }
+    .cat-block:hover {
+      border-color: var(--terra);
+      box-shadow: 0 8px 24px rgba(194,92,42,0.12);
+      transform: translateY(-3px);
+    }
+    .cb-icon { font-size: 30px; margin-bottom: 12px; }
+    .cb-name { font-family: 'Lora', serif; font-size: 15px; font-weight: 600; color: var(--brown); margin-bottom: 5px; }
+    .cb-count { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+    /* PRODUCTS */
+    .prods { padding: 64px 0; }
+    .prod-g { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; }
+    .p-card {
+      background: var(--cream);
+      border: 2px solid var(--sand2);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all .25s;
+    }
+    .p-card:hover {
+      border-color: var(--terra);
+      box-shadow: 0 12px 36px rgba(194,92,42,0.12);
+      transform: translateY(-4px);
+    }
+    .p-img {
+      height: 190px;
+      background: var(--sand);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 60px;
+      border-bottom: 2px solid var(--sand2);
+      position: relative;
+    }
+    .p-tag {
+      position: absolute; top: 12px; left: 12px;
+      font-size: 10.5px; font-weight: 800;
+      padding: 4px 10px; border-radius: 100px;
+      letter-spacing: 0.04em;
+    }
+    .tag-terra { background: var(--terra); color: var(--cream); }
+    .tag-olive { background: var(--olive); color: var(--cream); }
+    .tag-warn { background: #e07040; color: var(--cream); }
+    .p-body { padding: 22px; }
+    .p-cat { font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .p-name { font-family: 'Lora', serif; font-size: 16px; font-weight: 600; color: var(--brown); margin-bottom: 16px; line-height: 1.4; }
+    .p-row { display: flex; justify-content: space-between; align-items: flex-end; }
+    .p-amt { font-family: 'Lora', serif; font-size: 22px; font-weight: 700; color: var(--terra); }
+    .p-unit { font-size: 11.5px; color: var(--muted); }
+    .p-min { text-align: right; }
+    .p-min small { font-size: 11px; color: var(--muted); }
+    .p-min strong { display: block; font-size: 13.5px; color: var(--brown); font-weight: 700; }
+    .btn-p {
+      width: 100%; margin-top: 16px;
+      background: var(--sand);
+      border: 2px solid var(--sand2);
+      color: var(--brown);
+      padding: 11px; border-radius: 9px;
+      font-size: 13.5px; font-weight: 700;
+      cursor: pointer; font-family: 'Nunito', sans-serif;
+      transition: all .2s;
+    }
+    .btn-p:hover { background: var(--terra); border-color: var(--terra); color: var(--cream); }
+
+    /* TESTIMONIALS */
+    .testi-section { padding: 72px 0; background: var(--sand); margin: 0 -40px; padding: 72px 40px; }
+    .testi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; margin-top: 0; }
+    .testi-card {
+      background: var(--cream);
+      border: 2px solid var(--sand2);
+      border-radius: 14px;
+      padding: 28px;
+    }
+    .tc-quote { font-family: 'Lora', serif; font-size: 52px; color: var(--terra3); line-height: 1; margin-bottom: 12px; }
+    .tc-text { font-size: 14px; color: var(--muted); line-height: 1.75; margin-bottom: 20px; font-style: italic; font-family: 'Lora', serif; }
+    .tc-author { display: flex; align-items: center; gap: 12px; }
+    .tc-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--terra), var(--terra2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: var(--cream); font-weight: 700;
+      font-family: 'Lora', serif;
+    }
+    .tc-name strong { display: block; font-size: 13.5px; font-weight: 700; color: var(--brown); }
+    .tc-name span { font-size: 12px; color: var(--muted); }
+
+    /* FORM */
+    .form-sec { padding: 80px 0; }
+    .form-box {
+      background: linear-gradient(135deg, var(--brown) 0%, var(--earth) 100%);
+      border-radius: 20px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      overflow: hidden;
+    }
+    .fl {
+      padding: 52px 48px;
+    }
+    .fl h2 { font-family: 'Lora', serif; font-size: 34px; color: var(--sand); margin-bottom: 14px; line-height: 1.2; }
+    .fl p { font-size: 14.5px; color: rgba(245,234,216,0.65); line-height: 1.75; margin-bottom: 28px; }
+    .fl-perks { display: flex; flex-direction: column; gap: 12px; }
+    .flp { display: flex; align-items: center; gap: 10px; font-size: 14px; color: rgba(245,234,216,0.8); }
+    .flp .ck { color: var(--olive2); font-size: 18px; }
+
+    .fr {
+      background: var(--cream);
+      padding: 52px 48px;
+    }
+    .fr h3 { font-family: 'Lora', serif; font-size: 22px; color: var(--brown); margin-bottom: 24px; }
+    .ff { display: flex; flex-direction: column; gap: 14px; }
+    .fr-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .ff .field label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .ff .field input, .ff .field select {
+      width: 100%; background: var(--warm-bg);
+      border: 2px solid var(--sand2); border-radius: 9px;
+      padding: 11px 14px; font-size: 13.5px; color: var(--text);
+      font-family: 'Nunito', sans-serif; outline: none;
+      transition: border-color .2s;
+    }
+    .ff .field input:focus, .ff .field select:focus { border-color: var(--terra); }
+    .btn-form-terra {
+      width: 100%; background: linear-gradient(135deg, var(--terra), var(--terra2));
+      color: var(--cream); border: none; padding: 14px;
+      border-radius: 10px; font-size: 15px; font-weight: 800;
+      cursor: pointer; font-family: 'Nunito', sans-serif;
+      box-shadow: 0 4px 16px rgba(194,92,42,0.3);
+      transition: all .2s; margin-top: 4px;
+    }
+    .btn-form-terra:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* FOOTER */
+    footer { background: var(--brown); padding: 60px 40px 0; }
+    .fg { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; padding-bottom: 48px; border-bottom: 1px solid rgba(245,234,216,0.1); }
+    .fb p { font-size: 13px; color: rgba(245,234,216,0.5); line-height: 1.75; margin-top: 16px; }
+    .fc2 h4 { font-family: 'Lora', serif; font-size: 15px; color: var(--sand); margin-bottom: 16px; }
+    .fc2 a { display: block; font-size: 13px; color: rgba(245,234,216,0.45); text-decoration: none; margin-bottom: 9px; transition: color .2s; }
+    .fc2 a:hover { color: var(--terra3); }
+    .fbot { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; padding: 24px 0; font-size: 12.5px; color: rgba(245,234,216,0.3); }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-items">
+      <div class="tb-item">📞 +90 212 XXX XX XX</div>
+      <div class="tb-item">✉️ toptan@aydorganizasyon.com</div>
+      <div class="tb-item">🕐 Pzt–Cum 09:00–18:00</div>
+    </div>
+    <a href="#">Bayi Girişi →</a>
+  </div>
+
+  <header>
+    <div class="h-inner">
+      <a href="#" class="logo">
+        <div class="logo-emblem">A</div>
+        <div class="logo-words">
+          <strong>AYD Organizasyon</strong>
+          <small>Toptan Satış · 18 Yıldır Güvenle</small>
+        </div>
+      </a>
+      <nav>
+        <a href="#" class="act">Ana Sayfa</a>
+        <a href="#">Katalog</a>
+        <a href="#">Animasyon</a>
+        <a href="#">Kampanyalar</a>
+        <a href="#">Kurumsal</a>
+        <a href="#">İletişim</a>
+      </nav>
+      <div class="h-right">
+        <button class="btn-h-ghost">Giriş Yap</button>
+        <button class="btn-h-terra">Bayi Ol</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-texture"></div>
+    <div class="hero-dots"></div>
+    <div class="hero-grid">
+      <div>
+        <div class="hero-pill"><span class="star">★</span><span>Türkiye'nin Güvenilir Animasyon Tedarikçisi</span></div>
+        <h1>Organizasyonun<br/>Kalbinde<br/><em>Kaliteli Ekipman</em></h1>
+        <p>Otel animasyonundan çocuk etkinliklerine, sahne dekorundan kostüme kadar her ihtiyacınız için kurumsal toptan çözümler. 18 yılın birikimi, 850 bayinin tercihi.</p>
+        <div class="hero-btns">
+          <button class="btn-terra-lg">Kataloğu Keşfet</button>
+          <button class="btn-sand-lg">Bayi Başvurusu</button>
+        </div>
+        <div class="hero-nums">
+          <div class="hn-item"><strong>2.400+</strong><span>Ürün Çeşidi</span></div>
+          <div class="hn-item"><strong>850+</strong><span>Aktif Bayi</span></div>
+          <div class="hn-item"><strong>18 Yıl</strong><span>Deneyim</span></div>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <div class="hc-title">Bu Haftanın En Çok Satanları</div>
+        <div class="hc-items">
+          <div class="hc-item">
+            <span class="hci-emoji">🎭</span>
+            <div class="hci-info"><div class="hci-name">Palyaço Kostüm Seti</div><div class="hci-cat">Kostüm & Kıyafet</div></div>
+            <span class="hci-badge">Stokta</span>
+            <span class="hci-price">₺485</span>
+          </div>
+          <div class="hc-item">
+            <span class="hci-emoji">🎵</span>
+            <div class="hci-info"><div class="hci-name">LED Sahne Işık Seti</div><div class="hci-cat">Ses & Işık</div></div>
+            <span class="hci-badge low">Sınırlı</span>
+            <span class="hci-price">₺2.850</span>
+          </div>
+          <div class="hc-item">
+            <span class="hci-emoji">🎉</span>
+            <div class="hci-info"><div class="hci-name">Konfeti Seti 50'li</div><div class="hci-cat">Parti Malzemeleri</div></div>
+            <span class="hci-badge">Stokta</span>
+            <span class="hci-price">₺92</span>
+          </div>
+          <div class="hc-item">
+            <span class="hci-emoji">🎠</span>
+            <div class="hci-info"><div class="hci-name">Çocuk Aktivite Kiti</div><div class="hci-cat">Oyun Setleri</div></div>
+            <span class="hci-badge">Stokta</span>
+            <span class="hci-price">₺340</span>
+          </div>
+        </div>
+        <div class="hc-footer"><button>Tüm Fiyat Listesini Gör →</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STRIP -->
+  <div class="strip">
+    <div class="strip-inner">
+      <div class="si"><div class="si-icon">🚚</div><div class="si-text"><strong>48 Saat Kargo</strong><span>Türkiye geneli garanti</span></div></div>
+      <div class="si"><div class="si-icon">✅</div><div class="si-text"><strong>CE & ISO Sertifikalı</strong><span>Belgeli ürünler</span></div></div>
+      <div class="si"><div class="si-icon">💳</div><div class="si-text"><strong>90 Gün Vade</strong><span>Kurumsal ödeme</span></div></div>
+      <div class="si"><div class="si-icon">🏷️</div><div class="si-text"><strong>Logo Baskı</strong><span>Özel üretim hizmeti</span></div></div>
+      <div class="si"><div class="si-icon">📞</div><div class="si-text"><strong>7/24 Destek</strong><span>Kurumsal satış hattı</span></div></div>
+    </div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <div class="wrap">
+    <div class="cats">
+      <div class="sh">
+        <div class="sh-left"><div class="lbl">Ürün Grupları</div><div class="ttl">Kategoriler</div></div>
+        <a href="#" class="see-link">Tüm Kategoriler →</a>
+      </div>
+      <div class="cat-g">
+        <a href="#" class="cat-block"><div class="cb-icon">🎭</div><div class="cb-name">Kostüm & Kıyafet</div><div class="cb-count">342 ürün</div></a>
+        <a href="#" class="cat-block"><div class="cb-icon">🎪</div><div class="cb-name">Sahne & Dekor</div><div class="cb-count">218 ürün</div></a>
+        <a href="#" class="cat-block"><div class="cb-icon">🎵</div><div class="cb-name">Ses & Işık</div><div class="cb-count">195 ürün</div></a>
+        <a href="#" class="cat-block"><div class="cb-icon">🎠</div><div class="cb-name">Çocuk Oyun Setleri</div><div class="cb-count">287 ürün</div></a>
+        <a href="#" class="cat-block"><div class="cb-icon">🎉</div><div class="cb-name">Parti Malzemeleri</div><div class="cb-count">560 ürün</div></a>
+        <a href="#" class="cat-block"><div class="cb-icon">🎨</div><div class="cb-name">Yüz Boyası & Makyaj</div><div class="cb-count">134 ürün</div></a>
+        <a href="#" class="cat-block"><div class="cb-icon">🎯</div><div class="cb-name">Aktivite Ekipmanları</div><div class="cb-count">178 ürün</div></a>
+        <a href="#" class="cat-block"><div class="cb-icon">🎁</div><div class="cb-name">Promosyon Ürünleri</div><div class="cb-count">412 ürün</div></a>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="prods">
+      <div class="sh">
+        <div class="sh-left"><div class="lbl">Öne Çıkan</div><div class="ttl">En Çok Satan Ekipmanlar</div></div>
+        <a href="#" class="see-link">Tüm Ürünler →</a>
+      </div>
+      <div class="prod-g">
+        <div class="p-card">
+          <div class="p-img">🎭<span class="p-tag tag-terra">En Çok Satan</span></div>
+          <div class="p-body">
+            <div class="p-cat">Kostüm & Kıyafet</div>
+            <div class="p-name">Profesyonel Palyaço Kostüm Seti (5 Parça)</div>
+            <div class="p-row">
+              <div><div class="p-amt">₺485</div><div class="p-unit">toptan / adet + KDV</div></div>
+              <div class="p-min"><small>Min. sipariş</small><strong>10 adet</strong></div>
+            </div>
+            <button class="btn-p">Sepete Ekle</button>
+          </div>
+        </div>
+        <div class="p-card">
+          <div class="p-img">🎪<span class="p-tag tag-olive">Yeni Sezon</span></div>
+          <div class="p-body">
+            <div class="p-cat">Sahne & Dekor</div>
+            <div class="p-name">Şişme Balon Sahne Kapısı – Renkli XL</div>
+            <div class="p-row">
+              <div><div class="p-amt">₺1.250</div><div class="p-unit">toptan / adet + KDV</div></div>
+              <div class="p-min"><small>Min. sipariş</small><strong>5 adet</strong></div>
+            </div>
+            <button class="btn-p">Sepete Ekle</button>
+          </div>
+        </div>
+        <div class="p-card">
+          <div class="p-img">🎵<span class="p-tag tag-warn">Stok Kritik</span></div>
+          <div class="p-body">
+            <div class="p-cat">Ses & Işık</div>
+            <div class="p-name">RGB LED Sahne Işık Seti (12'li Profesyonel)</div>
+            <div class="p-row">
+              <div><div class="p-amt">₺2.850</div><div class="p-unit">toptan / set + KDV</div></div>
+              <div class="p-min"><small>Min. sipariş</small><strong>3 set</strong></div>
+            </div>
+            <button class="btn-p">Sepete Ekle</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TESTIMONIALS -->
+    <div>
+      <div class="sh" style="margin-bottom:32px;">
+        <div class="sh-left"><div class="lbl">Müşteri Görüşleri</div><div class="ttl">Bayilerimiz Ne Diyor?</div></div>
+      </div>
+      <div class="testi-grid" style="margin-bottom:72px;">
+        <div class="testi-card">
+          <div class="tc-quote">"</div>
+          <div class="tc-text">AYD ile çalışmaya başladığımızdan beri tedarik süreçlerimiz çok daha verimli. Ürün kalitesi ve teslimat hızı beklentilerimizin üzerinde.</div>
+          <div class="tc-author">
+            <div class="tc-avatar">M</div>
+            <div class="tc-name"><strong>Mehmet Yılmaz</strong><span>Antalya Resort Animation Manager</span></div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <div class="tc-quote">"</div>
+          <div class="tc-text">Toptan fiyatları gerçekten rekabetçi. 90 günlük vade imkânı işletmemizin nakit akışını büyük ölçüde rahatlaştırdı.</div>
+          <div class="tc-author">
+            <div class="tc-avatar">A</div>
+            <div class="tc-name"><strong>Ayşe Kaya</strong><span>Fun Kids Organizasyon, İzmir</span></div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <div class="tc-quote">"</div>
+          <div class="tc-text">CE sertifikalı ürünler müşterilerimize güven veriyor. Özel logo baskı hizmetiyle kurumsal kimliğimizi tüm etkinliklere taşıyoruz.</div>
+          <div class="tc-author">
+            <div class="tc-avatar">S</div>
+            <div class="tc-name"><strong>Serkan Demir</strong><span>Gala Events, İstanbul</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="form-sec">
+      <div class="form-box">
+        <div class="fl">
+          <div style="font-size:11.5px; font-weight:700; color:var(--terra3); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:10px;">Bayi Üyeliği</div>
+          <h2>Kurumsal Hesabınızı Açın</h2>
+          <p>Başvurunuz 24 saat içinde değerlendirilir. Onay sonrasında özel toptan fiyat listesi ve satış temsilcinize hemen erişim sağlayabilirsiniz.</p>
+          <div class="fl-perks">
+            <div class="flp"><span class="ck">✓</span> Özel toptan fiyat listesi</div>
+            <div class="flp"><span class="ck">✓</span> Kişisel satış temsilcisi</div>
+            <div class="flp"><span class="ck">✓</span> 90 gün vadeli ödeme seçeneği</div>
+            <div class="flp"><span class="ck">✓</span> Öncelikli stok erişimi</div>
+            <div class="flp"><span class="ck">✓</span> Ücretsiz katalog ve numune</div>
+          </div>
+        </div>
+        <div class="fr">
+          <h3>Başvuru Formu</h3>
+          <div class="ff">
+            <div class="fr-row">
+              <div class="field"><label>Ad Soyad</label><input type="text" placeholder="Ad Soyad" /></div>
+              <div class="field"><label>Firma Adı</label><input type="text" placeholder="Firma A.Ş." /></div>
+            </div>
+            <div class="fr-row">
+              <div class="field"><label>Telefon</label><input type="tel" placeholder="+90 5__ ___ __ __" /></div>
+              <div class="field"><label>E-posta</label><input type="email" placeholder="info@firma.com" /></div>
+            </div>
+            <div class="field">
+              <label>Faaliyet Alanı</label>
+              <select>
+                <option>Otel & Resort Animasyonu</option>
+                <option>Çocuk Etkinlik Org.</option>
+                <option>Düğün & Gala Org.</option>
+                <option>Festival & Outdoor</option>
+                <option>Eğitim Kurumları</option>
+              </select>
+            </div>
+            <button class="btn-form-terra">Üyelik Başvurusu Gönder →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="fg">
+      <div class="fb">
+        <div class="logo">
+          <div class="logo-emblem">A</div>
+          <div class="logo-words"><strong style="color:var(--sand);">AYD Organizasyon</strong><small>Toptan Satış</small></div>
+        </div>
+        <p>Animasyon ve organizasyon ekipmanlarında Türkiye'nin güvenilir toptan tedarikçisi. 18 yıllık sektör deneyimi.</p>
+      </div>
+      <div class="fc2"><h4>Ürünler</h4><a href="#">Kostüm & Kıyafet</a><a href="#">Sahne Ekipmanları</a><a href="#">Ses & Işık</a><a href="#">Oyun Setleri</a><a href="#">Tüm Katalog</a></div>
+      <div class="fc2"><h4>Kurumsal</h4><a href="#">Hakkımızda</a><a href="#">Bayi Üyeliği</a><a href="#">Referanslar</a><a href="#">Kariyer</a></div>
+      <div class="fc2"><h4>Destek</h4><a href="#">SSS</a><a href="#">İade Politikası</a><a href="#">Kargo Takip</a><a href="#">İletişim</a></div>
+    </div>
+    <div class="fbot">
+      <span>© 2024 AYD Organizasyon. Tüm hakları saklıdır.</span>
+      <span>Gizlilik Politikası · KVKK · Kullanım Koşulları</span>
+    </div>
+  </footer>
+</body>
+</html>

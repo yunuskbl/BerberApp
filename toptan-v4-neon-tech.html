@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AYD Organizasyon — Tasarım 4: Siyah Neon Tech</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:       #050508;
+      --bg2:      #0c0c14;
+      --bg3:      #12121e;
+      --neon:     #00ff88;
+      --neon2:    #00cc6a;
+      --purple:   #7c3aed;
+      --purple2:  #a855f7;
+      --cyan:     #06b6d4;
+      --white:    #ffffff;
+      --gray:     #1e1e2e;
+      --muted:    #6b7280;
+      --text-dim: #94a3b8;
+      --border:   rgba(0,255,136,0.12);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--white); }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: linear-gradient(90deg, var(--purple) 0%, var(--neon2) 100%);
+      text-align: center;
+      padding: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--white);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(5,5,8,0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .h-inner {
+      max-width: 1300px; margin: 0 auto;
+      display: flex; align-items: center;
+      padding: 0 40px; height: 68px; gap: 40px;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .logo-glyph {
+      width: 40px; height: 40px;
+      border: 1.5px solid var(--neon);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 13px; font-weight: 700;
+      color: var(--neon);
+      box-shadow: 0 0 12px rgba(0,255,136,0.3), inset 0 0 12px rgba(0,255,136,0.05);
+    }
+    .logo-text strong { display: block; font-size: 16px; font-weight: 700; color: var(--white); }
+    .logo-text small { font-size: 10px; color: var(--neon); letter-spacing: 0.14em; text-transform: uppercase; font-family: 'Space Mono', monospace; }
+
+    .h-search {
+      flex: 1; max-width: 420px;
+      display: flex; align-items: center;
+      background: var(--bg3);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 8px;
+      padding: 0 14px; gap: 8px;
+      transition: border-color .2s;
+    }
+    .h-search:focus-within { border-color: var(--neon); box-shadow: 0 0 0 3px rgba(0,255,136,0.08); }
+    .h-search span { color: var(--muted); }
+    .h-search input {
+      flex: 1; border: none; background: transparent;
+      font-size: 13.5px; color: var(--white);
+      font-family: 'Space Grotesk', sans-serif;
+      padding: 10px 0; outline: none;
+    }
+    .h-search input::placeholder { color: var(--muted); }
+
+    .h-nav { display: flex; gap: 4px; margin-left: auto; }
+    .h-nav a {
+      font-size: 13px; font-weight: 500;
+      color: var(--text-dim); text-decoration: none;
+      padding: 7px 14px; border-radius: 6px;
+      transition: all .2s;
+    }
+    .h-nav a:hover { color: var(--neon); background: rgba(0,255,136,0.06); }
+    .h-nav a.on { color: var(--neon); }
+
+    .h-btns { display: flex; gap: 10px; }
+    .btn-ghost-neon {
+      border: 1px solid var(--border); background: transparent;
+      color: var(--neon); padding: 8px 18px; border-radius: 7px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+      transition: all .2s;
+    }
+    .btn-ghost-neon:hover { background: rgba(0,255,136,0.08); border-color: var(--neon); }
+    .btn-neon {
+      background: var(--neon); color: var(--bg);
+      padding: 8px 18px; border-radius: 7px;
+      font-size: 13px; font-weight: 700;
+      border: none; cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      box-shadow: 0 0 16px rgba(0,255,136,0.4);
+      transition: all .2s;
+    }
+    .btn-neon:hover { background: var(--neon2); box-shadow: 0 0 24px rgba(0,255,136,0.5); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: calc(100vh - 100px);
+      display: flex; align-items: center;
+      position: relative; overflow: hidden;
+    }
+    .hero-orb1 {
+      position: absolute; left: -200px; top: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(124,58,237,0.2), transparent 70%);
+      border-radius: 50%;
+    }
+    .hero-orb2 {
+      position: absolute; right: -100px; bottom: -100px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(0,255,136,0.12), transparent 70%);
+      border-radius: 50%;
+    }
+    .hero-grid {
+      max-width: 1300px; margin: 0 auto;
+      padding: 80px 40px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: center;
+      position: relative; z-index: 1;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px; color: var(--neon);
+      border: 1px solid var(--border);
+      padding: 6px 14px; border-radius: 100px;
+      margin-bottom: 28px;
+      background: rgba(0,255,136,0.05);
+    }
+    .hero-tag .ping {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--neon);
+      box-shadow: 0 0 8px var(--neon);
+      animation: ping 2s infinite;
+    }
+    @keyframes ping { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.2)} }
+    .hero h1 {
+      font-size: 60px; font-weight: 700;
+      line-height: 1.05;
+      margin-bottom: 24px;
+      letter-spacing: -0.02em;
+    }
+    .hero h1 .neon { color: var(--neon); }
+    .hero h1 .purple { color: var(--purple2); }
+    .hero p {
+      font-size: 16px; line-height: 1.75;
+      color: var(--text-dim);
+      margin-bottom: 40px; max-width: 460px;
+    }
+    .hero-btns { display: flex; gap: 14px; }
+    .btn-hero-neon {
+      background: var(--neon); color: var(--bg);
+      padding: 14px 36px; border-radius: 9px;
+      font-size: 15px; font-weight: 700;
+      border: none; cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      box-shadow: 0 0 30px rgba(0,255,136,0.4);
+      transition: all .2s;
+    }
+    .btn-hero-neon:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(0,255,136,0.6); }
+    .btn-hero-outline {
+      background: transparent; color: var(--white);
+      padding: 14px 28px; border-radius: 9px;
+      font-size: 15px; font-weight: 500;
+      border: 1px solid rgba(255,255,255,0.12);
+      cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+      transition: all .2s;
+    }
+    .btn-hero-outline:hover { border-color: var(--purple2); color: var(--purple2); }
+
+    .hero-stats {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 1px; margin-top: 56px;
+      border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      background: var(--border);
+    }
+    .hs-item {
+      background: var(--bg2);
+      padding: 22px;
+    }
+    .hs-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 26px; font-weight: 700;
+      color: var(--neon); margin-bottom: 4px;
+    }
+    .hs-lbl { font-size: 12px; color: var(--muted); }
+
+    /* ── HERO TERMINAL ── */
+    .hero-terminal {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 0 60px rgba(0,255,136,0.07), 0 40px 80px rgba(0,0,0,0.5);
+    }
+    .term-bar {
+      background: var(--bg3);
+      padding: 12px 18px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .term-dot { width: 11px; height: 11px; border-radius: 50%; }
+    .term-dot.r { background: #ff5f57; }
+    .term-dot.y { background: #ffbd2e; }
+    .term-dot.g { background: #28c840; }
+    .term-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px; color: var(--muted);
+      margin-left: 8px;
+    }
+    .term-body { padding: 22px; }
+    .term-line {
+      font-family: 'Space Mono', monospace;
+      font-size: 12.5px; line-height: 2;
+    }
+    .t-dim { color: var(--muted); }
+    .t-green { color: var(--neon); }
+    .t-purple { color: var(--purple2); }
+    .t-cyan { color: var(--cyan); }
+    .t-white { color: var(--white); }
+    .t-orange { color: #fb923c; }
+
+    .prod-rows { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 18px; }
+    .prod-row-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 13px;
+    }
+    .prod-row-item:last-child { border-bottom: none; }
+    .pri-icon { font-size: 20px; }
+    .pri-name { flex: 1; color: var(--white); font-weight: 500; }
+    .pri-qty { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
+    .pri-price { font-family: 'Space Mono', monospace; color: var(--neon); font-weight: 700; }
+
+    /* ── SECTION ── */
+    .sec { max-width: 1300px; margin: 0 auto; padding: 0 40px; }
+    .sec-wrapper { padding: 80px 0; }
+    .sec-head-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 36px; }
+    .sec-mono { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--neon); letter-spacing: 0.1em; margin-bottom: 8px; }
+    .sec-h2 { font-size: 32px; font-weight: 700; }
+    .link-neon {
+      font-size: 13px; font-weight: 600; color: var(--neon);
+      text-decoration: none; border: 1px solid var(--border);
+      padding: 8px 18px; border-radius: 7px;
+      transition: all .2s;
+    }
+    .link-neon:hover { background: rgba(0,255,136,0.08); border-color: var(--neon); }
+
+    /* ── CAT GRID ── */
+    .cat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+    .cat-tile {
+      background: var(--bg2);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 26px 20px;
+      text-align: center;
+      cursor: pointer;
+      text-decoration: none; color: inherit;
+      display: block;
+      transition: all .25s;
+      position: relative; overflow: hidden;
+    }
+    .cat-tile::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon), transparent);
+      opacity: 0; transition: opacity .25s;
+    }
+    .cat-tile:hover { border-color: var(--border); transform: translateY(-3px); }
+    .cat-tile:hover::before { opacity: 1; }
+    .ct-icon { font-size: 28px; margin-bottom: 12px; }
+    .ct-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .ct-count { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
+
+    /* ── PRODUCT GRID ── */
+    .prod-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; }
+    .prod-card {
+      background: var(--bg2);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all .25s;
+    }
+    .prod-card:hover { border-color: var(--neon); transform: translateY(-4px); box-shadow: 0 0 30px rgba(0,255,136,0.08); }
+    .pc-img {
+      height: 160px;
+      background: var(--bg3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+    }
+    .pc-badge {
+      position: absolute; top: 10px; left: 10px;
+      font-family: 'Space Mono', monospace;
+      font-size: 9px; font-weight: 700;
+      padding: 3px 8px; border-radius: 4px;
+      letter-spacing: 0.08em;
+    }
+    .badge-neon { background: rgba(0,255,136,0.15); color: var(--neon); border: 1px solid rgba(0,255,136,0.3); }
+    .badge-purple { background: rgba(168,85,247,0.15); color: var(--purple2); border: 1px solid rgba(168,85,247,0.3); }
+    .badge-orange { background: rgba(251,146,60,0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
+    .pc-body { padding: 16px; }
+    .pc-cat { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.06em; }
+    .pc-name { font-size: 13.5px; font-weight: 600; margin-bottom: 14px; line-height: 1.45; }
+    .pc-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+    .pc-price-val { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; color: var(--neon); }
+    .pc-price-unit { font-size: 10.5px; color: var(--muted); }
+    .pc-min-info { text-align: right; font-size: 11px; color: var(--muted); }
+    .pc-min-info strong { display: block; color: var(--text-dim); font-size: 12px; }
+    .btn-pc {
+      width: 100%; margin-top: 12px;
+      background: transparent; color: var(--neon);
+      border: 1px solid var(--border);
+      padding: 9px; border-radius: 7px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+      transition: all .2s;
+    }
+    .btn-pc:hover { background: var(--neon); color: var(--bg); border-color: var(--neon); box-shadow: 0 0 16px rgba(0,255,136,0.3); }
+
+    /* ── DIVIDER ── */
+    .divider {
+      max-width: 1300px; margin: 0 auto;
+      height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+
+    /* ── FORM ── */
+    .form-wrapper {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      overflow: hidden;
+    }
+    .form-left {
+      padding: 48px;
+      background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(0,255,136,0.05));
+    }
+    .form-left h2 { font-size: 30px; font-weight: 700; margin-bottom: 14px; }
+    .form-left p { font-size: 14.5px; color: var(--text-dim); line-height: 1.7; margin-bottom: 28px; }
+    .form-perks { display: flex; flex-direction: column; gap: 12px; }
+    .fp { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--text-dim); }
+    .fp .check { color: var(--neon); font-size: 16px; font-family: 'Space Mono', monospace; }
+    .form-right { padding: 48px; }
+    .form-right h3 { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--neon); letter-spacing: 0.08em; margin-bottom: 24px; }
+    .fields { display: flex; flex-direction: column; gap: 14px; }
+    .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field label { display: block; font-family: 'Space Mono', monospace; font-size: 10.5px; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.06em; }
+    .field input, .field select {
+      width: 100%; background: var(--bg3);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 8px; padding: 11px 14px;
+      font-size: 13.5px; color: var(--white);
+      font-family: 'Space Grotesk', sans-serif;
+      outline: none; transition: border-color .2s;
+    }
+    .field input:focus, .field select:focus { border-color: var(--neon); box-shadow: 0 0 0 3px rgba(0,255,136,0.08); }
+    .field input::placeholder { color: var(--muted); }
+    .field select option { background: var(--bg2); }
+    .btn-submit-neon {
+      width: 100%; background: var(--neon); color: var(--bg);
+      border: none; padding: 13px; border-radius: 9px;
+      font-size: 14.5px; font-weight: 700;
+      cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+      box-shadow: 0 0 24px rgba(0,255,136,0.3);
+      transition: all .2s; margin-top: 4px;
+    }
+    .btn-submit-neon:hover { background: var(--neon2); box-shadow: 0 0 32px rgba(0,255,136,0.5); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding: 60px 40px 28px;
+      margin-top: 80px;
+    }
+    .footer-grid {
+      max-width: 1300px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px; padding-bottom: 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .fb-brand p { font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 14px; }
+    .fc h4 { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--neon); letter-spacing: 0.1em; margin-bottom: 16px; }
+    .fc a { display: block; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 9px; transition: color .2s; }
+    .fc a:hover { color: var(--neon); }
+    .footer-bottom {
+      max-width: 1300px; margin: 0 auto;
+      display: flex; justify-content: space-between;
+      padding-top: 28px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px; color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">// TOPTAN_SATIS_PLATFORMU v2.4 — Profesyonel Animasyon Ekipmanları — %48 saat kargo garantisi //</div>
+
+  <header>
+    <div class="h-inner">
+      <a href="#" class="logo">
+        <div class="logo-glyph">AYD</div>
+        <div class="logo-text">
+          <strong>AYD Organizasyon</strong>
+          <small>Toptan Satış Sistemi</small>
+        </div>
+      </a>
+      <div class="h-search">
+        <span>⌕</span>
+        <input type="text" placeholder="Ürün ara: kostüm, sahne, ışık..." />
+      </div>
+      <nav class="h-nav">
+        <a href="#" class="on">Katalog</a>
+        <a href="#">Animasyon</a>
+        <a href="#">Fiyatlar</a>
+        <a href="#">Hizmetler</a>
+        <a href="#">İletişim</a>
+      </nav>
+      <div class="h-btns">
+        <button class="btn-ghost-neon">Giriş Yap</button>
+        <button class="btn-neon">Bayi Ol →</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="hero-orb1"></div>
+    <div class="hero-orb2"></div>
+    <div class="hero-grid">
+      <div>
+        <div class="hero-tag"><span class="ping"></span> TÜRKIYE'NIN #1 ANİMASYON TEDARİKÇİSİ</div>
+        <h1>Animasyon<br/><span class="neon">Ekipmanları</span><br/><span class="purple">Toptan</span> Güç</h1>
+        <p>Profesyonel organizasyon firmaları için CE sertifikalı animasyon ekipmanları, kostümler ve sahne malzemeleri. Rekabetçi toptan fiyatlar, 48 saat kargo.</p>
+        <div class="hero-btns">
+          <button class="btn-hero-neon">Kataloğa Gir</button>
+          <button class="btn-hero-outline">Bayi Başvurusu</button>
+        </div>
+        <div class="hero-stats">
+          <div class="hs-item">
+            <div class="hs-num">2.400+</div>
+            <div class="hs-lbl">Ürün Çeşidi</div>
+          </div>
+          <div class="hs-item">
+            <div class="hs-num">850+</div>
+            <div class="hs-lbl">Aktif Bayi</div>
+          </div>
+          <div class="hs-item">
+            <div class="hs-num">18 YIL</div>
+            <div class="hs-lbl">Deneyim</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-terminal">
+        <div class="term-bar">
+          <div class="term-dot r"></div>
+          <div class="term-dot y"></div>
+          <div class="term-dot g"></div>
+          <span class="term-title">ayd_toptan_fiyat_listesi.sh</span>
+        </div>
+        <div class="term-body">
+          <div class="term-line"><span class="t-dim">$</span> <span class="t-green">./get_prices</span> <span class="t-purple">--category</span> <span class="t-cyan">all</span> <span class="t-purple">--type</span> <span class="t-orange">toptan</span></div>
+          <div class="term-line"><span class="t-dim">→ Bağlanıyor... [████████████] 100%</span></div>
+          <div class="term-line"><span class="t-green">✓ 2.400 ürün listelendi</span></div>
+          <div class="term-line"><span class="t-dim">→ Fiyatlar güncellendi: <span class="t-white">28 Haz 2024</span></span></div>
+          <div class="prod-rows">
+            <div class="prod-row-item">
+              <span class="pri-icon">🎭</span>
+              <span class="pri-name">Palyaço Kostüm Seti</span>
+              <span class="pri-qty">stok: 245</span>
+              <span class="pri-price">₺485</span>
+            </div>
+            <div class="prod-row-item">
+              <span class="pri-icon">🎵</span>
+              <span class="pri-name">LED Sahne Işık Seti</span>
+              <span class="pri-qty">stok: 18 !</span>
+              <span class="pri-price">₺2.850</span>
+            </div>
+            <div class="prod-row-item">
+              <span class="pri-icon">🎉</span>
+              <span class="pri-name">Konfeti Seti (50'li)</span>
+              <span class="pri-qty">stok: 840</span>
+              <span class="pri-price">₺92</span>
+            </div>
+            <div class="prod-row-item">
+              <span class="pri-icon">🎠</span>
+              <span class="pri-name">Çocuk Aktivite Kiti</span>
+              <span class="pri-qty">stok: 172</span>
+              <span class="pri-price">₺340</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-wrapper">
+    <div class="sec">
+      <div class="sec-head-row">
+        <div>
+          <div class="sec-mono">// KATEGORİLER</div>
+          <div class="sec-h2">Ürün Grupları</div>
+        </div>
+        <a href="#" class="link-neon">Tümünü Gör →</a>
+      </div>
+      <div class="cat-grid">
+        <a href="#" class="cat-tile"><div class="ct-icon">🎭</div><div class="ct-name">Kostüm & Kıyafet</div><div class="ct-count">342 ürün</div></a>
+        <a href="#" class="cat-tile"><div class="ct-icon">🎪</div><div class="ct-name">Sahne & Dekor</div><div class="ct-count">218 ürün</div></a>
+        <a href="#" class="cat-tile"><div class="ct-icon">🎵</div><div class="ct-name">Ses & Işık</div><div class="ct-count">195 ürün</div></a>
+        <a href="#" class="cat-tile"><div class="ct-icon">🎠</div><div class="ct-name">Çocuk Oyun</div><div class="ct-count">287 ürün</div></a>
+        <a href="#" class="cat-tile"><div class="ct-icon">🎉</div><div class="ct-name">Parti Malzemeleri</div><div class="ct-count">560 ürün</div></a>
+        <a href="#" class="cat-tile"><div class="ct-icon">🎨</div><div class="ct-name">Makyaj & Boya</div><div class="ct-count">134 ürün</div></a>
+        <a href="#" class="cat-tile"><div class="ct-icon">🎯</div><div class="ct-name">Aktivite</div><div class="ct-count">178 ürün</div></a>
+        <a href="#" class="cat-tile"><div class="ct-icon">🎁</div><div class="ct-name">Promosyon</div><div class="ct-count">412 ürün</div></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="sec-wrapper">
+    <div class="sec">
+      <div class="sec-head-row">
+        <div>
+          <div class="sec-mono">// EN ÇOK SATANLAR</div>
+          <div class="sec-h2">Öne Çıkan Ürünler</div>
+        </div>
+        <a href="#" class="link-neon">Tüm Ürünler →</a>
+      </div>
+      <div class="prod-grid">
+        <div class="prod-card">
+          <div class="pc-img">🎭<span class="pc-badge badge-neon">BEST_SELLER</span></div>
+          <div class="pc-body">
+            <div class="pc-cat">// KOSTÜM</div>
+            <div class="pc-name">Profesyonel Palyaço Kostüm Seti (5 Parça)</div>
+            <div class="pc-bottom">
+              <div><div class="pc-price-val">₺485</div><div class="pc-price-unit">toptan / adet</div></div>
+              <div class="pc-min-info">Min.<strong>10 adet</strong></div>
+            </div>
+            <button class="btn-pc">Sepete Ekle →</button>
+          </div>
+        </div>
+        <div class="prod-card">
+          <div class="pc-img">🎪<span class="pc-badge badge-purple">NEW_SEASON</span></div>
+          <div class="pc-body">
+            <div class="pc-cat">// SAHNE</div>
+            <div class="pc-name">Şişme Balon Sahne Kapısı – XL Renkli</div>
+            <div class="pc-bottom">
+              <div><div class="pc-price-val">₺1.250</div><div class="pc-price-unit">toptan / adet</div></div>
+              <div class="pc-min-info">Min.<strong>5 adet</strong></div>
+            </div>
+            <button class="btn-pc">Sepete Ekle →</button>
+          </div>
+        </div>
+        <div class="prod-card">
+          <div class="pc-img">🎵<span class="pc-badge badge-orange">STOK_KRITIK</span></div>
+          <div class="pc-body">
+            <div class="pc-cat">// SES & IŞIK</div>
+            <div class="pc-name">RGB LED Sahne Işık Seti (12'li Pro)</div>
+            <div class="pc-bottom">
+              <div><div class="pc-price-val">₺2.850</div><div class="pc-price-unit">toptan / set</div></div>
+              <div class="pc-min-info">Min.<strong>3 set</strong></div>
+            </div>
+            <button class="btn-pc">Sepete Ekle →</button>
+          </div>
+        </div>
+        <div class="prod-card">
+          <div class="pc-img">🎠<span class="pc-badge badge-neon">IN_STOCK</span></div>
+          <div class="pc-body">
+            <div class="pc-cat">// ÇOCUK OYUN</div>
+            <div class="pc-name">Çocuk Aktivite ve Eğlence Seti (20'li)</div>
+            <div class="pc-bottom">
+              <div><div class="pc-price-val">₺340</div><div class="pc-price-unit">toptan / set</div></div>
+              <div class="pc-min-info">Min.<strong>20 set</strong></div>
+            </div>
+            <button class="btn-pc">Sepete Ekle →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-wrapper" style="padding-top:0;">
+    <div class="sec">
+      <div class="form-wrapper">
+        <div class="form-left">
+          <div class="sec-mono">// BAYİ_ÜYELİĞİ</div>
+          <h2>Kurumsal Hesap Aç</h2>
+          <p>Toptan bayi hesabınızı 5 dakikada oluşturun. 24 saat içinde onay, anında özel fiyat listesi erişimi.</p>
+          <div class="form-perks">
+            <div class="fp"><span class="check">[✓]</span> Özel toptan fiyatlandırma</div>
+            <div class="fp"><span class="check">[✓]</span> Kişisel satış temsilcisi</div>
+            <div class="fp"><span class="check">[✓]</span> 90 gün vadeli ödeme</div>
+            <div class="fp"><span class="check">[✓]</span> Öncelikli stok erişimi</div>
+            <div class="fp"><span class="check">[✓]</span> Ücretsiz numune kargo</div>
+          </div>
+        </div>
+        <div class="form-right">
+          <h3>// BAŞVURU_FORMU</h3>
+          <div class="fields">
+            <div class="frow">
+              <div class="field"><label>AD_SOYAD</label><input type="text" placeholder="Ad Soyad" /></div>
+              <div class="field"><label>FİRMA_ADI</label><input type="text" placeholder="Firma A.Ş." /></div>
+            </div>
+            <div class="frow">
+              <div class="field"><label>TELEFON</label><input type="tel" placeholder="+90 5__ ___ __ __" /></div>
+              <div class="field"><label>E_POSTA</label><input type="email" placeholder="info@firma.com" /></div>
+            </div>
+            <div class="field">
+              <label>FAALİYET_ALANI</label>
+              <select>
+                <option>Otel & Resort Animasyonu</option>
+                <option>Çocuk Etkinlik Org.</option>
+                <option>Düğün & Gala Org.</option>
+                <option>Festival & Outdoor</option>
+                <option>Eğitim Kurumları</option>
+              </select>
+            </div>
+            <button class="btn-submit-neon">./başvuru_gönder.sh ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-grid">
+      <div class="fb-brand">
+        <div class="logo">
+          <div class="logo-glyph">AYD</div>
+          <div class="logo-text">
+            <strong>AYD Organizasyon</strong>
+            <small>Toptan Satış Sistemi</small>
+          </div>
+        </div>
+        <p>Animasyon ve organizasyon ekipmanlarında Türkiye'nin güvenilir toptan tedarikçisi. 18 yıl deneyim, 850+ aktif bayi ağı.</p>
+      </div>
+      <div class="fc"><h4>// ÜRÜNLER</h4><a href="#">Kostüm & Kıyafet</a><a href="#">Sahne & Dekor</a><a href="#">Ses & Işık</a><a href="#">Oyun Setleri</a><a href="#">Tüm Katalog</a></div>
+      <div class="fc"><h4>// KURUMSAL</h4><a href="#">Hakkımızda</a><a href="#">Bayi Üyeliği</a><a href="#">Sertifikalar</a><a href="#">Kariyer</a></div>
+      <div class="fc"><h4>// İLETİŞİM</h4><a href="#">+90 212 XXX XX XX</a><a href="#">toptan@aydorg.com</a><a href="#">İstanbul</a><a href="#">Pzt–Cum 09–18</a></div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 AYD Organizasyon — Tüm hakları saklıdır.</span>
+      <span>Gizlilik · KVKK · Kullanım Koşulları</span>
+    </div>
+  </footer>
+</body>
+</html>
