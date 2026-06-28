@@ -58,33 +58,37 @@ public class WppConnectManagementService : IWppConnectManagementService
         }
         catch { /* görmezden gel */ }
 
-        // waitQrCode: true → WppConnect QR hazır olana kadar bekler
+        // WppConnect 2.x: start-session is async, QR is generated in the background.
+        // waitQrCode is ignored in v2.10+, so we just start and then poll.
         var startUrl = $"{base_}/api/{session}/start-session";
         using var startReq = new HttpRequestMessage(HttpMethod.Post, startUrl);
         startReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        startReq.Content = new StringContent(
-            JsonSerializer.Serialize(new { waitQrCode = true }),
-            Encoding.UTF8, "application/json");
+        startReq.Content = new StringContent("{}", Encoding.UTF8, "application/json");
 
         var startRes = await _http.SendAsync(startReq, ct);
         var startBody = await startRes.Content.ReadAsStringAsync(ct);
         _log.LogInformation("[WPPConnect-MGMT] StartSession {Status}: {Body}", (int)startRes.StatusCode, startBody);
 
-        // start-session yanıtından QR çıkarmayı dene
+        // Try to extract QR from start-session response first
         if (TryExtractQr(startBody, out var qrFromStart) && !string.IsNullOrWhiteSpace(qrFromStart))
             return new WppConnectSessionResult(session, token, qrFromStart);
 
-        // Yanıtta QR yoksa poll et (max 15 saniye)
+        // Poll for QR — WppConnect 2.x generates it asynchronously (up to 40 seconds)
         string qr = "";
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 20; i++)
         {
-            await Task.Delay(1500, ct);
+            await Task.Delay(2000, ct);
             try
             {
                 qr = await GetQrCodeAsync(session, token, ct);
+                _log.LogInformation("[WPPConnect-MGMT] QR poll {Attempt}/20: {Result}",
+                    i + 1, string.IsNullOrWhiteSpace(qr) ? "empty" : "got QR");
                 if (!string.IsNullOrWhiteSpace(qr)) break;
             }
-            catch { /* henüz hazır değil, devam et */ }
+            catch (Exception ex)
+            {
+                _log.LogWarning("[WPPConnect-MGMT] QR poll {Attempt}/20 error: {Msg}", i + 1, ex.Message);
+            }
         }
 
         return new WppConnectSessionResult(session, token, qr);
@@ -123,10 +127,13 @@ public class WppConnectManagementService : IWppConnectManagementService
         if (contentType.Contains("image"))
         {
             var bytes = await res.Content.ReadAsByteArrayAsync(ct);
+            _log.LogInformation("[WPPConnect-MGMT] GetQr: image/{Type} {Bytes}B", contentType, bytes.Length);
             return $"data:{contentType};base64,{Convert.ToBase64String(bytes)}";
         }
 
         var body = await res.Content.ReadAsStringAsync(ct);
+        _log.LogInformation("[WPPConnect-MGMT] GetQr {Status} ct={ContentType}: {Body}",
+            (int)res.StatusCode, contentType, body.Length > 200 ? body[..200] : body);
 
         if (!res.IsSuccessStatusCode)
             throw new InvalidOperationException($"QR kodu alınamadı: {body}");
