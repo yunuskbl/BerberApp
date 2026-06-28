@@ -202,4 +202,15 @@ public class WppConnectManagementService : IWppConnectManagementService
         var res = await _http.SendAsync(req, ct);
         _log.LogInformation("[WPPConnect-MGMT] CloseSession {Status}", (int)res.StatusCode);
     }
+
+    public async Task LogoutSessionAsync(string session, string token, CancellationToken ct = default)
+    {
+        var url = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{session}/logout-session";
+        using var req = new HttpRequestMessage(HttpMethod.Post, url);
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        req.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+
+        var res = await _http.SendAsync(req, ct);
+        _log.LogInformation("[WPPConnect-MGMT] LogoutSession {Status}", (int)res.StatusCode);
+    }
 }
