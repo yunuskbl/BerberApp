@@ -82,7 +82,11 @@ public class WppConnectManagementService : IWppConnectManagementService
             {
                 qr = await GetQrCodeAsync(session, token, ct);
                 _log.LogInformation("[WPPConnect-MGMT] QR poll {Attempt}/20: {Result}",
-                    i + 1, string.IsNullOrWhiteSpace(qr) ? "empty" : "got QR");
+                    i + 1, string.IsNullOrWhiteSpace(qr) ? "empty" : qr == "ALREADY_CONNECTED" ? "already connected" : "got QR");
+
+                if (qr == "ALREADY_CONNECTED")
+                    return new WppConnectSessionResult(session, token, "", IsConnected: true);
+
                 if (!string.IsNullOrWhiteSpace(qr)) break;
             }
             catch (Exception ex)
@@ -142,6 +146,15 @@ public class WppConnectManagementService : IWppConnectManagementService
         try
         {
             using var doc = JsonDocument.Parse(body);
+
+            // Session auto-connected (had saved credentials) — signal the caller
+            if (doc.RootElement.TryGetProperty("status", out var statusProp))
+            {
+                var status = statusProp.GetString() ?? "";
+                if (status is "CONNECTED" or "inChat" or "isLogged")
+                    return "ALREADY_CONNECTED";
+            }
+
             foreach (var field in new[] { "qrcode", "base64Qr", "qr", "urlCode" })
             {
                 if (doc.RootElement.TryGetProperty(field, out var qrProp))

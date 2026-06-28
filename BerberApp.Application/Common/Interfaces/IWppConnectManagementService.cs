@@ -9,4 +9,4 @@ public interface IWppConnectManagementService
     Task CloseSessionAsync(string session, string token, CancellationToken ct = default);
 }
 
-public record WppConnectSessionResult(string Session, string Token, string QrCode);
+public record WppConnectSessionResult(string Session, string Token, string QrCode, bool IsConnected = false);

@@ -599,19 +599,27 @@ export class SettingsComponent implements OnInit {
     this.http.post<any>(`${environment.apiUrl}/tenants/whatsapp/connect`, {}).subscribe({
       next: (res) => {
         this.waActionLoading = false;
-        const qr = res.data?.qrCode ?? '';
-        if (res.success && qr.startsWith('data:image')) {
-          this.waQrCode  = qr;
-          this.waSession = res.data.session;
-          this.waStatus  = 'disconnected';
-        } else if (res.success) {
-          // Oturum başladı ama QR henüz hazır değil — 3 saniye sonra otomatik dene
-          this.waSession = res.data?.session ?? '';
-          this.waStatus  = 'disconnected';
-          this.waError   = 'QR kod hazırlanıyor…';
-          setTimeout(() => this.refreshWhatsAppQr(), 3000);
-        } else {
+        if (!res.success) {
           this.waError = res.message || res.data?.message || 'Bağlantı başlatılamadı.';
+          return;
+        }
+        this.waSession = res.data?.session ?? '';
+        if (res.data?.isConnected) {
+          // Session had saved credentials and auto-connected — no QR needed
+          this.waIsConnected = true;
+          this.waStatus      = 'connected';
+          this.waQrCode      = '';
+          this.waError       = '';
+        } else {
+          const qr = res.data?.qrCode ?? '';
+          if (qr.startsWith('data:image')) {
+            this.waQrCode = qr;
+            this.waStatus = 'disconnected';
+          } else {
+            this.waStatus = 'disconnected';
+            this.waError  = 'QR kod hazırlanıyor…';
+            setTimeout(() => this.refreshWhatsAppQr(), 3000);
+          }
         }
       },
       error: (err) => {

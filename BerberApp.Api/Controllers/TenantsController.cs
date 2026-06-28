@@ -338,7 +338,10 @@ public class TenantsController : BaseApiController
             tenant.WppConnectToken   = token;
             await _context.SaveChangesAsync();
 
-            return Success(new { session, qrCode = result.QrCode });
+            if (result.IsConnected)
+                return Success(new { session, qrCode = (string?)null, isConnected = true });
+
+            return Success(new { session, qrCode = result.QrCode, isConnected = false });
         }
         catch (Exception ex)
         {
