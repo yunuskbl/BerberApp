@@ -44,10 +44,10 @@ services:
       - Twilio__FromNumber=whatsapp:+14155238886
       - Twilio__SmsFromNumber=${TWILIO_SMS_FROM_NUMBER}
 
-      # İleti Merkezi (SMS)
-      - IletiMerkezi__ApiKey=${ILETIMERKEZI_API_KEY}
-      - IletiMerkezi__Hash=${ILETIMERKEZI_HASH}
-      - IletiMerkezi__Sender=${ILETIMERKEZI_SENDER}
+      # Netgsm (SMS)
+      - Netgsm__UserCode=${NETGSM_USERCODE}
+      - Netgsm__Password=${NETGSM_PASSWORD}
+      - Netgsm__MsgHeader=${NETGSM_MSGHEADER}
 
       # İyzico Ödeme
       - Iyzico__ApiKey=${IYZICO_API_KEY}
