@@ -534,28 +534,64 @@
           </div>
         } @else {
           <div class="wa-status-row"><span class="wa-status-dot dot-disconnected"></span> Bağlı değil</div>
-          @if (!waQrCode) {
-            <div class="card-actions">
-              <button class="btn btn-primary" (click)="connectWhatsApp()" [disabled]="waActionLoading">
-                {{ waActionLoading ? 'Başlatılıyor…' : (waSession ? '🔄 Yeniden Bağlan' : '🔗 WhatsApp\'ı Bağla') }}
-              </button>
-              @if (waSession && !waActionLoading) {
-                <button class="btn btn-outline" (click)="refreshWhatsAppQr()" [disabled]="waActionLoading">
-                  🔄 QR Yenile
+
+          <!-- Bağlantı modu seçici -->
+          <div class="wa-mode-tabs">
+            <button class="wa-mode-tab" [class.active]="waConnectMode === 'qr'" (click)="waConnectMode = 'qr'; waPairingCode = ''">
+              QR Kod
+            </button>
+            <button class="wa-mode-tab" [class.active]="waConnectMode === 'pairing'" (click)="waConnectMode = 'pairing'; waQrCode = ''; stopQrAutoRefresh()">
+              Telefon Kodu
+            </button>
+          </div>
+
+          @if (waConnectMode === 'qr') {
+            @if (!waQrCode) {
+              <div class="card-actions">
+                <button class="btn btn-primary" (click)="connectWhatsApp()" [disabled]="waActionLoading">
+                  {{ waActionLoading ? 'Başlatılıyor…' : (waSession ? '🔄 Yeniden Bağlan' : '🔗 WhatsApp\'ı Bağla') }}
                 </button>
-              }
-            </div>
-          } @else {
-            <div class="wa-qr-container">
-              <p class="wa-qr-hint">WhatsApp uygulamanızdan <strong>Bağlı Cihazlar → Cihaz Ekle</strong> seçeneğiyle bu QR kodu okutun.</p>
-              <img [src]="waQrCode" alt="WhatsApp QR Kodu" class="wa-qr-img">
-              @if (waQrCountdown > 0) {
-                <p style="font-size:.75rem;color:#6b7280;margin:6px 0 0;text-align:center">QR {{ waQrCountdown }}s sonra otomatik yenilenir</p>
-              }
-              <div class="card-actions" style="margin-top:12px">
-                <button class="btn btn-outline" (click)="refreshWhatsAppQr()" [disabled]="waActionLoading">🔄 QR Yenile</button>
-                <button class="btn btn-success" (click)="checkWhatsAppStatus()" [disabled]="waActionLoading">✅ Bağlandım</button>
+                @if (waSession && !waActionLoading) {
+                  <button class="btn btn-outline" (click)="refreshWhatsAppQr()" [disabled]="waActionLoading">
+                    🔄 QR Yenile
+                  </button>
+                }
               </div>
+            } @else {
+              <div class="wa-qr-container">
+                <p class="wa-qr-hint">WhatsApp uygulamanızdan <strong>Bağlı Cihazlar → Cihaz Ekle</strong> seçeneğiyle bu QR kodu okutun.</p>
+                <img [src]="waQrCode" alt="WhatsApp QR Kodu" class="wa-qr-img">
+                @if (waQrCountdown > 0) {
+                  <p style="font-size:.75rem;color:#6b7280;margin:6px 0 0;text-align:center">QR {{ waQrCountdown }}s sonra otomatik yenilenir</p>
+                }
+                <div class="card-actions" style="margin-top:12px">
+                  <button class="btn btn-outline" (click)="refreshWhatsAppQr()" [disabled]="waActionLoading">🔄 QR Yenile</button>
+                  <button class="btn btn-success" (click)="checkWhatsAppStatus()" [disabled]="waActionLoading">✅ Bağlandım</button>
+                </div>
+              </div>
+            }
+          } @else {
+            <!-- Pairing code modu -->
+            <div class="wa-pairing-container">
+              <p class="wa-qr-hint">WhatsApp numaranızı girin, size 8 haneli bağlantı kodu gönderilir.<br>
+                WhatsApp → <strong>Bağlı Cihazlar → Cihaz Ekle → Telefon numarasıyla bağla</strong> adımlarını izleyin.</p>
+              <div class="wa-pairing-input-row">
+                <input type="tel" class="form-control" placeholder="+90 555 123 45 67"
+                  [(ngModel)]="waPairingPhone" [disabled]="waPairingLoading">
+                <button class="btn btn-primary" (click)="requestPairingCode()" [disabled]="waPairingLoading || !waPairingPhone">
+                  {{ waPairingLoading ? 'Bekleniyor…' : 'Kod Al' }}
+                </button>
+              </div>
+              @if (waPairingCode) {
+                <div class="wa-pairing-code-box">
+                  <span class="wa-pairing-label">Bağlantı Kodunuz</span>
+                  <span class="wa-pairing-code">{{ waPairingCode }}</span>
+                  <small>Bu kodu WhatsApp'ta "Telefon numarasıyla bağla" ekranına girin</small>
+                </div>
+                <div class="card-actions" style="margin-top:12px">
+                  <button class="btn btn-success" (click)="checkWhatsAppStatus()" [disabled]="waActionLoading">✅ Bağlandım</button>
+                </div>
+              }
             </div>
           }
         }

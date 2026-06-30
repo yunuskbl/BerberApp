@@ -968,3 +968,35 @@
   width: 200px; height: 200px; border-radius: 8px;
   border: 1px solid #e5e7eb; object-fit: contain;
 }
+
+.wa-mode-tabs {
+  display: flex; gap: 8px; margin: 12px 0;
+}
+.wa-mode-tab {
+  flex: 1; padding: 8px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  border: 1.5px solid #e5e7eb; background: #fff; color: #6b7280; cursor: pointer;
+  transition: all .15s;
+  &.active { border-color: #25d366; background: #f0fdf4; color: #15803d; }
+}
+
+.wa-pairing-container {
+  display: flex; flex-direction: column; gap: 12px; padding: 12px 0;
+}
+.wa-pairing-input-row {
+  display: flex; gap: 8px;
+  input { flex: 1; }
+}
+.wa-pairing-code-box {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 16px; background: #f0fdf4; border-radius: 12px; border: 1.5px solid #86efac;
+}
+.wa-pairing-label {
+  font-size: 12px; color: #6b7280; font-weight: 500;
+}
+.wa-pairing-code {
+  font-size: 28px; font-weight: 700; letter-spacing: 4px; color: #15803d;
+  font-family: monospace;
+}
+.wa-pairing-code-box small {
+  font-size: 11px; color: #6b7280; text-align: center;
+}

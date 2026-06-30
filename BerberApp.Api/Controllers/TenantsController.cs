@@ -366,6 +366,45 @@ public class TenantsController : BaseApiController
         }
     }
 
+    [HttpPost("whatsapp/pairing-code")]
+    public async Task<IActionResult> WhatsAppPairingCode(
+        [FromBody] PairingCodeRequest req,
+        [FromServices] IWppConnectManagementService mgmt)
+    {
+        if (string.IsNullOrWhiteSpace(req.PhoneNumber))
+            return BadRequest(new { success = false, message = "Telefon numarası gerekli." });
+
+        var tenant = await _context.Tenants.FirstOrDefaultAsync(x => x.Id == TenantId);
+        if (tenant is null) return NotFound();
+
+        // Start a fresh unique session if not already started
+        if (string.IsNullOrWhiteSpace(tenant.WppConnectSession))
+        {
+            var session = $"t-{tenant.Subdomain}-{Guid.NewGuid():N}"[..32];
+            var newToken = await mgmt.GenerateTokenAsync(session);
+            // Start without waiting for QR — just get it into INITIALIZING state
+            _ = mgmt.StartSessionAsync(session, newToken);
+            await Task.Delay(3000); // wait for session to initialize
+            tenant.WppConnectSession = session;
+            tenant.WppConnectToken   = newToken;
+            await _context.SaveChangesAsync();
+        }
+
+        try
+        {
+            var phone = req.PhoneNumber.Replace("+", "").Replace(" ", "").Replace("-", "");
+            if (phone.StartsWith("0")) phone = "90" + phone[1..];
+            if (!phone.StartsWith("90")) phone = "90" + phone;
+
+            var code = await mgmt.RequestPairingCodeAsync(tenant.WppConnectSession, tenant.WppConnectToken!, phone);
+            return Success(new { pairingCode = code });
+        }
+        catch (Exception ex)
+        {
+            return Ok(new { success = false, message = ex.Message });
+        }
+    }
+
     [HttpGet("whatsapp/status")]
     public async Task<IActionResult> WhatsAppStatus(
         [FromServices] IWppConnectManagementService mgmt)
@@ -406,3 +445,4 @@ public class TenantsController : BaseApiController
 }
 
 public record TestWhatsAppRequest(string Phone, string Message);
+public record PairingCodeRequest(string PhoneNumber);

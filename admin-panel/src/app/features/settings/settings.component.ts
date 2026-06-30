@@ -89,6 +89,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private qrRefreshTimer: ReturnType<typeof setInterval> | null = null;
   private qrCountdownTimer: ReturnType<typeof setInterval> | null = null;
 
+  // Pairing code
+  waConnectMode: 'qr' | 'pairing' = 'qr';
+  waPairingPhone = '';
+  waPairingCode = '';
+  waPairingLoading = false;
+
   // QR Kod
   qrCodeDataUrl = '';
 
@@ -188,7 +194,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }, 20000);
   }
 
-  private stopQrAutoRefresh(): void {
+  stopQrAutoRefresh(): void {
     if (this.qrRefreshTimer) { clearInterval(this.qrRefreshTimer); this.qrRefreshTimer = null; }
     if (this.qrCountdownTimer) { clearInterval(this.qrCountdownTimer); this.qrCountdownTimer = null; }
     this.waQrCountdown = 0;
@@ -659,6 +665,44 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.waError = err.error?.message || 'Bağlantı hatası.';
       }
     });
+  }
+
+  requestPairingCode(): void {
+    if (!this.waPairingPhone) { this.waError = 'WhatsApp telefon numaranızı girin.'; return; }
+    this.waPairingLoading = true;
+    this.waError = '';
+    this.waPairingCode = '';
+
+    const startAndRequest = () => {
+      this.http.post<any>(`${environment.apiUrl}/tenants/whatsapp/pairing-code`,
+        { phoneNumber: this.waPairingPhone }).subscribe({
+        next: (res) => {
+          this.waPairingLoading = false;
+          if (res.success && res.data?.pairingCode) {
+            this.waPairingCode = res.data.pairingCode;
+          } else {
+            this.waError = res.message || res.data?.message || 'Kod alınamadı.';
+          }
+        },
+        error: (err) => {
+          this.waPairingLoading = false;
+          this.waError = err.error?.message || 'Kod alınamadı.';
+        }
+      });
+    };
+
+    // If no session yet, start one first
+    if (!this.waSession) {
+      this.http.post<any>(`${environment.apiUrl}/tenants/whatsapp/connect`, {}).subscribe({
+        next: (res) => {
+          this.waSession = res.data?.session ?? '';
+          startAndRequest();
+        },
+        error: () => { this.waPairingLoading = false; this.waError = 'Oturum başlatılamadı.'; }
+      });
+    } else {
+      startAndRequest();
+    }
   }
 
   refreshWhatsAppQr(): void {

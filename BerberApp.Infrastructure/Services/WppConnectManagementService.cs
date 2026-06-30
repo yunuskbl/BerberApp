@@ -216,7 +216,6 @@ public class WppConnectManagementService : IWppConnectManagementService
 
     public async Task DeleteSessionAsync(string session, string token, CancellationToken ct = default)
     {
-        // Removes all session token files from disk so WppConnect can't auto-connect on next start
         var url = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{session}/delete-session";
         using var req = new HttpRequestMessage(HttpMethod.Delete, url);
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -230,5 +229,49 @@ public class WppConnectManagementService : IWppConnectManagementService
         {
             _log.LogWarning("[WPPConnect-MGMT] DeleteSession failed (ignored): {Msg}", ex.Message);
         }
+    }
+
+    public async Task<string> RequestPairingCodeAsync(string session, string token, string phoneNumber, CancellationToken ct = default)
+    {
+        // Session must be in INITIALIZING state (started but no QR scanned yet)
+        var url = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{session}/request-pairing-code";
+        using var req = new HttpRequestMessage(HttpMethod.Post, url);
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        req.Content = new StringContent(
+            JsonSerializer.Serialize(new { phoneNumber }),
+            Encoding.UTF8, "application/json");
+
+        _log.LogInformation("[WPPConnect-MGMT] RequestPairingCode → {Phone}", phoneNumber);
+        var res  = await _http.SendAsync(req, ct);
+        var body = await res.Content.ReadAsStringAsync(ct);
+        _log.LogInformation("[WPPConnect-MGMT] PairingCode {Status}: {Body}", (int)res.StatusCode, body);
+
+        if (!res.IsSuccessStatusCode)
+            throw new InvalidOperationException($"Pairing code alınamadı: {body}");
+
+        using var doc = JsonDocument.Parse(body);
+        // Try common field names across WppConnect versions
+        foreach (var field in new[] { "pairingCode", "code", "data" })
+        {
+            if (doc.RootElement.TryGetProperty(field, out var v) && v.ValueKind == JsonValueKind.String)
+            {
+                var code = v.GetString() ?? "";
+                if (!string.IsNullOrWhiteSpace(code)) return code;
+            }
+        }
+        // Some versions nest under "response"
+        if (doc.RootElement.TryGetProperty("response", out var resp))
+        {
+            foreach (var field in new[] { "pairingCode", "code" })
+            {
+                if (resp.TryGetProperty(field, out var v) && v.ValueKind == JsonValueKind.String)
+                {
+                    var code = v.GetString() ?? "";
+                    if (!string.IsNullOrWhiteSpace(code)) return code;
+                }
+            }
+        }
+
+        throw new InvalidOperationException($"Pairing code alanı bulunamadı: {body}");
     }
 }

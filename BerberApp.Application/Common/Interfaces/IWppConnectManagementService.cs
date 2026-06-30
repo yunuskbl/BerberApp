@@ -9,6 +9,7 @@ public interface IWppConnectManagementService
     Task CloseSessionAsync(string session, string token, CancellationToken ct = default);
     Task LogoutSessionAsync(string session, string token, CancellationToken ct = default);
     Task DeleteSessionAsync(string session, string token, CancellationToken ct = default);
+    Task<string> RequestPairingCodeAsync(string session, string token, string phoneNumber, CancellationToken ct = default);
 }
 
 public record WppConnectSessionResult(string Session, string Token, string QrCode, bool IsConnected = false);
