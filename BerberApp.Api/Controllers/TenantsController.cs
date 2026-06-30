@@ -321,17 +321,26 @@ public class TenantsController : BaseApiController
         var session = $"tenant-{tenant.Subdomain}";
         try
         {
-            // Always clean up using the session name — even if DB has no stored session,
-            // WppConnect may still have token files on disk from a previous connection.
-            // Generate a fresh token first so we can authenticate the cleanup calls.
-            var cleanupToken = await mgmt.GenerateTokenAsync(session);
-            try { await mgmt.LogoutSessionAsync(session, cleanupToken); } catch { }
-            try { await mgmt.CloseSessionAsync(session, cleanupToken); }  catch { }
-            try { await mgmt.DeleteSessionAsync(session, cleanupToken); } catch { }
-            await Task.Delay(1500);
+            // WppConnect logout only works when session IS running.
+            // Strategy: start session first → if it auto-connects from cached credentials,
+            // logout WHILE connected (clears credentials), close, then start fresh for QR.
+            var firstToken = await mgmt.GenerateTokenAsync(session);
+            var firstResult = await mgmt.StartSessionAsync(session, firstToken);
 
-            var token  = await mgmt.GenerateTokenAsync(session);
-            var result = await mgmt.StartSessionAsync(session, token);
+            if (firstResult.IsConnected)
+            {
+                // Auto-connected from cached credentials — logout now while session is live
+                try { await mgmt.LogoutSessionAsync(session, firstToken); } catch { }
+                try { await mgmt.CloseSessionAsync(session, firstToken); }  catch { }
+                await Task.Delay(2000);
+
+                // Second start — cached credentials cleared, should produce real QR
+                firstToken  = await mgmt.GenerateTokenAsync(session);
+                firstResult = await mgmt.StartSessionAsync(session, firstToken);
+            }
+
+            var token  = firstToken;
+            var result = firstResult;
 
             tenant.WppConnectSession = session;
             tenant.WppConnectToken   = token;
