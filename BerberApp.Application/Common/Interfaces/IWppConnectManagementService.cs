@@ -8,6 +8,7 @@ public interface IWppConnectManagementService
     Task<string> GetStatusAsync(string session, string token, CancellationToken ct = default);
     Task CloseSessionAsync(string session, string token, CancellationToken ct = default);
     Task LogoutSessionAsync(string session, string token, CancellationToken ct = default);
+    Task DeleteSessionAsync(string session, string token, CancellationToken ct = default);
 }
 
 public record WppConnectSessionResult(string Session, string Token, string QrCode, bool IsConnected = false);

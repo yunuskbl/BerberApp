@@ -213,4 +213,22 @@ public class WppConnectManagementService : IWppConnectManagementService
         var res = await _http.SendAsync(req, ct);
         _log.LogInformation("[WPPConnect-MGMT] LogoutSession {Status}", (int)res.StatusCode);
     }
+
+    public async Task DeleteSessionAsync(string session, string token, CancellationToken ct = default)
+    {
+        // Removes all session token files from disk so WppConnect can't auto-connect on next start
+        var url = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{session}/delete-session";
+        using var req = new HttpRequestMessage(HttpMethod.Delete, url);
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        try
+        {
+            var res = await _http.SendAsync(req, ct);
+            _log.LogInformation("[WPPConnect-MGMT] DeleteSession {Status}", (int)res.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            _log.LogWarning("[WPPConnect-MGMT] DeleteSession failed (ignored): {Msg}", ex.Message);
+        }
+    }
 }

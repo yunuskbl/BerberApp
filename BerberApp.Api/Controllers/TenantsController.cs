@@ -321,14 +321,17 @@ public class TenantsController : BaseApiController
         var session = $"tenant-{tenant.Subdomain}";
         try
         {
-            // Logout + close existing session with OLD token first.
-            // Logout clears WhatsApp saved credentials so the new session shows a real QR.
-            // Without this, WppConnect reuses cached auth and auto-connects as a ghost session.
+            // Full cleanup before reconnecting so WppConnect can't auto-connect from cached files:
+            // logout → clears WhatsApp credentials from memory
+            // close  → stops headless browser process
+            // delete → removes token files from disk (the root cause of ghost sessions)
             if (!string.IsNullOrWhiteSpace(tenant.WppConnectSession) && !string.IsNullOrWhiteSpace(tenant.WppConnectToken))
             {
                 try { await mgmt.LogoutSessionAsync(tenant.WppConnectSession, tenant.WppConnectToken); }
                 catch { /* ignore */ }
                 try { await mgmt.CloseSessionAsync(tenant.WppConnectSession, tenant.WppConnectToken); }
+                catch { /* ignore */ }
+                try { await mgmt.DeleteSessionAsync(tenant.WppConnectSession, tenant.WppConnectToken); }
                 catch { /* ignore */ }
                 await Task.Delay(1500);
             }
