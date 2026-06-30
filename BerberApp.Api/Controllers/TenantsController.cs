@@ -321,20 +321,14 @@ public class TenantsController : BaseApiController
         var session = $"tenant-{tenant.Subdomain}";
         try
         {
-            // Full cleanup before reconnecting so WppConnect can't auto-connect from cached files:
-            // logout → clears WhatsApp credentials from memory
-            // close  → stops headless browser process
-            // delete → removes token files from disk (the root cause of ghost sessions)
-            if (!string.IsNullOrWhiteSpace(tenant.WppConnectSession) && !string.IsNullOrWhiteSpace(tenant.WppConnectToken))
-            {
-                try { await mgmt.LogoutSessionAsync(tenant.WppConnectSession, tenant.WppConnectToken); }
-                catch { /* ignore */ }
-                try { await mgmt.CloseSessionAsync(tenant.WppConnectSession, tenant.WppConnectToken); }
-                catch { /* ignore */ }
-                try { await mgmt.DeleteSessionAsync(tenant.WppConnectSession, tenant.WppConnectToken); }
-                catch { /* ignore */ }
-                await Task.Delay(1500);
-            }
+            // Always clean up using the session name — even if DB has no stored session,
+            // WppConnect may still have token files on disk from a previous connection.
+            // Generate a fresh token first so we can authenticate the cleanup calls.
+            var cleanupToken = await mgmt.GenerateTokenAsync(session);
+            try { await mgmt.LogoutSessionAsync(session, cleanupToken); } catch { }
+            try { await mgmt.CloseSessionAsync(session, cleanupToken); }  catch { }
+            try { await mgmt.DeleteSessionAsync(session, cleanupToken); } catch { }
+            await Task.Delay(1500);
 
             var token  = await mgmt.GenerateTokenAsync(session);
             var result = await mgmt.StartSessionAsync(session, token);
