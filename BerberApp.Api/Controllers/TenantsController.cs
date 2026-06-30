@@ -318,29 +318,19 @@ public class TenantsController : BaseApiController
         var tenant = await _context.Tenants.FirstOrDefaultAsync(x => x.Id == TenantId);
         if (tenant is null) return NotFound();
 
-        var session = $"tenant-{tenant.Subdomain}";
+        // Use a unique session name each time to guarantee no cached credentials.
+        // WppConnect caches session data by name; a fresh name always starts with QR.
+        var session = $"t-{tenant.Subdomain}-{Guid.NewGuid():N}"[..32];
         try
         {
-            // WppConnect logout only works when session IS running.
-            // Strategy: start session first → if it auto-connects from cached credentials,
-            // logout WHILE connected (clears credentials), close, then start fresh for QR.
-            var firstToken = await mgmt.GenerateTokenAsync(session);
-            var firstResult = await mgmt.StartSessionAsync(session, firstToken);
-
-            if (firstResult.IsConnected)
+            // Best-effort cleanup of the old session (close only — logout/delete unreliable on ghost sessions)
+            if (!string.IsNullOrWhiteSpace(tenant.WppConnectSession) && !string.IsNullOrWhiteSpace(tenant.WppConnectToken))
             {
-                // Auto-connected from cached credentials — logout now while session is live
-                try { await mgmt.LogoutSessionAsync(session, firstToken); } catch { }
-                try { await mgmt.CloseSessionAsync(session, firstToken); }  catch { }
-                await Task.Delay(2000);
-
-                // Second start — cached credentials cleared, should produce real QR
-                firstToken  = await mgmt.GenerateTokenAsync(session);
-                firstResult = await mgmt.StartSessionAsync(session, firstToken);
+                try { await mgmt.CloseSessionAsync(tenant.WppConnectSession, tenant.WppConnectToken); } catch { }
             }
 
-            var token  = firstToken;
-            var result = firstResult;
+            var token  = await mgmt.GenerateTokenAsync(session);
+            var result = await mgmt.StartSessionAsync(session, token);
 
             tenant.WppConnectSession = session;
             tenant.WppConnectToken   = token;
