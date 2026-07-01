@@ -54,7 +54,38 @@ public class WhatsAppService : IWhatsAppService
 
     public async Task SendOtpAsync(string phone, string otp)
     {
-        await SendTemplateAsync(phone, "OtpDogrulama", otp);
+        // Meta "Authentication" kategorisi şablonlarında body + copy-code buton parametresi zorunlu
+        if (!_settings.Templates.TryGetValue("OtpDogrulama", out var templateName))
+            throw new InvalidOperationException("Şablon adı bulunamadı: OtpDogrulama");
+
+        var payload = new
+        {
+            messaging_product = "whatsapp",
+            to = FormatPhone(phone),
+            type = "template",
+            template = new
+            {
+                name = templateName,
+                language = new { code = _settings.TemplateLanguage },
+                components = new object[]
+                {
+                    new
+                    {
+                        type = "body",
+                        parameters = new[] { new { type = "text", text = otp } }
+                    },
+                    new
+                    {
+                        type = "button",
+                        sub_type = "url",
+                        index = "0",
+                        parameters = new[] { new { type = "text", text = otp } }
+                    }
+                }
+            }
+        };
+
+        await PostAsync(payload);
     }
 
     public async Task SendAppointmentCompletedAsync(
