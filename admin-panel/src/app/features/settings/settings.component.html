@@ -560,6 +560,7 @@
             } @else {
               <div class="wa-qr-container">
                 <p class="wa-qr-hint">WhatsApp uygulamanızdan <strong>Bağlı Cihazlar → Cihaz Ekle</strong> seçeneğiyle bu QR kodu okutun.</p>
+              <p class="wa-qr-hint" style="font-size:.72rem;color:#f59e0b;margin-top:-4px">📱 Telefondaysanız: bu sayfayı masaüstü tarayıcıdan açıp telefonunuzla tarayın.</p>
                 <img [src]="waQrCode" alt="WhatsApp QR Kodu" class="wa-qr-img">
                 @if (waQrCountdown > 0) {
                   <p style="font-size:.75rem;color:#6b7280;margin:6px 0 0;text-align:center">QR {{ waQrCountdown }}s sonra otomatik yenilenir</p>

@@ -681,12 +681,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
           if (res.success && res.data?.pairingCode) {
             this.waPairingCode = res.data.pairingCode;
           } else {
-            this.waError = res.message || res.data?.message || 'Kod alınamadı.';
+            this.waError = 'Telefon kodu özelliği yakında aktif olacak. Şimdilik QR Kod sekmesini masaüstü tarayıcıdan kullanın.';
           }
         },
-        error: (err) => {
+        error: () => {
           this.waPairingLoading = false;
-          this.waError = err.error?.message || 'Kod alınamadı.';
+          this.waError = 'Telefon kodu özelliği yakında aktif olacak. Şimdilik QR Kod sekmesini masaüstü tarayıcıdan kullanın.';
         }
       });
     };
