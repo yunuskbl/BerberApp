@@ -75,8 +75,20 @@ services:
       # Docker içinde config dosyası değişikliklerini polling ile izle
       - DOTNET_USE_POLLING_FILE_WATCHER=true
 
-      # WPPConnect
-      - WhatsApp__Provider=WppConnect
+      # WhatsApp — Meta Cloud API
+      - WhatsApp__Provider=Meta
+      - Meta__PhoneNumberId=${META_PHONE_NUMBER_ID:-1192563087266067}
+      - Meta__AccessToken=${META_ACCESS_TOKEN}
+      - Meta__ApiVersion=v25.0
+      - Meta__TemplateLanguage=tr
+      - Meta__Templates__RandevuOnay=randevu_onay
+      - Meta__Templates__YeniRandevuBildirimi=yeni_randevu_bildirimi
+      - Meta__Templates__OtpDogrulama=otp_dogrulama
+      - Meta__Templates__HizmetTamamlandi=hizmet_tamamlandi
+      - Meta__Templates__RandevuHatirlatma=randevu_hatirlatma
+      - Meta__Templates__RandevuIptal=randevu_iptal
+
+      # WPPConnect (devre dışı — Meta Cloud API kullanılıyor)
       - WppConnect__BaseUrl=http://wppconnect:21465
       - WppConnect__Session=ayarliyo
       - WppConnect__SecretKey=${WPPCONNECT_SECRET_KEY}
