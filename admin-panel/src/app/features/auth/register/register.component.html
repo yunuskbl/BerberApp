@@ -131,13 +131,19 @@
           <input
             type="email"
             formControlName="email"
-            placeholder="ornek@mail.com"
+            placeholder="ornek@gmail.com"
             [class.error]="step2Form.get('email')?.invalid && step2Form.get('email')?.touched" />
           @if (step2Form.get('email')?.errors?.['required'] && step2Form.get('email')?.touched) {
             <span class="field-error">Email zorunludur.</span>
           }
           @if (step2Form.get('email')?.errors?.['email'] && step2Form.get('email')?.touched) {
             <span class="field-error">Geçerli bir email giriniz.</span>
+          }
+          @if (step2Form.get('email')?.errors?.['untrustedDomain'] && step2Form.get('email')?.touched) {
+            <span class="field-error">Lütfen Gmail, Outlook, Hotmail, iCloud veya Yahoo gibi bilinen bir e-posta sağlayıcısı kullanın.</span>
+          }
+          @if (step2Form.get('email')?.errors?.['implausibleEmail'] && step2Form.get('email')?.touched) {
+            <span class="field-error">Geçerli bir e-posta adresi giriniz. Rastgele karakterlerden oluşan adresler kabul edilmez.</span>
           }
         </div>
 

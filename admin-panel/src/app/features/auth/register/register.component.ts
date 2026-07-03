@@ -14,6 +14,42 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
   return password.value !== confirm.value ? { passwordMismatch: true } : null;
 }
 
+const ALLOWED_EMAIL_DOMAINS = [
+  'gmail.com', 'googlemail.com',
+  'outlook.com', 'outlook.com.tr',
+  'hotmail.com', 'hotmail.com.tr',
+  'live.com', 'msn.com', 'windowslive.com',
+  'icloud.com', 'me.com', 'mac.com',
+  'yahoo.com', 'yahoo.com.tr', 'ymail.com',
+  'yandex.com', 'yandex.com.tr', 'yandex.ru',
+  'proton.me', 'protonmail.com',
+  'mynet.com',
+];
+
+/** Bilinen e-posta sağlayıcısı zorunlu (gmail, outlook, hotmail, icloud...) */
+function trustedEmailDomainValidator(control: AbstractControl): ValidationErrors | null {
+  const value: string = control.value || '';
+  const at = value.lastIndexOf('@');
+  if (at < 0 || at === value.length - 1) return null; // format hatasını Validators.email yakalar
+  const domain = value.slice(at + 1).trim().toLowerCase();
+  return ALLOWED_EMAIL_DOMAINS.includes(domain) ? null : { untrustedDomain: true };
+}
+
+/** Rastgele karakter dizisi tespiti: en az bir sesli harf, 5+ ardışık sessiz harf yok */
+function plausibleEmailValidator(control: AbstractControl): ValidationErrors | null {
+  const value: string = control.value || '';
+  const at = value.indexOf('@');
+  if (at <= 0) return null;
+  const local = value.slice(0, at).split('+')[0].toLowerCase();
+  if (local.length < 3) return { implausibleEmail: true };
+
+  const letters = local.replace(/[^a-z]/g, '');
+  if (!letters) return { implausibleEmail: true };
+  if (!/[aeiou]/.test(letters)) return { implausibleEmail: true };
+  if (/[bcdfghjklmnpqrstvwxyz]{5,}/.test(local)) return { implausibleEmail: true };
+  return null;
+}
+
 @Component({
   selector: 'app-register',
   standalone: true,
@@ -65,7 +101,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.step2Form = this.fb.group({
       firstName: ['', [Validators.required, Validators.maxLength(50)]],
       lastName:  ['', [Validators.required, Validators.maxLength(50)]],
-      email:     ['', [Validators.required, Validators.email]],
+      email:     ['', [Validators.required, Validators.email, trustedEmailDomainValidator, plausibleEmailValidator]],
       password:        ['', [
         Validators.required,
         Validators.minLength(6),

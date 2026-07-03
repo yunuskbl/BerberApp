@@ -109,6 +109,69 @@ public static class CommonValidators
 }
 
 /// <summary>
+/// Güvenilir e-posta kontrolü: bilinen sağlayıcı + rastgele karakter tespiti
+/// </summary>
+public static class TrustedEmailHelper
+{
+    private static readonly HashSet<string> AllowedDomains = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "gmail.com", "googlemail.com",
+        "outlook.com", "outlook.com.tr",
+        "hotmail.com", "hotmail.com.tr",
+        "live.com", "msn.com", "windowslive.com",
+        "icloud.com", "me.com", "mac.com",
+        "yahoo.com", "yahoo.com.tr", "ymail.com",
+        "yandex.com", "yandex.com.tr", "yandex.ru",
+        "proton.me", "protonmail.com",
+        "mynet.com",
+    };
+
+    /// <summary>E-posta bilinen bir sağlayıcıya mı ait? (boş değerlere dokunmaz — NotEmpty kuralı yakalar)</summary>
+    public static bool HasAllowedDomain(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return true;
+        var at = email.LastIndexOf('@');
+        if (at < 0 || at == email.Length - 1) return true; // format hatasını EmailAddress kuralı yakalar
+        return AllowedDomains.Contains(email[(at + 1)..].Trim());
+    }
+
+    /// <summary>
+    /// Kullanıcı adı kısmı gerçekçi mi? Rastgele klavye dizilerini (ör. xkjqwrtpz) reddeder:
+    /// en az 3 karakter, en az bir harf, en az bir sesli harf, 5+ ardışık sessiz harf yok.
+    /// </summary>
+    public static bool HasPlausibleLocalPart(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return true;
+        var at = email.IndexOf('@');
+        if (at <= 0) return true;
+
+        // +etiket kısmını yok say (ornek+tag@gmail.com)
+        var local = email[..at].Split('+')[0].ToLowerInvariant();
+        if (local.Length < 3) return false;
+
+        var letters = local.Where(char.IsLetter).ToList();
+        if (letters.Count == 0) return false;
+
+        const string vowels = "aeiou";
+        if (!letters.Any(c => vowels.Contains(c))) return false;
+
+        var consonantRun = 0;
+        foreach (var c in local)
+        {
+            if (char.IsLetter(c) && !vowels.Contains(c))
+            {
+                if (++consonantRun >= 5) return false;
+            }
+            else
+            {
+                consonantRun = 0;
+            }
+        }
+        return true;
+    }
+}
+
+/// <summary>
 /// Phone number utility
 /// </summary>
 public static class PhoneNumberHelper

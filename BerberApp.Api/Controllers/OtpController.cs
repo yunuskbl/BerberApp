@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Application.Common.Validators;
 using BerberApp.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,14 @@ public class OtpController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(request.Phone))
             return BadRequest(new { success = false, message = "Telefon numarası gerekli." });
+
+        if (!string.IsNullOrWhiteSpace(request.Email))
+        {
+            if (!TrustedEmailHelper.HasAllowedDomain(request.Email))
+                return BadRequest(new { success = false, message = "Lütfen Gmail, Outlook, Hotmail, iCloud veya Yahoo gibi bilinen bir e-posta sağlayıcısı kullanın." });
+            if (!TrustedEmailHelper.HasPlausibleLocalPart(request.Email))
+                return BadRequest(new { success = false, message = "Geçerli bir e-posta adresi giriniz. Rastgele karakterlerden oluşan adresler kabul edilmez." });
+        }
 
         var existing = await _context.OtpRecords
             .Where(x => x.Phone == request.Phone)

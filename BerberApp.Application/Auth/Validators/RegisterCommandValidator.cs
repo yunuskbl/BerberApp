@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BerberApp.Application.Auth.Commands;
+using BerberApp.Application.Common.Validators;
 using FluentValidation;
 
 namespace BerberApp.Application.Auth.Validators;
@@ -31,7 +32,11 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
 
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("Email zorunludur.")
-            .EmailAddress().WithMessage("Geçerli bir email adresi giriniz.");
+            .EmailAddress().WithMessage("Geçerli bir email adresi giriniz.")
+            .Must(TrustedEmailHelper.HasAllowedDomain)
+                .WithMessage("Lütfen Gmail, Outlook, Hotmail, iCloud veya Yahoo gibi bilinen bir e-posta sağlayıcısı kullanın.")
+            .Must(TrustedEmailHelper.HasPlausibleLocalPart)
+                .WithMessage("Geçerli bir e-posta adresi giriniz. Rastgele karakterlerden oluşan adresler kabul edilmez.");
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Şifre zorunludur.")
