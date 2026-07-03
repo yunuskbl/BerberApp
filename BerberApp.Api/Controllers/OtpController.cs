@@ -32,7 +32,7 @@ public class OtpController : ControllerBase
         if (!string.IsNullOrWhiteSpace(request.Email))
         {
             if (!TrustedEmailHelper.HasAllowedDomain(request.Email))
-                return BadRequest(new { success = false, message = "Lütfen Gmail, Outlook, Hotmail, iCloud veya Yahoo gibi bilinen bir e-posta sağlayıcısı kullanın." });
+                return BadRequest(new { success = false, message = "Geçici/tek kullanımlık e-posta adresleri kabul edilmez. Lütfen kalıcı bir e-posta adresi kullanın." });
             if (!TrustedEmailHelper.HasPlausibleLocalPart(request.Email))
                 return BadRequest(new { success = false, message = "Geçerli bir e-posta adresi giriniz. Rastgele karakterlerden oluşan adresler kabul edilmez." });
         }

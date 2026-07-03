@@ -34,7 +34,7 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
             .NotEmpty().WithMessage("Email zorunludur.")
             .EmailAddress().WithMessage("Geçerli bir email adresi giriniz.")
             .Must(TrustedEmailHelper.HasAllowedDomain)
-                .WithMessage("Lütfen Gmail, Outlook, Hotmail, iCloud veya Yahoo gibi bilinen bir e-posta sağlayıcısı kullanın.")
+                .WithMessage("Geçici/tek kullanımlık e-posta adresleri kabul edilmez. Lütfen kalıcı bir e-posta adresi kullanın.")
             .Must(TrustedEmailHelper.HasPlausibleLocalPart)
                 .WithMessage("Geçerli bir e-posta adresi giriniz. Rastgele karakterlerden oluşan adresler kabul edilmez.");
 

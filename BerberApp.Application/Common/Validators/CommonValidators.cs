@@ -109,30 +109,29 @@ public static class CommonValidators
 }
 
 /// <summary>
-/// Güvenilir e-posta kontrolü: bilinen sağlayıcı + rastgele karakter tespiti
+/// Güvenilir e-posta kontrolü: tek kullanımlık servis engeli + rastgele karakter tespiti.
+/// Kurumsal domain'ler (ör. info@salonadi.com) serbesttir.
 /// </summary>
 public static class TrustedEmailHelper
 {
-    private static readonly HashSet<string> AllowedDomains = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> DisposableDomains = new(StringComparer.OrdinalIgnoreCase)
     {
-        "gmail.com", "googlemail.com",
-        "outlook.com", "outlook.com.tr",
-        "hotmail.com", "hotmail.com.tr",
-        "live.com", "msn.com", "windowslive.com",
-        "icloud.com", "me.com", "mac.com",
-        "yahoo.com", "yahoo.com.tr", "ymail.com",
-        "yandex.com", "yandex.com.tr", "yandex.ru",
-        "proton.me", "protonmail.com",
-        "mynet.com",
+        "mailinator.com", "guerrillamail.com", "guerrillamail.net", "sharklasers.com",
+        "10minutemail.com", "10minutemail.net", "temp-mail.org", "tempmail.com",
+        "tempmail.dev", "tempmailo.com", "yopmail.com", "trashmail.com",
+        "getnada.com", "dispostable.com", "maildrop.cc", "mintemail.com",
+        "throwawaymail.com", "fakeinbox.com", "mohmal.com", "emailondeck.com",
+        "mailnesia.com", "mytemp.email", "burnermail.io", "mailsac.com",
+        "inboxkitten.com", "spamgourmet.com", "mailpoof.com", "tmpmail.org",
     };
 
-    /// <summary>E-posta bilinen bir sağlayıcıya mı ait? (boş değerlere dokunmaz — NotEmpty kuralı yakalar)</summary>
+    /// <summary>Domain tek kullanımlık bir mail servisine ait mi? (boş değerlere dokunmaz — NotEmpty kuralı yakalar)</summary>
     public static bool HasAllowedDomain(string? email)
     {
         if (string.IsNullOrWhiteSpace(email)) return true;
         var at = email.LastIndexOf('@');
         if (at < 0 || at == email.Length - 1) return true; // format hatasını EmailAddress kuralı yakalar
-        return AllowedDomains.Contains(email[(at + 1)..].Trim());
+        return !DisposableDomains.Contains(email[(at + 1)..].Trim());
     }
 
     /// <summary>

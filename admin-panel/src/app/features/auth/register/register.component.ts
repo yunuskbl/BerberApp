@@ -14,25 +14,23 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
   return password.value !== confirm.value ? { passwordMismatch: true } : null;
 }
 
-const ALLOWED_EMAIL_DOMAINS = [
-  'gmail.com', 'googlemail.com',
-  'outlook.com', 'outlook.com.tr',
-  'hotmail.com', 'hotmail.com.tr',
-  'live.com', 'msn.com', 'windowslive.com',
-  'icloud.com', 'me.com', 'mac.com',
-  'yahoo.com', 'yahoo.com.tr', 'ymail.com',
-  'yandex.com', 'yandex.com.tr', 'yandex.ru',
-  'proton.me', 'protonmail.com',
-  'mynet.com',
+const DISPOSABLE_EMAIL_DOMAINS = [
+  'mailinator.com', 'guerrillamail.com', 'guerrillamail.net', 'sharklasers.com',
+  '10minutemail.com', '10minutemail.net', 'temp-mail.org', 'tempmail.com',
+  'tempmail.dev', 'tempmailo.com', 'yopmail.com', 'trashmail.com',
+  'getnada.com', 'dispostable.com', 'maildrop.cc', 'mintemail.com',
+  'throwawaymail.com', 'fakeinbox.com', 'mohmal.com', 'emailondeck.com',
+  'mailnesia.com', 'mytemp.email', 'burnermail.io', 'mailsac.com',
+  'inboxkitten.com', 'spamgourmet.com', 'mailpoof.com', 'tmpmail.org',
 ];
 
-/** Bilinen e-posta sağlayıcısı zorunlu (gmail, outlook, hotmail, icloud...) */
+/** Tek kullanımlık mail servisleri engelli — kurumsal domain'ler serbest */
 function trustedEmailDomainValidator(control: AbstractControl): ValidationErrors | null {
   const value: string = control.value || '';
   const at = value.lastIndexOf('@');
   if (at < 0 || at === value.length - 1) return null; // format hatasını Validators.email yakalar
   const domain = value.slice(at + 1).trim().toLowerCase();
-  return ALLOWED_EMAIL_DOMAINS.includes(domain) ? null : { untrustedDomain: true };
+  return DISPOSABLE_EMAIL_DOMAINS.includes(domain) ? { untrustedDomain: true } : null;
 }
 
 /** Rastgele karakter dizisi tespiti: en az bir sesli harf, 5+ ardışık sessiz harf yok */
