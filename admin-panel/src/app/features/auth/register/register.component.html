@@ -139,11 +139,8 @@
           @if (step2Form.get('email')?.errors?.['email'] && step2Form.get('email')?.touched) {
             <span class="field-error">Geçerli bir email giriniz.</span>
           }
-          @if (step2Form.get('email')?.errors?.['untrustedDomain'] && step2Form.get('email')?.touched) {
-            <span class="field-error">Geçici/tek kullanımlık e-posta adresleri kabul edilmez. Lütfen kalıcı bir e-posta adresi kullanın.</span>
-          }
-          @if (step2Form.get('email')?.errors?.['implausibleEmail'] && step2Form.get('email')?.touched) {
-            <span class="field-error">Geçerli bir e-posta adresi giriniz. Rastgele karakterlerden oluşan adresler kabul edilmez.</span>
+          @if ((step2Form.get('email')?.errors?.['untrustedDomain'] || step2Form.get('email')?.errors?.['implausibleEmail']) && step2Form.get('email')?.touched) {
+            <span class="field-error">Geçerli bir mail adresi giriniz.</span>
           }
         </div>
 

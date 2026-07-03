@@ -32,9 +32,9 @@ public class OtpController : ControllerBase
         if (!string.IsNullOrWhiteSpace(request.Email))
         {
             if (!TrustedEmailHelper.HasAllowedDomain(request.Email))
-                return BadRequest(new { success = false, message = "Geçici/tek kullanımlık e-posta adresleri kabul edilmez. Lütfen kalıcı bir e-posta adresi kullanın." });
+                return BadRequest(new { success = false, message = "Geçerli bir mail adresi giriniz." });
             if (!TrustedEmailHelper.HasPlausibleLocalPart(request.Email))
-                return BadRequest(new { success = false, message = "Geçerli bir e-posta adresi giriniz. Rastgele karakterlerden oluşan adresler kabul edilmez." });
+                return BadRequest(new { success = false, message = "Geçerli bir mail adresi giriniz." });
         }
 
         var existing = await _context.OtpRecords

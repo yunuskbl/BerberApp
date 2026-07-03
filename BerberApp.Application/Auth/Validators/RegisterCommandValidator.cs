@@ -34,9 +34,9 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
             .NotEmpty().WithMessage("Email zorunludur.")
             .EmailAddress().WithMessage("Geçerli bir email adresi giriniz.")
             .Must(TrustedEmailHelper.HasAllowedDomain)
-                .WithMessage("Geçici/tek kullanımlık e-posta adresleri kabul edilmez. Lütfen kalıcı bir e-posta adresi kullanın.")
+                .WithMessage("Geçerli bir mail adresi giriniz.")
             .Must(TrustedEmailHelper.HasPlausibleLocalPart)
-                .WithMessage("Geçerli bir e-posta adresi giriniz. Rastgele karakterlerden oluşan adresler kabul edilmez.");
+                .WithMessage("Geçerli bir mail adresi giriniz.");
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Şifre zorunludur.")
