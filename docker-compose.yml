@@ -85,9 +85,9 @@ services:
       - Meta__ApiVersion=v25.0
       - Meta__TemplateLanguage=tr
       - Meta__Templates__RandevuOnay=randevu_onay
-      - Meta__Templates__YeniRandevuBildirimi=yeni_randevu_bildirimi
+      - Meta__Templates__YeniRandevuBildirimi=randevu__onay
       - Meta__Templates__OtpDogrulama=otp_dogrulama
-      - Meta__Templates__HizmetTamamlandi=hizmet_tamamlandi
+      - Meta__Templates__HizmetTamamlandi=randevu_tamamlandi
       - Meta__Templates__RandevuHatirlatma=randevu_hatirlatma
       - Meta__Templates__RandevuIptal=randevu_iptal
 
