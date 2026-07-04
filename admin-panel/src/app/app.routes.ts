@@ -176,6 +176,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'new-registrations',
+        loadComponent: () =>
+          import('./features/super-admin/new-registrations/super-admin-new-registrations.component').then(
+            (m) => m.SuperAdminNewRegistrationsComponent,
+          ),
+      },
+      {
         path: 'reports',
         loadComponent: () =>
           import('./features/super-admin/reports/super-admin-reports.component').then(

@@ -1,0 +1,99 @@
+<div class="reg-page">
+  <div class="reg-header">
+    <div>
+      <h1>Yeni Kayıtlar</h1>
+      <p class="reg-sub">
+        {{ list.length }} kayıt · <span class="susp-count">{{ suspiciousCount }} şüpheli</span>
+      </p>
+    </div>
+    <button class="btn-refresh" (click)="load()" [disabled]="isLoading">↻ Yenile</button>
+  </div>
+
+  <!-- Filtreler -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Zaman Aralığı</label>
+      <div class="chip-row">
+        @for (w of windowOptions; track w.value) {
+          <button class="chip" [class.active]="windowDays === w.value"
+                  (click)="windowDays = w.value">
+            {{ w.label }}
+          </button>
+        }
+      </div>
+    </div>
+    <div class="filter-group">
+      <label class="checkbox">
+        <input type="checkbox" [(ngModel)]="onlySuspicious" />
+        Sadece şüphelileri göster
+      </label>
+    </div>
+  </div>
+
+  @if (successMessage) { <div class="toast success">{{ successMessage }}</div> }
+  @if (errorMessage)   { <div class="toast error">{{ errorMessage }}</div> }
+
+  <!-- Yükleniyor -->
+  @if (isLoading) {
+    <div class="loading-wrap"><div class="spinner"></div><span>Yükleniyor…</span></div>
+  }
+
+  <!-- Boş -->
+  @if (!isLoading && list.length === 0) {
+    <div class="empty-state">
+      <span class="empty-icon">✅</span>
+      <h3>Kayıt yok</h3>
+      <p>Seçilen aralıkta yeni işletme kaydı bulunmuyor.</p>
+    </div>
+  }
+
+  <!-- Liste -->
+  @if (!isLoading && list.length > 0) {
+    <div class="cards">
+      @for (t of list; track t.id) {
+        <div class="reg-card" [class.suspicious]="t.score >= 3" [class.inactive]="!t.isActive">
+          <div class="card-main">
+            <div class="card-top">
+              <div class="name-wrap">
+                <span class="tenant-name">{{ t.name }}</span>
+                <span class="subdomain">/{{ t.subdomain }}</span>
+                @if (!t.isActive) { <span class="badge muted">Askıda</span> }
+                @if (t.score >= 3) { <span class="badge danger">⚠ Şüpheli</span> }
+                @else if (t.score > 0) { <span class="badge warn">İncele</span> }
+              </div>
+              <span class="age" [title]="formatDateTime(t.createdAt)">{{ ageLabel(t.createdAt) }}</span>
+            </div>
+
+            <div class="card-meta">
+              <span>👤 {{ t.adminName || '—' }}</span>
+              <span>✉️ {{ t.adminEmail || '—' }}</span>
+              <span>📞 {{ t.phone || '—' }}</span>
+            </div>
+
+            <div class="card-stats">
+              <span>Personel: <b>{{ t.staffCount }}</b></span>
+              <span>Müşteri: <b>{{ t.customerCount }}</b></span>
+              <span>Randevu: <b>{{ t.totalAppointments }}</b></span>
+              <span class="plan">{{ t.plan }}</span>
+            </div>
+
+            @if (t.reasons.length > 0) {
+              <div class="reasons">
+                @for (r of t.reasons; track r) { <span class="reason">{{ r }}</span> }
+              </div>
+            }
+          </div>
+
+          <div class="card-actions">
+            <a class="btn-link" [routerLink]="['/superadmin/tenants', t.id]">Detay</a>
+            <button class="btn-warn" [disabled]="busyId === t.id" (click)="toggleActive(t)">
+              {{ t.isActive ? 'Askıya Al' : 'Aktif Et' }}
+            </button>
+            <button class="btn-del" [disabled]="busyId === t.id" (click)="softDelete(t)">Sil</button>
+            <button class="btn-hard" [disabled]="busyId === t.id" (click)="hardDelete(t)">Kalıcı Sil</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
