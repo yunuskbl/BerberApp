@@ -13,6 +13,7 @@ public class SmtpEmailService : IEmailService
     private readonly string _smtpPassword;
     private readonly string _fromAddress;
     private readonly string _fromName;
+    private readonly string _adminNotificationAddress;
 
     public SmtpEmailService(IConfiguration config)
     {
@@ -22,7 +23,13 @@ public class SmtpEmailService : IEmailService
         _smtpPassword = config["Email:SmtpPassword"] ?? "";
         _fromAddress  = string.IsNullOrEmpty(config["Email:FromAddress"]) ? "noreply@ayarliyo.com" : config["Email:FromAddress"]!;
         _fromName     = config["Email:FromName"]     ?? "ayarlıyo";
+        // Yeni kayıt bildirimleri buraya gider; ayarlanmamışsa SMTP hesabına düşer
+        _adminNotificationAddress = string.IsNullOrEmpty(config["Email:AdminNotificationAddress"])
+            ? _smtpUsername
+            : config["Email:AdminNotificationAddress"]!;
     }
+
+    public string AdminNotificationAddress => _adminNotificationAddress;
 
     public async Task SendEmailVerificationAsync(string toEmail, string fullName, string verificationUrl)
     {
@@ -285,6 +292,41 @@ public class SmtpEmailService : IEmailService
             """;
 
         await SendAsync(toEmail, "Doğrulama Kodunuz — ayarlıyo", body);
+    }
+
+    public async Task SendNewTenantRegisteredAsync(string tenantName, string subdomain, string ownerName, string ownerEmail, string phone)
+    {
+        if (string.IsNullOrWhiteSpace(_adminNotificationAddress))
+            return;
+
+        var when = DateTime.UtcNow.AddHours(3).ToString("dd.MM.yyyy HH:mm"); // TR saati
+        var body = $"""
+            <!DOCTYPE html>
+            <html lang="tr">
+            <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+            <body style="margin:0;padding:0;background:#f3f4f6;font-family:'Inter',Arial,sans-serif;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+                <tr><td align="center">
+                  <table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;padding:40px;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+                    <tr><td style="font-size:20px;font-weight:700;color:#111827;padding-bottom:16px;">
+                      🏪 Yeni İşletme Kaydı
+                    </td></tr>
+                    <tr><td style="font-size:15px;color:#374151;line-height:1.9;">
+                      <strong>İşletme:</strong> {tenantName}<br/>
+                      <strong>Subdomain:</strong> {subdomain}<br/>
+                      <strong>Yetkili:</strong> {ownerName}<br/>
+                      <strong>E-posta:</strong> {ownerEmail}<br/>
+                      <strong>Telefon:</strong> {phone}<br/>
+                      <strong>Tarih:</strong> {when}
+                    </td></tr>
+                  </table>
+                </td></tr>
+              </table>
+            </body>
+            </html>
+            """;
+
+        await SendAsync(_adminNotificationAddress, $"Yeni işletme kaydı: {tenantName}", body);
     }
 
     protected virtual async Task SendAsync(string to, string subject, string htmlBody)

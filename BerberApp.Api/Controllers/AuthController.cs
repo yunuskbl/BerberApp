@@ -48,8 +48,27 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterCommand command)
     {
-        var result = await _mediator.Send(command);
-        return Ok(new { success = true, message = "Kayıt başarılı.", data = result });
+        var ip     = Request.Headers["X-Real-IP"].FirstOrDefault()
+                  ?? HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var ua     = Request.Headers.UserAgent.ToString();
+        var path   = Request.Path.Value ?? "/api/auth/register";
+        var method = Request.Method;
+
+        try
+        {
+            var result = await _mediator.Send(command);
+            await _audit.LogAsync("TENANT_REGISTERED", "Info", ip, path, method,
+                tenantId: result.TenantId.ToString(), userAgent: ua,
+                description: $"Yeni işletme: {command.TenantName} ({command.Subdomain}) — {MaskEmail(command.Email)}");
+            return Ok(new { success = true, message = "Kayıt başarılı.", data = result });
+        }
+        catch
+        {
+            await _audit.LogAsync("REGISTER_FAILED", "Warning", ip, path, method,
+                userAgent: ua,
+                description: $"Başarısız kayıt denemesi: {command.Subdomain} — {MaskEmail(command.Email)}");
+            throw;
+        }
     }
 
     [HttpPost("refresh")]

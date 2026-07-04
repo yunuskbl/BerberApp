@@ -64,6 +64,8 @@ services:
       - Email__SmtpPassword=${EMAIL_SMTP_PASSWORD}
       - Email__FromAddress=${EMAIL_SMTP_USERNAME}
       - Email__FromName=ayarlıyo
+      # Yeni işletme kaydı bildirimleri buraya gider (boşsa SMTP hesabına düşer)
+      - Email__AdminNotificationAddress=${ADMIN_NOTIFICATION_EMAIL:-}
 
       # Uygulama URL
       - AppSettings__BaseUrl=${APP_BASE_URL}

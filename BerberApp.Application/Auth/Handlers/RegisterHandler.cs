@@ -118,6 +118,10 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
         var fullName = $"{request.FirstName} {request.LastName}";
         _ = _emailService.SendWelcomeEmailAsync(request.Email, fullName, request.TenantName);
 
+        // Platform yöneticisine yeni kayıt bildirimi (arka planda)
+        _ = _emailService.SendNewTenantRegisteredAsync(
+            request.TenantName, request.Subdomain, fullName, request.Email, request.Phone ?? "");
+
         return new LoginResponse
         {
             AccessToken = accessToken,

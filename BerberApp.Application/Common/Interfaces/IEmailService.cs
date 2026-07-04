@@ -10,4 +10,7 @@ public interface IEmailService
     Task SendSubscriptionActivatedAsync(string toEmail, string fullName, string planName, DateTime expiryDate);
     Task SendSubscriptionExpiryWarningAsync(string toEmail, string fullName, string salonName, int daysRemaining, DateTime expiryDate);
     Task SendOtpAsync(string toEmail, string otp);
+
+    /// <summary>Yeni işletme kaydı olduğunda platform yöneticisine bilgi e-postası (adres implementasyonda yapılandırılır).</summary>
+    Task SendNewTenantRegisteredAsync(string tenantName, string subdomain, string ownerName, string ownerEmail, string phone);
 }
