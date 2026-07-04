@@ -938,6 +938,16 @@
   strong { font-weight: 600; }
 }
 
+.wa-central-info {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 16px;
+  .wa-central-icon { font-size: 20px; line-height: 1.2; flex-shrink: 0; }
+  strong { color: #065f46; font-size: 14px; }
+  p { margin: 4px 0 0; color: #047857; font-size: 13px; line-height: 1.5; }
+  b { font-weight: 700; }
+}
+
 .wa-status-row {
   display: flex; align-items: center; gap: 8px;
   font-size: 14px; color: #374151; margin-bottom: 16px;

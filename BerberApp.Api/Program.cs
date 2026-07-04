@@ -111,12 +111,25 @@ builder.Services.Configure<BerberApp.Application.Common.Settings.WppConnectSetti
     builder.Configuration.GetSection("WppConnect"));
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
-// WhatsApp sağlayıcı seçimi — appsettings.json → "WhatsApp:Provider": "WppConnect" | "Meta"
-var whatsAppProvider = builder.Configuration["WhatsApp:Provider"] ?? "Meta";
+// WhatsApp sağlayıcı seçimi — appsettings.json → "WhatsApp:Provider"
+//   "WppConnect" → tüm işletmeler WPPConnect (eski davranış)
+//   "Meta"       → tüm işletmeler merkezi Meta
+//   "Hybrid" (varsayılan) → kendi numarasını bağlayan WPPConnect, bağlamayan merkezi Meta
+var whatsAppProvider = builder.Configuration["WhatsApp:Provider"] ?? "Hybrid";
 if (whatsAppProvider.Equals("WppConnect", StringComparison.OrdinalIgnoreCase))
+{
     builder.Services.AddHttpClient<IWhatsAppService, WppConnectWhatsAppService>();
-else
+}
+else if (whatsAppProvider.Equals("Meta", StringComparison.OrdinalIgnoreCase))
+{
     builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();
+}
+else // Hybrid — her iki servisi de kaydet, yönlendirmeyi HybridWhatsAppService yapar
+{
+    builder.Services.AddHttpClient<WhatsAppService>();
+    builder.Services.AddHttpClient<WppConnectWhatsAppService>();
+    builder.Services.AddScoped<IWhatsAppService, HybridWhatsAppService>();
+}
 builder.Services.AddHttpClient<IWppConnectManagementService, WppConnectManagementService>();
 builder.Services.AddScoped<SmsService>();
 builder.Services.AddHttpClient<ISmsService, NetgsmSmsService>();

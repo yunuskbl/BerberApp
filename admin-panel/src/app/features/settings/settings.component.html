@@ -523,6 +523,18 @@
           </div>
         </div>
 
+        <!-- Merkezi WhatsApp bilgisi — kendi numarasını bağlamak opsiyonel -->
+        @if (!waIsConnected) {
+          <div class="wa-central-info">
+            <span class="wa-central-icon">✅</span>
+            <div>
+              <strong>WhatsApp bildirimleri şu an aktif.</strong>
+              <p>Mesajlar <b>ayarlıyo</b> resmi numarasından otomatik gönderiliyor — hiçbir şey yapmanıza gerek yok.
+                 Mesajların <b>kendi işletme numaranızdan</b> gitmesini isterseniz aşağıdan telefonunuzu bağlayabilirsiniz.</p>
+            </div>
+          </div>
+        }
+
         @if (waStatus === 'loading') {
           <div class="wa-status-row"><span class="wa-status-dot dot-loading"></span> Durum kontrol ediliyor…</div>
         } @else if (waIsConnected) {
@@ -533,7 +545,7 @@
             </button>
           </div>
         } @else {
-          <div class="wa-status-row"><span class="wa-status-dot dot-disconnected"></span> Bağlı değil</div>
+          <div class="wa-status-row"><span class="wa-status-dot dot-disconnected"></span> Kendi numaranız bağlı değil (merkezi numara kullanılıyor)</div>
 
           <!-- Bağlantı modu seçici -->
           <div class="wa-mode-tabs">

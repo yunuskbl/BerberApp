@@ -77,8 +77,8 @@ services:
       # Docker içinde config dosyası değişikliklerini polling ile izle
       - DOTNET_USE_POLLING_FILE_WATCHER=true
 
-      # WhatsApp — Meta Cloud API
-      - WhatsApp__Provider=Meta
+      # WhatsApp — Hibrit: kendi numarasını bağlayan WPPConnect, bağlamayan merkezi Meta
+      - WhatsApp__Provider=Hybrid
       - Meta__PhoneNumberId=${META_PHONE_NUMBER_ID:-1192563087266067}
       - Meta__AccessToken=${META_ACCESS_TOKEN}
       - Meta__AppSecret=${META_APP_SECRET}
