@@ -31,8 +31,13 @@ builder.Host.UseSerilog((context, config) =>
 // Controllers
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
+    {
         o.JsonSerializerOptions.Converters.Add(
-            new System.Text.Json.Serialization.JsonStringEnumConverter()));
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
+        // Tüm DateTime'ları UTC 'Z' ekiyle döndür — frontend'in doğru saat çevirmesi için
+        o.JsonSerializerOptions.Converters.Add(new BerberApp.Api.Json.UtcDateTimeConverter());
+        o.JsonSerializerOptions.Converters.Add(new BerberApp.Api.Json.UtcNullableDateTimeConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
