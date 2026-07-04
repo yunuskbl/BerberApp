@@ -61,6 +61,7 @@ public class SubscriptionController : BaseApiController
 
     // POST /api/subscription/checkout
     [HttpPost("checkout")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
     public async Task<IActionResult> InitCheckout([FromBody] CheckoutRequest req, CancellationToken ct)
     {
         var planKey = req.Plan.ToLower();
@@ -165,6 +166,7 @@ public class SubscriptionController : BaseApiController
 
     // DELETE /api/subscription
     [HttpDelete]
+    [Authorize(Roles = "Admin,SuperAdmin")]
     public async Task<IActionResult> CancelSubscription(CancellationToken ct)
     {
         var sub = await _context.Subscriptions

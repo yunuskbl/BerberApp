@@ -1,10 +1,12 @@
 ﻿using BerberApp.Application.Service.Commands;
 using BerberApp.Application.Service.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BerberApp.Api.Controllers;
 
+[Authorize(Roles = "Admin,SuperAdmin")]
 public class ServicesController : BaseApiController
 {
     public ServicesController(IMediator mediator) : base(mediator) { }

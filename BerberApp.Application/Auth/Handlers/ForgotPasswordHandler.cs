@@ -35,6 +35,8 @@ public class ForgotPasswordHandler : IRequestHandler<ForgotPasswordCommand>
 
     private static string GenerateOtp()
     {
-        return Random.Shared.Next(100000, 999999).ToString();
+        // Kriptografik olarak güvenli 6 haneli kod (100000–999999)
+        return System.Security.Cryptography.RandomNumberGenerator
+            .GetInt32(100000, 1000000).ToString();
     }
 }

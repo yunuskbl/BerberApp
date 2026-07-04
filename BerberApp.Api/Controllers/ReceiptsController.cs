@@ -1,10 +1,12 @@
 using BerberApp.Application.Receipt.Commands;
 using BerberApp.Application.Receipt.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BerberApp.Api.Controllers;
 
+[Authorize(Roles = "Admin,SuperAdmin")]
 public class ReceiptsController : BaseApiController
 {
     public ReceiptsController(IMediator mediator) : base(mediator) { }

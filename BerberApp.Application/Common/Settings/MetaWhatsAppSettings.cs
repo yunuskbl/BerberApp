@@ -17,6 +17,9 @@ public class MetaWhatsAppSettings
     /// <summary>Meta webhook doğrulama token'ı (Meta Developer Console'da ayarlanan)</summary>
     public string WebhookVerifyToken { get; set; } = string.Empty;
 
+    /// <summary>Meta App Secret — gelen webhook'ların X-Hub-Signature-256 HMAC doğrulaması için</summary>
+    public string AppSecret { get; set; } = string.Empty;
+
     /// <summary>Onaylı Meta şablon adları (anahtar: kod adı, değer: Meta'daki şablon adı)</summary>
     public Dictionary<string, string> Templates { get; set; } = new();
 }

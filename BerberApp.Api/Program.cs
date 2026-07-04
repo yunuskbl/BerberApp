@@ -169,11 +169,13 @@ if (app.Environment.IsProduction() && !app.Environment.IsEnvironment("Container"
 }
 
 // Swagger — production'da SuperAdmin korumasıyla, diğer ortamlarda açık
-app.UseSwagger();
+// Güvenlik: koruma middleware'i UseSwagger'DAN ÖNCE gelmeli; aksi halde
+// /swagger/v1/swagger.json (tüm API şeması) auth'suz servis edilir.
 if (app.Environment.IsProduction())
 {
     app.UseMiddleware<SwaggerAuthMiddleware>();
 }
+app.UseSwagger();
 app.UseSwaggerUI();
 
 // Static Files — auth'tan önce, en başta olmalı
@@ -250,6 +252,11 @@ using (var scope = app.Services.CreateScope())
     // Users tablosuna StaffId kolonu ekle (idempotent)
     db.Database.ExecuteSqlRaw(@"
         ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""StaffId"" uuid;
+    ");
+
+    // OtpRecords tablosuna FailedAttempts kolonu ekle (brute-force koruması, idempotent)
+    db.Database.ExecuteSqlRaw(@"
+        ALTER TABLE ""OtpRecords"" ADD COLUMN IF NOT EXISTS ""FailedAttempts"" integer NOT NULL DEFAULT 0;
     ");
 
     // Appointments tablosuna reminder flag kolonlarını ekle (idempotent)

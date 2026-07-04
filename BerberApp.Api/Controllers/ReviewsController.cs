@@ -2,12 +2,14 @@ using BerberApp.Api.Authorization;
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Enums;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BerberApp.Api.Controllers;
 
 /// <summary>Admin paneli — tenant'ın kendi yorumlarını görür.</summary>
+[Authorize(Roles = "Admin,SuperAdmin")]
 [RequirePlan(PlanType.Profesyonel, PlanType.Premium)]
 public class ReviewsController : BaseApiController
 {

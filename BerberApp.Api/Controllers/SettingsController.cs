@@ -1,11 +1,13 @@
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Enums;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BerberApp.Api.Controllers;
 
+[Authorize(Roles = "Admin,SuperAdmin")]
 public class SettingsController : BaseApiController
 {
     private readonly IAppDbContext _context;

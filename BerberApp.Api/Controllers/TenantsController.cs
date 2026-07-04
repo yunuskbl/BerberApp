@@ -4,12 +4,14 @@ using BerberApp.Application.Tenant.Commands;
 using BerberApp.Application.Tenant.Queries;
 using BerberApp.Application.Common.Interfaces;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using BerberApp.Domain.Enums;
 using BerberApp.Domain.Entities;
 
 namespace BerberApp.Api.Controllers;
 
+[Authorize(Roles = "Admin,SuperAdmin")]
 public class TenantsController : BaseApiController
 {
     private readonly IAppDbContext _context;
@@ -18,6 +20,16 @@ public class TenantsController : BaseApiController
     {
         _context = context;
     }
+
+    // Güvenlik: uzantıyı client dosya adından DEĞİL, doğrulanmış content-type'tan türet.
+    // Aksi halde image/jpeg başlığıyla .svg/.html yüklenip stored XSS'e yol açabilir.
+    private static readonly Dictionary<string, string> ImageExtByContentType = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["image/jpeg"] = ".jpg",
+        ["image/jpg"]  = ".jpg",
+        ["image/png"]  = ".png",
+        ["image/webp"] = ".webp",
+    };
 
     [HttpGet("me")]
     public async Task<IActionResult> GetMyTenant()
@@ -28,6 +40,7 @@ public class TenantsController : BaseApiController
     => Success(await Mediator.Send(command));
 
     [HttpGet]
+    [Authorize(Roles = "SuperAdmin")]
     public async Task<IActionResult> GetAll()
         => Success(await Mediator.Send(new GetAllTenantsQuery()));
 
@@ -62,8 +75,7 @@ public class TenantsController : BaseApiController
         var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "logos");
         Directory.CreateDirectory(uploadsDir);
 
-        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (string.IsNullOrEmpty(ext)) ext = ".jpg";
+        var ext = ImageExtByContentType[file.ContentType.ToLower()];
         var fileName = $"{TenantId}{ext}";
         var filePath = Path.Combine(uploadsDir, fileName);
 
@@ -117,8 +129,7 @@ public class TenantsController : BaseApiController
         var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "photos");
         Directory.CreateDirectory(uploadsDir);
 
-        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (string.IsNullOrEmpty(ext)) ext = ".jpg";
+        var ext = ImageExtByContentType[file.ContentType.ToLower()];
         var fileName = $"{Guid.NewGuid()}{ext}";
         var filePath = Path.Combine(uploadsDir, fileName);
 

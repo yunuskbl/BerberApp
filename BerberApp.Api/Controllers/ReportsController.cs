@@ -7,7 +7,7 @@ namespace BerberApp.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "Admin,SuperAdmin")]
 [RequirePlan(PlanType.Premium)]
 public class ReportsController : ControllerBase
 {

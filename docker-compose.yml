@@ -79,6 +79,7 @@ services:
       - WhatsApp__Provider=Meta
       - Meta__PhoneNumberId=${META_PHONE_NUMBER_ID:-1192563087266067}
       - Meta__AccessToken=${META_ACCESS_TOKEN}
+      - Meta__AppSecret=${META_APP_SECRET}
       - Meta__ApiVersion=v25.0
       - Meta__TemplateLanguage=tr
       - Meta__Templates__RandevuOnay=randevu_onay
@@ -94,7 +95,7 @@ services:
       - WppConnect__SecretKey=${WPPCONNECT_SECRET_KEY}
       - DOTNET_USE_POLLING_FILE_WATCHER=true
 
-      - AllowedHosts=*
+      - AllowedHosts=ayarliyo.com;www.ayarliyo.com;api.ayarliyo.com
     ports:
       - "8080:8080"
     volumes:

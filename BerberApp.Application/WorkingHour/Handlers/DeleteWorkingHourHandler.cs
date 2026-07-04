@@ -21,8 +21,9 @@ public class DeleteWorkingHourHandler : IRequestHandler<DeleteWorkingHourCommand
 
     public async Task<bool> Handle(DeleteWorkingHourCommand request, CancellationToken ct)
     {
+        // Tenant izolasyonu: yalnızca çağıran tenant'a ait personelin kaydı silinebilir
         var workingHour = await _workingHourRepo.GetAsync(
-            x => x.Id == request.Id, ct);
+            x => x.Id == request.Id && x.Staff.TenantId == request.TenantId, ct);
 
         if (workingHour is null)
             throw new NotFoundException("Çalışma saati", request.Id);

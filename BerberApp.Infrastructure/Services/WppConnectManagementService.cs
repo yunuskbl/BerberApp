@@ -30,7 +30,9 @@ public class WppConnectManagementService : IWppConnectManagementService
         using var req = new HttpRequestMessage(HttpMethod.Post, url);
         req.Content = new StringContent("{}", Encoding.UTF8, "application/json");
 
-        _log.LogInformation("[WPPConnect-MGMT] GenerateToken → {Url}", url);
+        // Güvenlik: URL SecretKey içeriyor — maskeleyerek logla
+        _log.LogInformation("[WPPConnect-MGMT] GenerateToken → {Url}",
+            $"{_cfg.BaseUrl.TrimEnd('/')}/api/{session}/***/generate-token");
         var res  = await _http.SendAsync(req, ct);
         var body = await res.Content.ReadAsStringAsync(ct);
 

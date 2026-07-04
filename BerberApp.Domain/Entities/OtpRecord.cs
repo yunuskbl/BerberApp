@@ -8,5 +8,6 @@ public class OtpRecord
     public DateTime ExpiresAt { get; set; }
     public bool IsVerified { get; set; }
     public DateTime? VerifiedAt { get; set; }
+    public int FailedAttempts { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

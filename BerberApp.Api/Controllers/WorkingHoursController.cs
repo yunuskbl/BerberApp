@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using BerberApp.Application.WorkingHour.Commands;
 using BerberApp.Application.WorkingHour.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BerberApp.Api.Controllers;
 
+[Authorize(Roles = "Admin,SuperAdmin")]
 public class WorkingHoursController : BaseApiController
 {
     public WorkingHoursController(IMediator mediator) : base(mediator) { }

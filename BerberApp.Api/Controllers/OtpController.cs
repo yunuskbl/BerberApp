@@ -75,8 +75,21 @@ public class OtpController : ControllerBase
         if (record is null)
             return BadRequest(new { success = false, message = "Kod süresi dolmuş veya geçersiz." });
 
+        // Brute-force koruması: 5 hatalı denemeden sonra kodu geçersiz kıl
+        const int maxAttempts = 5;
+        if (record.FailedAttempts >= maxAttempts)
+        {
+            record.ExpiresAt = DateTime.UtcNow; // kodu anında geçersizleştir
+            await _context.SaveChangesAsync();
+            return BadRequest(new { success = false, message = "Çok fazla hatalı deneme. Lütfen yeni kod isteyin." });
+        }
+
         if (record.Code != request.Code)
+        {
+            record.FailedAttempts++;
+            await _context.SaveChangesAsync();
             return BadRequest(new { success = false, message = "Hatalı kod." });
+        }
 
         record.IsVerified = true;
         record.VerifiedAt = DateTime.UtcNow;

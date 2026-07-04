@@ -11,7 +11,7 @@ namespace BerberApp.Api.Controllers;
 
 [ApiController]
 [Route("api/payment-request")]
-[Authorize]
+[Authorize(Roles = "Admin,SuperAdmin")]
 public class PaymentRequestController : BaseApiController
 {
     private readonly IAppDbContext _context;

@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using BerberApp.Application.Appointment.Commands;
 using BerberApp.Application.Common.Interfaces;
@@ -20,6 +22,7 @@ public class WhatsappWebhookController : ControllerBase
     private readonly IAppDbContext _context;
     private readonly ILogger<WhatsappWebhookController> _logger;
     private readonly string _verifyToken;
+    private readonly string _appSecret;
 
     public WhatsappWebhookController(
         IMediator mediator,
@@ -31,6 +34,7 @@ public class WhatsappWebhookController : ControllerBase
         _context     = context;
         _logger      = logger;
         _verifyToken = metaOptions.Value.WebhookVerifyToken;
+        _appSecret   = metaOptions.Value.AppSecret;
     }
 
     /// <summary>
@@ -49,7 +53,7 @@ public class WhatsappWebhookController : ControllerBase
             return Ok(challenge);
         }
 
-        _logger.LogWarning("Geçersiz webhook doğrulama isteği. mode={Mode} token={Token}", mode, verifyToken);
+        _logger.LogWarning("Geçersiz webhook doğrulama isteği. mode={Mode}", mode);
         return Forbid();
     }
 
@@ -58,12 +62,28 @@ public class WhatsappWebhookController : ControllerBase
     /// İşletme sahibi ONAYLA N veya REDDET N yazınca randevu güncellenir.
     /// </summary>
     [HttpPost("whatsapp")]
-    public async Task<IActionResult> HandleIncoming([FromBody] JsonElement body)
+    public async Task<IActionResult> HandleIncoming()
     {
+        // Ham gövdeyi oku — imza doğrulaması ham byte'lar üzerinden yapılmalı
+        string rawBody;
+        Request.EnableBuffering();
+        using (var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true))
+            rawBody = await reader.ReadToEndAsync();
+
+        // Güvenlik: Meta'nın X-Hub-Signature-256 HMAC imzasını doğrula.
+        // Doğrulanmazsa saldırgan sahte ONAYLA/REDDET göndererek randevu onaylayıp iptal edebilir.
+        if (!VerifySignature(rawBody))
+        {
+            _logger.LogWarning("Webhook: geçersiz veya eksik imza — istek reddedildi.");
+            // Meta 200 bekler; işlem yapmadan boş dön (fail-closed)
+            return Ok(new { });
+        }
+
         // Meta her zaman 200 bekler — hata olsa bile 200 dön, loglayıp geç
         try
         {
-            var messages = ExtractMessages(body);
+            using var doc = JsonDocument.Parse(rawBody);
+            var messages = ExtractMessages(doc.RootElement);
 
             foreach (var (from, text) in messages)
             {
@@ -76,6 +96,36 @@ public class WhatsappWebhookController : ControllerBase
         }
 
         return Ok(new { });
+    }
+
+    /// <summary>X-Hub-Signature-256 = "sha256=" + HMAC-SHA256(appSecret, rawBody) sabit-zaman karşılaştırma.</summary>
+    private bool VerifySignature(string rawBody)
+    {
+        // App Secret yapılandırılmamışsa fail-closed — güvenli varsayılan
+        if (string.IsNullOrWhiteSpace(_appSecret))
+        {
+            _logger.LogError("Webhook: Meta:AppSecret yapılandırılmamış — imza doğrulanamıyor, istek reddedildi.");
+            return false;
+        }
+
+        if (!Request.Headers.TryGetValue("X-Hub-Signature-256", out var header))
+            return false;
+
+        var provided = header.ToString();
+        const string prefix = "sha256=";
+        if (!provided.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var providedHex = provided[prefix.Length..];
+
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_appSecret));
+        var computed = hmac.ComputeHash(Encoding.UTF8.GetBytes(rawBody));
+        var computedHex = Convert.ToHexString(computed).ToLowerInvariant();
+
+        // Sabit zamanlı karşılaştırma (timing attack'e karşı)
+        var providedBytes = Encoding.UTF8.GetBytes(providedHex.ToLowerInvariant());
+        var computedBytes = Encoding.UTF8.GetBytes(computedHex);
+        return CryptographicOperations.FixedTimeEquals(providedBytes, computedBytes);
     }
 
     // ── İç yardımcılar ───────────────────────────────────────────────────────

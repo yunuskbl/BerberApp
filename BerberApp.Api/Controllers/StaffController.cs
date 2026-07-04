@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BerberApp.Api.Controllers;
 
+[Authorize(Roles = "Admin,SuperAdmin")]
 public class StaffController : BaseApiController
 {
     private readonly IAppDbContext _context;

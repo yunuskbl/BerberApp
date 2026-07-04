@@ -244,17 +244,19 @@ public class WhatsAppService : IWhatsAppService
         var json = JsonSerializer.Serialize(payload);
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
+        // Güvenlik: payload OTP/token içerebilir — mesaj gövdesini asla loglama
         Console.WriteLine($"[META API] POST → {url}");
-        Console.WriteLine($"[META API] Payload: {json}");
 
         var response = await _http.PostAsync(url, content);
         var body = await response.Content.ReadAsStringAsync();
 
-        Console.WriteLine($"[META API] Yanıt: {(int)response.StatusCode} → {body}");
+        Console.WriteLine($"[META API] Yanıt: {(int)response.StatusCode}");
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new HttpRequestException($"Meta API hatası ({(int)response.StatusCode}): {body}");
+            // Hata durumunda gövdeyi logla (hassas veri yok), ama fırlatılan istisnaya koyma
+            Console.WriteLine($"[META API] Hata gövdesi: {body}");
+            throw new HttpRequestException($"Meta API hatası ({(int)response.StatusCode}).");
         }
     }
 

@@ -5,6 +5,7 @@ using BerberApp.Application.Appointment.Commands;
 using BerberApp.Application.Appointment.Queries;
 using BerberApp.Application.Common.Interfaces;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -22,6 +23,7 @@ public record CreateAppointmentAdminRequest(
     DateTime StartTime,
     string? Notes);
 
+[Authorize(Roles = "Admin,SuperAdmin")]
 public class AppointmentsController : BaseApiController
 {
     private readonly IAppDbContext _context;

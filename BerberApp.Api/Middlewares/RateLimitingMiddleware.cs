@@ -13,6 +13,7 @@ public class RateLimitingMiddleware
     private const int MaxLoginAttemptsPerWindow  = 5;   // IP başına 15 dakikada max login denemesi
     private const int MaxLookupRequestsPerMinute = 5;   // IP başına dakikada max customer-lookup isteği
     private const int MaxOtpSendPerHour          = 5;   // IP başına saatte max OTP gönderme
+    private const int MaxOtpVerifyPerWindow      = 10;  // IP başına 15 dakikada max kod doğrulama denemesi
     private const int MaxGeneralRequestsPerMinute = 150; // Genel API: IP başına dakikada max istek
 
     public RateLimitingMiddleware(RequestDelegate next, IMemoryCache cache)
@@ -70,6 +71,34 @@ public class RateLimitingMiddleware
             }
 
             _cache.Set(otpKey, otpCount + 1, DateTimeOffset.UtcNow.AddHours(1));
+        }
+
+        // OTP doğrulama / şifre sıfırlama brute-force koruması — 15 dakikada 10 deneme
+        var isVerifyPath =
+            (context.Request.Path.StartsWithSegments("/api/otp/verify") ||
+             context.Request.Path.StartsWithSegments("/api/auth/reset-password") ||
+             context.Request.Path.StartsWithSegments("/api/auth/forgot-password")) &&
+            context.Request.Method == "POST";
+        if (isVerifyPath)
+        {
+            var window = DateTime.UtcNow.ToString("yyyyMMddHHmm")[..11]; // 15 dakikalık pencere
+            var verifyKey = $"ratelimit:otpverify:{ip}:{window}";
+            var verifyCount = _cache.GetOrCreate(verifyKey, entry =>
+            {
+                entry.AbsoluteExpiration = DateTime.UtcNow.AddMinutes(15);
+                return 0;
+            });
+
+            if (verifyCount >= MaxOtpVerifyPerWindow)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(
+                    "{\"success\":false,\"message\":\"Çok fazla deneme. Lütfen 15 dakika bekleyin.\"}");
+                return;
+            }
+
+            _cache.Set(verifyKey, verifyCount + 1, DateTimeOffset.UtcNow.AddMinutes(15));
         }
 
         // Customer lookup rate limit — dakikada 5 GET isteği (telefon numarası tarama koruması)
