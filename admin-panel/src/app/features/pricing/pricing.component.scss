@@ -1642,11 +1642,12 @@ $green:        #059669;
 
 @media (max-width: 768px) {
   .nav-inner { padding: 0 16px; gap: 12px; }
+  // Mobil navbar: yalnızca logo + dil değiştirme kalsın
   .nav-links { display: none; }
   .logo-tagline { display: none; }
   .btn-nav-login { display: none; }
-  .btn-nav-salons { padding: 6px 12px; font-size: 13px; }
-  .btn-nav-cta { padding: 6px 12px; font-size: 13px; }
+  .btn-nav-salons { display: none; }
+  .btn-nav-cta { display: none; }
 
   .section-title { font-size: 26px; }
   .section-sub { font-size: 15px; }
@@ -1688,8 +1689,6 @@ $green:        #059669;
 @media (max-width: 480px) {
   .nav-inner { height: 56px; gap: 8px; }
   .logo-text { font-size: 15px; }
-  .btn-nav-salons { padding: 5px 10px; font-size: 12px; }
-  .btn-nav-cta { padding: 5px 10px; font-size: 12px; }
 
   .hero { padding: 36px 16px 52px; }
   .hero-title { font-size: 26px; }
