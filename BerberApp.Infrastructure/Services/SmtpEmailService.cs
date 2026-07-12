@@ -93,7 +93,7 @@ public class SmtpEmailService : IEmailService
                       </a>
                     </td></tr>
                     <tr><td style="font-size:13px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:20px;">
-                      Sorularınız için destek@ayarliyo.com adresine yazabilirsiniz.
+                      Sorularınız için info@ayarliyo.com adresine yazabilirsiniz.
                     </td></tr>
                   </table>
                 </td></tr>
@@ -129,7 +129,7 @@ public class SmtpEmailService : IEmailService
                       <p style="margin:0;font-size:18px;font-weight:700;color:#111827;">{dateStr}</p>
                     </td></tr>
                     <tr><td style="font-size:13px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:20px;">
-                      Sorularınız için destek@ayarliyo.com adresine yazabilirsiniz.
+                      Sorularınız için info@ayarliyo.com adresine yazabilirsiniz.
                     </td></tr>
                   </table>
                 </td></tr>
@@ -216,7 +216,7 @@ public class SmtpEmailService : IEmailService
                       <a href="https://ayarliyo.com/dashboard" style="display:inline-block;padding:14px 36px;background:#111827;color:#fff;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;">Panele Git</a>
                     </td></tr>
                     <tr><td style="font-size:13px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:20px;">
-                      Fatura ve abonelik detayları için destek@ayarliyo.com adresine yazabilirsiniz.
+                      Fatura ve abonelik detayları için info@ayarliyo.com adresine yazabilirsiniz.
                     </td></tr>
                   </table>
                 </td></tr>
@@ -247,7 +247,7 @@ public class SmtpEmailService : IEmailService
                       <a href="https://ayarliyo.com/pricing" style="display:inline-block;padding:14px 36px;background:#dc2626;color:#fff;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;">Aboneliği Yenile</a>
                     </td></tr>
                     <tr><td style="font-size:13px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:20px;">
-                      Sorularınız için destek@ayarliyo.com adresine yazabilirsiniz.
+                      Sorularınız için info@ayarliyo.com adresine yazabilirsiniz.
                     </td></tr>
                   </table>
                 </td></tr>
@@ -279,7 +279,7 @@ public class SmtpEmailService : IEmailService
                       <a href="https://ayarliyo.com/pricing" style="display:inline-block;padding:14px 36px;background:{color};color:#fff;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;">Planı Yükselt</a>
                     </td></tr>
                     <tr><td style="font-size:13px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:20px;">
-                      Sorularınız için destek@ayarliyo.com adresine yazabilirsiniz.
+                      Sorularınız için info@ayarliyo.com adresine yazabilirsiniz.
                     </td></tr>
                   </table>
                 </td></tr>

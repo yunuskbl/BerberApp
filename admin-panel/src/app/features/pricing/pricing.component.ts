@@ -324,7 +324,7 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openMail(): void {
-    window.open('mailto:ayarliyoinfo@gmail.com?subject=Bilgi%20Talebi', '_blank');
+    window.open('mailto:info@ayarliyo.com?subject=Bilgi%20Talebi', '_blank');
   }
 
   openWhatsApp(): void {
