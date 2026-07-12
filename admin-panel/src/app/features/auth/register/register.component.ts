@@ -196,7 +196,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
       next: (res) => {
         if (res.success) {
           this.otpVerified = true;
-          this.otpSuccess = 'Telefon numaranız doğrulandı! ✓';
+          this.otpSuccess = 'E-posta adresiniz doğrulandı! ✓';
           clearInterval(this.timerInterval);
         } else {
           this.otpError = res.message || 'Kod hatalı.';
