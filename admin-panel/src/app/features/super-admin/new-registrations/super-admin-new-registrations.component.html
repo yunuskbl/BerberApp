@@ -57,6 +57,8 @@
               <div class="name-wrap">
                 <span class="tenant-name">{{ t.name }}</span>
                 <span class="subdomain">/{{ t.subdomain }}</span>
+                @if (!t.isApproved) { <span class="badge pending">⏳ Onay bekliyor</span> }
+                @else { <span class="badge approved">✓ Onaylı</span> }
                 @if (!t.isActive) { <span class="badge muted">Askıda</span> }
                 @if (t.score >= 3) { <span class="badge danger">⚠ Şüpheli</span> }
                 @else if (t.score > 0) { <span class="badge warn">İncele</span> }
@@ -85,6 +87,11 @@
           </div>
 
           <div class="card-actions">
+            @if (!t.isApproved) {
+              <button class="btn-approve" [disabled]="busyId === t.id" (click)="approve(t)">✓ Onayla</button>
+            } @else {
+              <button class="btn-link" [disabled]="busyId === t.id" (click)="unapprove(t)">Onayı Kaldır</button>
+            }
             <a class="btn-link" [routerLink]="['/superadmin/tenants', t.id]">Detay</a>
             <button class="btn-warn" [disabled]="busyId === t.id" (click)="toggleActive(t)">
               {{ t.isActive ? 'Askıya Al' : 'Aktif Et' }}

@@ -277,6 +277,12 @@ using (var scope = app.Services.CreateScope())
         ALTER TABLE ""OtpRecords"" ADD COLUMN IF NOT EXISTS ""FailedAttempts"" integer NOT NULL DEFAULT 0;
     ");
 
+    // Tenants tablosuna IsApproved kolonu ekle — mevcut işletmeler onaylı sayılır (true),
+    // yeni kayıtlar RegisterHandler'da false olarak eklenir (idempotent).
+    db.Database.ExecuteSqlRaw(@"
+        ALTER TABLE ""Tenants"" ADD COLUMN IF NOT EXISTS ""IsApproved"" boolean NOT NULL DEFAULT true;
+    ");
+
     // Appointments tablosuna reminder flag kolonlarını ekle (idempotent)
     db.Database.ExecuteSqlRaw(@"
         ALTER TABLE ""Appointments"" ADD COLUMN IF NOT EXISTS ""ReminderSent24h"" boolean NOT NULL DEFAULT false;

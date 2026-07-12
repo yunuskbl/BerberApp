@@ -88,9 +88,11 @@
 
 .badge {
   font-size: .68rem; font-weight: 600; padding: 2px 8px; border-radius: 10px;
-  &.danger { background: #fee2e2; color: #b91c1c; }
-  &.warn   { background: #fef3c7; color: #b45309; }
-  &.muted  { background: #f3f4f6; color: #6b7280; }
+  &.danger   { background: #fee2e2; color: #b91c1c; }
+  &.warn     { background: #fef3c7; color: #b45309; }
+  &.muted    { background: #f3f4f6; color: #6b7280; }
+  &.pending  { background: #ffedd5; color: #c2410c; }
+  &.approved { background: #dcfce7; color: #15803d; }
 }
 
 .card-meta {
@@ -116,6 +118,7 @@
     border: 1px solid transparent; text-align: center; text-decoration: none;
     &:disabled { opacity: .5; cursor: default; }
   }
+  .btn-approve { background: #16a34a; color: #fff; font-weight: 600; }
   .btn-link { background: #f3f4f6; color: #374151; border-color: #e5e7eb; }
   .btn-warn { background: #fef3c7; color: #b45309; border-color: #fde68a; }
   .btn-del  { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }

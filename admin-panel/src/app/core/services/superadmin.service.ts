@@ -12,6 +12,7 @@ export interface SuperAdminTenant {
   phone?: string;
   address?: string;
   isActive: boolean;
+  isApproved: boolean;
   isDeleted: boolean;
   createdAt: string;
   adminEmail?: string;
@@ -124,6 +125,10 @@ export class SuperAdminService {
 
   toggleTenantActive(tenantId: string): Observable<ApiResponse<any>> {
     return this.http.patch<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}/toggle`, {});
+  }
+
+  approveTenant(tenantId: string, approved = true): Observable<ApiResponse<any>> {
+    return this.http.patch<ApiResponse<any>>(`${this.apiUrl}/tenants/${tenantId}/approve`, { approved });
   }
 
   getTenantDetail(tenantId: string): Observable<ApiResponse<any>> {

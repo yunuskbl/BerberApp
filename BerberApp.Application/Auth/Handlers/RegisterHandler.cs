@@ -72,7 +72,8 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
             Subdomain = request.Subdomain,
             Phone = request.Phone,
             Address = request.Address,
-            IsActive = true
+            IsActive = true,
+            IsApproved = false   // SuperAdmin onaylayana kadar salonlarda görünmez
         };
         _context.Tenants.Add(tenant);
 

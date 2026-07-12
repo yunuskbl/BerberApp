@@ -21,6 +21,8 @@ namespace BerberApp.Domain.Entities
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
         public bool IsActive { get; set; } = true;
+        // Yeni kayıtlar SuperAdmin onayına kadar salonlarda görünmez (false); onaylanınca true olur.
+        public bool IsApproved { get; set; } = true;
         public string? ThemeColor { get; set; }
         public string? WhatsAppGroupLink { get; set; }
         public NotificationChannel PreferredNotificationChannel { get; set; } = NotificationChannel.WhatsApp;

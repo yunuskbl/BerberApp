@@ -122,6 +122,24 @@ export class SuperAdminNewRegistrationsComponent implements OnInit {
   }
 
   // ── Aksiyonlar ───────────────────────────────────────────────────────────
+  approve(t: FlaggedTenant): void {
+    if (!confirm(`"${t.name}" işletmesini ONAYLA?\n\nOnaylandıktan sonra salonlar listesinde yayına çıkar.`)) return;
+    this.busyId = t.id;
+    this.superAdmin.approveTenant(t.id, true).subscribe({
+      next: () => { this.flash(`"${t.name}" onaylandı, salonlarda yayında.`); this.load(); this.busyId = null; },
+      error: () => { this.fail('Onaylama başarısız.'); this.busyId = null; },
+    });
+  }
+
+  unapprove(t: FlaggedTenant): void {
+    if (!confirm(`"${t.name}" işletmesinin onayını KALDIR?\n\nSalonlar listesinden çıkar.`)) return;
+    this.busyId = t.id;
+    this.superAdmin.approveTenant(t.id, false).subscribe({
+      next: () => { this.flash(`"${t.name}" onayı kaldırıldı.`); this.load(); this.busyId = null; },
+      error: () => { this.fail('İşlem başarısız.'); this.busyId = null; },
+    });
+  }
+
   toggleActive(t: FlaggedTenant): void {
     if (!confirm(`"${t.name}" işletmesini ${t.isActive ? 'ASKIYA AL' : 'AKTİF ET'}?`)) return;
     this.busyId = t.id;

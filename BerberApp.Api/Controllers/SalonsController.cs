@@ -33,7 +33,7 @@ public SalonsController(IAppDbContext context)
         [FromQuery] double radiusKm = 10.0)
     {
         var query = _context.Tenants
-            .Where(x => x.IsActive && !x.IsDeleted)
+            .Where(x => x.IsActive && !x.IsDeleted && x.IsApproved)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))

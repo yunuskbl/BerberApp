@@ -54,6 +54,7 @@ public class SuperAdminController : ControllerBase
                     Phone = t.Phone,
                     Address = t.Address,
                     IsActive = t.IsActive,
+                    IsApproved = t.IsApproved,
                     IsDeleted = t.IsDeleted,
                     CreatedAt = t.CreatedAt,
                     AdminEmail = t.Users
@@ -337,6 +338,26 @@ public class SuperAdminController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok(new { success = true, message = $"İşletme {(tenant.IsActive ? "aktif" : "pasif")} yapıldı.", data = new { id, isActive = tenant.IsActive } });
+    }
+
+    /// <summary>
+    /// İşletmeyi onayla / onayı geri al — onaylı işletmeler salonlar listesinde görünür.
+    /// </summary>
+    [HttpPatch("tenants/{id}/approve")]
+    public async Task<IActionResult> ApproveTenant(Guid id, [FromBody] ApproveTenantRequest? body = null)
+    {
+        var tenant = await _context.Tenants
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(t => t.Id == id && t.Id != SYSTEM_TENANT_ID);
+
+        if (tenant == null)
+            return NotFound(new { success = false, message = "İşletme bulunamadı." });
+
+        tenant.IsApproved = body?.Approved ?? true;
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Tenant {TenantId} approval set to {Approved}", id, tenant.IsApproved);
+        return Ok(new { success = true, message = tenant.IsApproved ? "İşletme onaylandı, salonlarda yayında." : "İşletmenin onayı kaldırıldı.", data = new { id, isApproved = tenant.IsApproved } });
     }
 
     /// <summary>
@@ -1107,6 +1128,11 @@ public class SuperAdminController : ControllerBase
 public class ChangePlanRequest
 {
     public string Plan { get; set; } = string.Empty;
+}
+
+public class ApproveTenantRequest
+{
+    public bool Approved { get; set; } = true;
 }
 
 public class UpdateTenantRequest
