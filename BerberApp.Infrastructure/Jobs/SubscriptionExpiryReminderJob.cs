@@ -8,59 +8,56 @@ namespace BerberApp.Infrastructure.Jobs;
 public class SubscriptionExpiryReminderJob
 {
     private readonly IAppDbContext _context;
-    private readonly IWhatsAppService _whatsAppService;
+    private readonly IEmailService _email;
 
-    public SubscriptionExpiryReminderJob(IAppDbContext context, IWhatsAppService whatsAppService)
+    public SubscriptionExpiryReminderJob(IAppDbContext context, IEmailService email)
     {
         _context = context;
-        _whatsAppService = whatsAppService;
+        _email   = email;
     }
 
     [AutomaticRetry(Attempts = 2)]
     public async Task SendExpiryRemindersAsync()
     {
         var now = DateTime.UtcNow;
-        var in7Days = now.AddDays(7);
-        var in1Day = now.AddDays(1);
 
-        // 7 gün kalan abonelikler (6-8 gün arasında)
-        var expiring7 = await _context.Subscriptions
+        // 7 gün kalan (6-8 gün) ve 1 gün kalan (12-36 saat) abonelikler
+        await NotifyAsync(
+            await LoadExpiringAsync(now.AddDays(6), now.AddDays(8)), 7);
+        await NotifyAsync(
+            await LoadExpiringAsync(now.AddHours(12), now.AddHours(36)), 1);
+    }
+
+    private async Task<List<Domain.Entities.Subscription>> LoadExpiringAsync(DateTime from, DateTime to)
+        => await _context.Subscriptions
             .Include(s => s.Tenant)
             .Where(s => s.Status == SubscriptionStatus.Active &&
-                        s.ExpiryDate >= now.AddDays(6) &&
-                        s.ExpiryDate <= now.AddDays(8) &&
-                        s.Tenant != null &&
-                        s.Tenant.NotificationPhone != null)
+                        s.ExpiryDate >= from && s.ExpiryDate <= to &&
+                        s.Tenant != null)
             .ToListAsync();
 
-        foreach (var sub in expiring7)
+    private async Task NotifyAsync(List<Domain.Entities.Subscription> subs, int daysLeft)
+    {
+        foreach (var sub in subs)
         {
             try
             {
-                await _whatsAppService.SendSubscriptionExpiryWarningAsync(
-                    sub.Tenant!.NotificationPhone!, sub.Tenant.Name, 7);
-            }
-            catch { }
-        }
+                // İşletme sahibinin (Admin) e-postasını bul
+                var admin = await _context.Users
+                    .Where(u => u.TenantId == sub.TenantId && u.Role == UserRole.Admin)
+                    .Select(u => new { u.Email, u.FirstName, u.LastName })
+                    .FirstOrDefaultAsync();
 
-        // 1 gün kalan abonelikler (12-36 saat arasında)
-        var expiring1 = await _context.Subscriptions
-            .Include(s => s.Tenant)
-            .Where(s => s.Status == SubscriptionStatus.Active &&
-                        s.ExpiryDate >= now.AddHours(12) &&
-                        s.ExpiryDate <= now.AddHours(36) &&
-                        s.Tenant != null &&
-                        s.Tenant.NotificationPhone != null)
-            .ToListAsync();
+                if (admin is null || string.IsNullOrWhiteSpace(admin.Email)) continue;
 
-        foreach (var sub in expiring1)
-        {
-            try
-            {
-                await _whatsAppService.SendSubscriptionExpiryWarningAsync(
-                    sub.Tenant!.NotificationPhone!, sub.Tenant.Name, 1);
+                await _email.SendSubscriptionExpiryWarningAsync(
+                    admin.Email,
+                    $"{admin.FirstName} {admin.LastName}".Trim(),
+                    sub.Tenant!.Name,
+                    daysLeft,
+                    sub.ExpiryDate);
             }
-            catch { }
+            catch { /* tek bir bildirimin hatası job'u durdurmasın */ }
         }
     }
 }

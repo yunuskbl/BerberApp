@@ -20,12 +20,14 @@ public class BookingController : ControllerBase
     private readonly IMediator _mediator;
     private readonly IAppDbContext _context;
     private readonly IWhatsAppService _whatsApp;
+    private readonly IEmailService _email;
 
-    public BookingController(IMediator mediator, IAppDbContext context, IWhatsAppService whatsApp)
+    public BookingController(IMediator mediator, IAppDbContext context, IWhatsAppService whatsApp, IEmailService email)
     {
         _mediator = mediator;
         _context = context;
         _whatsApp = whatsApp;
+        _email = email;
     }
 
     // Salon bilgilerini getir
@@ -375,15 +377,21 @@ public class BookingController : ControllerBase
             }
         }
 
-        // Uyarı eşiklerini kontrol et (sadece eşiği tam geçen anda gönder)
-        if (monthlyLimit < int.MaxValue && !string.IsNullOrWhiteSpace(tenant.NotificationPhone))
+        // Uyarı eşiklerini kontrol et (sadece eşiği tam geçen anda gönder) — işletme sahibine e-posta
+        if (monthlyLimit < int.MaxValue)
         {
             var newCount = monthlyCount + 1;
             var warningAt80 = (int)(monthlyLimit * 0.8);
-            if (newCount == warningAt80)
-                _ = _whatsApp.SendMonthlyLimitWarningAsync(tenant.NotificationPhone, tenant.Name, newCount, monthlyLimit, false);
-            else if (newCount == monthlyLimit)
-                _ = _whatsApp.SendMonthlyLimitWarningAsync(tenant.NotificationPhone, tenant.Name, newCount, monthlyLimit, true);
+            var isFull = newCount == monthlyLimit;
+            if (newCount == warningAt80 || isFull)
+            {
+                var adminEmail = await _context.Users
+                    .Where(u => u.TenantId == tenant.Id && u.Role == UserRole.Admin)
+                    .Select(u => u.Email)
+                    .FirstOrDefaultAsync();
+                if (!string.IsNullOrWhiteSpace(adminEmail))
+                    _ = _email.SendMonthlyLimitWarningAsync(adminEmail, tenant.Name, newCount, monthlyLimit, isFull);
+            }
         }
 
         return Ok(new { success = true, data = result, appointmentId = result.Id });

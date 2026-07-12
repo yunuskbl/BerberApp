@@ -9,6 +9,7 @@ public interface IEmailService
     Task SendAppointmentReminderAsync(string toEmail, string customerName, string salonName, DateTime appointmentDate, string serviceName);
     Task SendSubscriptionActivatedAsync(string toEmail, string fullName, string planName, DateTime expiryDate);
     Task SendSubscriptionExpiryWarningAsync(string toEmail, string fullName, string salonName, int daysRemaining, DateTime expiryDate);
+    Task SendMonthlyLimitWarningAsync(string toEmail, string salonName, int currentCount, int limit, bool isFull);
     Task SendOtpAsync(string toEmail, string otp);
 
     /// <summary>Yeni işletme kaydı olduğunda platform yöneticisine bilgi e-postası (adres implementasyonda yapılandırılır).</summary>

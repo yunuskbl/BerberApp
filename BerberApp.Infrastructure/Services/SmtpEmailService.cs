@@ -257,6 +257,38 @@ public class SmtpEmailService : IEmailService
         await SendAsync(toEmail, $"Aboneliğiniz {daysRemaining} Gün İçinde Sona Eriyor — ayarlıyo", body);
     }
 
+    public async Task SendMonthlyLimitWarningAsync(string toEmail, string salonName, int currentCount, int limit, bool isFull)
+    {
+        var title = isFull ? "Aylık Randevu Limitiniz Doldu 🚫" : "Aylık Randevu Limitine Yaklaşıyorsunuz ⚠️";
+        var msg = isFull
+            ? $"<strong>{salonName}</strong> için bu ayki <strong>{limit}</strong> randevu limitiniz doldu. Yeni randevular bu ay alınamayacak. Limitinizi artırmak için planınızı yükseltin."
+            : $"<strong>{salonName}</strong> için bu ay <strong>{currentCount}/{limit}</strong> randevu kullandınız (%80). Kesintisiz hizmet için planınızı yükseltmeyi düşünün.";
+        var color = isFull ? "#dc2626" : "#d97706";
+        var body = $"""
+            <!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"></head>
+            <body style="margin:0;padding:0;background:#f3f4f6;font-family:'Inter',Arial,sans-serif;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+                <tr><td align="center">
+                  <table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;padding:48px 40px;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+                    <tr><td align="center" style="padding-bottom:28px;">
+                      <span style="font-size:28px;font-weight:800;color:#111827;">ayarlıyo<span style="display:inline-block;width:8px;height:8px;background:#111827;border-radius:50%;margin-left:2px;vertical-align:middle;"></span></span>
+                    </td></tr>
+                    <tr><td style="font-size:22px;font-weight:700;color:{color};padding-bottom:16px;">{title}</td></tr>
+                    <tr><td style="font-size:15px;color:#6b7280;line-height:1.6;padding-bottom:24px;">{msg}</td></tr>
+                    <tr><td align="center" style="padding-bottom:28px;">
+                      <a href="https://ayarliyo.com/pricing" style="display:inline-block;padding:14px 36px;background:{color};color:#fff;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;">Planı Yükselt</a>
+                    </td></tr>
+                    <tr><td style="font-size:13px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:20px;">
+                      Sorularınız için destek@ayarliyo.com adresine yazabilirsiniz.
+                    </td></tr>
+                  </table>
+                </td></tr>
+              </table>
+            </body></html>
+            """;
+        await SendAsync(toEmail, isFull ? "Aylık Randevu Limitiniz Doldu — ayarlıyo" : "Aylık Randevu Limitine Yaklaşıyorsunuz — ayarlıyo", body);
+    }
+
     public async Task SendOtpAsync(string toEmail, string otp)
     {
         var body = $"""
