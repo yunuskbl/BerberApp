@@ -15,12 +15,14 @@ public class OtpController : ControllerBase
     private readonly IAppDbContext _context;
     private readonly IEmailService _emailService;
     private readonly ISmsService _smsService;
+    private readonly ILogger<OtpController> _logger;
 
-    public OtpController(IAppDbContext context, IEmailService emailService, ISmsService smsService)
+    public OtpController(IAppDbContext context, IEmailService emailService, ISmsService smsService, ILogger<OtpController> logger)
     {
         _context = context;
         _emailService = emailService;
         _smsService = smsService;
+        _logger = logger;
     }
 
     [HttpPost("send")]
@@ -52,15 +54,35 @@ public class OtpController : ControllerBase
         });
         await _context.SaveChangesAsync();
 
+        // E-posta verildiyse öncelik e-posta (ücretsiz, güvenilir)
         if (!string.IsNullOrWhiteSpace(request.Email))
         {
-            await _emailService.SendOtpAsync(request.Email, otp);
-            return Ok(new { success = true, message = "Doğrulama kodu e-posta adresinize gönderildi." });
+            try
+            {
+                await _emailService.SendOtpAsync(request.Email, otp);
+                return Ok(new { success = true, channel = "email", message = "Doğrulama kodu e-posta adresinize gönderildi." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[OTP] E-posta gönderilemedi: {Email}", request.Email);
+                return StatusCode(502, new { success = false, message = "Doğrulama kodu gönderilemedi. Lütfen tekrar deneyin." });
+            }
         }
-        else
+
+        // Aksi halde SMS — başarısız olursa 500 yerine anlamlı mesaj
+        try
         {
             await _smsService.SendOtpAsync(request.Phone, otp);
-            return Ok(new { success = true, message = "Doğrulama kodu SMS ile gönderildi." });
+            return Ok(new { success = true, channel = "sms", message = "Doğrulama kodu SMS ile gönderildi." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[OTP] SMS gönderilemedi: {Phone}", request.Phone);
+            return StatusCode(502, new
+            {
+                success = false,
+                message = "Doğrulama kodu SMS ile gönderilemedi. Lütfen e-posta adresinizi girerek tekrar deneyin."
+            });
         }
     }
 

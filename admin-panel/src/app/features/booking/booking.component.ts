@@ -561,9 +561,7 @@ export class BookingComponent implements OnInit, OnDestroy {
         this.isSendingOtp = false;
       },
       error: (err) => {
-        this.otpError = err.status < 500 && err.error?.message
-          ? err.error.message
-          : 'Bir hata oluştu. Lütfen tekrar deneyin.';
+        this.otpError = err.error?.message || 'Bir hata oluştu. Lütfen tekrar deneyin.';
         this.isSendingOtp = false;
       },
     });
