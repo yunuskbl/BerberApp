@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Application.Common.Validators;
 using BerberApp.Domain.Entities;
+using BerberApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,14 +15,18 @@ public class OtpController : ControllerBase
 {
     private readonly IAppDbContext _context;
     private readonly IEmailService _emailService;
-    private readonly ISmsService _smsService;
+    private readonly WppConnectWhatsAppService _waOtp;
     private readonly ILogger<OtpController> _logger;
 
-    public OtpController(IAppDbContext context, IEmailService emailService, ISmsService smsService, ILogger<OtpController> logger)
+    public OtpController(
+        IAppDbContext context,
+        IEmailService emailService,
+        WppConnectWhatsAppService waOtp,
+        ILogger<OtpController> logger)
     {
         _context = context;
         _emailService = emailService;
-        _smsService = smsService;
+        _waOtp = waOtp;
         _logger = logger;
     }
 
@@ -69,19 +74,21 @@ public class OtpController : ControllerBase
             }
         }
 
-        // Aksi halde SMS — başarısız olursa 500 yerine anlamlı mesaj
+        // Telefon: önce merkezi WPPConnect oturumu üzerinden WhatsApp dene
+        // (SuperAdmin → WhatsApp bağlıysa). WppConnectWhatsAppService.SendOtpAsync
+        // WhatsApp başarısız olursa kendi içinde otomatik SMS (Netgsm) fallback'i yapar.
         try
         {
-            await _smsService.SendOtpAsync(request.Phone, otp);
-            return Ok(new { success = true, channel = "sms", message = "Doğrulama kodu SMS ile gönderildi." });
+            await _waOtp.SendOtpAsync(request.Phone, otp);
+            return Ok(new { success = true, channel = "whatsapp_or_sms", message = "Doğrulama kodu gönderildi." });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[OTP] SMS gönderilemedi: {Phone}", request.Phone);
+            _logger.LogError(ex, "[OTP] WhatsApp/SMS gönderilemedi: {Phone}", request.Phone);
             return StatusCode(502, new
             {
                 success = false,
-                message = "Doğrulama kodu SMS ile gönderilemedi. Lütfen e-posta adresinizi girerek tekrar deneyin."
+                message = "Doğrulama kodu gönderilemedi. Lütfen e-posta adresinizi girerek tekrar deneyin."
             });
         }
     }
