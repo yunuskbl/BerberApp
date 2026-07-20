@@ -498,9 +498,11 @@ export class CustomerListComponent implements OnInit {
     return map[status] ?? '';
   }
 
-  get minDate(): string { return new Date().toISOString().split('T')[0]; }
+  // Türkiye yerel tarihi — UTC bazlı split gece yarısı 00:00-03:00 arası
+  // bir önceki günü "bugün" gösterip geçmiş tarih seçilmesine izin verebiliyordu.
+  get minDate(): string { return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' }); }
   get maxDate(): string {
     const d = new Date(); d.setDate(d.getDate() + 60);
-    return d.toISOString().split('T')[0];
+    return d.toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
   }
 }

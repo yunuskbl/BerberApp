@@ -180,14 +180,17 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   customerForm: FormGroup;
 
+  // Türkiye yerel tarihini kullan — toISOString() UTC'ye çevirdiği için
+  // gece yarısı 00:00-03:00 arası bir önceki günü "bugün" olarak gösterip
+  // geçmiş tarihe randevu seçilmesine izin verebiliyordu.
   get minDate(): string {
-    return new Date().toISOString().split('T')[0];
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
   }
 
   get maxDate(): string {
     const date = new Date();
     date.setDate(date.getDate() + 15);
-    return date.toISOString().split('T')[0];
+    return date.toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
   }
 
   constructor(

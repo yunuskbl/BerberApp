@@ -89,20 +89,26 @@ public class GetAvailableSlotsHandler : IRequestHandler<GetAvailableSlotsQuery, 
         var slots = new List<AvailableSlotDto>();
         var duration = TimeSpan.FromMinutes(request.TotalDurationMinutes ?? service!.DurationMinutes);
         var current = startUtc;
+        var now = DateTime.UtcNow;
 
         while (current + duration <= endUtc)
         {
             var slotEnd = current + duration;
 
-            var isAvailable = !existingAppointments.Any(a =>
-                a.StartTime < slotEnd && a.EndTime > current);
-
-            slots.Add(new AvailableSlotDto
+            // Geçmişte kalan saatler listeye hiç eklenmez — bugün için erken saatlerin
+            // hâlâ seçilebilir görünmesini engeller.
+            if (current > now)
             {
-                StartTime = current,
-                EndTime = slotEnd,
-                IsAvailable = isAvailable
-            });
+                var isAvailable = !existingAppointments.Any(a =>
+                    a.StartTime < slotEnd && a.EndTime > current);
+
+                slots.Add(new AvailableSlotDto
+                {
+                    StartTime = current,
+                    EndTime = slotEnd,
+                    IsAvailable = isAvailable
+                });
+            }
 
             current += duration;
         }
