@@ -123,19 +123,23 @@ services:
       - berberapp-network
     restart: always
 
-  # ── WPPConnect (WhatsApp Web köprüsü) ──────────────────────────────────
-  # İlk başlatmada: docker exec -it berberapp-wppconnect sh
-  #   curl -X POST http://localhost:21465/api/ayarliyo/THISISMYSECURETOKEN/generate-token
-  # → dönen "token" değerini appsettings.json → WppConnect:Token'a yazın.
-  # Ardından QR almak için tarayıcıdan http://SUNUCU_IP:21465 açıp oturum başlatın.
+  # ── WPPConnect (WhatsApp Web köprüsü — sadece merkezi OTP gönderimi için) ──
+  # NOT: wppconnect-server upstream'i SECRET_KEY env değişkenini okumuyor,
+  # her zaman "THISISMYSECURETOKEN" varsayılanını kullanıyor — WPPCONNECT_SECRET_KEY
+  # bu yüzden .env'de de "THISISMYSECURETOKEN" olarak ayarlanmalı.
+  # Token üretimi ve QR bağlantısı SuperAdmin paneli → WhatsApp sayfasından yapılır
+  # (/superadmin/whatsapp) — bu servis dış porta açık değildir, sadece api'nin
+  # iç ağdan (http://wppconnect:21465) erişimi vardır.
   wppconnect:
     build:
       context: ./wppconnect
     container_name: berberapp-wppconnect
     environment:
       - SECRET_KEY=${WPPCONNECT_SECRET_KEY:-THISISMYSECURETOKEN}
-    ports:
-      - "21465:21465"
+    # Güvenlik: bu portu dışarıya açmaya gerek yok — api'ye zaten iç ağdan
+    # (http://wppconnect:21465) erişiyor. Dış porta açıksa, gerçek secret'ı
+    # bilen (ya da bilmeyen — WPPConnect env SECRET_KEY'i okumuyor, hep
+    # THISISMYSECURETOKEN kullanıyor) herkes WhatsApp gateway'ini ele geçirebilirdi.
     volumes:
       - wppconnect_tokens:/usr/src/wppconnect/tokens
     networks:
