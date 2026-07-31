@@ -198,6 +198,17 @@ export class AppointmentListComponent implements OnInit {
     });
   }
 
+  /**
+   * Randevu değiştiren her işlemden sonra çağrılır.
+   * Takvim görünümü ayrı bir veri kaynağından (monthAppointments) beslendiği için
+   * sadece listeyi tazelemek takvimde eski durumu (ör. tamamlanmış randevuda hâlâ
+   * "Tamamla" butonu) bırakıyordu — aktif görünüme göre ikisini de tazeliyoruz.
+   */
+  private refreshViews(): void {
+    this.loadAppointments();
+    if (this.viewMode === 'calendar') this.loadMonthAppointments();
+  }
+
   prevCalMonth(): void {
     if (this.calendarMonth === 0) { this.calendarMonth = 11; this.calendarYear--; }
     else this.calendarMonth--;
@@ -282,7 +293,8 @@ export class AppointmentListComponent implements OnInit {
 
   onStaffFilter(event: Event): void {
     this.selectedStaffId = (event.target as HTMLSelectElement).value;
-    this.loadAppointments();
+    // Personel filtresi takvim verisini de kapsıyor
+    this.refreshViews();
   }
 
   openDrawer(): void {
@@ -378,7 +390,7 @@ export class AppointmentListComponent implements OnInit {
       notes,
     }).subscribe({
       next: (res) => {
-        if (res.success) { this.loadAppointments(); this.closeDrawer(); }
+        if (res.success) { this.refreshViews(); this.closeDrawer(); }
         this.isSubmitting = false;
       },
       error: (err) => { this.errorMessage = err.error?.message || 'Hata oluştu.'; this.isSubmitting = false; }
@@ -427,7 +439,7 @@ export class AppointmentListComponent implements OnInit {
     const { staffId, serviceId, startTime } = this.editForm.value;
     this.appointmentService.update(this.editingAppointment.id, { staffId, serviceId, startTime }).subscribe({
       next: (res) => {
-        if (res.success) { this.loadAppointments(); this.closeEditModal(); }
+        if (res.success) { this.refreshViews(); this.closeEditModal(); }
         this.isEditSubmitting = false;
       },
       error: (err) => { this.editError = err.error?.message || 'Hata oluştu.'; this.isEditSubmitting = false; }
@@ -436,7 +448,7 @@ export class AppointmentListComponent implements OnInit {
 
   cancelAppointment(id: string): void {
     if (!confirm('?')) return;
-    this.appointmentService.cancel(id).subscribe({ next: () => this.loadAppointments() });
+    this.appointmentService.cancel(id).subscribe({ next: () => this.refreshViews() });
   }
 
   // ─── TAMAMLA MODAL ────────────────────────────────────────
@@ -492,7 +504,7 @@ export class AppointmentListComponent implements OnInit {
       completionNotes: this.completeNotes || null,
     }).subscribe({
       next: (res) => {
-        this.loadAppointments();
+        this.refreshViews();
         if (res?.data?.receiptNumber) {
           this.completeReceiptNumber = res.data.receiptNumber;
           this.isCompleteSubmitting = false;
@@ -509,8 +521,8 @@ export class AppointmentListComponent implements OnInit {
 
   confirmAppointment(id: string): void {
     this.appointmentService.confirm(id).subscribe({
-      next: () => this.loadAppointments(),
-      error: () => this.loadAppointments(),
+      next: () => this.refreshViews(),
+      error: () => this.refreshViews(),
     });
   }
 
