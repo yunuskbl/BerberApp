@@ -41,7 +41,7 @@
       </svg>
       <div class="select-inner">
         <app-custom-select [options]="allStaffOptions" [placeholder]="'appt.allStaff' | translate"
-          [value]="selectedStaffId" (valueChange)="selectedStaffId = $event; loadAppointments()">
+          [value]="selectedStaffId" (valueChange)="onStaffFilter($event)">
         </app-custom-select>
       </div>
     </div>

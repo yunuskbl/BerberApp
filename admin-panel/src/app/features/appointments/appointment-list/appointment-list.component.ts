@@ -255,9 +255,14 @@ export class AppointmentListComponent implements OnInit {
     return new Date(apt.startTime).toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
   }
 
+  /** Takvim verisi tazelenirken eski sonuçların sızmaması için istemci tarafında da süz. */
+  private matchesStaffFilter(apt: Appointment): boolean {
+    return !this.selectedStaffId || apt.staffId === this.selectedStaffId;
+  }
+
   getDayApts(day: number): Appointment[] {
     const key = this.getDayStr(day);
-    return this.monthAppointments.filter(a => this.aptDate(a) === key);
+    return this.monthAppointments.filter(a => this.aptDate(a) === key && this.matchesStaffFilter(a));
   }
 
   selectCalDay(day: number | null): void {
@@ -283,17 +288,16 @@ export class AppointmentListComponent implements OnInit {
 
   get selectedDayApts(): Appointment[] {
     if (!this.selectedCalendarDate) return [];
-    return this.monthAppointments.filter(a => this.aptDate(a) === this.selectedCalendarDate);
+    return this.monthAppointments.filter(
+      a => this.aptDate(a) === this.selectedCalendarDate && this.matchesStaffFilter(a));
   }
 
-  onDateChange(event: Event): void {
-    this.selectedDate = (event.target as HTMLInputElement).value;
-    this.loadAppointments();
-  }
-
-  onStaffFilter(event: Event): void {
-    this.selectedStaffId = (event.target as HTMLSelectElement).value;
-    // Personel filtresi takvim verisini de kapsıyor
+  /**
+   * Personel filtresi. app-custom-select değeri doğrudan yayınlar (DOM Event değil).
+   * Filtre hem listeyi hem takvimi kapsadığı için her iki veri kaynağı da tazelenir.
+   */
+  onStaffFilter(staffId: string): void {
+    this.selectedStaffId = staffId;
     this.refreshViews();
   }
 
