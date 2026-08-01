@@ -121,7 +121,10 @@ export class AppointmentListComponent implements OnInit {
 
   get filterDateDisplay(): string {
     if (!this.selectedDate) return this.langService.t('appt.chooseDate');
-    const d = new Date(this.selectedDate);
+    // 'T12:00:00' ile yerel öğlen olarak ayrıştır — düz 'YYYY-MM-DD' UTC gece yarısı
+    // kabul edildiği için negatif saat diliminde bir gün geriye kayıyordu ve
+    // alttaki takvim etiketiyle (selectedDayLabel) çelişiyordu.
+    const d = new Date(this.selectedDate + 'T12:00:00');
     return d.toLocaleDateString(this.langService.dateLocale, { day: 'numeric', month: 'long' });
   }
 
@@ -136,10 +139,25 @@ export class AppointmentListComponent implements OnInit {
     }
   }
 
+  /**
+   * Üstteki tarih filtresi. İki takvim tek bir günü göstersin diye alttaki
+   * takvimi de aynı güne taşır (gerekirse ayı/yılı da değiştirir).
+   */
   onFilterDateChange(value: string): void {
     this.selectedDate = value;
     this.isDatePickerOpen = false;
+    this.syncCalendarToDate(value);
     this.loadAppointments();
+  }
+
+  /** Alttaki takvimi verilen güne (ve o günün ayına) konumlandırır. */
+  private syncCalendarToDate(value: string): void {
+    if (!value) return;
+    const [year, month] = value.split('-').map(Number);
+    if (!year || !month) return;
+    this.calendarYear = year;
+    this.calendarMonth = month - 1;
+    this.selectedCalendarDate = value;
   }
 
   get allStaffOptions(): SelectOption[] {
@@ -201,7 +219,14 @@ export class AppointmentListComponent implements OnInit {
 
   setViewMode(mode: 'list' | 'calendar'): void {
     this.viewMode = mode;
-    if (mode === 'calendar') this.loadMonthAppointments();
+    if (mode === 'calendar') {
+      // Takvim açılırken filtre gününü seçili göster — iki takvim aynı günde başlasın
+      this.syncCalendarToDate(this.selectedDate);
+      this.loadMonthAppointments();
+    } else {
+      // Takvimde seçilen gün filtreye taşındığı için listeyi o güne göre tazele
+      this.loadAppointments();
+    }
   }
 
   loadMonthAppointments(): void {
@@ -282,6 +307,10 @@ export class AppointmentListComponent implements OnInit {
   selectCalDay(day: number | null): void {
     if (!day) return;
     this.selectedCalendarDate = this.getDayStr(day);
+    // Üstteki tarih filtresini de aynı güne getir. Takvim verisi (monthAppointments)
+    // zaten yüklü olduğu için burada listeyi yeniden çekmiyoruz; liste görünümüne
+    // geçilirken setViewMode('list') tazeliyor.
+    this.selectedDate = this.selectedCalendarDate;
   }
 
   isCalToday(day: number | null): boolean {
