@@ -59,7 +59,9 @@ export class AppointmentListComponent implements OnInit {
   showCustomerDropdown = false;
   selectedCustomer: Customer | null = null;
 
-  selectedDate = new Date().toISOString().split('T')[0];
+  // Türkiye yerel tarihi — toISOString() UTC verdiği için gece 00:00-03:00 arası
+  // listeyi düne sabitliyor, takvim ise bugünü işaretliyordu.
+  selectedDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
   selectedStaffId = '';
   showPendingAll = false;
 
@@ -159,6 +161,18 @@ export class AppointmentListComponent implements OnInit {
     return this.showPendingAll
       ? this.appointments.filter(a => a.status === AppointmentStatus.Pending)
       : this.appointments;
+  }
+
+  /**
+   * Başlıktaki sayaç. Liste ve takvim farklı günlere bakabildiği için
+   * (selectedDate vs selectedCalendarDate) sayacı aktif görünüme göre üret —
+   * aksi halde takvimde başka bir güne tıklandığında başlık ile gün paneli
+   * farklı sayı gösteriyordu.
+   */
+  get headerCount(): number {
+    return this.viewMode === 'calendar'
+      ? this.selectedDayApts.length
+      : this.visibleAppointments.length;
   }
 
   togglePendingAll(): void {
