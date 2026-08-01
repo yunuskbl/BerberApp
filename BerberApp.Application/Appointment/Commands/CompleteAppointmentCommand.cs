@@ -11,6 +11,8 @@ public class CompleteAppointmentCommand : IRequest<CompleteAppointmentResult>
     // Gerçekte yapılan hizmetler
     public List<Guid> ActualServiceIds { get; set; } = new();
     public decimal? ActualTotalPrice { get; set; }
+    // ActualTotalPrice'ın para birimi. Belirtilmezse orijinal hizmetin para birimi kullanılır.
+    public string? ActualCurrency { get; set; }
     public string? CompletionNotes { get; set; }
 }
 

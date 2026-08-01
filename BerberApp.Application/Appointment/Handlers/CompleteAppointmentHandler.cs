@@ -111,6 +111,16 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
         var receiptNumber = await GenerateReceiptNumberAsync(appointment.TenantId, now.Year, ct);
         var totalAmount   = request.ActualTotalPrice ?? receiptItems.Sum(x => x.Price);
 
+        // Fişin para birimi: istemci belirtmişse onu, yoksa orijinal hizmetin
+        // para birimini kullan. Belirtilmeden varsayılana ("TRY") düşülmesi,
+        // USD/farklı para birimli hizmetleri sessizce yanlış etiketliyordu.
+        var receiptCurrency = request.ActualCurrency;
+        if (string.IsNullOrWhiteSpace(receiptCurrency))
+        {
+            var originalSvcForCurrency = await _serviceRepo.GetByIdAsync(appointment.ServiceId, ct);
+            receiptCurrency = originalSvcForCurrency?.Currency ?? "TRY";
+        }
+
         // Tek kalem varsa ActualTotalPrice'ı direkt kullan
         var items = receiptItems.Select((x, idx) =>
         {
@@ -127,6 +137,7 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
             AppointmentId = appointment.Id,
             ReceiptNumber = receiptNumber,
             TotalAmount   = totalAmount,
+            Currency      = receiptCurrency,
             Items         = items,
         };
 

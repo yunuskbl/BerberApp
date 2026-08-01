@@ -14,6 +14,7 @@ namespace BerberApp.Api.Controllers;
 public record CompleteAppointmentRequest(
     List<Guid> ActualServiceIds,
     decimal? ActualTotalPrice,
+    string? ActualCurrency,
     string? CompletionNotes);
 
 public record CreateAppointmentAdminRequest(
@@ -188,6 +189,7 @@ public class AppointmentsController : BaseApiController
             ReviewUrl        = reviewUrl,
             ActualServiceIds = body?.ActualServiceIds ?? new(),
             ActualTotalPrice = body?.ActualTotalPrice,
+            ActualCurrency   = body?.ActualCurrency,
             CompletionNotes  = body?.CompletionNotes
         });
         return Success(new { receiptNumber = result.ReceiptNumber }, "Randevu tamamlandı.");

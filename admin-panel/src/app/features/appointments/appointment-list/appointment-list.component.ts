@@ -502,6 +502,9 @@ export class AppointmentListComponent implements OnInit {
   completingAppointment: Appointment | null = null;
   completeSelectedServiceIds: Set<string> = new Set();
   completeActualPrice: number | null = null;
+  completeActualCurrency: string | null = null;
+  /** Seçili hizmetler birden fazla para biriminden oluşuyorsa true — otomatik toplama yapılmaz. */
+  completeMixedCurrency = false;
   completeNotes = '';
   isCompleteSubmitting = false;
   completeError = '';
@@ -511,6 +514,9 @@ export class AppointmentListComponent implements OnInit {
     this.completingAppointment = apt;
     this.completeSelectedServiceIds = new Set([apt.serviceId]);
     this.completeActualPrice = apt.price ?? null;
+    const originalSvc = this.serviceList.find(s => s.id === apt.serviceId);
+    this.completeActualCurrency = originalSvc ? this.effectiveCurrency(originalSvc) : 'TRY';
+    this.completeMixedCurrency = false;
     this.completeNotes = '';
     this.completeError = '';
     this.completeReceiptNumber = '';
@@ -531,13 +537,30 @@ export class AppointmentListComponent implements OnInit {
     this.recalcActualPrice();
   }
 
+  /**
+   * Seçili hizmetlerin fiyatlarını toplar. Farklı para birimindeki hizmetler
+   * (ör. 1.200 TRY + 20 USD) birbirine dönüştürülmeden toplanamaz — bu yüzden
+   * seçim tek bir para biriminde değilse otomatik toplam hesaplanmaz, kullanıcı
+   * tutarı elle girer.
+   */
   recalcActualPrice(): void {
-    let total = 0;
-    for (const svc of this.serviceList) {
-      if (this.completeSelectedServiceIds.has(svc.id)) {
-        total += svc.price ?? 0;
-      }
+    const selected = this.serviceList.filter(svc => this.completeSelectedServiceIds.has(svc.id));
+    if (selected.length === 0) {
+      this.completeActualPrice = null;
+      this.completeMixedCurrency = false;
+      return;
     }
+
+    const currencies = new Set(selected.map(svc => this.effectiveCurrency(svc)));
+    if (currencies.size > 1) {
+      this.completeMixedCurrency = true;
+      this.completeActualPrice = null;
+      return;
+    }
+
+    this.completeMixedCurrency = false;
+    this.completeActualCurrency = currencies.values().next().value ?? this.completeActualCurrency;
+    const total = selected.reduce((sum, svc) => sum + this.effectivePrice(svc), 0);
     this.completeActualPrice = total > 0 ? total : null;
   }
 
@@ -548,6 +571,7 @@ export class AppointmentListComponent implements OnInit {
     this.appointmentService.complete(this.completingAppointment.id, {
       actualServiceIds: Array.from(this.completeSelectedServiceIds),
       actualTotalPrice: this.completeActualPrice,
+      actualCurrency: this.completeActualCurrency,
       completionNotes: this.completeNotes || null,
     }).subscribe({
       next: (res) => {
@@ -674,6 +698,12 @@ export class AppointmentListComponent implements OnInit {
 
   effectiveCurrency(svc: Service): string {
     return this.staffServiceOverrides.get(svc.id)?.customCurrency ?? svc.currency;
+  }
+
+  /** Tamamla modalında seçili hizmetlerin (tekilleştirilmiş) para birimleri — karışık uyarısı için. */
+  get completeSelectedCurrencies(): string[] {
+    const selected = this.serviceList.filter(svc => this.completeSelectedServiceIds.has(svc.id));
+    return [...new Set(selected.map(svc => this.effectiveCurrency(svc)))];
   }
 
   effectiveDuration(svc: Service): number {

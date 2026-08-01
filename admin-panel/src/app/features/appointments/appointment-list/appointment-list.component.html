@@ -589,13 +589,18 @@
                     [checked]="completeSelectedServiceIds.has(svc.id)"
                     (change)="toggleCompleteService(svc.id)">
                   <span class="svc-name">{{ svc.name }}</span>
-                  <span class="svc-price">{{ svc.price | number:'1.0-0' }} {{ svc.currency }}</span>
+                  <span class="svc-price">{{ effectivePrice(svc) | number:'1.0-0' }} {{ effectiveCurrency(svc) }}</span>
                 </label>
               }
             </div>
           </div>
+          @if (completeMixedCurrency) {
+            <div class="error-message">
+              Seçili hizmetler farklı para birimlerinde ({{ completeSelectedCurrencies.join(' + ') }}). Toplamı elle girin.
+            </div>
+          }
           <div class="form-group">
-            <label class="form-label">Toplam Tutar (₺)</label>
+            <label class="form-label">Toplam Tutar @if (completeActualCurrency) {({{ completeActualCurrency }})}</label>
             <input type="number" class="form-control" step="0.01" min="0"
               [(ngModel)]="completeActualPrice"
               placeholder="Otomatik hesaplanır, değiştirebilirsiniz">
