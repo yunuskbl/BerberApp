@@ -14,8 +14,15 @@ import { SuperAdminService, AppointmentStats } from '../../../core/services/supe
 export class TenantDetailComponent implements OnInit {
   tenant: any = null;
   isLoading = true;
+  /** Sayfa yüklenemediğinde tüm içeriğin yerine geçen hata ekranı. */
   errorMessage = '';
   successMessage = '';
+  /**
+   * Aksiyon hataları (şifre sıfırlama, bildirim, plan vb.).
+   * errorMessage'dan ayrı tutuluyor: o alan şablonda @else if ile tüm sayfayı
+   * değiştiriyor, dolayısıyla bir buton hatasında sayfayı yok ederdi.
+   */
+  actionError = '';
 
   // Mevcut modaller
   showPlanModal    = false;
@@ -92,7 +99,7 @@ export class TenantDetailComponent implements OnInit {
     this.isProcessing = true;
     this.superAdminService.changePlan(this.tenant.id, this.selectedPlan).subscribe({
       next: () => { this.tenant.plan = this.selectedPlan; this.showPlanModal = false; this.isProcessing = false; this.showSuccess('Plan güncellendi.'); },
-      error: () => { this.isProcessing = false; }
+      error: (err) => { this.showPlanModal = false; this.showActionError(err, 'Plan güncellenemedi.'); }
     });
   }
 
@@ -148,7 +155,7 @@ export class TenantDetailComponent implements OnInit {
         this.showEditModal = false; this.isProcessing = false;
         this.showSuccess(res.message || 'İşletme güncellendi.');
       },
-      error: () => { this.isProcessing = false; }
+      error: (err) => { this.showEditModal = false; this.showActionError(err, 'İşletme güncellenemedi.'); }
     });
   }
 
@@ -160,7 +167,7 @@ export class TenantDetailComponent implements OnInit {
         this.showExtendModal = false; this.isProcessing = false;
         this.showSuccess(res.message || `Abonelik ${this.extendDays} gün uzatıldı.`);
       },
-      error: () => { this.isProcessing = false; }
+      error: (err) => { this.showExtendModal = false; this.showActionError(err, 'Abonelik uzatılamadı.'); }
     });
   }
 
@@ -173,7 +180,10 @@ export class TenantDetailComponent implements OnInit {
         this.showPasswordModal = false; this.newPassword = ''; this.isProcessing = false;
         this.showSuccess(res.message || 'Şifre sıfırlandı.');
       },
-      error: () => { this.isProcessing = false; }
+      error: (err) => {
+        this.showPasswordModal = false;
+        this.showActionError(err, 'Şifre sıfırlanamadı.');
+      }
     });
   }
 
@@ -186,7 +196,10 @@ export class TenantDetailComponent implements OnInit {
         this.showNotifyModal = false; this.notifyMessage = ''; this.isProcessing = false;
         this.showSuccess(res.message || 'Bildirim gönderildi.');
       },
-      error: () => { this.isProcessing = false; }
+      error: (err) => {
+        this.showNotifyModal = false;
+        this.showActionError(err, 'Bildirim gönderilemedi.');
+      }
     });
   }
 
@@ -218,8 +231,22 @@ export class TenantDetailComponent implements OnInit {
     return map[status] ?? '';
   }
 
+  /** Herkese açık randevu sayfası — rota /book/:subdomain (wildcard subdomain yok). */
+  bookingUrl(subdomain: string): string {
+    return `${window.location.origin}/book/${subdomain}`;
+  }
+
   private showSuccess(msg: string): void {
+    this.actionError = '';
     this.successMessage = msg;
     setTimeout(() => this.successMessage = '', 3500);
+  }
+
+  /** Sunucudan gelen hata mesajını olduğu gibi göster — sessizce yutma. */
+  private showActionError(err: any, fallback: string): void {
+    this.successMessage = '';
+    this.actionError = err?.error?.message || fallback;
+    this.isProcessing = false;
+    setTimeout(() => this.actionError = '', 6000);
   }
 }

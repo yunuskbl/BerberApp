@@ -299,6 +299,13 @@
       background: rgba(107, 114, 128, 0.1);
       color: #9ca3af;
     }
+
+    // Onaylanmamış işletme: aktif olsa bile salonlar listesinde görünmüyor
+    &.pending {
+      background: rgba(245, 158, 11, 0.12);
+      color: #f59e0b;
+      margin-top: 4px;
+    }
   }
 }
 

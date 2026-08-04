@@ -12,7 +12,9 @@
         <a routerLink="/superadmin/tenants" class="back-btn">← İşletmeler</a>
         <div>
           <h1>{{ tenant.name }}</h1>
-          <p class="subdomain">{{ tenant.subdomain }}.ayarliyo.com</p>
+          <a class="subdomain" [href]="bookingUrl(tenant.subdomain)" target="_blank" rel="noopener">
+            {{ bookingUrl(tenant.subdomain) }}
+          </a>
         </div>
       </div>
       <div class="header-actions">
@@ -35,6 +37,9 @@
 
     @if (successMessage) {
       <div class="success-message">{{ successMessage }}</div>
+    }
+    @if (actionError) {
+      <div class="action-error">{{ actionError }}</div>
     }
 
     <!-- Stats -->

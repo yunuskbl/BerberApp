@@ -109,7 +109,8 @@
                   <div class="admin-name">{{ tenant.adminName ?? '' }}</div>
                 </td>
                 <td class="subdomain-cell" data-label="Subdomain">
-                  <a [href]="'https://' + tenant.subdomain + '.ayarliyo.com'" target="_blank" class="subdomain-link">
+                  <a [href]="bookingUrl(tenant.subdomain)" target="_blank" rel="noopener"
+                     class="subdomain-link" [title]="bookingUrl(tenant.subdomain)">
                     {{ tenant.subdomain }}
                   </a>
                 </td>
@@ -139,6 +140,11 @@
                   <span [class]="'status ' + (tenant.isActive ? 'active' : 'inactive')">
                     {{ tenant.isActive ? 'Aktif' : 'Pasif' }}
                   </span>
+                  @if (!tenant.isApproved) {
+                    <span class="status pending" title="Onaylanana kadar salonlar listesinde görünmez">
+                      Onay bekliyor
+                    </span>
+                  }
                 </td>
                 <td class="actions-cell" data-label="İşlem">
                   @if (tenant.isDeleted) {

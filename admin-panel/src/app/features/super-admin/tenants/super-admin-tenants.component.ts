@@ -204,6 +204,15 @@ export class SuperAdminTenantsComponent implements OnInit {
     return map[t.subscriptionStatus] ?? 'none';
   }
 
+  /**
+   * İşletmenin herkese açık randevu sayfası.
+   * Uygulamada rota /book/:subdomain — wildcard subdomain (x.ayarliyo.com) yok,
+   * o formattaki link açılmıyordu.
+   */
+  bookingUrl(subdomain: string): string {
+    return `${window.location.origin}/book/${subdomain}`;
+  }
+
   formatDate(dateStr: string): string {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('tr-TR');
