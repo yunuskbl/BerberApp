@@ -38,7 +38,10 @@ services:
       - Jwt__Issuer=ayarliyo.com
       - Jwt__Audience=ayarliyo.com
 
-      # Twilio (WhatsApp)
+      # SMS sağlayıcısı: Netgsm (varsayılan) | Twilio
+      - Sms__Provider=${SMS_PROVIDER:-Netgsm}
+
+      # Twilio (SMS + WhatsApp)
       - Twilio__AccountSid=${TWILIO_ACCOUNT_SID}
       - Twilio__AuthToken=${TWILIO_AUTH_TOKEN}
       - Twilio__FromNumber=whatsapp:+14155238886

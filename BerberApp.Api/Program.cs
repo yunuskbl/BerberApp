@@ -135,8 +135,14 @@ else // Hybrid — her iki servisi de kaydet, yönlendirmeyi HybridWhatsAppServi
     builder.Services.AddScoped<IWhatsAppService, HybridWhatsAppService>();
 }
 builder.Services.AddHttpClient<IWppConnectManagementService, WppConnectManagementService>();
-builder.Services.AddScoped<SmsService>();
-builder.Services.AddHttpClient<ISmsService, NetgsmSmsService>();
+// SMS sağlayıcı seçimi — .env → Sms__Provider: "Netgsm" (varsayılan) | "Twilio"
+// SmsService = Twilio. Her iki sınıf da ISmsService'i uyguluyor, tüm çağıranlar
+// arayüz üzerinden çözdüğü için sağlayıcı değişimi kod değişikliği gerektirmez.
+var smsProvider = builder.Configuration["Sms:Provider"] ?? "Netgsm";
+if (smsProvider.Equals("Twilio", StringComparison.OrdinalIgnoreCase))
+    builder.Services.AddScoped<ISmsService, SmsService>();
+else
+    builder.Services.AddHttpClient<ISmsService, NetgsmSmsService>();
 builder.Services.AddScoped<INotificationService, LinkNotificationService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<IIyzicoService, BerberApp.Infrastructure.Services.IyzicoService>();
