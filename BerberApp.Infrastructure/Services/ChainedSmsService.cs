@@ -62,8 +62,8 @@ public class ChainedSmsService : ISmsService
             $"Tüm SMS sağlayıcıları başarısız ({operation}). " + string.Join(" | ", errors));
     }
 
-    public Task SendOtpAsync(string phone, string otp)
-        => RunAsync(nameof(SendOtpAsync), s => s.SendOtpAsync(phone, otp));
+    public Task SendOtpAsync(string phone, string otp, string salonName = "")
+        => RunAsync(nameof(SendOtpAsync), s => s.SendOtpAsync(phone, otp, salonName));
 
     public Task SendAppointmentConfirmedAsync(
         string phone, string customerName, string serviceName, string staffName,

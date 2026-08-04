@@ -45,8 +45,8 @@ public class HybridWhatsAppService : IWhatsAppService
         string salonName = "", string bookingUrl = "")
         => _meta.SendAppointmentCancelledAsync(phone, customerName, startTime, salonName, bookingUrl);
 
-    public Task SendOtpAsync(string phone, string otp)
-        => _meta.SendOtpAsync(phone, otp);
+    public Task SendOtpAsync(string phone, string otp, string salonName = "")
+        => _meta.SendOtpAsync(phone, otp, salonName);
 
     public Task SendNewAppointmentRequestAsync(string staffPhone, string customerName, string customerPhone,
         string serviceName, DateTime startTime, int sequenceNumber)

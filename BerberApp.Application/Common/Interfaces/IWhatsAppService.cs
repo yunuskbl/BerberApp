@@ -12,7 +12,7 @@ public interface IWhatsAppService
     Task SendAppointmentReminderAsync(string phone, string customerName, string serviceName, DateTime startTime, string salonName = "", string mapsUrl = "", string bookingUrl = "", string staffName = "");
     Task SendAppointmentReminder1hAsync(string phone, string customerName, string serviceName, DateTime startTime, string salonName = "", string mapsUrl = "", string bookingUrl = "", string staffName = "");
     Task SendAppointmentCancelledAsync(string phone, string customerName, DateTime startTime, string salonName = "", string bookingUrl = "");
-    Task SendOtpAsync(string phone, string otp);
+    Task SendOtpAsync(string phone, string otp, string salonName = "");
     Task SendNewAppointmentRequestAsync(string staffPhone, string customerName, string customerPhone, string serviceName
         , DateTime startTime, int sequenceNumber);
     Task SendAppointmentCompletedAsync(string phone, string customerName, string serviceName, string salonName, string reviewUrl);

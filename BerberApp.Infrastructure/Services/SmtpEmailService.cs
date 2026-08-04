@@ -289,8 +289,16 @@ public class SmtpEmailService : IEmailService
         await SendAsync(toEmail, isFull ? "Aylık Randevu Limitiniz Doldu — ayarlıyo" : "Aylık Randevu Limitine Yaklaşıyorsunuz — ayarlıyo", body);
     }
 
-    public async Task SendOtpAsync(string toEmail, string otp)
+    public async Task SendOtpAsync(string toEmail, string otp, string salonName = "")
     {
+        // İşletme adı veritabanından gelir ama yine de kodlanır: '&' veya '<' içeren
+        // bir salon adı e-postanın HTML'ini bozmamalı.
+        var salon = System.Net.WebUtility.HtmlEncode(salonName?.Trim() ?? string.Empty);
+
+        var intro = salon.Length == 0
+            ? "İşleminizi tamamlamak için aşağıdaki kodu kullanın. Bu kod <strong>5 dakika</strong> geçerlidir."
+            : $"<strong>{salon}</strong> randevunuzu doğrulamak için aşağıdaki kodu kullanın. Bu kod <strong>5 dakika</strong> geçerlidir.";
+
         var body = $"""
             <!DOCTYPE html>
             <html lang="tr">
@@ -306,7 +314,7 @@ public class SmtpEmailService : IEmailService
                       Doğrulama Kodunuz 🔐
                     </td></tr>
                     <tr><td style="font-size:15px;color:#6b7280;line-height:1.6;padding-bottom:28px;">
-                      Kayıt işleminizi tamamlamak için aşağıdaki kodu kullanın. Bu kod <strong>5 dakika</strong> geçerlidir.
+                      {intro}
                     </td></tr>
                     <tr><td align="center" style="padding-bottom:28px;">
                       <div style="display:inline-block;padding:20px 40px;background:#f9fafb;border:2px solid #e5e7eb;border-radius:12px;">
@@ -323,7 +331,11 @@ public class SmtpEmailService : IEmailService
             </html>
             """;
 
-        await SendAsync(toEmail, "Doğrulama Kodunuz — ayarlıyo", body);
+        var subject = string.IsNullOrWhiteSpace(salonName)
+            ? "Doğrulama Kodunuz — ayarlıyo"
+            : $"{salonName.Trim()} — Doğrulama Kodunuz | ayarlıyo";
+
+        await SendAsync(toEmail, subject, body);
     }
 
     public async Task SendNewTenantRegisteredAsync(string tenantName, string subdomain, string ownerName, string ownerEmail, string phone)

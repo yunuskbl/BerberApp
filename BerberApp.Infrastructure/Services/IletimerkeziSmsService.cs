@@ -21,8 +21,8 @@ public class IletimerkeziSmsService : ISmsService
         _sender = config["IletiMerkezi:Sender"] ?? "ayarliyo";
     }
 
-    public Task SendOtpAsync(string phone, string otp)
-        => SendAsync(phone, SmsTemplates.Otp(otp));
+    public Task SendOtpAsync(string phone, string otp, string salonName = "")
+        => SendAsync(phone, SmsTemplates.Otp(otp, salonName));
 
     public Task SendAppointmentConfirmedAsync(
         string phone, string customerName, string serviceName,

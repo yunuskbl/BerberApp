@@ -51,6 +51,19 @@ public class OtpController : ControllerBase
 
         var otp = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
 
+        // İşletme adı yalnızca subdomain üzerinden veritabanından çözülür. İstemciden
+        // gelen serbest metin doğrudan kullanılsaydı, herkes bizim gönderici başlığımız
+        // altında istediği içeriği kullanıcıya yazdırabilirdi.
+        var salonName = string.Empty;
+        if (!string.IsNullOrWhiteSpace(request.Subdomain))
+        {
+            salonName = await _context.Tenants
+                .AsNoTracking()
+                .Where(t => t.Subdomain == request.Subdomain)
+                .Select(t => t.Name)
+                .FirstOrDefaultAsync() ?? string.Empty;
+        }
+
         _context.OtpRecords.Add(new OtpRecord
         {
             Phone = request.Phone,
@@ -64,7 +77,7 @@ public class OtpController : ControllerBase
         {
             try
             {
-                await _emailService.SendOtpAsync(request.Email, otp);
+                await _emailService.SendOtpAsync(request.Email, otp, salonName);
                 return Ok(new { success = true, channel = "email", message = "Doğrulama kodu e-posta adresinize gönderildi." });
             }
             catch (Exception ex)
@@ -79,7 +92,7 @@ public class OtpController : ControllerBase
         // WhatsApp başarısız olursa kendi içinde otomatik SMS (Netgsm) fallback'i yapar.
         try
         {
-            await _waOtp.SendOtpAsync(request.Phone, otp);
+            await _waOtp.SendOtpAsync(request.Phone, otp, salonName);
             return Ok(new { success = true, channel = "whatsapp_or_sms", message = "Doğrulama kodu gönderildi." });
         }
         catch (Exception ex)
@@ -132,5 +145,12 @@ public class SendOtpRequest
 {
     public string Phone { get; set; } = string.Empty;
     public string? Email { get; set; }
+
+    /// <summary>
+    /// Randevu akışındaki salonun subdomain'i. Doğrulama mesajında kodun hangi işletme
+    /// için istendiğini yazabilmek için kullanılır; işletme adı sunucuda çözülür.
+    /// İşletme kaydı gibi salon bağlamı olmayan akışlarda boş bırakılır.
+    /// </summary>
+    public string? Subdomain { get; set; }
 }
 public class VerifyOtpRequest { public string Phone { get; set; } = string.Empty; public string Code { get; set; } = string.Empty; }

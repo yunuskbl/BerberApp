@@ -16,9 +16,9 @@ public class NullWhatsAppService : IWhatsAppService
         string serviceName, DateTime startTime, int sequenceNumber)
         => Task.CompletedTask;
 
-    public Task SendOtpAsync(string phone, string otp)
+    public Task SendOtpAsync(string phone, string otp, string salonName = "")
     {
-        Console.WriteLine($"[OTP] {phone} → {otp}");
+        Console.WriteLine($"[OTP] {phone} → {otp}{(string.IsNullOrWhiteSpace(salonName) ? "" : $" ({salonName})")}");
         return Task.CompletedTask;
     }
 

@@ -554,7 +554,7 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.otpSuccess = '';
 
     const email = this.customerForm.get('email')?.value?.trim() || '';
-    this.bookingService.sendOtp(phone, email || undefined).subscribe({
+    this.bookingService.sendOtp(phone, email || undefined, this.subdomain || undefined).subscribe({
       next: (res) => {
         if (res.success) {
           this.otpSent = true;

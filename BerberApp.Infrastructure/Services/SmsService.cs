@@ -19,8 +19,8 @@ public class SmsService : ISmsService
         TwilioClient.Init(accountSid, authToken);
     }
 
-    public Task SendOtpAsync(string phone, string otp)
-        => SendSmsAsync(phone, SmsTemplates.Otp(otp));
+    public Task SendOtpAsync(string phone, string otp, string salonName = "")
+        => SendSmsAsync(phone, SmsTemplates.Otp(otp, salonName));
 
     public Task SendAppointmentConfirmedAsync(
         string phone, string customerName, string serviceName,

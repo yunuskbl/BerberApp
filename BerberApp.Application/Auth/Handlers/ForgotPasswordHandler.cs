@@ -30,7 +30,16 @@ public class ForgotPasswordHandler : IRequestHandler<ForgotPasswordCommand>
         user.PasswordResetOtpExpiry = DateTime.UtcNow.AddMinutes(5);
 
         await _context.SaveChangesAsync(ct);
-        await _smsService.SendOtpAsync(request.Phone, otp);
+
+        // Kullanıcının bağlı olduğu işletmenin adı — mesajda kodun hangi hesap için
+        // istendiğini göstermek üzere. Bulunamazsa satır düşer, gönderim aksamaz.
+        var salonName = await _context.Tenants
+            .AsNoTracking()
+            .Where(t => t.Id == user.TenantId)
+            .Select(t => t.Name)
+            .FirstOrDefaultAsync(ct) ?? string.Empty;
+
+        await _smsService.SendOtpAsync(request.Phone, otp, salonName);
     }
 
     private static string GenerateOtp()

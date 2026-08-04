@@ -52,7 +52,11 @@ public class WhatsAppService : IWhatsAppService
             t.ToString("HH:mm"));
     }
 
-    public async Task SendOtpAsync(string phone, string otp)
+    /// <param name="salonName">
+    /// Kullanılmıyor. Meta'nın "Authentication" kategorisindeki şablonlarda gövde yalnızca
+    /// kodu alabilir; ek değişken eklenemez. İşletme adı bu kanalda gösterilemez.
+    /// </param>
+    public async Task SendOtpAsync(string phone, string otp, string salonName = "")
     {
         // Meta "Authentication" kategorisi şablonlarında body + copy-code buton parametresi zorunlu
         if (!_settings.Templates.TryGetValue("OtpDogrulama", out var templateName))

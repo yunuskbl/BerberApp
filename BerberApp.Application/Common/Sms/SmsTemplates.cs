@@ -19,9 +19,14 @@ public static class SmsTemplates
 {
     private static readonly CultureInfo Tr = new("tr-TR");
 
-    /// <summary>Doğrulama kodu. Kod ilk satırda: telefonların otomatik doldurma özelliği bunu yakalar.</summary>
-    public static string Otp(string otp, int validMinutes = 5) => Lines(
-        $"Doğrulama kodunuz: {otp}",
+    /// <summary>
+    /// Doğrulama kodu. Kod ilk satırda: telefonların otomatik doldurma özelliği bunu yakalar.
+    /// İşletme adı verildiğinde kodun hangi salon için istendiği belirtilir; kayıt ve şifre
+    /// sıfırlama gibi salon bağlamı olmayan akışlarda o satır düşer.
+    /// </summary>
+    public static string Otp(string otp, string salonName = "", int validMinutes = 5) => Lines(
+        $"ayarlıyo doğrulama kodunuz: {otp}",
+        Field("İşletme", salonName),
         $"Kod {validMinutes} dakika geçerlidir. Güvenliğiniz için kimseyle paylaşmayın.");
 
     public static string AppointmentConfirmed(

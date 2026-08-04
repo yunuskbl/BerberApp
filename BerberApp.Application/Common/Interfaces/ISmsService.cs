@@ -8,7 +8,11 @@ namespace BerberApp.Application.Common.Interfaces
 {
     public interface ISmsService
     {
-        Task SendOtpAsync(string phone, string otp);
+        /// <param name="salonName">
+        /// Kodun hangi işletme için istendiği. Boş bırakılırsa mesaj yalnızca ayarlıyo
+        /// adına gönderilir (işletme kaydı, şifre sıfırlama gibi salon bağlamı olmayan akışlar).
+        /// </param>
+        Task SendOtpAsync(string phone, string otp, string salonName = "");
         Task SendAppointmentConfirmedAsync(string phone, string customerName, string serviceName, string staffName, DateTime startTime, string salonName = "", string mapsUrl = "", string bookingUrl = "");
         Task SendAppointmentReminderAsync(string phone, string customerName, string serviceName, DateTime startTime, string salonName = "", string mapsUrl = "", string bookingUrl = "");
         Task SendAppointmentReminder1hAsync(string phone, string customerName, string serviceName, DateTime startTime, string salonName = "", string mapsUrl = "", string bookingUrl = "");

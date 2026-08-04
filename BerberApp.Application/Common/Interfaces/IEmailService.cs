@@ -10,7 +10,8 @@ public interface IEmailService
     Task SendSubscriptionActivatedAsync(string toEmail, string fullName, string planName, DateTime expiryDate);
     Task SendSubscriptionExpiryWarningAsync(string toEmail, string fullName, string salonName, int daysRemaining, DateTime expiryDate);
     Task SendMonthlyLimitWarningAsync(string toEmail, string salonName, int currentCount, int limit, bool isFull);
-    Task SendOtpAsync(string toEmail, string otp);
+    /// <param name="salonName">Kodun hangi işletme için istendiği. Salon bağlamı olmayan akışlarda boş.</param>
+    Task SendOtpAsync(string toEmail, string otp, string salonName = "");
 
     /// <summary>Yeni işletme kaydı olduğunda platform yöneticisine bilgi e-postası (adres implementasyonda yapılandırılır).</summary>
     Task SendNewTenantRegisteredAsync(string tenantName, string subdomain, string ownerName, string ownerEmail, string phone);

@@ -349,19 +349,33 @@ public class WppConnectWhatsAppService : IWhatsAppService
         return TrySendTextAsync(staffPhone, msg);
     }
 
-    public async Task SendOtpAsync(string phone, string otp)
+    public async Task SendOtpAsync(string phone, string otp, string salonName = "")
     {
-        var msg = DetectLang(phone) switch
+        var salon = salonName?.Trim() ?? string.Empty;
+        var lang  = DetectLang(phone);
+
+        // Kodun hangi işletme için istendiğini belirten satır. Salon bağlamı olmayan
+        // akışlarda (işletme kaydı, şifre sıfırlama) tamamen düşer.
+        var forSalon = salon.Length == 0 ? "" : lang switch
         {
-            Lang.RU => $"🔐 *Ваш код подтверждения ayarlıyo:*\n\n*{otp}*\n\nНе сообщайте этот код никому.",
-            Lang.DE => $"🔐 *Ihr ayarlıyo Bestätigungscode:*\n\n*{otp}*\n\nTeilen Sie diesen Code nicht mit anderen.",
-            Lang.EN => $"🔐 *Your ayarlıyo verification code:*\n\n*{otp}*\n\nDo not share this code with anyone.",
-            _        => $"🔐 *ayarlıyo doğrulama kodunuz:*\n\n*{otp}*\n\nBu kodu kimseyle paylaşmayın.",
+            Lang.RU => $"\n_Компания: {salon}_",
+            Lang.DE => $"\n_Unternehmen: {salon}_",
+            Lang.EN => $"\n_Business: {salon}_",
+            _       => $"\n_İşletme: {salon}_",
+        };
+
+        var msg = lang switch
+        {
+            // forSalon kendi satır başını taşır; boşken mesaj eskisiyle birebir aynı kalır.
+            Lang.RU => $"🔐 *Ваш код подтверждения ayarlıyo:*\n\n*{otp}*{forSalon}\n\nНе сообщайте этот код никому.",
+            Lang.DE => $"🔐 *Ihr ayarlıyo Bestätigungscode:*\n\n*{otp}*{forSalon}\n\nTeilen Sie diesen Code nicht mit anderen.",
+            Lang.EN => $"🔐 *Your ayarlıyo verification code:*\n\n*{otp}*{forSalon}\n\nDo not share this code with anyone.",
+            _        => $"🔐 *ayarlıyo doğrulama kodunuz:*\n\n*{otp}*{forSalon}\n\nBu kodu kimseyle paylaşmayın.",
         };
 
         var sent = await TrySendTextAsync(phone, msg);
         if (!sent)
-            await (_smsFallback?.SendOtpAsync(phone, otp) ?? Task.CompletedTask);
+            await (_smsFallback?.SendOtpAsync(phone, otp, salon) ?? Task.CompletedTask);
     }
 
     public Task SendMonthlyLimitWarningAsync(

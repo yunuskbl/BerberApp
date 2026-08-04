@@ -135,8 +135,16 @@ export class BookingApiService {
     return this.http.get(`${this.apiUrl}/booking/${subdomain}/my-appointments`, { params });
   }
 
-  sendOtp(phone: string, email?: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/otp/send`, { phone, email: email || null });
+  /**
+   * Subdomain gönderilir ki doğrulama mesajında kodun hangi işletme için istendiği
+   * yazabilsin. İşletme adı sunucuda subdomain'den çözülür; buradan isim gönderilmez.
+   */
+  sendOtp(phone: string, email?: string, subdomain?: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/otp/send`, {
+      phone,
+      email: email || null,
+      subdomain: subdomain || null
+    });
   }
 
   verifyOtp(phone: string, code: string): Observable<any> {
