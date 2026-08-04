@@ -1,6 +1,5 @@
-using System.Globalization;
-using System.Net;
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Application.Common.Sms;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -24,90 +23,48 @@ public class NetgsmSmsService : ISmsService
     }
 
     public Task SendOtpAsync(string phone, string otp)
-    {
-        var text = $"ayarliyo dogrulama kodunuz: {otp}. Bu kod 5 dakika gecerlidir.";
-        return SendAsync(phone, text);
-    }
+        => SendAsync(phone, SmsTemplates.Otp(otp));
 
     public Task SendAppointmentConfirmedAsync(
         string phone, string customerName, string serviceName,
         string staffName, DateTime startTime, string salonName = "", string mapsUrl = "", string bookingUrl = "")
-    {
-        var t           = ToTurkeyTime(startTime);
-        var culture     = new CultureInfo("tr-TR");
-        var salonPart   = string.IsNullOrWhiteSpace(salonName)  ? "" : $" Salon: {salonName}.";
-        var bookingPart = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $" Randevu: {bookingUrl}";
-        var text        = $"ayarliyo: Randevunuz onaylandi! " +
-                          $"Tarih: {t.ToString("dd MMMM yyyy", culture)} {t:HH:mm}, " +
-                          $"Hizmet: {serviceName}, Personel: {staffName}.{salonPart}{bookingPart}";
-        return SendAsync(phone, text);
-    }
+        => SendAsync(phone, SmsTemplates.AppointmentConfirmed(
+            customerName, serviceName, staffName, startTime, salonName, bookingUrl));
 
     public Task SendAppointmentReminderAsync(
         string phone, string customerName, string serviceName,
         DateTime startTime, string salonName = "", string mapsUrl = "", string bookingUrl = "")
-    {
-        var t           = ToTurkeyTime(startTime);
-        var culture     = new CultureInfo("tr-TR");
-        var bookingPart = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $" Randevu: {bookingUrl}";
-        var text        = $"ayarliyo: Yarin randevunuz var! " +
-                          $"{t.ToString("dd MMMM yyyy", culture)} {t:HH:mm} - {serviceName}.{bookingPart}";
-        return SendAsync(phone, text);
-    }
+        => SendAsync(phone, SmsTemplates.AppointmentReminder(
+            customerName, serviceName, startTime, salonName, bookingUrl));
 
     public Task SendAppointmentReminder1hAsync(
         string phone, string customerName, string serviceName,
         DateTime startTime, string salonName = "", string mapsUrl = "", string bookingUrl = "")
-    {
-        var t           = ToTurkeyTime(startTime);
-        var culture     = new CultureInfo("tr-TR");
-        var bookingPart = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $" Randevu: {bookingUrl}";
-        var text        = $"ayarliyo: Randevunuz 1 saat sonra! " +
-                          $"{t.ToString("dd MMMM yyyy", culture)} {t:HH:mm} - {serviceName}.{bookingPart}";
-        return SendAsync(phone, text);
-    }
+        => SendAsync(phone, SmsTemplates.AppointmentReminder1h(
+            customerName, serviceName, startTime, salonName));
 
     public Task SendAppointmentCancelledAsync(
         string phone, string customerName, DateTime startTime, string salonName = "", string bookingUrl = "")
-    {
-        var t           = ToTurkeyTime(startTime);
-        var culture     = new CultureInfo("tr-TR");
-        var salonPart   = string.IsNullOrWhiteSpace(salonName)  ? "" : $" ({salonName})";
-        var bookingPart = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $" Yeni randevu: {bookingUrl}";
-        var text        = $"ayarliyo{salonPart}: " +
-                          $"{t.ToString("dd MMMM yyyy", culture)} {t:HH:mm} " +
-                          $"tarihli randevunuz iptal edildi.{bookingPart}";
-        return SendAsync(phone, text);
-    }
+        => SendAsync(phone, SmsTemplates.AppointmentCancelled(
+            customerName, startTime, salonName, bookingUrl));
 
     public Task SendAppointmentCompletedAsync(
         string phone, string customerName, string serviceName, string salonName, string reviewUrl)
-    {
-        var salonPart = string.IsNullOrWhiteSpace(salonName) ? "" : $" ({salonName})";
-        var text      = $"ayarliyo{salonPart}: {serviceName} ziyaretiniz tamamlandi! " +
-                        $"Deneyiminizi degerlendirin: {reviewUrl}";
-        return SendAsync(phone, text);
-    }
+        => SendAsync(phone, SmsTemplates.AppointmentCompleted(
+            customerName, serviceName, salonName, reviewUrl));
 
     public Task SendAppointmentUpdatedAsync(
         string phone, string customerName, string serviceName,
         string staffName, DateTime startTime, string salonName = "", string bookingUrl = "")
-    {
-        var t           = ToTurkeyTime(startTime);
-        var culture     = new CultureInfo("tr-TR");
-        var salonPart   = string.IsNullOrWhiteSpace(salonName)  ? "" : $" Salon: {salonName}.";
-        var bookingPart = string.IsNullOrWhiteSpace(bookingUrl) ? "" : $" Randevu: {bookingUrl}";
-        var text        = $"ayarliyo: Randevunuz guncellendi! " +
-                          $"Yeni tarih: {t.ToString("dd MMMM yyyy", culture)} {t:HH:mm}, " +
-                          $"Hizmet: {serviceName}, Personel: {staffName}.{salonPart}{bookingPart}";
-        return SendAsync(phone, text);
-    }
+        => SendAsync(phone, SmsTemplates.AppointmentUpdated(
+            customerName, serviceName, staffName, startTime, salonName, bookingUrl));
 
     // -------------------------------------------------------------------------
 
     private async Task SendAsync(string phone, string text)
     {
         var formattedPhone = FormatPhone(phone);
+        // dil=TR: Netgsm'in Türkçe karakter destekli gönderimi (155 karakter/parça).
         var url = $"https://api.netgsm.com.tr/sms/send/get/" +
                   $"?usercode={Uri.EscapeDataString(_userCode)}" +
                   $"&password={Uri.EscapeDataString(_password)}" +
@@ -135,13 +92,5 @@ public class NetgsmSmsService : ISmsService
         if (phone.StartsWith("+"))   return phone[1..];
         if (phone.StartsWith("90"))  return phone;
         return "90" + phone;
-    }
-
-    private static DateTime ToTurkeyTime(DateTime utcTime)
-    {
-        if (utcTime.Kind != DateTimeKind.Utc)
-            utcTime = DateTime.SpecifyKind(utcTime, DateTimeKind.Utc);
-        try   { return TimeZoneInfo.ConvertTimeFromUtc(utcTime, TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time")); }
-        catch { return TimeZoneInfo.ConvertTimeFromUtc(utcTime, TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul")); }
     }
 }
