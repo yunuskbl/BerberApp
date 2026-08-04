@@ -38,8 +38,8 @@ services:
       - Jwt__Issuer=ayarliyo.com
       - Jwt__Audience=ayarliyo.com
 
-      # SMS sağlayıcısı: Netgsm (varsayılan) | Twilio
-      - Sms__Provider=${SMS_PROVIDER:-Netgsm}
+      # SMS sağlayıcı zinciri — sırayla denenir, ilki başarılı olunca durur
+      - Sms__Providers=${SMS_PROVIDERS:-Netgsm,Twilio}
 
       # Twilio (SMS + WhatsApp)
       - Twilio__AccountSid=${TWILIO_ACCOUNT_SID}
