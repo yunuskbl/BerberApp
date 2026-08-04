@@ -1,0 +1,38 @@
+# API imajı derlenirken build context'ine girmemesi gerekenler.
+# (admin-panel kendi imajında derleniyor ve kendi .dockerignore'una sahip —
+#  bu dosya oradaki derlemeyi etkilemez, her context kendi kökündekini kullanır.)
+
+# Angular uygulaması: API derlemesinin buna hiç ihtiyacı yok.
+# node_modules yüzlerce MB tutuyor ve "COPY . ." sırasında diski doldurup
+# derlemenin "no space left on device" ile düşmesine yol açıyordu.
+admin-panel/
+
+# Veritabanı yedekleri
+backups/
+
+# .NET derleme çıktıları — imaj içinde yeniden üretiliyor.
+# Host'tan kopyalanan obj/ ayrıca restore yollarını bozabiliyor.
+**/bin/
+**/obj/
+
+# Git geçmişi
+.git/
+.gitignore
+.gitattributes
+
+# Loglar
+**/logs/
+*.log
+
+# Ortam dosyaları (değerler compose üzerinden env olarak geçiyor)
+.env
+
+# IDE / OS artıkları
+.vs/
+.vscode/
+.idea/
+**/.DS_Store
+**/Thumbs.db
+
+# Dokümanlar
+*.md
