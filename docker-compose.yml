@@ -1,3 +1,12 @@
+# Container logları varsayılan olarak sınırsız büyür ve diski doldurur —
+# 2026-08-04'te veritabanının "No space left on device" ile çökmesinin
+# sebeplerinden biri buydu. Servis başına en fazla 3 x 10MB tutuluyor.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
 
   # ── PostgreSQL Veritabanı ───────────────────────────────────────────────
@@ -13,6 +22,7 @@ services:
     networks:
       - berberapp-network
     restart: always
+    logging: *default-logging
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -111,6 +121,7 @@ services:
     networks:
       - berberapp-network
     restart: always
+    logging: *default-logging
 
   # ── Angular Admin Panel ─────────────────────────────────────────────────
   admin-panel:
@@ -125,6 +136,7 @@ services:
     networks:
       - berberapp-network
     restart: always
+    logging: *default-logging
 
   # ── WPPConnect (WhatsApp Web köprüsü — sadece merkezi OTP gönderimi için) ──
   # NOT: wppconnect-server upstream'i SECRET_KEY env değişkenini okumuyor,
@@ -148,29 +160,34 @@ services:
     networks:
       - berberapp-network
     restart: always
+    logging: *default-logging
 
   # ── Otomatik Veritabanı Yedekleme ──────────────────────────────────────
-  # Her gün saat 03:00'de pg_dump çalıştırır, 7 günden eski yedekleri siler.
+  # Her gün BACKUP_HOUR saatinde pg_dump çalıştırır, RETAIN_DAYS günden eski
+  # yedekleri siler. Zamanlama scripts/backup-loop.sh içinde: postgres:16
+  # Debian tabanlı olduğu için burada cron (crond/apk) yok.
   db-backup:
     image: postgres:16
     container_name: berberapp-db-backup
     environment:
       PGPASSWORD: ${DB_PASSWORD}
+      TZ: Europe/Istanbul
+      RETAIN_DAYS: ${BACKUP_RETAIN_DAYS:-7}
+      BACKUP_HOUR: ${BACKUP_HOUR:-03}
+      # Bu eşiğin altında yedek alınmaz — dolu diskte yarım kalan bir dump
+      # geçerli yedek gibi görünüp asıl ihtiyaç anında geri yüklenemez.
+      MIN_FREE_MB: ${BACKUP_MIN_FREE_MB:-1024}
     volumes:
       - ./backups:/backups
-      - ./scripts:/scripts
-    entrypoint: >
-      /bin/sh -c "
-        apk add --no-cache dcron > /dev/null 2>&1 || true;
-        echo '0 3 * * * PGPASSWORD=$$PGPASSWORD pg_dump -h db -U postgres BerberAppDb --clean --if-exists | gzip > /backups/berberapp_$$(date +%%Y%%m%%d_%%H%%M%%S).sql.gz && find /backups -name \"berberapp_*.sql.gz\" -mtime +7 -delete' | crontab -;
-        crond -f -l 8
-      "
+      - ./scripts:/scripts:ro
+    entrypoint: ["/bin/bash", "/scripts/backup-loop.sh"]
     depends_on:
       db:
         condition: service_healthy
     networks:
       - berberapp-network
     restart: always
+    logging: *default-logging
 
 volumes:
   postgres_data:

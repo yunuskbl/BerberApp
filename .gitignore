@@ -28,6 +28,9 @@ admin-panel/src/assets/logos/
 # Docker
 postgres_data/
 
+# Veritabanı yedekleri — sunucuda üretilir, depoya girmez
+backups/
+
 # Kullanıcı yüklemeleri — sunucuda saklanır, git'e eklenmez
 BerberApp.Api/wwwroot/uploads/
 
