@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:750px; height:1624px; overflow:hidden; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Color Emoji", sans-serif;
+    background:
+      radial-gradient(circle at 20% 15%, rgba(30,60,40,.35) 0 2px, transparent 3px),
+      radial-gradient(circle at 70% 35%, rgba(30,60,40,.3) 0 2px, transparent 3px),
+      radial-gradient(circle at 40% 65%, rgba(30,60,40,.3) 0 2px, transparent 3px),
+      radial-gradient(circle at 85% 80%, rgba(30,60,40,.35) 0 2px, transparent 3px),
+      linear-gradient(180deg, #0a1512 0%, #071310 45%, #050d0b 100%);
+    color:#e9edef;
+    display:flex; flex-direction:column;
+  }
+  /* leafy wallpaper hints */
+  .leaf { position:absolute; border-radius:50% 0 50% 0; background:rgba(25,55,38,.28); transform:rotate(35deg); }
+
+  /* ---- status bar ---- */
+  .status {
+    height:70px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 28px 0 18px; background:#101d16;
+  }
+  .callpill {
+    background:#00b756; color:#fff; font-weight:700; font-size:26px;
+    border-radius:30px; padding:6px 22px;
+  }
+  .sright { display:flex; align-items:center; gap:12px; }
+  .bars { display:flex; align-items:flex-end; gap:3px; }
+  .bars div { width:6px; background:#fff; border-radius:1px; }
+  .lte { font-size:26px; color:#fff; font-weight:600; }
+  .batt {
+    width:58px; height:28px; border:3px solid #9aa3a0; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; position:relative;
+  }
+  .batt .lvl { position:absolute; left:2px; top:2px; bottom:2px; width:14px; background:#e05548; border-radius:3px; }
+  .batt span { position:relative; font-size:19px; font-weight:700; color:#fff; }
+  .batt:after { content:""; position:absolute; right:-8px; top:8px; width:5px; height:10px; background:#9aa3a0; border-radius:0 3px 3px 0; }
+
+  /* ---- header ---- */
+  .header {
+    height:120px; background:#101d16; display:flex; align-items:center;
+    padding:0 24px 14px 14px; gap:14px; border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .back { display:flex; align-items:center; gap:6px; color:#e9edef; }
+  .chev { width:20px; height:20px; border-left:5px solid #e9edef; border-bottom:5px solid #e9edef; transform:rotate(45deg); border-radius:2px; }
+  .back .cnt { font-size:32px; }
+  .avatar {
+    width:86px; height:86px; border-radius:50%; background:#000; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
+    border:1px solid #222;
+  }
+  .avatar span { color:#fff; font-size:20px; font-style:italic; font-weight:600; letter-spacing:.5px; }
+  .avatar .arr {
+    position:absolute; bottom:4px; left:6px; width:26px; height:26px; border-radius:50%;
+    background:#3b4a54; color:#cfd6d9; font-size:16px; display:flex; align-items:center; justify-content:center;
+  }
+  .hname { flex:1; min-width:0; }
+  .hname .n { font-size:36px; font-weight:700; color:#fff; }
+  .hname .s { font-size:26px; color:#94a1a8; margin-top:2px; }
+  .hphone { display:flex; align-items:center; gap:10px; color:#e9edef; }
+  .phico { font-size:38px; transform:scaleX(-1); }
+  .dchev { width:12px; height:12px; border-right:4px solid #aeb8bd; border-bottom:4px solid #aeb8bd; transform:rotate(45deg); margin-top:-6px; }
+
+  /* ---- chat ---- */
+  .chat { flex:1; padding:20px 22px 0 22px; position:relative; }
+  .bubble {
+    background:#1f2a30; border-radius:16px; padding:18px 22px 14px 22px;
+    max-width:640px; margin-bottom:16px; position:relative;
+    font-size:30px; line-height:1.42; color:#e9edef;
+    box-shadow:0 1px 1px rgba(0,0,0,.3);
+  }
+  .time { display:block; text-align:right; font-size:22px; color:#8a969c; margin-top:6px; }
+  .link { color:#2bb886; text-decoration:underline; word-break:break-all; }
+  .row { display:block; }
+  .gap { height:18px; }
+
+  .toast {
+    position:absolute; bottom:36px; left:50%; transform:translateX(-50%);
+    background:#242e33; border-radius:40px; padding:20px 36px;
+    display:flex; align-items:center; gap:16px; white-space:nowrap;
+    box-shadow:0 4px 18px rgba(0,0,0,.5);
+  }
+  .toast .ck {
+    width:40px; height:40px; border-radius:50%; border:3px solid #16b06a;
+    color:#16b06a; font-size:24px; display:flex; align-items:center; justify-content:center; font-weight:700;
+  }
+  .toast .t { font-size:30px; font-weight:600; color:#fff; }
+
+  /* ---- input bar ---- */
+  .inputbar {
+    height:110px; display:flex; align-items:center; gap:18px;
+    padding:0 26px; background:#0c1712;
+  }
+  .plus { font-size:52px; color:#e9edef; font-weight:300; }
+  .field {
+    flex:1; height:74px; background:#1f2a30; border-radius:40px;
+    display:flex; align-items:center; justify-content:flex-end; padding:0 20px;
+  }
+  .sticker { width:44px; height:44px; border-radius:50%; border:3px solid #8a969c; position:relative; }
+  .sticker:after { content:""; position:absolute; right:-2px; bottom:-2px; width:16px; height:16px; background:#1f2a30; border-radius:2px; }
+  .ico { font-size:42px; color:#e9edef; }
+</style>
+</head>
+<body>
+  <div class="status">
+    <div class="callpill">01:26</div>
+    <div class="sright">
+      <div class="bars"><div style="height:10px"></div><div style="height:15px"></div><div style="height:20px"></div><div style="height:25px"></div></div>
+      <div class="lte">LTE</div>
+      <div class="batt"><div class="lvl"></div><span>15</span></div>
+    </div>
+  </div>
+
+  <div class="header">
+    <div class="back"><div class="chev"></div><div class="cnt">1</div></div>
+    <div class="avatar"><span>ayarlıyo</span><div class="arr">»</div></div>
+    <div class="hname">
+      <div class="n">Ayarlıyo</div>
+      <div class="s">İşletme hesabı</div>
+    </div>
+    <div class="hphone"><div class="phico">📞</div><div class="dchev"></div></div>
+  </div>
+
+  <div class="chat">
+    <div class="bubble" style="border-top-left-radius:6px;">
+      Onaylamak için panele giriş yapın.
+      <span class="time">14:44</span>
+    </div>
+
+    <div class="bubble">
+      <span class="row">Merhaba Hande Aydın!</span>
+      <span class="row">Randevunuz onaylandı. ✅</span>
+      <div class="gap"></div>
+      <span class="row">🗓️ Tarih: 13 Ağustos 2026</span>
+      <span class="row">⏰ Saat: <u>13:00</u></span>
+      <span class="row">✂️ Hizmet: Saç Boyama</span>
+      <span class="row">👤 Personel: Ayşe Tekin</span>
+      <span class="row">🏪 Salon: Buse Güzellik Salonu</span>
+      <span class="row">📍 Yol tarifi: <span class="link">https://ayarliyo.com/api/map/buse-guzellik-salonu</span></span>
+      <span class="row">📋 Randevularınız: <span class="link">https://ayarliyo.com/randevularim/buse-guzellik-salonu?phone=%2B905383996916</span></span>
+      <div class="gap"></div>
+      <span class="row">Bizi tercih ettiğiniz için teşekkürler.</span>
+      <span class="time">14:48</span>
+    </div>
+
+    <div class="bubble">
+      Merhaba Hande Aydın! Buse Güzellik Salonu salonumuzda aldığınız Saç Boyama hizmeti için teşekkür ederiz. 🙏
+      <div class="gap"></div>
+      <span style="color:#2bb886; font-weight:600;">Devamını…</span>
+    </div>
+
+    <div class="toast">
+      <div class="ck">✓</div>
+      <div class="t">Kişi güncellendi</div>
+    </div>
+  </div>
+
+  <div class="inputbar">
+    <div class="plus">+</div>
+    <div class="field"><div class="sticker"></div></div>
+    <div class="ico">📷</div>
+    <div class="ico">🎤</div>
+  </div>
+</body>
+</html>
