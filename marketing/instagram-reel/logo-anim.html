@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family:'Syne'; font-weight:700; src:url('syne-700-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F; }
+  @font-face { font-family:'Syne'; font-weight:700; src:url('syne-700-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+1E00-1EFF; }
+  @font-face { font-family:'Syne'; font-weight:800; src:url('syne-800-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F; }
+  @font-face { font-family:'Syne'; font-weight:800; src:url('syne-800-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+1E00-1EFF; }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1080px; height:1920px; overflow:hidden; }
+  body {
+    background: radial-gradient(ellipse 90% 60% at 50% 42%, #17181c 0%, #0b0c0e 60%, #060708 100%);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Syne', sans-serif;
+  }
+  #stage { position:relative; width:900px; height:900px; }
+
+  #glow {
+    position:absolute; inset:-120px; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 45%, transparent 70%);
+    opacity:0;
+  }
+
+  #circle {
+    position:absolute; inset:0; border-radius:50%;
+    background: radial-gradient(circle at 32% 26%, #232323 0%, #131313 38%, #050505 100%);
+    box-shadow: 0 40px 120px rgba(0,0,0,.85), inset 0 2px 2px rgba(255,255,255,.06);
+    display:flex; align-items:center; justify-content:center;
+    opacity:0;
+  }
+
+  #logo { position:relative; text-align:center; }
+
+  #word { position:relative; display:inline-block; white-space:nowrap; line-height:1; }
+  #word .l {
+    display:inline-block;
+    font-weight:800; font-size:150px; color:#fff; letter-spacing:-0.015em;
+    opacity:0; transform:translateY(50px);
+  }
+  #ring {
+    position:absolute; top:2px; right:-40px;
+    width:34px; height:34px; border-radius:50%;
+    border:9px solid #fff; opacity:0;
+  }
+
+  #rule {
+    margin:34px auto 26px auto; width:420px; height:3px;
+    background:linear-gradient(90deg, transparent, #6a6a6a 18%, #6a6a6a 82%, transparent);
+    transform:scaleX(0); opacity:.9;
+  }
+
+  #tag {
+    font-weight:700; font-size:44px; color:#9a9a9a;
+    letter-spacing:.30em; text-transform:uppercase; white-space:nowrap;
+    margin-left: .30em; /* optical centering against trailing letter-spacing */
+    opacity:0;
+  }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div id="glow"></div>
+    <div id="circle">
+      <div id="logo">
+        <div id="word">
+          <span class="l">a</span><span class="l">y</span><span class="l">a</span><span class="l">r</span><span class="l">l</span><span class="l">ı</span><span class="l">y</span><span class="l">o</span>
+          <div id="ring"></div>
+        </div>
+        <div id="rule"></div>
+        <div id="tag">Randevu Sistemi</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const clamp01 = x => Math.max(0, Math.min(1, x));
+  const outCubic = x => 1 - Math.pow(1 - x, 3);
+  const outBack  = x => { const c1=1.70158, c3=c1+1; return 1 + c3*Math.pow(x-1,3) + c1*Math.pow(x-1,2); };
+  const inOut    = x => x<.5 ? 2*x*x : 1 - Math.pow(-2*x+2,2)/2;
+  const seg = (t, t0, d) => clamp01((t - t0) / d);
+
+  // Deterministic: set the full visual state for time t (seconds)
+  window.seek = function(t) {
+    // circle entrance 0 - 0.6
+    const c = outCubic(seg(t, 0, 0.6));
+    const circle = document.getElementById('circle');
+    circle.style.opacity = c;
+    circle.style.transform = `scale(${0.72 + 0.28*c})`;
+
+    // letters stagger 0.35 + i*0.07, dur 0.45
+    document.querySelectorAll('#word .l').forEach((el, i) => {
+      const p = outCubic(seg(t, 0.35 + i*0.07, 0.45));
+      el.style.opacity = p;
+      el.style.transform = `translateY(${50*(1-p)}px)`;
+    });
+
+    // ring drops in with overshoot 1.05 - 1.55
+    const r = seg(t, 1.05, 0.5);
+    const ring = document.getElementById('ring');
+    ring.style.opacity = clamp01(r*2);
+    const rb = outBack(r);
+    ring.style.transform = `translateY(${-70*(1-rb)}px) scale(${rb})`;
+
+    // rule draws 1.45 - 1.85
+    const u = outCubic(seg(t, 1.45, 0.4));
+    document.getElementById('rule').style.transform = `scaleX(${u})`;
+
+    // tagline 1.65 - 2.3 : fade + tracking settles from wide
+    const g = inOut(seg(t, 1.65, 0.65));
+    const tag = document.getElementById('tag');
+    tag.style.opacity = g;
+    const ls = 0.62 - 0.32*g; // .62em -> .30em
+    tag.style.letterSpacing = ls + 'em';
+    tag.style.marginLeft = ls + 'em';
+
+    // glow breath + settle 2.2 - 3.2
+    const s = inOut(seg(t, 2.2, 1.0));
+    document.getElementById('glow').style.opacity = 0.55*s + 0.25*c*(1-s);
+    const stage = document.getElementById('stage');
+    stage.style.transform = `scale(${1.015 - 0.015*s})`;
+  };
+  window.seek(0);
+</script>
+</body>
+</html>
