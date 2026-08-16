@@ -9,7 +9,12 @@ namespace BerberApp.Api.Controllers;
 [Authorize(Roles = "Admin,SuperAdmin")]
 public class CustomersController : BaseApiController
 {
-    public CustomersController(IMediator mediator) : base(mediator) { }
+    private readonly IConfiguration _config;
+
+    public CustomersController(IMediator mediator, IConfiguration config) : base(mediator)
+    {
+        _config = config;
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
@@ -74,7 +79,13 @@ public class CustomersController : BaseApiController
         await using var stream = System.IO.File.Create(filePath);
         await file.CopyToAsync(stream);
 
-        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        // Request.Scheme kullanılamaz: nginx→api bacağı düz http olduğu ve
+        // X-Forwarded-Proto iletilmediği için "http://ayarliyo.com/..." üretiyordu.
+        // Bu adres https sayfada karışık içerik (mixed content) sayılıp tarayıcıda
+        // engelleniyor, ayrıca CSP'deki img-src 'self' ile eşleşmiyordu.
+        // Yapılandırılmış genel adres hem önizlemede hem WhatsApp'a gönderilen
+        // link'te doğru çalışır.
+        var baseUrl = (_config["AppSettings:BaseUrl"] ?? $"{Request.Scheme}://{Request.Host}").TrimEnd('/');
         var url = $"{baseUrl}/uploads/broadcast/{fileName}";
 
         return Success(new { url });
