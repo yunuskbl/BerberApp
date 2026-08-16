@@ -323,8 +323,21 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
     return plan.features.find(f => f.name === featureKey)?.included ?? false;
   }
 
+  /** Kopyalama geri bildirimi — butonlarda "Kopyalandı ✓" göstermek için. */
+  mailCopied = false;
+
+  /**
+   * mailto'yu yeni sekmede açmak, e-posta uygulaması tanımlı olmayan
+   * kullanıcıda boş bir sekme bırakıyordu. Aynı sekmede yönlendiriyoruz
+   * (uygulama yoksa hiçbir şey olmaz, boş sekme de kalmaz) ve adresi her
+   * durumda panoya kopyalıyoruz ki kullanıcı eli boş kalmasın.
+   */
   openMail(): void {
-    window.open('mailto:info@ayarliyo.com?subject=Bilgi%20Talebi', '_blank');
+    navigator.clipboard?.writeText('info@ayarliyo.com').then(() => {
+      this.mailCopied = true;
+      setTimeout(() => (this.mailCopied = false), 2500);
+    }).catch(() => {});
+    window.location.href = 'mailto:info@ayarliyo.com?subject=Bilgi%20Talebi';
   }
 
   openWhatsApp(): void {
