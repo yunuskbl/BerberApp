@@ -37,6 +37,17 @@ public class BroadcastMessageHandler : IRequestHandler<BroadcastMessageCommand, 
 
         var targets = allCustomers.Where(c => targetIds.Contains(c.Id)).ToList();
 
+        // İşletme kendi WhatsApp'ını bağladıysa toplu mesaj kendi numarasından
+        // çıkar; bağlamadıysa kök servis (merkezi hat → Meta) kullanılır.
+        var tenant = await _context.Tenants.AsNoTracking()
+            .Where(t => t.Id == request.TenantId)
+            .Select(t => new { t.WppConnectSession, t.WppConnectToken })
+            .FirstOrDefaultAsync(ct);
+
+        var wa = (!string.IsNullOrWhiteSpace(tenant?.WppConnectSession) && !string.IsNullOrWhiteSpace(tenant?.WppConnectToken))
+            ? _whatsAppService.ForTenant(tenant!.WppConnectSession, tenant.WppConnectToken)
+            : _whatsAppService;
+
         int sent = 0, failed = 0;
 
         foreach (var customer in targets)
@@ -44,7 +55,7 @@ public class BroadcastMessageHandler : IRequestHandler<BroadcastMessageCommand, 
             if (string.IsNullOrWhiteSpace(customer.Phone)) { failed++; continue; }
             try
             {
-                await _whatsAppService.SendCustomMessageAsync(customer.Phone, request.Message, request.ImageUrl);
+                await wa.SendCustomMessageAsync(customer.Phone, request.Message, request.ImageUrl);
                 sent++;
             }
             catch
