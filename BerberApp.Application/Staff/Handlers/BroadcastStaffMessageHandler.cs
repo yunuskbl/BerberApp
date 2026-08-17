@@ -1,3 +1,4 @@
+using BerberApp.Application.Common.Exceptions;
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Application.Staff.Commands;
 using BerberApp.Domain.Entities;
@@ -11,31 +12,26 @@ public class BroadcastStaffMessageHandler : IRequestHandler<BroadcastStaffMessag
     private readonly IGenericRepository<StaffEntity> _staffRepo;
     private readonly IAppDbContext _context;
     private readonly IWhatsAppService _whatsAppService;
+    private readonly IWppConnectManagementService _wppManagement;
 
     public BroadcastStaffMessageHandler(
         IGenericRepository<StaffEntity> staffRepo,
         IAppDbContext context,
-        IWhatsAppService whatsAppService)
+        IWhatsAppService whatsAppService,
+        IWppConnectManagementService wppManagement)
     {
         _staffRepo = staffRepo;
         _context = context;
         _whatsAppService = whatsAppService;
+        _wppManagement = wppManagement;
     }
 
     public async Task<BroadcastStaffMessageResult> Handle(BroadcastStaffMessageCommand request, CancellationToken ct)
     {
         var staffList = await _staffRepo.GetAllAsync(x => x.TenantId == request.TenantId && !x.IsDeleted, ct);
 
-        // İşletme kendi WhatsApp'ını bağladıysa toplu mesaj kendi numarasından
-        // çıkar; bağlamadıysa kök servis (merkezi hat → Meta) kullanılır.
-        var tenant = await _context.Tenants.AsNoTracking()
-            .Where(t => t.Id == request.TenantId)
-            .Select(t => new { t.WppConnectSession, t.WppConnectToken })
-            .FirstOrDefaultAsync(ct);
-
-        var wa = (!string.IsNullOrWhiteSpace(tenant?.WppConnectSession) && !string.IsNullOrWhiteSpace(tenant?.WppConnectToken))
-            ? _whatsAppService.ForTenant(tenant!.WppConnectSession, tenant.WppConnectToken)
-            : _whatsAppService;
+        var wa = await WhatsAppLineResolver.RequireTenantLineAsync(
+            _context, _whatsAppService, _wppManagement, request.TenantId, ct);
 
         int sent = 0, failed = 0;
 

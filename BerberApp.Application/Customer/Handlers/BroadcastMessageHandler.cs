@@ -10,11 +10,16 @@ public class BroadcastMessageHandler : IRequestHandler<BroadcastMessageCommand, 
 {
     private readonly IAppDbContext _context;
     private readonly IWhatsAppService _whatsAppService;
+    private readonly IWppConnectManagementService _wppManagement;
 
-    public BroadcastMessageHandler(IAppDbContext context, IWhatsAppService whatsAppService)
+    public BroadcastMessageHandler(
+        IAppDbContext context,
+        IWhatsAppService whatsAppService,
+        IWppConnectManagementService wppManagement)
     {
         _context = context;
         _whatsAppService = whatsAppService;
+        _wppManagement = wppManagement;
     }
 
     public async Task<BroadcastMessageResult> Handle(BroadcastMessageCommand request, CancellationToken ct)
@@ -37,16 +42,8 @@ public class BroadcastMessageHandler : IRequestHandler<BroadcastMessageCommand, 
 
         var targets = allCustomers.Where(c => targetIds.Contains(c.Id)).ToList();
 
-        // İşletme kendi WhatsApp'ını bağladıysa toplu mesaj kendi numarasından
-        // çıkar; bağlamadıysa kök servis (merkezi hat → Meta) kullanılır.
-        var tenant = await _context.Tenants.AsNoTracking()
-            .Where(t => t.Id == request.TenantId)
-            .Select(t => new { t.WppConnectSession, t.WppConnectToken })
-            .FirstOrDefaultAsync(ct);
-
-        var wa = (!string.IsNullOrWhiteSpace(tenant?.WppConnectSession) && !string.IsNullOrWhiteSpace(tenant?.WppConnectToken))
-            ? _whatsAppService.ForTenant(tenant!.WppConnectSession, tenant.WppConnectToken)
-            : _whatsAppService;
+        var wa = await WhatsAppLineResolver.RequireTenantLineAsync(
+            _context, _whatsAppService, _wppManagement, request.TenantId, ct);
 
         int sent = 0, failed = 0;
 
