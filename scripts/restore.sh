@@ -46,8 +46,12 @@ fi
 echo ""
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Geri yükleme başlıyor: $BACKUP_FILE"
 
+# ON_ERROR_STOP olmadan psql hatalı bir ifadeyi atlayıp devam eder ve 0 ile
+# çıkar; script de yarım kalmış bir geri yüklemeye "tamamlandı" der. Geri
+# yükleme yalnızca felaket anında çalıştığı için sessiz başarısızlık kabul
+# edilemez: ilk hatada dur ve hata koduyla çık.
 gunzip -c "$BACKUP_FILE" | docker exec -i "$CONTAINER_NAME" \
-    psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" --quiet
+    psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" --quiet -v ON_ERROR_STOP=1
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Geri yükleme tamamlandı."
 echo ""
