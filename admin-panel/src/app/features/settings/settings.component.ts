@@ -170,7 +170,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.loadSalonInfo();
     this.loadPhotos();
     this.loadClosures();
-    // WhatsApp merkezi Meta üzerinden — WPPConnect durum kontrolü kaldırıldı
+    this.checkWhatsAppStatus();
   }
 
   ngOnDestroy(): void {
