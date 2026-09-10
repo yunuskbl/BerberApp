@@ -486,6 +486,14 @@ export class BookingComponent implements OnInit, OnDestroy {
             ? err.error.message
             : 'Bir hata oluştu. Lütfen tekrar deneyin.';
           this.isSubmitting = false;
+
+          // Sunucu tarafındaki durum değişmiş olabilir — özellikle çakışmada
+          // (409) ekrandaki slot listesi bayat demektir: saat, sayfa açıldıktan
+          // sonra dolmuştur. Listeyi tazeleyip seçimi düşürüyoruz ki kullanıcı
+          // aynı dolu saati tekrar tekrar denemesin.
+          this.loadSlotsIfReady();
+          if (err.status === 409) this.selectedSlot = '';
+
           setTimeout(() => {
             document.querySelector('.error-message')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }, 50);
