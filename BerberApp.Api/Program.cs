@@ -114,7 +114,14 @@ builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 // WppConnect servisi ana bildirim sağlayıcısından BAĞIMSIZ olarak her zaman kayıtlı —
 // OtpController merkezi WPPConnect oturumunu (SuperAdmin → WhatsApp) sadece telefon
 // OTP gönderimi için kullanır; ana randevu bildirimleri bundan etkilenmez.
-builder.Services.AddHttpClient<WppConnectWhatsAppService>();
+// Mesajlaşma çağrılarına kısa timeout: HttpClient varsayılanı 100 saniye ve
+// bildirim gönderimi randevu isteğinin içinde bekleniyor. WPPConnect oturumu
+// takıldığında randevu isteği 100 saniye asılı kalıp Cloudflare tarafından
+// düşürülüyordu — randevu kaydedilmiş olmasına rağmen kullanıcı hata görüyor,
+// tekrar denediğinde "Bu saatte başka bir randevu mevcut" uyarısına çarpıyordu.
+static void ShortTimeout(HttpClient c) => c.Timeout = TimeSpan.FromSeconds(15);
+
+builder.Services.AddHttpClient<WppConnectWhatsAppService>(ShortTimeout);
 
 // WhatsApp sağlayıcı seçimi — appsettings.json → "WhatsApp:Provider"
 //   "WppConnect" → tüm işletmeler WPPConnect (eski davranış)
@@ -127,19 +134,19 @@ if (whatsAppProvider.Equals("WppConnect", StringComparison.OrdinalIgnoreCase))
 }
 else if (whatsAppProvider.Equals("Meta", StringComparison.OrdinalIgnoreCase))
 {
-    builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();
+    builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>(ShortTimeout);
 }
 else // Hybrid — her iki servisi de kaydet, yönlendirmeyi HybridWhatsAppService yapar
 {
-    builder.Services.AddHttpClient<WhatsAppService>();
+    builder.Services.AddHttpClient<WhatsAppService>(ShortTimeout);
     builder.Services.AddScoped<IWhatsAppService, HybridWhatsAppService>();
 }
-builder.Services.AddHttpClient<IWppConnectManagementService, WppConnectManagementService>();
+builder.Services.AddHttpClient<IWppConnectManagementService, WppConnectManagementService>(ShortTimeout);
 // ── SMS sağlayıcı zinciri ────────────────────────────────────────────────
 // .env → Sms__Providers: sırayla denenecek sağlayıcılar, ör. "Netgsm,Twilio".
 // İlki başarısız olursa bir sonrakine geçilir (ChainedSmsService).
 // SmsService = Twilio. Her iki sınıf da ISmsService'i uyguluyor.
-builder.Services.AddHttpClient<NetgsmSmsService>();
+builder.Services.AddHttpClient<NetgsmSmsService>(ShortTimeout);
 builder.Services.AddScoped<SmsService>();
 
 var smsChain = (builder.Configuration["Sms:Providers"]
