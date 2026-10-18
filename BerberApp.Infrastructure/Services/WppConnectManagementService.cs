@@ -219,6 +219,36 @@ public class WppConnectManagementService : IWppConnectManagementService
     public async Task<string> GetStatusAsync(string session, string token, CancellationToken ct = default)
         => (await GetSessionStatusAsync(session, token, ct)).Value;
 
+    /// <summary>
+    /// Oturumu WhatsApp tarafından da düşürerek tamamen serbest bırakır.
+    ///
+    /// close-session yalnızca sunucudaki tarayıcıyı kapatır; telefondaki
+    /// "Bağlı Cihazlar" listesinde kayıt durmaya devam eder. Cihazı gerçekten
+    /// listeden düşüren çağrı logout-session. Yıllardır yalnızca close
+    /// çağrıldığı için her yeniden bağlanma telefonda bir hayalet kayıt
+    /// bırakıyor, WhatsApp'ın 4 cihazlık sınırı dolunca da yeni bağlantı
+    /// "Şu anda yeni cihaz bağlanamıyor" hatasıyla reddediliyordu.
+    ///
+    /// Üç adımın hepsi best-effort: oturum zaten ölüyse logout başarısız olur,
+    /// bu durumda bile delete ile sunucudaki token klasörünü temizlemek
+    /// gerekiyor. Hiçbir hata çağıranı durdurmamalı — bu bir temizlik işlemi.
+    /// </summary>
+    public async Task ReleaseSessionAsync(string session, string token, CancellationToken ct = default)
+    {
+        // 1) WhatsApp'a cihazın bağlantısını kes dedir — asıl önemli adım.
+        try { await LogoutSessionAsync(session, token, ct); }
+        catch (Exception ex) { _log.LogWarning(ex, "[WPPConnect-MGMT] Logout başarısız: {Session}", session); }
+
+        // 2) Tarayıcıyı kapat (logout zaten kapatmış olabilir, zararsız).
+        try { await CloseSessionAsync(session, token, ct); }
+        catch (Exception ex) { _log.LogWarning(ex, "[WPPConnect-MGMT] Close başarısız: {Session}", session); }
+
+        // 3) Sunucudaki oturum dosyalarını sil — her bağlanmada yeni bir oturum
+        //    adı üretildiği için temizlenmezse token klasörleri birikir.
+        try { await DeleteSessionAsync(session, token, ct); }
+        catch (Exception ex) { _log.LogWarning(ex, "[WPPConnect-MGMT] Delete başarısız: {Session}", session); }
+    }
+
     public async Task CloseSessionAsync(string session, string token, CancellationToken ct = default)
     {
         var url = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{session}/close-session";

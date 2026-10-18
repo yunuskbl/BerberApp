@@ -1,3 +1,4 @@
+using BerberApp.Application.Common.Interfaces;
 using BerberApp.Application.Common.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -208,27 +209,23 @@ public class SuperAdminWhatsAppController : ControllerBase
         }
     }
 
-    /// <summary>WhatsApp oturumunu kapatır</summary>
+    /// <summary>
+    /// Merkezi WhatsApp oturumunu kapatır.
+    ///
+    /// Yalnızca close-session çağırmak telefonun "Bağlı Cihazlar" listesinde
+    /// hayalet kayıt bırakıyordu; her yeniden bağlanma bir tane daha ekleyip
+    /// WhatsApp'ın 4 cihaz sınırını doldurunca yeni bağlantı
+    /// "Şu anda yeni cihaz bağlanamıyor" hatasıyla reddediliyordu.
+    /// ReleaseSessionAsync cihazı WhatsApp tarafında da düşürüyor.
+    /// </summary>
     [HttpPost("disconnect")]
-    public async Task<IActionResult> Disconnect()
+    public async Task<IActionResult> Disconnect([FromServices] IWppConnectManagementService mgmt)
     {
         if (string.IsNullOrWhiteSpace(_cfg.Token))
             return BadRequest(new { success = false, message = "Token yapılandırılmamış." });
 
-        try
-        {
-            var http = _httpFactory.CreateClient("wppconnect");
-            var url  = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{_cfg.Session}/close-session";
-            var req  = WppRequest(HttpMethod.Post, url);
-            req.Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json");
-            var res  = await http.SendAsync(req);
-            var body = await res.Content.ReadAsStringAsync();
-            return Ok(new { success = true, raw = body });
-        }
-        catch (Exception ex)
-        {
-            return Ok(new { success = false, message = ex.Message });
-        }
+        await mgmt.ReleaseSessionAsync(_cfg.Session, _cfg.Token);
+        return Ok(new { success = true, message = "Oturum kapatıldı ve cihaz bağlantısı kesildi." });
     }
 
     /// <summary>Yeni token üretir (SecretKey gerektirir — URL'de gider, header gerekmez)</summary>

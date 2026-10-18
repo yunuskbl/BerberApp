@@ -335,10 +335,13 @@ public class TenantsController : BaseApiController
         var session = $"t-{tenant.Subdomain}-{Guid.NewGuid():N}"[..32];
         try
         {
-            // Best-effort cleanup of the old session (close only — logout/delete unreliable on ghost sessions)
+            // Eski oturumu WhatsApp tarafında da düşür. Yalnızca close-session
+            // çağrılması telefonun "Bağlı Cihazlar" listesinde hayalet kayıt
+            // bırakıyordu; her yeniden bağlanma bir tane daha ekleyip WhatsApp'ın
+            // 4 cihaz sınırını doldurunca yeni bağlantı reddediliyordu.
             if (!string.IsNullOrWhiteSpace(tenant.WppConnectSession) && !string.IsNullOrWhiteSpace(tenant.WppConnectToken))
             {
-                try { await mgmt.CloseSessionAsync(tenant.WppConnectSession, tenant.WppConnectToken); } catch { }
+                await mgmt.ReleaseSessionAsync(tenant.WppConnectSession, tenant.WppConnectToken);
             }
 
             var token  = await mgmt.GenerateTokenAsync(session);
@@ -444,8 +447,9 @@ public class TenantsController : BaseApiController
 
         if (!string.IsNullOrWhiteSpace(tenant.WppConnectSession))
         {
-            try { await mgmt.CloseSessionAsync(tenant.WppConnectSession, tenant.WppConnectToken!); }
-            catch { /* sunucu erişilemese bile DB'yi temizle */ }
+            // Cihazı WhatsApp'tan da düşür, yoksa listede hayalet kayıt kalır.
+            // ReleaseSessionAsync kendi içinde best-effort; hata fırlatmaz.
+            await mgmt.ReleaseSessionAsync(tenant.WppConnectSession, tenant.WppConnectToken!);
 
             tenant.WppConnectSession = null;
             tenant.WppConnectToken   = null;

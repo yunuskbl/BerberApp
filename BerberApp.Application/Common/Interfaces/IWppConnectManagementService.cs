@@ -20,6 +20,14 @@ public interface IWppConnectManagementService
     Task CloseSessionAsync(string session, string token, CancellationToken ct = default);
     Task LogoutSessionAsync(string session, string token, CancellationToken ct = default);
     Task DeleteSessionAsync(string session, string token, CancellationToken ct = default);
+
+    /// <summary>
+    /// Oturumu WhatsApp tarafında da düşürerek serbest bırakır (logout + close + delete).
+    /// Yeniden bağlanmadan veya bağlantıyı keserken bunu kullan: yalnızca
+    /// close-session çağırmak telefonun "Bağlı Cihazlar" listesinde hayalet
+    /// kayıt bırakır ve 4 cihazlık sınır dolunca yeni bağlantı reddedilir.
+    /// </summary>
+    Task ReleaseSessionAsync(string session, string token, CancellationToken ct = default);
     Task<string> RequestPairingCodeAsync(string session, string token, string phoneNumber, CancellationToken ct = default);
 }
 
