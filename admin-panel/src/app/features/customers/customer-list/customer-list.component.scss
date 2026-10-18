@@ -324,3 +324,35 @@
   .card { overflow: visible; background: transparent; border: none; }
   .drawer { width: 100%; }
 }
+
+// Arka planda yürüyen toplu mesajın ilerlemesi
+.broadcast-progress {
+  margin: 0 0 14px;
+
+  .broadcast-progress-text { font-size: 13px; color: #475569; margin: 0 0 6px; }
+  .broadcast-progress-hint { font-size: 12px; color: #94a3b8; margin: 6px 0 0; }
+
+  .broadcast-progress-bar {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .broadcast-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #818cf8);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+}
+
+// Gönderilemeyen alıcılar — sebebiyle birlikte
+.broadcast-problems {
+  margin-top: 12px;
+  font-size: 13px;
+
+  summary { cursor: pointer; color: #b91c1c; font-weight: 600; }
+  ul { margin: 8px 0 0; padding-left: 18px; max-height: 180px; overflow-y: auto; }
+  li { margin-bottom: 6px; color: #475569; }
+  .broadcast-problem-reason { display: block; font-size: 12px; color: #94a3b8; }
+}

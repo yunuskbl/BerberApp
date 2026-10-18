@@ -35,6 +35,8 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Receipt> Receipts => Set<Receipt>();
     public DbSet<ReceiptItem> ReceiptItems => Set<ReceiptItem>();
     public DbSet<PaymentRequest> PaymentRequests => Set<PaymentRequest>();
+    public DbSet<BroadcastJob> BroadcastJobs => Set<BroadcastJob>();
+    public DbSet<BroadcastRecipient> BroadcastRecipients => Set<BroadcastRecipient>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

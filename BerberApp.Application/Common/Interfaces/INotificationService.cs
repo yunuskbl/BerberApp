@@ -14,5 +14,13 @@ namespace BerberApp.Application.Common.Interfaces
         Task SendAppointmentCancelledAsync(string recipient, AppointmentStatusDto dto);
         Task SendAppointmentCompletedAsync(string recipient, AppointmentStatusDto dto, string reviewUrl);
         Task SendAppointmentUpdatedAsync(string recipient, AppointmentStatusDto dto);
+
+        /// <summary>
+        /// Randevu sayfasından gelen yeni talebin işletmeye/personele bildirimi.
+        /// Hattı (işletmenin kendi numarası veya merkezi) servis kendisi çözer.
+        /// </summary>
+        Task SendNewAppointmentRequestAsync(
+            Guid tenantId, string staffPhone, string customerName, string customerPhone,
+            string serviceName, DateTime startTimeTurkey, int sequenceNumber);
     }
 }

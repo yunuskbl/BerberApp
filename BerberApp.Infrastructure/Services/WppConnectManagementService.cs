@@ -172,27 +172,52 @@ public class WppConnectManagementService : IWppConnectManagementService
         return string.Empty;
     }
 
-    public async Task<string> GetStatusAsync(string session, string token, CancellationToken ct = default)
+    /// <summary>
+    /// Durum sorgusu için üst sınır. HttpClient'ın genel timeout'u oturum
+    /// başlatma (içinde 20×2s QR polling var) için uzun tutulmak zorunda;
+    /// durum sorgusunun o kadar beklemesi anlamsız, kullanıcıyı bekletir.
+    /// </summary>
+    private static readonly TimeSpan StatusTimeout = TimeSpan.FromSeconds(10);
+
+    public async Task<WppConnectStatus> GetSessionStatusAsync(string session, string token, CancellationToken ct = default)
     {
         var url = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{session}/status-session";
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(StatusTimeout);
+
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         try
         {
-            var res  = await _http.SendAsync(req, ct);
-            var body = await res.Content.ReadAsStringAsync(ct);
+            var res  = await _http.SendAsync(req, timeout.Token);
+            var body = await res.Content.ReadAsStringAsync(timeout.Token);
+
+            // HTTP hatası WPPConnect'in kendisinden geliyor olabilir de, araya
+            // giren bir şeyden de — ikisi de "oturum kopuk" kanıtı değil.
+            if (!res.IsSuccessStatusCode)
+            {
+                _log.LogWarning("[WPPConnect] Durum sorgusu HTTP {Status} ({Session})", (int)res.StatusCode, session);
+                return new WppConnectStatus($"HTTP_{(int)res.StatusCode}", IsReachable: false);
+            }
 
             using var doc = JsonDocument.Parse(body);
-            return doc.RootElement.TryGetProperty("status", out var sp)
+            var value = doc.RootElement.TryGetProperty("status", out var sp)
                 ? sp.GetString() ?? "UNKNOWN"
                 : "UNKNOWN";
+
+            return new WppConnectStatus(value, IsReachable: true);
         }
-        catch
+        catch (Exception ex)
         {
-            return "DISCONNECTED";
+            _log.LogWarning(ex, "[WPPConnect] Oturum durumu okunamadı ({Session})", session);
+            return new WppConnectStatus("UNREACHABLE", IsReachable: false);
         }
     }
+
+    public async Task<string> GetStatusAsync(string session, string token, CancellationToken ct = default)
+        => (await GetSessionStatusAsync(session, token, ct)).Value;
 
     public async Task CloseSessionAsync(string session, string token, CancellationToken ct = default)
     {

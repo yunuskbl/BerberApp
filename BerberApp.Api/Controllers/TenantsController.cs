@@ -305,10 +305,11 @@ public class TenantsController : BaseApiController
             if (string.IsNullOrWhiteSpace(tenant?.WppConnectSession) || string.IsNullOrWhiteSpace(tenant?.WppConnectToken))
                 return Ok(new { success = false, message = "Önce WhatsApp'ı bağlayın (Ayarlar → WhatsApp Hesabınızı Bağlayın)." });
 
-            // Session durumunu kontrol et
-            var status = await mgmt.GetStatusAsync(tenant.WppConnectSession, tenant.WppConnectToken);
-            if (status is not ("CONNECTED" or "inChat" or "isLogged"))
-                return Ok(new { success = false, message = $"WhatsApp oturumu bağlı değil (durum: {status}). Lütfen yeniden bağlanın." });
+            // Oturum durumunu kontrol et. Ulaşılamadığında engellemiyoruz —
+            // test mesajının asıl amacı zaten gerçek gönderimi denemek.
+            var status = await mgmt.GetSessionStatusAsync(tenant.WppConnectSession, tenant.WppConnectToken);
+            if (status.IsDefinitelyDisconnected)
+                return Ok(new { success = false, message = $"WhatsApp oturumu bağlı değil (durum: {status.Value}). Lütfen yeniden bağlanın." });
 
             var wa = whatsApp.ForTenant(tenant.WppConnectSession, tenant.WppConnectToken);
             await wa.SendCustomMessageAsync(req.Phone, req.Message);
@@ -424,11 +425,11 @@ public class TenantsController : BaseApiController
         if (string.IsNullOrWhiteSpace(tenant?.WppConnectSession))
             return Success(new { status = "DISCONNECTED", isConnected = false, hasSession = false });
 
-        var status = await mgmt.GetStatusAsync(tenant.WppConnectSession, tenant.WppConnectToken!);
+        var status = await mgmt.GetSessionStatusAsync(tenant.WppConnectSession, tenant.WppConnectToken!);
         return Success(new
         {
-            status,
-            isConnected = status is "CONNECTED" or "inChat" or "isLogged",
+            status      = status.Value,
+            isConnected = status.IsConnected,
             hasSession  = true,
             session     = tenant.WppConnectSession
         });

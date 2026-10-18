@@ -366,6 +366,27 @@
             </button>
           </div>
         } @else {
+          @if (!broadcastResult.isFinished) {
+            <div class="broadcast-progress">
+              <p class="broadcast-progress-text">
+                {{ broadcastResult.sent + broadcastResult.failed + broadcastResult.skipped }} / {{ broadcastResult.total }} işlendi
+              </p>
+              <div class="broadcast-progress-bar">
+                <div class="broadcast-progress-fill"
+                  [style.width.%]="broadcastResult.total > 0
+                    ? ((broadcastResult.sent + broadcastResult.failed + broadcastResult.skipped) / broadcastResult.total) * 100
+                    : 0"></div>
+              </div>
+              <p class="broadcast-progress-hint">
+                Gönderim arka planda sürüyor. Bu pencereyi kapatabilirsiniz.
+              </p>
+            </div>
+          }
+
+          @if (broadcastResult.error) {
+            <div class="error-message">{{ broadcastResult.error }}</div>
+          }
+
           <div class="broadcast-result">
             <div class="broadcast-stat broadcast-stat--success">
               <span class="stat-num">{{ broadcastResult.sent }}</span>
@@ -376,14 +397,29 @@
               <span class="stat-label">Başarısız</span>
             </div>
             <div class="broadcast-stat">
-              <span class="stat-num">{{ broadcastResult.filteredCount }}</span>
-              <span class="stat-label">Hedeflenen</span>
+              <span class="stat-num">{{ broadcastResult.skipped }}</span>
+              <span class="stat-label">Telefonu yok</span>
             </div>
             <div class="broadcast-stat">
-              <span class="stat-num">{{ broadcastResult.totalCustomers }}</span>
-              <span class="stat-label">Toplam</span>
+              <span class="stat-num">{{ broadcastResult.total }}</span>
+              <span class="stat-label">Hedeflenen</span>
             </div>
           </div>
+
+          @if (broadcastResult.problems.length > 0) {
+            <details class="broadcast-problems">
+              <summary>Ulaşılamayanlar ({{ broadcastResult.problems.length }})</summary>
+              <ul>
+                @for (p of broadcastResult.problems; track p.phone) {
+                  <li>
+                    <strong>{{ p.name || p.phone }}</strong>
+                    <span class="broadcast-problem-reason">{{ p.error }}</span>
+                  </li>
+                }
+              </ul>
+            </details>
+          }
+
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" (click)="closeBroadcast()">Kapat</button>
           </div>

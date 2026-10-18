@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
-import { CustomerService } from '../../../core/services/customer.service';
+import { BroadcastStatus, CustomerService } from '../../../core/services/customer.service';
 import { Customer } from '../../../core/models/customer.model';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { Appointment, AppointmentStatus, AvailableSlot } from '../../../core/models/appointment.model';
@@ -21,7 +21,7 @@ import { Receipt } from '../../../core/models/receipt.model';
   templateUrl: './customer-list.component.html',
   styleUrl: './customer-list.component.scss'
 })
-export class CustomerListComponent implements OnInit {
+export class CustomerListComponent implements OnInit, OnDestroy {
   customerList:   Customer[]    = [];
   filteredList:   Customer[]    = [];
   staffList:      Staff[]       = [];
@@ -53,7 +53,10 @@ export class CustomerListComponent implements OnInit {
   isBroadcastOpen      = false;
   broadcastMessage     = '';
   broadcastSubmitting  = false;
-  broadcastResult: { totalCustomers: number; filteredCount: number; sent: number; failed: number } | null = null;
+  /** Arka plandaki gönderimin anlık durumu; poll ile tazelenir. */
+  broadcastResult: BroadcastStatus | null = null;
+  broadcastJobId  = '';
+  private broadcastPoll?: ReturnType<typeof setInterval>;
   broadcastError       = '';
   broadcastFilter: 'All' | 'NotVisitedSince' | 'NeverVisited' | 'FrequentCustomers' | 'RecentVisitors' = 'All';
   broadcastFilterDays   = 30;
@@ -128,6 +131,11 @@ export class CustomerListComponent implements OnInit {
       date:      ['', Validators.required],
       startTime: ['', Validators.required],
     });
+  }
+
+  ngOnDestroy(): void {
+    // Bileşen kapanınca arka plandaki ilerleme sorgusu da durmalı.
+    this.stopBroadcastPolling();
   }
 
   ngOnInit(): void {
@@ -332,6 +340,37 @@ export class CustomerListComponent implements OnInit {
 
   closeBroadcast(): void {
     this.isBroadcastOpen = false;
+    this.stopBroadcastPolling();
+  }
+
+  private stopBroadcastPolling(): void {
+    if (this.broadcastPoll) {
+      clearInterval(this.broadcastPoll);
+      this.broadcastPoll = undefined;
+    }
+  }
+
+  /**
+   * Gönderim arka planda yürüdüğü için ilerleme sorgulanarak izlenir.
+   * İş bittiğinde poll kendiliğinden durur.
+   */
+  private startBroadcastPolling(): void {
+    this.stopBroadcastPolling();
+    const tick = () => {
+      this.customerService.getBroadcastStatus(this.broadcastJobId).subscribe({
+        next: (res) => {
+          if (!res.success) return;
+          this.broadcastResult = res.data;
+          if (res.data.isFinished) {
+            this.stopBroadcastPolling();
+            this.loadCustomers();
+          }
+        },
+        error: () => this.stopBroadcastPolling(),
+      });
+    };
+    tick();
+    this.broadcastPoll = setInterval(tick, 2000);
   }
 
   onBroadcastSubmit(): void {
@@ -347,9 +386,13 @@ export class CustomerListComponent implements OnInit {
       minAppointments: this.broadcastFilter === 'FrequentCustomers' ? this.broadcastMinAppts : undefined,
     }).subscribe({
       next: (res) => {
-        if (res.success) this.broadcastResult = res.data;
-        else this.broadcastError = 'Gönderim başarısız.';
         this.broadcastSubmitting = false;
+        if (res.success) {
+          this.broadcastJobId = res.data.broadcastJobId;
+          this.startBroadcastPolling();
+        } else {
+          this.broadcastError = res.message || 'Gönderim başlatılamadı.';
+        }
       },
       error: (err) => {
         this.broadcastError = err.error?.message || 'Hata oluştu.';

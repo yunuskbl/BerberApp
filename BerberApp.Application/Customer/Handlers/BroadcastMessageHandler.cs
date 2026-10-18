@@ -1,5 +1,6 @@
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Application.Customer.Commands;
+using BerberApp.Domain.Entities;
 using BerberApp.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -9,24 +10,19 @@ namespace BerberApp.Application.Customer.Handlers;
 public class BroadcastMessageHandler : IRequestHandler<BroadcastMessageCommand, BroadcastMessageResult>
 {
     private readonly IAppDbContext _context;
-    private readonly IWhatsAppService _whatsAppService;
-    private readonly IWppConnectManagementService _wppManagement;
+    private readonly IBroadcastQueue _queue;
 
-    public BroadcastMessageHandler(
-        IAppDbContext context,
-        IWhatsAppService whatsAppService,
-        IWppConnectManagementService wppManagement)
+    public BroadcastMessageHandler(IAppDbContext context, IBroadcastQueue queue)
     {
         _context = context;
-        _whatsAppService = whatsAppService;
-        _wppManagement = wppManagement;
+        _queue   = queue;
     }
 
     public async Task<BroadcastMessageResult> Handle(BroadcastMessageCommand request, CancellationToken ct)
     {
         var allCustomers = await _context.Customers
             .Where(c => c.TenantId == request.TenantId)
-            .Select(c => new { c.Id, c.Phone })
+            .Select(c => new { c.Id, c.FullName, c.Phone })
             .ToListAsync(ct);
 
         var totalCustomers = allCustomers.Count;
@@ -42,31 +38,37 @@ public class BroadcastMessageHandler : IRequestHandler<BroadcastMessageCommand, 
 
         var targets = allCustomers.Where(c => targetIds.Contains(c.Id)).ToList();
 
-        var wa = await WhatsAppLineResolver.RequireTenantLineAsync(
-            _context, _whatsAppService, _wppManagement, request.TenantId, ct);
-
-        int sent = 0, failed = 0;
+        // Gönderim burada yapılmıyor. İş kaydı yazılıp Hangfire'a veriliyor;
+        // istek anında dönüyor. Böylece alıcı sayısı arttığında istek ters
+        // proxy sınırına takılmıyor ve kısmi gönderim sonucu kaybolmuyor.
+        var job = new BroadcastJob
+        {
+            TenantId = request.TenantId,
+            Kind     = BroadcastKind.Customer,
+            Message  = request.Message,
+            ImageUrl = request.ImageUrl,
+            Total    = targets.Count,
+        };
 
         foreach (var customer in targets)
         {
-            if (string.IsNullOrWhiteSpace(customer.Phone)) { failed++; continue; }
-            try
+            job.Recipients.Add(new BroadcastRecipient
             {
-                await wa.SendCustomMessageAsync(customer.Phone, request.Message, request.ImageUrl);
-                sent++;
-            }
-            catch
-            {
-                failed++;
-            }
+                Name  = customer.FullName,
+                Phone = customer.Phone,
+            });
         }
+
+        _context.BroadcastJobs.Add(job);
+        await _context.SaveChangesAsync(ct);
+
+        _queue.Enqueue(job.Id);
 
         return new BroadcastMessageResult
         {
+            BroadcastJobId = job.Id,
             TotalCustomers = totalCustomers,
             FilteredCount  = targets.Count,
-            Sent           = sent,
-            Failed         = failed,
         };
     }
 

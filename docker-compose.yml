@@ -148,6 +148,10 @@ services:
   wppconnect:
     build:
       context: ./wppconnect
+      args:
+        # Derlenecek upstream sürümü. Pinlenmediğinde her rebuild farklı bir
+        # sürüm getirir ve WhatsApp Web uyumsuzlukları habersiz girer.
+        WPPCONNECT_REF: ${WPPCONNECT_REF:-main}
     container_name: berberapp-wppconnect
     environment:
       - SECRET_KEY=${WPPCONNECT_SECRET_KEY:-THISISMYSECURETOKEN}
@@ -156,7 +160,20 @@ services:
     # bilen (ya da bilmeyen — WPPConnect env SECRET_KEY'i okumuyor, hep
     # THISISMYSECURETOKEN kullanıyor) herkes WhatsApp gateway'ini ele geçirebilirdi.
     volumes:
-      - wppconnect_tokens:/usr/src/wppconnect/tokens
+      # Oturum credential'ları. wppconnect-server bunları çalışma dizinine göre
+      # ./tokens altına yazıyor ve imajın WORKDIR'ı /app (wppconnect/Dockerfile).
+      # Önceden /usr/src/wppconnect/tokens'a mount ediliyordu — upstream'in resmi
+      # imajının yolu, bizimkinde hiç yazılmayan boş bir dizin. Bu yüzden
+      # oturumlar konteynerin yazılabilir katmanında kalıyor ve her yeniden
+      # yaratmada (docker compose up -d) merkezi ve tüm tenant oturumları
+      # siliniyordu; WhatsApp'ın aylardır tekrarlayan kopmasının sebebi buydu.
+      - wppconnect_tokens:/app/tokens
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:21465/api-docs',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     networks:
       - berberapp-network
     restart: always

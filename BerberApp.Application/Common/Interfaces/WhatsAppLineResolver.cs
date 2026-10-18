@@ -40,10 +40,17 @@ public static class WhatsAppLineResolver
         // çevrimdışı kalırsa WhatsApp Web oturumu düşer. Önden kontrol
         // edilmezse her alıcı tek tek hata verir ve kullanıcı sebebi
         // anlaşılmayan bir "hepsi başarısız" sonucu görür.
-        var status = await management.GetStatusAsync(tenant.WppConnectSession, tenant.WppConnectToken, ct);
-        if (status is not ("CONNECTED" or "inChat" or "isLogged"))
+        //
+        // Ama kontrolün kendisi belirsiz olabilir. WPPConnect'e ulaşılamadığında
+        // (timeout, servis yeniden başlıyor) oturumun kopuk OLDUĞUNU bilmiyoruz.
+        // O durumda gönderimi engellemek, çalışan bir hattı sırf durum sorgusu
+        // yavaşladı diye reddetmek demek. Yalnızca WPPConnect'in "bu oturum
+        // bağlı değil" dediği kesin durumda engelliyoruz; ulaşılamadığında
+        // deneyip gerçek sonucu alıcı bazında raporluyoruz.
+        var status = await management.GetSessionStatusAsync(tenant.WppConnectSession, tenant.WppConnectToken, ct);
+        if (status.IsDefinitelyDisconnected)
             throw new BadRequestException(
-                $"WhatsApp oturumunuz bağlı değil (durum: {status}). " +
+                $"WhatsApp oturumunuz bağlı değil (durum: {status.Value}). " +
                 "Ayarlar → WhatsApp sayfasından QR kodu okutarak yeniden bağlanın.");
 
         return whatsApp.ForTenant(tenant.WppConnectSession, tenant.WppConnectToken);

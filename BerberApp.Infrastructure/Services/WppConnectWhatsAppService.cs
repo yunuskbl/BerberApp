@@ -481,24 +481,58 @@ public class WppConnectWhatsAppService : IWhatsAppService
         }
     }
 
+    /// <summary>
+    /// 2xx gelen bir yanıtın aslında başarısızlık olup olmadığını belirler.
+    ///
+    /// WPPConnect gönderim hatalarını çoğu zaman HTTP 200 gövdesinde bildiriyor.
+    /// Önceki hali yalnızca <c>response</c> bir DİZİ olduğunda inceliyordu;
+    /// JSON olmayan gövde, <c>response</c> objesi veya <c>status: "Error"</c>
+    /// gibi yanıtlar "gönderildi" sayılıp SMS yedeğini baypas ediyordu. Artık
+    /// başarı yalnızca açıkça başarı görünen yanıtlarda kabul ediliyor:
+    /// şüpheli yanıt, sessiz kayıp yerine başarısızlık sayılır.
+    /// </summary>
     private static bool IsSendFailure(string body)
     {
+        if (string.IsNullOrWhiteSpace(body))
+            return true;
+
         try
         {
             using var doc = JsonDocument.Parse(body);
-            if (doc.RootElement.TryGetProperty("response", out var arr) &&
-                arr.ValueKind == JsonValueKind.Array &&
-                arr.GetArrayLength() > 0)
+            var root = doc.RootElement;
+
+            // WPPConnect'in kendi hata bayrağı
+            if (root.TryGetProperty("status", out var status) &&
+                status.ValueKind == JsonValueKind.String &&
+                string.Equals(status.GetString(), "Error", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (root.TryGetProperty("error", out var err) &&
+                err.ValueKind is not (JsonValueKind.Null or JsonValueKind.False))
+                return true;
+
+            if (root.TryGetProperty("response", out var resp) &&
+                resp.ValueKind == JsonValueKind.Array &&
+                resp.GetArrayLength() > 0)
             {
-                var first = arr[0];
-                if (first.TryGetProperty("isSendFailure", out var fail) && fail.GetBoolean())
+                var first = resp[0];
+                if (first.TryGetProperty("isSendFailure", out var fail) &&
+                    fail.ValueKind == JsonValueKind.True)
                     return true;
-                if (first.TryGetProperty("ack", out var ack) && ack.GetInt32() == -1)
+                if (first.TryGetProperty("ack", out var ack) &&
+                    ack.ValueKind == JsonValueKind.Number &&
+                    ack.TryGetInt32(out var ackValue) && ackValue == -1)
                     return true;
             }
+
+            return false;
         }
-        catch { }
-        return false;
+        catch (JsonException)
+        {
+            // JSON olmayan gövde (ör. HTML hata sayfası veya ters proxy çıktısı)
+            // beklenen bir başarı yanıtı değil — başarı saymak sessiz kayıp üretir.
+            return true;
+        }
     }
 
     // ── Yardımcılar ──────────────────────────────────────────────────────────

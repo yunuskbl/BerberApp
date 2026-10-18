@@ -692,3 +692,13 @@
 
   .btn { flex: 1; justify-content: center; }
 }
+
+// Gönderilemeyen personel — sebebiyle birlikte
+.bcast-problems {
+  margin-top: 10px;
+  font-size: 13px;
+
+  summary { cursor: pointer; color: #b91c1c; font-weight: 600; }
+  ul { margin: 8px 0 0; padding-left: 18px; max-height: 160px; overflow-y: auto; }
+  li { margin-bottom: 6px; color: #475569; }
+}

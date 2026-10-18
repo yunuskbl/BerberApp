@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -9,6 +9,7 @@ import {
   FormArray,
 } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { BroadcastStatus } from '../../../core/services/customer.service';
 import { StaffService } from '../../../core/services/staff.service';
 import { ServiceService } from '../../../core/services/service.service';
 import { Staff } from '../../../core/models/staff.model';
@@ -31,7 +32,7 @@ import { environment } from '../../../../environments/environment';
   templateUrl: './staff-list.component.html',
   styleUrl: './staff-list.component.scss',
 })
-export class StaffListComponent implements OnInit {
+export class StaffListComponent implements OnInit, OnDestroy {
   staffList: Staff[] = [];
   isLoading = true;
   isDrawerOpen = false;
@@ -88,7 +89,10 @@ export class StaffListComponent implements OnInit {
   isBroadcastOpen      = false;
   broadcastMessage     = '';
   broadcastSubmitting  = false;
-  broadcastResult: { totalStaff: number; sent: number; failed: number } | null = null;
+  /** Arka plandaki gönderimin anlık durumu; poll ile tazelenir. */
+  broadcastResult: BroadcastStatus | null = null;
+  broadcastJobId  = '';
+  private broadcastPoll?: ReturnType<typeof setInterval>;
   broadcastError       = '';
   whatsAppGroupLink: string | null = null;
   groupLinkInput       = '';
@@ -131,6 +135,10 @@ export class StaffListComponent implements OnInit {
       bio: [''],
       isActive: [true],
     });
+  }
+
+  ngOnDestroy(): void {
+    this.stopBroadcastPolling();
   }
 
   ngOnInit(): void {
@@ -672,6 +680,31 @@ export class StaffListComponent implements OnInit {
 
   closeBroadcast(): void {
     this.isBroadcastOpen = false;
+    this.stopBroadcastPolling();
+  }
+
+  private stopBroadcastPolling(): void {
+    if (this.broadcastPoll) {
+      clearInterval(this.broadcastPoll);
+      this.broadcastPoll = undefined;
+    }
+  }
+
+  /** Gönderim arka planda yürüdüğü için ilerleme sorgulanarak izlenir. */
+  private startBroadcastPolling(): void {
+    this.stopBroadcastPolling();
+    const tick = () => {
+      this.staffService.getBroadcastStatus(this.broadcastJobId).subscribe({
+        next: (res) => {
+          if (!res.success) return;
+          this.broadcastResult = res.data;
+          if (res.data.isFinished) this.stopBroadcastPolling();
+        },
+        error: () => this.stopBroadcastPolling(),
+      });
+    };
+    tick();
+    this.broadcastPoll = setInterval(tick, 2000);
   }
 
   onBroadcastSubmit(): void {
@@ -681,9 +714,13 @@ export class StaffListComponent implements OnInit {
     this.broadcastError     = '';
     this.staffService.broadcast(this.broadcastMessage.trim()).subscribe({
       next: (res) => {
-        if (res.success) this.broadcastResult = res.data;
-        else this.broadcastError = 'Gönderim başarısız.';
         this.broadcastSubmitting = false;
+        if (res.success) {
+          this.broadcastJobId = res.data.broadcastJobId;
+          this.startBroadcastPolling();
+        } else {
+          this.broadcastError = res.message || 'Gönderim başlatılamadı.';
+        }
       },
       error: (err) => {
         this.broadcastError = err.error?.message || 'Hata oluştu.';

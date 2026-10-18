@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Staff, CreateStaffRequest, UpdateStaffRequest } from '../models/staff.model';
+import { BroadcastStatus } from './customer.service';
 import { ApiResponse } from '../models/api-response.model';
 import { environment } from '../../../environments/environment';
 
@@ -39,8 +40,13 @@ export class StaffService {
     return this.http.put<any>(`${this.apiUrl}/${staffId}/services`, { items });
   }
 
-  broadcast(message: string): Observable<ApiResponse<{ totalStaff: number; sent: number; failed: number }>> {
-    return this.http.post<ApiResponse<{ totalStaff: number; sent: number; failed: number }>>(`${this.apiUrl}/broadcast`, { message });
+  /** Gönderim arka planda yürür; dönen kimlikle ilerleme sorgulanır. */
+  broadcast(message: string): Observable<ApiResponse<{ broadcastJobId: string; totalStaff: number }>> {
+    return this.http.post<ApiResponse<{ broadcastJobId: string; totalStaff: number }>>(`${this.apiUrl}/broadcast`, { message });
+  }
+
+  getBroadcastStatus(id: string): Observable<ApiResponse<BroadcastStatus>> {
+    return this.http.get<ApiResponse<BroadcastStatus>>(`${this.apiUrl}/broadcast/${id}`);
   }
 
   getWhatsAppGroupLink(): Observable<ApiResponse<{ whatsAppGroupLink: string | null }>> {

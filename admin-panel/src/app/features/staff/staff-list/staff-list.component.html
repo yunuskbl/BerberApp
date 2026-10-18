@@ -528,7 +528,26 @@
           @if (broadcastResult.failed > 0) {
             <span class="bcast-stat failed">✗ {{ broadcastResult.failed }} başarısız</span>
           }
+          @if (broadcastResult.skipped > 0) {
+            <span class="bcast-stat">⊘ {{ broadcastResult.skipped }} telefonu yok</span>
+          }
+          @if (!broadcastResult.isFinished) {
+            <span class="bcast-stat">⏳ {{ broadcastResult.total }} kişiye gönderiliyor…</span>
+          }
         </div>
+        @if (broadcastResult.error) {
+          <div class="error-message">{{ broadcastResult.error }}</div>
+        }
+        @if (broadcastResult.isFinished && broadcastResult.problems.length > 0) {
+          <details class="bcast-problems">
+            <summary>Ulaşılamayanlar ({{ broadcastResult.problems.length }})</summary>
+            <ul>
+              @for (p of broadcastResult.problems; track p.phone) {
+                <li><strong>{{ p.name || p.phone }}</strong> — {{ p.error }}</li>
+              }
+            </ul>
+          </details>
+        }
       }
       @if (broadcastError) {
         <div class="error-message">{{ broadcastError }}</div>

@@ -169,6 +169,19 @@ public class LinkNotificationService : INotificationService
         }
     }
 
+    public async Task SendNewAppointmentRequestAsync(
+        Guid tenantId, string staffPhone, string customerName, string customerPhone,
+        string serviceName, DateTime startTimeTurkey, int sequenceNumber)
+    {
+        var (_, _, _, _, _, wppSession, wppToken) = await GetTenantInfoAsync(tenantId);
+        var wa = _whatsAppService.ForTenant(wppSession, wppToken);
+
+        await wa.SendNewAppointmentRequestAsync(
+            staffPhone, customerName, customerPhone, serviceName, startTimeTurkey, sequenceNumber);
+
+        _logger.LogInformation("[BİLDİRİM] Yeni randevu bildirimi gönderildi: {Phone}", staffPhone);
+    }
+
     private async Task<(NotificationChannel channel, string salonName, string mapsUrl, string bookingUrl, string subdomain, string? wppSession, string? wppToken)> GetTenantInfoAsync(Guid tenantId)
     {
         var tenant = await _context.Tenants

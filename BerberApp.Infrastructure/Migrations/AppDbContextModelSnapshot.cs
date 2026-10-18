@@ -443,6 +443,103 @@ namespace BerberApp.Infrastructure.Migrations
                     b.ToTable("PaymentRequests");
                 });
 
+            modelBuilder.Entity("BerberApp.Domain.Entities.BroadcastJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("Failed")
+                        .HasDefaultValue(0)
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("Kind")
+                        .HasDefaultValue(0)
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasDefaultValue("")
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<int>("Sent")
+                        .HasDefaultValue(0)
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Skipped")
+                        .HasDefaultValue(0)
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasDefaultValue(0)
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Total")
+                        .HasDefaultValue(0)
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("IX_BroadcastJobs_TenantId_CreatedAt");
+
+                    b.ToTable("BroadcastJobs");
+                });
+
+            modelBuilder.Entity("BerberApp.Domain.Entities.BroadcastRecipient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BroadcastJobId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasDefaultValue(0)
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BroadcastJobId")
+                        .HasDatabaseName("IX_BroadcastRecipients_BroadcastJobId");
+
+                    b.ToTable("BroadcastRecipients");
+                });
+
             modelBuilder.Entity("BerberApp.Domain.Entities.Review", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1338,6 +1435,28 @@ namespace BerberApp.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("BerberApp.Domain.Entities.BroadcastJob", b =>
+                {
+                    b.HasOne("BerberApp.Domain.Entities.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Recipients");
+                });
+
+            modelBuilder.Entity("BerberApp.Domain.Entities.BroadcastRecipient", b =>
+                {
+                    b.HasOne("BerberApp.Domain.Entities.BroadcastJob", "BroadcastJob")
+                        .WithMany("Recipients")
+                        .HasForeignKey("BroadcastJobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BroadcastJob");
                 });
 
             modelBuilder.Entity("BerberApp.Domain.Entities.Tenant", b =>

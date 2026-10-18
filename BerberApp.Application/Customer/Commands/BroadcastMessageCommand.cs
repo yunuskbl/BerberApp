@@ -21,10 +21,13 @@ public class BroadcastMessageCommand : IRequest<BroadcastMessageResult>
     public int? MinAppointments { get; set; }
 }
 
+/// <summary>
+/// Gönderim artık arka planda yürüdüğü için bu sonuç yalnızca işin kuyruğa
+/// alındığını bildirir. Gerçek ilerleme BroadcastJobId ile sorgulanır.
+/// </summary>
 public class BroadcastMessageResult
 {
+    public Guid BroadcastJobId { get; set; }
     public int TotalCustomers { get; set; }
     public int FilteredCount { get; set; }
-    public int Sent { get; set; }
-    public int Failed { get; set; }
 }

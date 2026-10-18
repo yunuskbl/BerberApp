@@ -36,6 +36,8 @@ namespace BerberApp.Application.Common.Interfaces
         DbSet<ReceiptEntity> Receipts { get; }
         DbSet<ReceiptItemEntity> ReceiptItems { get; }
         DbSet<BerberApp.Domain.Entities.PaymentRequest> PaymentRequests { get; }
+        DbSet<BerberApp.Domain.Entities.BroadcastJob> BroadcastJobs { get; }
+        DbSet<BerberApp.Domain.Entities.BroadcastRecipient> BroadcastRecipients { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

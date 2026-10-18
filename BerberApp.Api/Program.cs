@@ -114,14 +114,20 @@ builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 // WppConnect servisi ana bildirim sağlayıcısından BAĞIMSIZ olarak her zaman kayıtlı —
 // OtpController merkezi WPPConnect oturumunu (SuperAdmin → WhatsApp) sadece telefon
 // OTP gönderimi için kullanır; ana randevu bildirimleri bundan etkilenmez.
-// Mesajlaşma çağrılarına kısa timeout: HttpClient varsayılanı 100 saniye ve
-// bildirim gönderimi randevu isteğinin içinde bekleniyor. WPPConnect oturumu
-// takıldığında randevu isteği 100 saniye asılı kalıp Cloudflare tarafından
-// düşürülüyordu — randevu kaydedilmiş olmasına rağmen kullanıcı hata görüyor,
-// tekrar denediğinde "Bu saatte başka bir randevu mevcut" uyarısına çarpıyordu.
-static void ShortTimeout(HttpClient c) => c.Timeout = TimeSpan.FromSeconds(15);
+// Mesajlaşma timeout'ları. HttpClient varsayılanı 100 saniye; bu, bildirim
+// gönderimi istek içinde beklendiğinde isteği Cloudflare'ın sınırının ötesine
+// taşıyordu. Ancak tek bir kısa değer de üç farklı işe uymuyor:
+//
+//   Gönderim        — WPPConnect'in headless tarayıcısı soğuk başlangıçta
+//                     yavaş olabiliyor; 15 saniye çalışan gönderimleri kesiyordu.
+//   Oturum yönetimi — StartSessionAsync içinde 20×2s QR polling var, kısa
+//                     timeout bu akışı ortasından kesiyor. Durum sorgusu ise
+//                     kısa olmalı; o yüzden WppConnectManagementService içinde
+//                     çağrı başına ayrı bir süre sınırı uygulanıyor.
+static void SendTimeout(HttpClient c)    => c.Timeout = TimeSpan.FromSeconds(45);
+static void SessionTimeout(HttpClient c) => c.Timeout = TimeSpan.FromSeconds(120);
 
-builder.Services.AddHttpClient<WppConnectWhatsAppService>(ShortTimeout);
+builder.Services.AddHttpClient<WppConnectWhatsAppService>(SendTimeout);
 
 // WhatsApp sağlayıcı seçimi — appsettings.json → "WhatsApp:Provider"
 //   "WppConnect" → tüm işletmeler WPPConnect (eski davranış)
@@ -134,19 +140,19 @@ if (whatsAppProvider.Equals("WppConnect", StringComparison.OrdinalIgnoreCase))
 }
 else if (whatsAppProvider.Equals("Meta", StringComparison.OrdinalIgnoreCase))
 {
-    builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>(ShortTimeout);
+    builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>(SendTimeout);
 }
 else // Hybrid — her iki servisi de kaydet, yönlendirmeyi HybridWhatsAppService yapar
 {
-    builder.Services.AddHttpClient<WhatsAppService>(ShortTimeout);
+    builder.Services.AddHttpClient<WhatsAppService>(SendTimeout);
     builder.Services.AddScoped<IWhatsAppService, HybridWhatsAppService>();
 }
-builder.Services.AddHttpClient<IWppConnectManagementService, WppConnectManagementService>(ShortTimeout);
+builder.Services.AddHttpClient<IWppConnectManagementService, WppConnectManagementService>(SessionTimeout);
 // ── SMS sağlayıcı zinciri ────────────────────────────────────────────────
 // .env → Sms__Providers: sırayla denenecek sağlayıcılar, ör. "Netgsm,Twilio".
 // İlki başarısız olursa bir sonrakine geçilir (ChainedSmsService).
 // SmsService = Twilio. Her iki sınıf da ISmsService'i uyguluyor.
-builder.Services.AddHttpClient<NetgsmSmsService>(ShortTimeout);
+builder.Services.AddHttpClient<NetgsmSmsService>(SendTimeout);
 builder.Services.AddScoped<SmsService>();
 
 var smsChain = (builder.Configuration["Sms:Providers"]
@@ -168,7 +174,12 @@ if (smsChain.Count == 0) smsChain.Add(typeof(NetgsmSmsService));
 
 builder.Services.AddScoped<ISmsService>(sp =>
     new ChainedSmsService(sp, smsChain, sp.GetRequiredService<ILogger<ChainedSmsService>>()));
-builder.Services.AddScoped<INotificationService, LinkNotificationService>();
+// Bildirim sevk zinciri: handler'lar INotificationService'i çağırır, o da
+// gönderimi kuyruğa atar. Gerçek gönderici LinkNotificationService, somut
+// tip olarak kayıtlı — Hangfire işi onu kendi scope'unda çözüyor.
+builder.Services.AddScoped<LinkNotificationService>();
+builder.Services.AddScoped<INotificationService, QueuedNotificationService>();
+builder.Services.AddScoped<IBroadcastQueue, HangfireBroadcastQueue>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<IIyzicoService, BerberApp.Infrastructure.Services.IyzicoService>();
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
@@ -182,7 +193,22 @@ builder.Services.AddHangfire(config =>
     config.UsePostgreSqlStorage(c =>
         c.UseNpgsqlConnection(
             builder.Configuration.GetConnectionString("DefaultConnection"))));
-builder.Services.AddHangfireServer();
+
+// Varsayılan kuyruk — hatırlatma ve temizlik işleri.
+// Kuyruklar AÇIKÇA belirtilmeli: ikinci bir sunucu eklendiğinde varsayılan
+// sunucu da "whatsapp" kuyruğunu çeker ve aşağıdaki worker sınırı anlamsızlaşır.
+builder.Services.AddHangfireServer(o => { o.Queues = ["default"]; });
+
+// WhatsApp kuyruğu ayrı ve dar tutuluyor. Hangfire'ın varsayılan worker sayısı
+// (çekirdek başına 20) ile onlarca paralel gönderim tek bir WPPConnect
+// köprüsüne yüklenir ve köprüyü düşürür; ayrıca WhatsApp hızlı ardışık
+// gönderimi spam sayıp hattı engelleyebilir.
+builder.Services.AddHangfireServer(o =>
+{
+    o.ServerName  = $"whatsapp:{Environment.MachineName}";
+    o.Queues      = ["whatsapp"];
+    o.WorkerCount = 2;
+});
 
 builder.Services.AddCors(options =>
 {

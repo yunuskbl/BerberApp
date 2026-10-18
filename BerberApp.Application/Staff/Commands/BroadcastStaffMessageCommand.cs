@@ -8,9 +8,12 @@ public class BroadcastStaffMessageCommand : IRequest<BroadcastStaffMessageResult
     public string Message { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Gönderim arka planda yürür; bu sonuç işin kuyruğa alındığını bildirir.
+/// İlerleme BroadcastJobId ile sorgulanır.
+/// </summary>
 public class BroadcastStaffMessageResult
 {
+    public Guid BroadcastJobId { get; set; }
     public int TotalStaff { get; set; }
-    public int Sent { get; set; }
-    public int Failed { get; set; }
 }

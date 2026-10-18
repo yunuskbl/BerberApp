@@ -1,5 +1,4 @@
 using BerberApp.Application.Common.Interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace BerberApp.Infrastructure.Services;
 
@@ -12,25 +11,25 @@ namespace BerberApp.Infrastructure.Services;
 /// Çağıranlar göndermeden önce ForTenant(session, token) çağırdığı için
 /// yönlendirme otomatik gerçekleşir.
 ///
-/// İstisna — SendCustomMessageAsync: serbest metin, Meta'da yalnızca alıcının
-/// son 24 saat içinde bize yazdığı durumda iletilebilir (müşteri hizmeti
-/// penceresi). İşletme sahipleri Meta numarasına yazmadığı için bu mesajlar
-/// çoğunlukla reddedilirdi; ayrıca Cloud API trafiği telefondaki WhatsApp
-/// Business uygulamasında görünmez. Bu yüzden serbest metin önce merkezi
-/// WPPConnect hattından (QR ile bağlı numara) gönderilir, hat kapalıysa
-/// Meta'ya düşülür.
+/// İstisna — SendCustomMessageAsync: serbest metin yalnızca merkezi WPPConnect
+/// hattından (QR ile bağlı numara) gönderilir, Meta'ya DÜŞÜLMEZ. Meta serbest
+/// metni ancak alıcının son 24 saat içinde bize yazdığı durumda iletiyor;
+/// pencere yoksa isteği kabul edip mesajı sessizce düşürüyor. Fallback olarak
+/// tutulduğunda bu, gönderilmemiş mesajları "gönderildi" gösteriyordu —
+/// hatanın kendisinden daha kötü. Ayrıca Cloud API trafiği telefondaki
+/// WhatsApp Business uygulamasında hiç görünmüyor.
+/// Şablonlu randevu bildirimleri bundan etkilenmez; onlar 24 saat penceresine
+/// tabi değil ve Meta üzerinden gitmeye devam eder.
 /// </summary>
 public class HybridWhatsAppService : IWhatsAppService
 {
     private readonly WhatsAppService _meta;
     private readonly WppConnectWhatsAppService _wpp;
-    private readonly ILogger<HybridWhatsAppService> _log;
 
-    public HybridWhatsAppService(WhatsAppService meta, WppConnectWhatsAppService wpp, ILogger<HybridWhatsAppService> log)
+    public HybridWhatsAppService(WhatsAppService meta, WppConnectWhatsAppService wpp)
     {
         _meta = meta;
         _wpp  = wpp;
-        _log  = log;
     }
 
     public IWhatsAppService ForTenant(string? session, string? token)
@@ -77,16 +76,6 @@ public class HybridWhatsAppService : IWhatsAppService
     public Task SendSubscriptionExpiryWarningAsync(string phone, string salonName, int daysLeft)
         => _meta.SendSubscriptionExpiryWarningAsync(phone, salonName, daysLeft);
 
-    public async Task SendCustomMessageAsync(string phone, string message, string? imageUrl = null)
-    {
-        try
-        {
-            await _wpp.SendCustomMessageAsync(phone, message, imageUrl);
-        }
-        catch (Exception ex)
-        {
-            _log.LogWarning(ex, "[WhatsApp] Merkezi WPPConnect hattından gönderilemedi, Meta'ya düşülüyor: {Phone}", phone);
-            await _meta.SendCustomMessageAsync(phone, message, imageUrl);
-        }
-    }
+    public Task SendCustomMessageAsync(string phone, string message, string? imageUrl = null)
+        => _wpp.SendCustomMessageAsync(phone, message, imageUrl);
 }

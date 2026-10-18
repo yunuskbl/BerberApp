@@ -15,8 +15,6 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
     private readonly IGenericRepository<CustomerEntity> _customerRepo;
     private readonly IGenericRepository<WorkingHourEntity> _workingHourRepo;
     private readonly IGenericRepository<SubscriptionEntity> _subscriptionRepo;
-    private readonly IGenericRepository<TenantEntity> _tenantRepo;
-    private readonly IWhatsAppService _whatsAppService;
     private readonly INotificationService _notificationService;
 
     public CreateAppointmentHandler(
@@ -26,8 +24,6 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
         IGenericRepository<CustomerEntity> customerRepo,
         IGenericRepository<WorkingHourEntity> workingHourRepo,
         IGenericRepository<SubscriptionEntity> subscriptionRepo,
-        IGenericRepository<TenantEntity> tenantRepo,
-        IWhatsAppService whatsAppService,
         INotificationService notificationService)
     {
         _appointmentRepo = appointmentRepo;
@@ -36,8 +32,6 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
         _customerRepo = customerRepo;
         _workingHourRepo = workingHourRepo;
         _subscriptionRepo = subscriptionRepo;
-        _tenantRepo = tenantRepo;
-        _whatsAppService = whatsAppService;
         _notificationService = notificationService;
     }
 
@@ -177,34 +171,27 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
         if (request.IsFromBookingPage)
         {
             var notificationPhone = staff.Phone ?? request.NotificationPhone;
-            Console.WriteLine($"[WHATSAPP] Bildirim numarası: '{notificationPhone}'");
 
             if (!string.IsNullOrWhiteSpace(notificationPhone))
             {
-                try
-                {
-                    var tenant = await _tenantRepo.GetByIdAsync(request.TenantId, ct);
-                    var wa = _whatsAppService.ForTenant(tenant?.WppConnectSession, tenant?.WppConnectToken);
+                var pendingList = await _appointmentRepo.GetAllAsync(
+                    x => x.TenantId == request.TenantId && x.Status == AppointmentStatus.Pending, ct);
+                var sequenceNumber = pendingList.OrderBy(x => x.StartTime).ToList()
+                    .FindIndex(x => x.Id == appointment.Id) + 1;
+                if (sequenceNumber == 0) sequenceNumber = pendingList.Count;
 
-                    var pendingList = await _appointmentRepo.GetAllAsync(
-                        x => x.TenantId == request.TenantId && x.Status == AppointmentStatus.Pending, ct);
-                    var sequenceNumber = pendingList.OrderBy(x => x.StartTime).ToList()
-                        .FindIndex(x => x.Id == appointment.Id) + 1;
-                    if (sequenceNumber == 0) sequenceNumber = pendingList.Count;
-                    await wa.SendNewAppointmentRequestAsync(
-                        notificationPhone,
-                        customer.FullName,
-                        customer.Phone,
-                        request.ServiceNamesDisplay ?? service.Name,
-                        startTimeTurkey,
-                        sequenceNumber
-                    );
-                    Console.WriteLine($"[WHATSAPP] Bildirim gönderildi: {notificationPhone}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[WHATSAPP HATA] {ex.Message}");
-                }
+                // Bildirim kuyruğa alınır, burada beklenmez. WhatsApp tarafı
+                // yavaşladığında randevu isteği onun hızına bağlanmamalı:
+                // randevu zaten kaydedildi ve bildirimin sonucu yanıtı
+                // değiştirmiyor.
+                await _notificationService.SendNewAppointmentRequestAsync(
+                    request.TenantId,
+                    notificationPhone,
+                    customer.FullName,
+                    customer.Phone,
+                    request.ServiceNamesDisplay ?? service.Name,
+                    startTimeTurkey,
+                    sequenceNumber);
             }
         }
         else

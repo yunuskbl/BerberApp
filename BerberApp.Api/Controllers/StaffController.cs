@@ -58,6 +58,15 @@ public class StaffController : BaseApiController
             Message  = request.Message,
         }));
 
+    /// <summary>Arka planda yürüyen toplu mesajın ilerlemesi.</summary>
+    [HttpGet("broadcast/{id}")]
+    public async Task<IActionResult> BroadcastStatus(Guid id)
+        => Success(await Mediator.Send(new BerberApp.Application.Common.Broadcast.GetBroadcastStatusQuery
+        {
+            TenantId       = TenantId,
+            BroadcastJobId = id,
+        }));
+
     [HttpGet("whatsapp-group-link")]
     public async Task<IActionResult> GetWhatsAppGroupLink()
     {

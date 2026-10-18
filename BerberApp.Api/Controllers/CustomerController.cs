@@ -53,6 +53,15 @@ public class CustomersController : BaseApiController
         return Success(await Mediator.Send(command));
     }
 
+    /// <summary>Arka planda yürüyen toplu mesajın ilerlemesi.</summary>
+    [HttpGet("broadcast/{id}")]
+    public async Task<IActionResult> BroadcastStatus(Guid id)
+        => Success(await Mediator.Send(new BerberApp.Application.Common.Broadcast.GetBroadcastStatusQuery
+        {
+            TenantId       = TenantId,
+            BroadcastJobId = id,
+        }));
+
     [HttpPost("broadcast/image")]
     [RequestSizeLimit(5_242_880)]
     [RequestFormLimits(MultipartBodyLengthLimit = 5_242_880)]
