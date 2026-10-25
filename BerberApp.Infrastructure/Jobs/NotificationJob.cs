@@ -1,5 +1,6 @@
 using BerberApp.Application.Appointment.DTOs;
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Infrastructure.Services;
 using Hangfire;
 using Microsoft.Extensions.Logging;
 
