@@ -1,11 +1,19 @@
 using System;
+using BerberApp.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace BerberApp.Infrastructure.Migrations
 {
-    /// <inheritdoc />
+    // EF Core migration'ları bu iki attribute ile keşfeder; normalde
+    // "dotnet ef migrations add" bunları .Designer.cs dosyasına yazar.
+    // Attribute'suz bir migration sessizce yok sayılır — ne uygulanır ne
+    // hata verir. Bu depoda 20260620 sonrası üç migration bu yüzden hiç
+    // çalışmamış (tabloları Program.cs'teki ham SQL blokları oluşturmuş).
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20261018120000_AddBroadcastJobs")]
     public partial class AddBroadcastJobs : Migration
     {
         /// <inheritdoc />
