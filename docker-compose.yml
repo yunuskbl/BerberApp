@@ -168,6 +168,12 @@ services:
       # yaratmada (docker compose up -d) merkezi ve tüm tenant oturumları
       # siliniyordu; WhatsApp'ın aylardır tekrarlayan kopmasının sebebi buydu.
       - wppconnect_tokens:/app/tokens
+      # Chromium profili. WhatsApp'ın çok cihazlı oturumu asıl olarak burada
+      # duruyor; tokens/ yalnızca oturum meta verisini (30 byte'lık
+      # <session>.data.json) taşıyor. Sadece tokens kalıcı yapıldığında
+      # konteyner yeniden yaratıldıktan sonra oturum "Disconnected" oluyor ve
+      # QR yeniden isteniyordu — kalıcılık ancak ikisi birlikte tamamlanıyor.
+      - wppconnect_userdata:/app/userDataDir
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:21465/api-docs',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"]
       interval: 30s
@@ -210,6 +216,7 @@ volumes:
   postgres_data:
   uploads_data:
   wppconnect_tokens:
+  wppconnect_userdata:
 
 networks:
   berberapp-network:
