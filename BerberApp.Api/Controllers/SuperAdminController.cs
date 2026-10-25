@@ -858,7 +858,15 @@ public class SuperAdminController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to send notification to tenant {TenantId}", id);
-            return StatusCode(500, new { success = false, message = "Bildirim gönderilemedi." });
+            // Gerçek sebebi kullanıcıya göster. Sabit "Bildirim gönderilemedi."
+            // metni, sebebi öğrenmek için sunucuya SSH ile girip log okumayı
+            // zorunlu kılıyordu; alttaki mesajlar zaten kullanıcıya dönük
+            // ("Session bağlı olmayabilir veya numara geçersiz." gibi).
+            return StatusCode(500, new
+            {
+                success = false,
+                message = $"Bildirim gönderilemedi. {ex.Message}".Trim()
+            });
         }
     }
 
@@ -882,11 +890,24 @@ public class SuperAdminController : ControllerBase
                 await _whatsApp.SendCustomMessageAsync(t.Phone!, $"*ayarlıyo duyurusu*\n\n{req.Message}");
                 sent++;
             }
-            catch { failed++; }
+            catch (Exception ex)
+            {
+                failed++;
+                _logger.LogWarning(ex, "SuperAdmin broadcast: {TenantId} ({Phone}) gönderilemedi", t.Id, t.Phone);
+            }
         }
 
         _logger.LogInformation("SuperAdmin broadcast: {Sent} sent, {Failed} failed", sent, failed);
-        return Ok(new { success = true, message = $"{sent} işletmeye gönderildi, {failed} başarısız." });
+
+        // Tek bir gönderim bile başarılı olmadıysa bu bir başarı değil.
+        // Önceden her durumda success:true dönüyordu ve arayüz "150 başarısız"
+        // yazan metni yeşil başarı kutusunda gösteriyordu.
+        var allFailed = sent == 0 && failed > 0;
+        return Ok(new
+        {
+            success = !allFailed,
+            message = $"{sent} işletmeye gönderildi, {failed} başarısız."
+        });
     }
 
     // ─── GELİR RAPORU ────────────────────────────────────────────────────────

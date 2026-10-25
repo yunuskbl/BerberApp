@@ -193,6 +193,9 @@
     <div class="modal" (click)="$event.stopPropagation()">
       <h3>Tüm İşletmelere Duyuru</h3>
       <p>Tüm aktif işletme sahiplerine WhatsApp bildirimi gönderilecek.</p>
+      @if (broadcastError) {
+        <div class="broadcast-error">{{ broadcastError }}</div>
+      }
       @if (broadcastResult) {
         <div class="broadcast-result">{{ broadcastResult }}</div>
       } @else {

@@ -20,6 +20,8 @@ export class SuperAdminReportsComponent implements OnInit {
   broadcastMessage = '';
   isBroadcasting = false;
   broadcastResult = '';
+  /** Hata metni ayrı tutuluyor; başarı kutusu yeşil, bu kırmızı gösterilir. */
+  broadcastError = '';
 
   constructor(private superAdminService: SuperAdminService) {}
 
@@ -47,14 +49,28 @@ export class SuperAdminReportsComponent implements OnInit {
   sendBroadcast(): void {
     if (!this.broadcastMessage.trim()) return;
     this.isBroadcasting = true;
+    this.broadcastError = '';
     this.superAdminService.broadcast(this.broadcastMessage).subscribe({
       next: (res) => {
-        this.broadcastResult = res.message || 'Gönderildi.';
+        // Sunucu artık hiçbir gönderim başarılı olmadığında success:false
+        // dönüyor; o durumu başarı kutusunda göstermemek gerekiyor.
+        if (res.success) {
+          this.broadcastResult = res.message || 'Gönderildi.';
+        } else {
+          this.broadcastError = res.message || 'Gönderim başarısız.';
+          this.isBroadcasting = false;
+          return;
+        }
         this.broadcastMessage = '';
         this.isBroadcasting = false;
         setTimeout(() => { this.showBroadcastModal = false; this.broadcastResult = ''; }, 2500);
       },
-      error: () => { this.isBroadcasting = false; }
+      error: (err) => {
+        // Boş bırakıldığında kullanıcı hiçbir geri bildirim görmüyordu:
+        // modal açık kalıyor, buton eski haline dönüyordu.
+        this.broadcastError = err?.error?.message || 'Duyuru gönderilemedi.';
+        this.isBroadcasting = false;
+      }
     });
   }
 

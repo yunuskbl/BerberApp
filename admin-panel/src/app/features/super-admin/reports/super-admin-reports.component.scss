@@ -294,6 +294,7 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .broadcast-result { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 14px; color: #6ee7b7; text-align: center; font-weight: 600; }
+.broadcast-error  { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35); border-radius: 8px; padding: 14px; color: #fca5a5; text-align: center; font-weight: 600; }
 
 .form-group {
   margin-bottom: 14px;
