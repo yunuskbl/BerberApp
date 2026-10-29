@@ -31,7 +31,7 @@
           <div class="billing-period-label">/ay</div>
           <ul class="billing-features">
             <li>✓ 30 günlük abonelik</li>
-            <li>✓ Dilediğinde iptal</li>
+            <li>✓ Otomatik yenileme yok</li>
           </ul>
           <button class="btn-select">Aylık Seç</button>
         </div>
@@ -119,6 +119,45 @@
             Havaleyi yaptıktan sonra aşağıdaki butona tıklayın.
             Talebiniz oluşturulacak ve ekibimiz 24 saat içinde aboneliğinizi aktive edecektir.
           </p>
+        </div>
+
+        <!-- Abonelik ve yenileme şartları.
+             Ödeme ekranında bu bilgilerin gösterilmesi zorunlu; önceden yalnızca
+             "Dilediğinde iptal" gibi pazarlama ifadeleri vardı.
+
+             DİKKAT — metin bugünkü akışı anlatıyor: havale ile tek seferlik
+             ödeme, kayıtlı kart yok, otomatik çekim yok. Kart ile otomatik
+             yenilemeye geçildiğinde (İyzico devreye alındığında) BU BLOK
+             GÜNCELLENMELİDİR: çekim tarihi, çekilecek tutar, kartın saklanması
+             ve iptal için son an eklenmelidir. Altyapı yokken "otomatik
+             yenilenir" yazmak yanıltıcı ön bilgilendirme olur. -->
+        <div class="terms-box">
+          <h2 class="terms-title">Abonelik Şartları</h2>
+          <dl class="terms-list">
+            <dt>Süre</dt>
+            <dd>{{ durationDays }} gün ({{ billingPeriod === 'annual' ? 'yıllık' : 'aylık' }} abonelik)</dd>
+
+            <dt>Bedel</dt>
+            <dd>₺{{ price | number:'1.0-0' }} — KDV dahil, tek seferlik havale</dd>
+
+            <dt>Başlangıç</dt>
+            <dd>Ödemeniz onaylandıktan sonra başlar (en geç 24 saat içinde)</dd>
+
+            <dt>Yenileme</dt>
+            <dd>
+              <strong>Otomatik yenileme yoktur.</strong> Kart bilgileriniz saklanmaz ve
+              sizden habersiz çekim yapılmaz. {{ durationDays }} günün sonunda aboneliğiniz
+              kendiliğinden sona erer; devam etmek isterseniz yeni ödeme yapmanız gerekir.
+              Bitiş tarihinden önce hatırlatma göndeririz.
+            </dd>
+
+            <dt>İptal</dt>
+            <dd>
+              Ayrıca iptal işlemi yapmanıza gerek yoktur — ödeme yapmadığınızda abonelik
+              süre sonunda sona erer. Süre içinde kullanmayı bırakmak isterseniz
+              <a href="mailto:info@ayarliyo.com">info&#64;ayarliyo.com</a> adresinden yazabilirsiniz.
+            </dd>
+          </dl>
         </div>
 
         <div class="action-row">

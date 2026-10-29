@@ -375,6 +375,46 @@
   p { font-size: 13px; color: #1e40af; margin: 0; line-height: 1.5; }
 }
 
+/* Abonelik şartları — ödeme öncesi zorunlu bilgilendirme.
+   Pazarlama kutularından ayrışsın diye nötr bir görünüm: dikkat çeken
+   bir renk değil, okunması kolay bir tanım listesi. */
+.terms-box {
+  max-width: 520px;
+  margin-bottom: 28px;
+  padding: 18px 20px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.terms-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 12px;
+}
+
+.terms-list {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+
+  dt {
+    font-weight: 600;
+    color: #374151;
+    margin-top: 10px;
+    &:first-of-type { margin-top: 0; }
+  }
+
+  dd {
+    margin: 2px 0 0;
+    color: #6b7280;
+  }
+
+  a { color: inherit; text-decoration: underline; }
+  strong { color: #374151; }
+}
+
 .action-row {
   display: flex;
   gap: 12px;
