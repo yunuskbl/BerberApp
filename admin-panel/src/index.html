@@ -19,10 +19,12 @@
   <meta property="og:url" content="https://ayarliyo.com">
   <meta name="theme-color" content="#111827">
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- Yazı tipleri kendi sunucumuzdan geliyor (public/fonts, @font-face
+       tanımları src/styles.scss içinde). Google Fonts bağlantıları kaldırıldı:
+       siteyi açan her ziyaretçinin IP adresini yurt dışına aktarıyorlardı.
+       En kritik iki font dosyası önden yükleniyor; gerisi gerektiğinde iner. -->
+  <link rel="preload" href="/fonts/Inter-400-latin-ext.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/Syne-700-latin-ext.woff2" as="font" type="font/woff2" crossorigin>
 </head>
 <body>
   <app-root></app-root>
