@@ -366,9 +366,6 @@
                     [placeholder]="selectedCountry.placeholder"
                     [maxlength]="selectedCountry.maxDigits + 4"
                     (input)="onPhoneInput($event)" />
-                  @if (isLookingUp) {
-                    <span class="lookup-spinner"></span>
-                  }
                   @if (!otpVerified) {
                     <button
                       type="button"
@@ -382,9 +379,6 @@
                     <span class="otp-verified-badge">✓ Doğrulandı</span>
                   }
                 </div>
-                @if (customerFound) {
-                  <div class="customer-found-badge">{{ 'booking.customerFound' | translate }}</div>
-                }
                 @if (customerForm.get('phone')?.errors?.['required'] && customerForm.get('phone')?.touched) {
                   <span class="field-error">{{ 'booking.phoneRequired' | translate }}</span>
                 }
@@ -411,7 +405,7 @@
               <!-- Bilgilerimi Hatırla -->
               <div class="check-row">
                 <label class="check-label">
-                  <input type="checkbox" class="check-input" [(ngModel)]="rememberMe" [ngModelOptions]="{standalone: true}" />
+                  <input type="checkbox" class="check-input" [(ngModel)]="rememberMe" [ngModelOptions]="{standalone: true}" (ngModelChange)="onRememberMeChange()" />
                   <span class="check-box"></span>
                   <span class="check-text">Bilgilerimi hatırla</span>
                 </label>

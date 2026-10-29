@@ -1,6 +1,4 @@
 import { Component, OnInit, OnDestroy, ElementRef, Renderer2 } from '@angular/core';
-import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, takeUntil } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
@@ -131,7 +129,6 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.otpCode = '';
     this.otpError = '';
     this.otpSuccess = '';
-    this.customerFound = false;
   }
 
   private buildPhoneValidator(country: typeof this.countries[0]): ValidatorFn {
@@ -160,10 +157,6 @@ export class BookingComponent implements OnInit, OnDestroy {
       : `${name} numarası ${minDigits}–${maxDigits} haneli olmalıdır`;
   }
 
-  customerFound = false;
-  isLookingUp = false;
-  private phoneSubject$ = new Subject<string>();
-  private destroy$ = new Subject<void>();
 
   private readonly STORAGE_KEY = 'ayarliyo_customer';
 
@@ -220,11 +213,6 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.loadSavedCustomer();
     this.updatePhoneValidators();
     this.loadSalon();
-    this.initPhoneLookup();
-    const prefilled = this.fullPhone;
-    if (prefilled) {
-      this.phoneSubject$.next(prefilled);
-    }
   }
 
   private loadSavedCustomer(): void {
@@ -245,6 +233,22 @@ export class BookingComponent implements OnInit, OnDestroy {
     } catch { /* localStorage erişilemezse sessizce geç */ }
   }
 
+  /**
+   * Kutunun kaldırılması anında etkili olur.
+   *
+   * Eskiden temizlik yalnızca randevu başarıyla tamamlandığında yapılıyordu:
+   * kutuyu kaldırıp randevuyu tamamlamadan ayrılan kullanıcının bilgileri
+   * kayıtlı kalıyor, bir sonraki ziyarette geri yüklenip kutu yeniden
+   * işaretli geliyordu — kullanıcıya "seçmediğim halde hatırlıyor" gibi
+   * görünen davranış buydu.
+   */
+  onRememberMeChange(): void {
+    if (this.rememberMe) return;
+    try {
+      localStorage.removeItem(this.STORAGE_KEY);
+    } catch { /* localStorage erişilemezse sessizce geç */ }
+  }
+
   private saveCustomerIfRemembered(): void {
     try {
       if (this.rememberMe) {
@@ -260,48 +264,16 @@ export class BookingComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  private initPhoneLookup(): void {
-    this.phoneSubject$.pipe(
-      debounceTime(600),
-      distinctUntilChanged(),
-      switchMap(phone => {
-        const cleaned = phone.replace(/[\s\-\(\)\+]/g, '');
-        if (cleaned.length < 10) {
-          this.isLookingUp = false;
-          this.customerFound = false;
-          return [];
-        }
-        this.isLookingUp = true;
-        return this.bookingService.lookupCustomer(this.subdomain, phone);
-      }),
-      takeUntil(this.destroy$),
-    ).subscribe({
-      next: (res: any) => {
-        this.isLookingUp = false;
-        if (res?.success && res.data) {
-          this.customerFound = true;
-          this.otpVerified = true;
-          this.verifiedPhone = this.fullPhone;
-          this.customerForm.patchValue({
-            fullName: res.data.fullName || this.customerForm.get('fullName')?.value,
-          });
-        } else {
-          this.customerFound = false;
-        }
-      },
-      error: () => {
-        this.isLookingUp = false;
-        this.customerFound = false;
-      },
-    });
+    // OTP geri sayımı yalnızca sıfıra ulaşınca temizleniyordu; kullanıcı
+    // sayaç dolmadan sayfadan ayrılırsa interval yıkılmış bileşen üzerinde
+    // çalışmaya devam ediyordu.
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = undefined;
+    }
   }
 
   onPhoneInput(event: Event): void {
-    this.customerFound = false;
     if (this.fullPhone !== this.verifiedPhone) {
       this.otpVerified = false;
     }
@@ -309,7 +281,6 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.otpCode = '';
     this.otpError = '';
     this.otpSuccess = '';
-    this.phoneSubject$.next(this.fullPhone);
   }
 
   loadSalon(): void {
@@ -582,6 +553,23 @@ export class BookingComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Doğrulanmış numaraya ait kayıtlı adı forma yazar.
+   * Yalnızca OTP sonrası çağrılır: numaranın sahibi olduğu kanıtlanmadan
+   * kimsenin adı gösterilmemeli. Kullanıcı kendi yazdıysa üzerine yazmaz.
+   */
+  private prefillVerifiedCustomer(): void {
+    this.bookingService.lookupCustomer(this.subdomain, this.fullPhone).subscribe({
+      next: (res: any) => {
+        const current = (this.customerForm.get('fullName')?.value || '').trim();
+        if (res?.success && res.data?.fullName && !current) {
+          this.customerForm.patchValue({ fullName: res.data.fullName });
+        }
+      },
+      error: () => { /* ad getirilemezse kullanıcı kendisi yazar */ },
+    });
+  }
+
   verifyOtp(): void {
     const phone = this.fullPhone;
     if (!phone || !this.otpCode) return;
@@ -593,7 +581,10 @@ export class BookingComponent implements OnInit, OnDestroy {
       next: (res) => {
         if (res.success) {
           this.otpVerified = true;
+          this.verifiedPhone = this.fullPhone;
           this.otpSuccess = 'Telefon doğrulandı! ✓';
+          // Numaranın sahibi olduğu doğrulandı; kayıtlı adı şimdi getirebiliriz.
+          this.prefillVerifiedCustomer();
         }
         this.isVerifyingOtp = false;
       },

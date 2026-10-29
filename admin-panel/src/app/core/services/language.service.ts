@@ -533,7 +533,6 @@ const T: Record<Lang, Record<string, string>> = {
     'booking.submitting':       'Randevu Oluşturuluyor...',
     'booking.submit':           'Randevu Al →',
     'booking.poweredBy':        'ayarlıyo ile güçlendirildi',
-    'booking.customerFound':    'Kayıtlı müşteri, bilgiler otomatik dolduruldu',
   },
 
   /* ══════════════════════════════════════ ENGLISH ══════════════════════════════════════ */
@@ -1052,7 +1051,6 @@ const T: Record<Lang, Record<string, string>> = {
     'booking.submitting':       'Creating Appointment...',
     'booking.submit':           'Book Appointment →',
     'booking.poweredBy':        'Powered by ayarlıyo',
-    'booking.customerFound':    'Returning customer found, details auto-filled',
   },
 
   /* ══════════════════════════════════════ РУССКИЙ ══════════════════════════════════════ */
@@ -1571,7 +1569,6 @@ const T: Record<Lang, Record<string, string>> = {
     'booking.submitting':       'Создание записи...',
     'booking.submit':           'Записаться →',
     'booking.poweredBy':        'Работает на ayarlıyo',
-    'booking.customerFound':    'Постоянный клиент найден, данные заполнены автоматически',
   },
 
   /* ══════════════════════════════════════ DEUTSCH ══════════════════════════════════════ */
@@ -2077,7 +2074,6 @@ const T: Record<Lang, Record<string, string>> = {
     'booking.submitting':       'Termin wird erstellt...',
     'booking.submit':           'Termin buchen →',
     'booking.poweredBy':        'Unterstützt von ayarlıyo',
-    'booking.customerFound':    'Stammkunde gefunden, Daten automatisch ausgefüllt',
   },
 };
 

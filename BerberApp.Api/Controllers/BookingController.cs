@@ -682,9 +682,22 @@ public class BookingController : ControllerBase
         if (tenant is null)
             return Ok(new { success = false });
 
+        // Ad soyad yalnızca numaranın sahibi olduğunu KANITLAMIŞ kişiye
+        // döndürülür. Bu uç kimlik doğrulaması istemiyor; eskiden herhangi
+        // bir numara yazan herkese o salonun müşterisinin adı dönüyordu ve
+        // numaralar denenerek müşteri listesi çıkarılabiliyordu.
+        var verified = await _context.OtpRecords
+            .AnyAsync(o => o.IsVerified
+                        && o.VerifiedAt != null
+                        && o.VerifiedAt > DateTime.UtcNow.AddHours(-1)
+                        && o.Phone.EndsWith(normalized.Substring(normalized.Length - 10)));
+
+        if (!verified)
+            return Ok(new { success = false });
+
         var customers = await _context.Customers
             .Where(x => x.TenantId == tenant.Id)
-            .Select(x => new { x.FullName, x.Email, x.Notes, x.Phone })
+            .Select(x => new { x.FullName, x.Phone })
             .ToListAsync();
 
         var customer = customers.FirstOrDefault(x => NormalizePhone(x.Phone) == normalized);
