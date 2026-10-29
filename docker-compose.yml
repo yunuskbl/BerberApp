@@ -80,6 +80,14 @@ services:
       # Yeni işletme kaydı bildirimleri buraya gider (boşsa SMTP hesabına düşer)
       - Email__AdminNotificationAddress=${ADMIN_NOTIFICATION_EMAIL:-}
 
+      # Gönderen kimliği — e-posta altbilgisine eklenir. Unvan ve adres boşsa
+      # blok hiç gösterilmez; yarım bir kimlik bilgisi hiç olmamasından kötüdür.
+      - Company__LegalName=${COMPANY_LEGAL_NAME:-}
+      - Company__Address=${COMPANY_ADDRESS:-}
+      - Company__Email=${COMPANY_EMAIL:-info@ayarliyo.com}
+      - Company__Phone=${COMPANY_PHONE:-}
+      - Company__TaxInfo=${COMPANY_TAX_INFO:-}
+
       # Uygulama URL
       - AppSettings__BaseUrl=${APP_BASE_URL}
       - AppSettings__FrontendBaseUrl=${APP_BASE_URL}

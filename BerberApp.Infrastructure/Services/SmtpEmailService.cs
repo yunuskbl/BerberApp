@@ -15,6 +15,16 @@ public class SmtpEmailService : IEmailService
     private readonly string _fromName;
     private readonly string _adminNotificationAddress;
 
+    // Gönderen kimliği. Elektronik ticaret mevzuatı hizmet sağlayıcının
+    // kimlik ve iletişim bilgilerine erişilebilir olmasını istiyor; e-postanın
+    // altbilgisi bunun en doğrudan yeri. Yapılandırmadan okunuyor — şirket
+    // bilgisi koda gömülmemeli, taşınma/unvan değişikliğinde kod değişmesin.
+    private readonly string _companyLegalName;
+    private readonly string _companyAddress;
+    private readonly string _companyEmail;
+    private readonly string _companyPhone;
+    private readonly string _companyTaxInfo;
+
     public SmtpEmailService(IConfiguration config)
     {
         _smtpHost     = config["Email:SmtpHost"]     ?? "smtp.gmail.com";
@@ -27,7 +37,51 @@ public class SmtpEmailService : IEmailService
         _adminNotificationAddress = string.IsNullOrEmpty(config["Email:AdminNotificationAddress"])
             ? _smtpUsername
             : config["Email:AdminNotificationAddress"]!;
+
+        _companyLegalName = config["Company:LegalName"] ?? "";
+        _companyAddress   = config["Company:Address"]   ?? "";
+        _companyEmail     = config["Company:Email"]     ?? "info@ayarliyo.com";
+        _companyPhone     = config["Company:Phone"]     ?? "";
+        _companyTaxInfo   = config["Company:TaxInfo"]   ?? "";
     }
+
+    /// <summary>
+    /// Her e-postanın altına eklenen gönderen kimliği.
+    ///
+    /// Yapılandırılmamışsa hiç eklenmez: yarım bir kimlik bloğu (ör. unvansız
+    /// adres) hiç olmamasından daha kötü, yanıltıcı olur.
+    ///
+    /// Burada abonelikten çıkış bağlantısı YOK ve bu bilinçli: servisin
+    /// gönderdiği e-postaların tamamı işlemsel (doğrulama kodu, randevu
+    /// bildirimi, abonelik durumu). İşlemsel iletide çıkış bağlantısı hem
+    /// gereksiz hem kafa karıştırıcı — kullanıcı doğrulama kodunu almayı
+    /// reddedemez. Pazarlama e-postası eklendiğinde çıkış bağlantısı ve
+    /// List-Unsubscribe başlığı onunla birlikte gelmeli.
+    /// </summary>
+    private string BuildIdentityFooter()
+    {
+        if (string.IsNullOrWhiteSpace(_companyLegalName) || string.IsNullOrWhiteSpace(_companyAddress))
+            return string.Empty;
+
+        var lines = new List<string> { Enc(_companyLegalName), Enc(_companyAddress) };
+
+        var contact = new List<string>();
+        if (!string.IsNullOrWhiteSpace(_companyPhone)) contact.Add(Enc(_companyPhone));
+        if (!string.IsNullOrWhiteSpace(_companyEmail)) contact.Add(Enc(_companyEmail));
+        if (contact.Count > 0) lines.Add(string.Join(" · ", contact));
+
+        if (!string.IsNullOrWhiteSpace(_companyTaxInfo)) lines.Add(Enc(_companyTaxInfo));
+
+        return $"""
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;">
+              <tr><td align="center" style="font-size:11px;color:#9ca3af;line-height:1.7;padding:0 20px 24px;">
+                {string.Join("<br>", lines)}
+              </td></tr>
+            </table>
+            """;
+    }
+
+    private static string Enc(string value) => System.Net.WebUtility.HtmlEncode(value.Trim());
 
     public string AdminNotificationAddress => _adminNotificationAddress;
 
@@ -381,6 +435,18 @@ public class SmtpEmailService : IEmailService
             EnableSsl = true,
             DeliveryMethod = SmtpDeliveryMethod.Network
         };
+
+        // Kimlik bloğu burada ekleniyor, şablonların her birinde ayrı ayrı
+        // değil: tek geçiş noktası olduğu için hiçbir e-postanın atlanması
+        // mümkün değil. </body> yoksa sona eklenir.
+        var footer = BuildIdentityFooter();
+        if (footer.Length > 0)
+        {
+            var idx = htmlBody.LastIndexOf("</body>", StringComparison.OrdinalIgnoreCase);
+            htmlBody = idx >= 0
+                ? htmlBody.Insert(idx, footer)
+                : htmlBody + footer;
+        }
 
         var plainText = System.Text.RegularExpressions.Regex.Replace(htmlBody, "<[^>]+>", "").Trim();
 
