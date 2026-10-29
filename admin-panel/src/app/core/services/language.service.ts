@@ -278,11 +278,8 @@ const T: Record<Lang, Record<string, string>> = {
     // Appointment Status (public)
     'apptStatus.notFound':       'Randevu Bulunamadı',
     'apptStatus.notFoundMsg':    'Randevu bulunamadı.',
-    'apptStatus.saveLink':       '📎 Bu linki kaydedin',
-    'apptStatus.saveLinkDesc':   'Randevu onay durumunuzu buradan takip edebilirsiniz.',
-    'apptStatus.copyLink':       '📋 Linki Kopyala',
     'apptStatus.pending.text':   'Onay Bekleniyor',
-    'apptStatus.pending.sub':    'Salon onayı bekleniyor, kısa süre içinde bilgilendirileceksiniz.',
+    'apptStatus.pending.sub':    'Salon onayı bekleniyor. Onaylandığında telefonunuza bildirim göndereceğiz.',
     'apptStatus.confirmed.text': 'Randevunuz Onaylandı',
     'apptStatus.confirmed.sub':  'Randevunuz salon tarafından onaylandı. Görüşmek üzere!',
     'apptStatus.cancelled.text': 'Randevu İptal Edildi',
@@ -290,7 +287,6 @@ const T: Record<Lang, Record<string, string>> = {
     'apptStatus.completed.text': 'Randevu Tamamlandı',
     'apptStatus.completed.sub':  'Bizi tercih ettiğiniz için teşekkürler!',
     'apptStatus.unknown':        'Bilinmiyor',
-    'apptStatus.whatsappShare':  'Randevu takip linkim: ',
 
     // Salons (public list)
     'salons.searchPh':    'Salon adı veya şehir ara...',
@@ -801,11 +797,8 @@ const T: Record<Lang, Record<string, string>> = {
     // Appointment Status (public)
     'apptStatus.notFound':       'Appointment Not Found',
     'apptStatus.notFoundMsg':    'Appointment not found.',
-    'apptStatus.saveLink':       '📎 Save this link',
-    'apptStatus.saveLinkDesc':   'You can track your appointment status here.',
-    'apptStatus.copyLink':       '📋 Copy Link',
     'apptStatus.pending.text':   'Awaiting Approval',
-    'apptStatus.pending.sub':    'Waiting for salon approval. You will be notified shortly.',
+    'apptStatus.pending.sub':    'Waiting for salon approval. We will send a notification to your phone once it is confirmed.',
     'apptStatus.confirmed.text': 'Appointment Confirmed',
     'apptStatus.confirmed.sub':  'Your appointment has been confirmed by the salon. See you soon!',
     'apptStatus.cancelled.text': 'Appointment Cancelled',
@@ -813,7 +806,6 @@ const T: Record<Lang, Record<string, string>> = {
     'apptStatus.completed.text': 'Appointment Completed',
     'apptStatus.completed.sub':  'Thank you for choosing us!',
     'apptStatus.unknown':        'Unknown',
-    'apptStatus.whatsappShare':  'My appointment tracking link: ',
 
     // Salons (public list)
     'salons.searchPh':    'Search by salon name or city...',
@@ -1324,11 +1316,8 @@ const T: Record<Lang, Record<string, string>> = {
     // Appointment Status (public)
     'apptStatus.notFound':       'Запись не найдена',
     'apptStatus.notFoundMsg':    'Запись не найдена.',
-    'apptStatus.saveLink':       '📎 Сохраните эту ссылку',
-    'apptStatus.saveLinkDesc':   'Здесь вы можете отслеживать статус записи.',
-    'apptStatus.copyLink':       '📋 Копировать ссылку',
     'apptStatus.pending.text':   'Ожидает подтверждения',
-    'apptStatus.pending.sub':    'Ожидаем подтверждения от салона. Вы получите уведомление в ближайшее время.',
+    'apptStatus.pending.sub':    'Ожидаем подтверждения от салона. Мы отправим уведомление на ваш телефон, как только запись будет подтверждена.',
     'apptStatus.confirmed.text': 'Запись подтверждена',
     'apptStatus.confirmed.sub':  'Ваша запись подтверждена салоном. До встречи!',
     'apptStatus.cancelled.text': 'Запись отменена',
@@ -1336,7 +1325,6 @@ const T: Record<Lang, Record<string, string>> = {
     'apptStatus.completed.text': 'Запись завершена',
     'apptStatus.completed.sub':  'Спасибо, что выбрали нас!',
     'apptStatus.unknown':        'Неизвестно',
-    'apptStatus.whatsappShare':  'Ссылка для отслеживания записи: ',
 
     // Salons (public list)
     'salons.searchPh':    'Поиск по названию или городу...',
@@ -1839,11 +1827,8 @@ const T: Record<Lang, Record<string, string>> = {
 
     'apptStatus.notFound':       'Termin nicht gefunden',
     'apptStatus.notFoundMsg':    'Termin nicht gefunden.',
-    'apptStatus.saveLink':       '📎 Diesen Link speichern',
-    'apptStatus.saveLinkDesc':   'Hier können Sie den Status Ihres Termins verfolgen.',
-    'apptStatus.copyLink':       '📋 Link kopieren',
     'apptStatus.pending.text':   'Warte auf Bestätigung',
-    'apptStatus.pending.sub':    'Warte auf Salonbestätigung. Sie werden in Kürze benachrichtigt.',
+    'apptStatus.pending.sub':    'Warte auf Salonbestätigung. Sobald der Termin bestätigt ist, senden wir eine Benachrichtigung an Ihr Telefon.',
     'apptStatus.confirmed.text': 'Termin bestätigt',
     'apptStatus.confirmed.sub':  'Ihr Termin wurde vom Salon bestätigt. Bis bald!',
     'apptStatus.cancelled.text': 'Termin storniert',
@@ -1851,7 +1836,6 @@ const T: Record<Lang, Record<string, string>> = {
     'apptStatus.completed.text': 'Termin abgeschlossen',
     'apptStatus.completed.sub':  'Danke, dass Sie uns gewählt haben!',
     'apptStatus.unknown':        'Unbekannt',
-    'apptStatus.whatsappShare':  'Mein Termin-Verfolgungslink: ',
 
     'salons.searchPh':    'Nach Salonname oder Stadt suchen...',
     'salons.searchBtn':   'Suchen',

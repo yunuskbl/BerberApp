@@ -44,25 +44,6 @@
       <!-- Card body -->
       <div class="card-body">
 
-        <!-- Save link banner (only for Pending) -->
-        @if (appointment.status === 'Pending') {
-          <div class="save-link-banner">
-            <p class="save-link-title">{{ 'apptStatus.saveLink' | translate }}</p>
-            <p class="save-link-desc">{{ 'apptStatus.saveLinkDesc' | translate }}</p>
-            <div class="link-box">
-              <span class="link-text">{{ statusUrl }}</span>
-            </div>
-            <div class="link-actions">
-              <button class="btn-copy" (click)="copyLink()">
-                {{ copied ? ('common.copied' | translate) : ('apptStatus.copyLink' | translate) }}
-              </button>
-              <button class="btn-whatsapp" (click)="shareOnWhatsApp()">
-                💬 WhatsApp
-              </button>
-            </div>
-          </div>
-        }
-
         <!-- Appointment details -->
         <div class="appointment-details">
           <div class="detail-item">

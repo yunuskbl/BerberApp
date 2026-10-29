@@ -18,7 +18,6 @@ export class AppointmentStatusComponent implements OnInit {
   isLoading = true;
   errorMessage = '';
   subdomain = '';
-  copied = false;
 
   isCancelling = false;
   cancelError = '';
@@ -94,22 +93,6 @@ export class AppointmentStatusComponent implements OnInit {
         this.isLoading = false;
       },
     });
-  }
-
-  get statusUrl(): string {
-    return window.location.href;
-  }
-
-  copyLink(): void {
-    navigator.clipboard.writeText(this.statusUrl).then(() => {
-      this.copied = true;
-      setTimeout(() => (this.copied = false), 2500);
-    });
-  }
-
-  shareOnWhatsApp(): void {
-    const text = `${this.langService.t('apptStatus.whatsappShare')}${this.statusUrl}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   }
 
   confirmCancel(): void {
