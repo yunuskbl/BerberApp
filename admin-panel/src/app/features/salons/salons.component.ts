@@ -126,14 +126,24 @@ export class SalonsComponent implements OnInit {
   }
 
   // ── Konum izni ────────────────────────────────────────────────────────────
-  locationApproximate = false; // IP bazlı konum kullanılıyorsa true
+  //
+  // Konum yalnızca tarayıcının kendi izin mekanizmasından alınır. Önceden,
+  // kullanıcı izni reddettiğinde üçüncü taraf bir IP-konum servisine
+  // düşülüyordu: yani ziyaretçinin açıkça reddettiği şey, IP adresi yurt
+  // dışına gönderilerek arka kapıdan yapılıyordu. Üstelik CSP'deki
+  // connect-src 'self' kuralı o isteği zaten engellediği için üretimde hiç
+  // çalışmamıştı — sessizce "konum alınamadı"ya düşüyordu.
+  //
+  // Artık hata sebebi kullanıcıya doğru söyleniyor. denied/timeout/unsupported
+  // çeviri anahtarları zaten vardı ama eski akışta hiç kullanılmıyordu.
 
   requestLocation(): void {
     this.locationStatus   = 'requesting';
     this.locationErrorMsg = '';
 
     if (!navigator.geolocation) {
-      this.tryIpLocation();
+      this.locationStatus   = 'unsupported';
+      this.locationErrorMsg = 'salons.loc.unsupported';
       return;
     }
 
@@ -143,45 +153,28 @@ export class SalonsComponent implements OnInit {
         this.userLon              = pos.coords.longitude;
         this.locationStatus       = 'granted';
         this.locationErrorMsg     = '';
-        this.locationApproximate  = false;
         this.locationFilterActive = true;
         this.loadSalons();
       },
-      () => {
-        // Tarayıcı izin vermedi → IP bazlı konuma geç
-        this.tryIpLocation();
-      },
-      { timeout: 8000, maximumAge: 300_000 }
-    );
-  }
-
-  private tryIpLocation(): void {
-    this.http.get<any>('https://ipapi.co/json/').subscribe({
-      next: (data) => {
-        if (data?.latitude && data?.longitude) {
-          this.userLat              = data.latitude;
-          this.userLon              = data.longitude;
-          this.locationStatus       = 'granted';
-          this.locationErrorMsg     = '';
-          this.locationApproximate  = true;
-          this.locationFilterActive = true;
-          this.loadSalons();
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          this.locationStatus   = 'denied';
+          this.locationErrorMsg = 'salons.loc.denied';
+        } else if (err.code === err.TIMEOUT) {
+          this.locationStatus   = 'timeout';
+          this.locationErrorMsg = 'salons.loc.timeout';
         } else {
           this.locationStatus   = 'unavailable';
           this.locationErrorMsg = 'salons.loc.unavailable';
         }
       },
-      error: () => {
-        this.locationStatus   = 'unavailable';
-        this.locationErrorMsg = 'salons.loc.unavailable';
-      },
-    });
+      { timeout: 8000, maximumAge: 300_000 }
+    );
   }
 
   onLocationToggle(): void {
     if (this.locationFilterActive) {
       this.locationFilterActive = false;
-      this.locationApproximate  = false;
       this.userLat = null;
       this.userLon = null;
       this.loadSalons();
