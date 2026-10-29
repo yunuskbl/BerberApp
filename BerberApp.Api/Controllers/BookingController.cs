@@ -307,9 +307,19 @@ public class BookingController : ControllerBase
                 TenantId = tenant.Id,
                 FullName = request.FullName,
                 Phone = request.Phone,
-                Email = request.Email
+                Email = request.Email,
+                MarketingConsentAt = request.MarketingConsent ? DateTime.UtcNow : null
             };
             _context.Customers.Add(customer);
+            await _context.SaveChangesAsync();
+        }
+        else if (request.MarketingConsent && customer.MarketingConsentAt is null)
+        {
+            // Daha önce kayıtlı müşteri bu sefer rıza verdiyse işle.
+            // Ters yön bilinçli olarak yok: rızanın geri alınması bu formdan
+            // değil, mesajdaki çıkış bağlantısından yapılmalı — kutucuğu boş
+            // bırakmak "vazgeçtim" demek değil, sadece bu sefer işaretlememek.
+            customer.MarketingConsentAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
 
@@ -449,6 +459,12 @@ public class BookingController : ControllerBase
         public List<Guid>? ServiceIds { get; set; }
         public DateTime StartTime { get; set; }
         public string? Notes { get; set; }
+
+        /// <summary>
+        /// Kampanya/bilgilendirme mesajı almaya açık rıza. Randevunun kendisi
+        /// için gerekmez (sözleşmenin ifası); yalnızca pazarlama için.
+        /// </summary>
+        public bool MarketingConsent { get; set; }
     }
 
     [HttpPost("{subdomain}/appointments/{appointmentId}/cancel")]

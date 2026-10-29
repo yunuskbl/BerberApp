@@ -417,18 +417,35 @@
                 </label>
               </div>
 
-              <!-- KVKK Onayı -->
+              <!-- Aydınlatma: bilgilendirme yükümlülüğü, rızaya bağlı değil.
+                   Randevu verisi sözleşmenin ifası kapsamında işlendiği için
+                   burada "onay" istenmiyor; yalnızca metnin okunduğu teyit
+                   ediliyor ve metne erişim sağlanıyor. -->
               <div class="check-row">
                 <label class="check-label" [class.check-error]="customerForm.get('kvkkAccepted')?.invalid && customerForm.get('kvkkAccepted')?.touched">
                   <input type="checkbox" class="check-input" formControlName="kvkkAccepted" />
                   <span class="check-box"></span>
                   <span class="check-text">
-                    <a href="/kvkk" target="_blank" rel="noopener" class="kvkk-link">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin işlenmesine onay veriyorum.
+                    <a routerLink="/gizlilik-politikasi" target="_blank" rel="noopener" class="kvkk-link">KVKK Aydınlatma Metni</a>'ni okudum.
                   </span>
                 </label>
                 @if (customerForm.get('kvkkAccepted')?.invalid && customerForm.get('kvkkAccepted')?.touched) {
-                  <span class="field-error" style="margin-top: 4px;">Devam etmek için KVKK metnini onaylamanız gerekiyor.</span>
+                  <span class="field-error" style="margin-top: 4px;">Devam etmek için aydınlatma metnini okuduğunuzu onaylayın.</span>
                 }
+              </div>
+
+              <!-- Açık rıza: ayrı, opsiyonel ve varsayılan olarak BOŞ.
+                   Randevu almak için gerekmez; yalnızca pazarlama mesajları
+                   için. Zorunlu tutulsaydı ya da önceden işaretli gelseydi
+                   özgür iradeye dayanmadığı için geçerli bir rıza sayılmazdı. -->
+              <div class="check-row">
+                <label class="check-label">
+                  <input type="checkbox" class="check-input" formControlName="marketingConsent" />
+                  <span class="check-box"></span>
+                  <span class="check-text">
+                    Kampanya ve bilgilendirme mesajları almak istiyorum. <span class="check-optional">(isteğe bağlı)</span>
+                  </span>
+                </label>
               </div>
 
               @if (!otpVerified && !otpSent && customerForm.get('email')?.value) {

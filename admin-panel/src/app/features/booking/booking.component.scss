@@ -546,6 +546,13 @@ app-language-switcher {
   &:hover { opacity: 0.8; }
 }
 
+// "(isteğe bağlı)" — rızanın zorunlu olmadığını görünür kılar.
+// Zorunlu sanılan bir rıza, özgür iradeye dayanmadığı için geçersiz sayılır.
+.check-optional {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
 .btn-submit {
   width: 100%; padding: 15px; background: var(--accent);
   border: none; border-radius: 10px; font-size: 15px; font-weight: 600;

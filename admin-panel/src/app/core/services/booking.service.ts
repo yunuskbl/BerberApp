@@ -61,6 +61,8 @@ export interface BookingRequest {
   serviceIds?: string[];
   startTime: string;
   notes?: string;
+  /** Kampanya mesajları için açık rıza. Randevu için gerekli değil. */
+  marketingConsent?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })

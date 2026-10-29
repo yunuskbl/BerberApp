@@ -208,7 +208,10 @@ export class BookingComponent implements OnInit, OnDestroy {
       phone: ['', [Validators.required]],
       email: ['', [Validators.email, Validators.maxLength(80)]],
       notes: ['', [Validators.maxLength(200)]],
+      // Aydınlatma metninin okunduğu teyidi — zorunlu.
       kvkkAccepted: [false, [Validators.requiredTrue]],
+      // Pazarlama için açık rıza — opsiyonel, varsayılan kapalı.
+      marketingConsent: [false],
     });
   }
 
@@ -453,7 +456,7 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.isSubmitting = true;
     this.errorMessage = '';
 
-    const { fullName, email, notes } = this.customerForm.value;
+    const { fullName, email, notes, marketingConsent } = this.customerForm.value;
     const phone = this.fullPhone;
     const serviceIds = this.selectedServices.map(s => s.id);
 
@@ -467,6 +470,7 @@ export class BookingComponent implements OnInit, OnDestroy {
         serviceIds,
         startTime: this.selectedSlot,
         notes,
+        marketingConsent: !!marketingConsent,
       })
       .subscribe({
         next: (res) => {

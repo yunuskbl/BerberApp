@@ -253,6 +253,9 @@ namespace BerberApp.Infrastructure.Migrations
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
+                    b.Property<DateTime?>("MarketingConsentAt")
+                        .HasColumnType("timestamp with time zone");
+
 
                     b.HasKey("Id");
 
