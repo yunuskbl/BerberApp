@@ -135,8 +135,12 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             .OrderByDescending(x => x.TotalInTry)
             .ToList();
 
+        // Gün kırılımı Türkiye saatine göre yapılır. UTC gününe göre gruplanırsa
+        // 00:00–03:00 arası randevular bir önceki güne düşer ve grafik, aynı
+        // yanıttaki Bugün/Bu Hafta/Bu Ay değerleriyle çelişir.
         var daily = appointments
-            .GroupBy(x => new DateTime(x.StartTime.Year, x.StartTime.Month, x.StartTime.Day))
+            .GroupBy(x => TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.SpecifyKind(x.StartTime, DateTimeKind.Utc), turkeyTz).Date)
             .OrderBy(g => g.Key)
             .Select(g => new DailyEarningDto
             {
@@ -228,6 +232,20 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             .OrderByDescending(x => x.Total)
             .ToList();
 
+        // Güne göre gider — net kâr grafiği için. Gider tarihleri gün bazında
+        // (saat bileşeni olmadan) tutuluyor, bu yüzden gelir tarafındaki gibi
+        // saat dilimi çevrimi yapılmaz; aksi hâlde kayıtlar bir gün geri kayar.
+        var expenseDaily = allExpenses
+            .GroupBy(e => e.Date.Date)
+            .OrderBy(g => g.Key)
+            .Select(g => new DailyExpenseDto
+            {
+                Date  = g.Key,
+                Total = g.Sum(e => e.Amount * rates.GetValueOrDefault(e.Currency.ToUpper(), 1m)),
+                Count = g.Count()
+            })
+            .ToList();
+
         return new EarningsDto
         {
             TotalEarnings = totalEarnings,
@@ -248,6 +266,7 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             TotalExpenses = totalExpenses,
             NetProfit = totalInTry - totalExpenses,
             ExpenseByCategory = expenseByCategory,
+            ExpenseDaily = expenseDaily,
             TotalPriceDifference = totalPriceDiff,
             PriceDifferenceCount = priceDiffCount,
             PriceDifferences = priceDiffDetails

@@ -205,6 +205,106 @@
         }
       </div>
 
+      <!-- ── Grafikler ──────────────────────────────────────────────────── -->
+      <!-- Hepsi yukarıdaki tarih filtresinden besleniyor; grafik başına
+           ayrı bir filtre yok, böylece sayılar birbiriyle tutarlı kalıyor. -->
+      @if (hasChartData) {
+
+        <!-- Gelir seyri -->
+        <div class="report-section">
+          <div class="section-title-row">
+            <div class="section-icon section-icon--purple">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="21 12 21 7 16 7"/></svg>
+            </div>
+            <h3>Gelir Seyri</h3>
+            <span class="chart-chip">{{ chartBucketLabel }}</span>
+          </div>
+          <div class="chart-card">
+            <app-trend-chart
+              [points]="incomeTrend"
+              [format]="moneyFull"
+              [axisFormat]="moneyAxis"
+              [height]="220"
+              seriesName="Gelir"
+              noteHeader="Randevu"
+              emptyText="Bu dönemde tamamlanmış randevu yok"/>
+          </div>
+        </div>
+
+        <!-- Net kâr: işaret anlam taşıdığı için sıfırın iki yanı ayrı renk -->
+        @if (showNetChart) {
+          <div class="report-section">
+            <div class="section-title-row">
+              <div class="section-icon section-icon--purple">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <h3>Net Kâr Seyri</h3>
+              <span class="chart-chip">{{ chartBucketLabel }}</span>
+            </div>
+            <div class="chart-card">
+              <div class="chart-legend">
+                <span class="cl-item"><i class="cl-swatch cl-swatch--profit"></i>Kâr</span>
+                <span class="cl-item"><i class="cl-swatch cl-swatch--loss"></i>Zarar</span>
+                <span class="cl-note">gelir − gider</span>
+              </div>
+              <app-bar-chart
+                [points]="netTrend"
+                [diverging]="true"
+                [format]="moneyFull"
+                [axisFormat]="moneyAxis"
+                [height]="220"
+                seriesName="Net"
+                noteHeader="Ayrıntı"/>
+            </div>
+          </div>
+        }
+
+        <div class="chart-grid-2">
+          <!-- Randevu sayısı gelirle aynı eksene konmuyor: iki farklı ölçeği
+               tek grafikte üst üste bindirmek olmayan bir ilişki uydurur. -->
+          <div class="report-section">
+            <div class="section-title-row">
+              <div class="section-icon section-icon--green">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <h3>Randevu Sayısı</h3>
+            </div>
+            <div class="chart-card">
+              <app-bar-chart
+                [points]="apptTrend"
+                [format]="countFull"
+                [axisFormat]="countAxis"
+                [labelFormat]="countAxis"
+                [integerAxis]="true"
+                [height]="190"
+                seriesName="Randevu"
+                noteHeader="Gelir"/>
+            </div>
+          </div>
+
+          @if (showWeekdayChart) {
+            <div class="report-section">
+              <div class="section-title-row">
+                <div class="section-icon section-icon--purple">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+                </div>
+                <h3>Haftanın Günleri</h3>
+                <span class="chart-chip">günlük ortalama</span>
+              </div>
+              <div class="chart-card">
+                <app-bar-chart
+                  [points]="weekdayBars"
+                  [format]="moneyFull"
+                  [axisFormat]="moneyAxis"
+                  [height]="190"
+                  seriesName="Ortalama gelir"
+                  noteHeader="Dönem içi"/>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
       <!-- Para Birimine Göre Kazanç -->
       @if (earnings.byCurrency.length > 1) {
         <div class="report-section">
@@ -352,6 +452,29 @@
     <!-- GİDER SEKMESİ (CSS ile gizle/göster — print'te her zaman görünür) -->
     <!-- ══════════════════════════════════════════════════════════════════ -->
     <div class="tab-section" [class.tab-hidden]="activeTab !== 'expense'">
+
+      <!-- Gider seyri -->
+      @if (hasChartData && showNetChart) {
+        <div class="report-section">
+          <div class="section-title-row">
+            <div class="section-icon section-icon--red">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 7 9 13 13 9 21 17"/><polyline points="21 12 21 17 16 17"/></svg>
+            </div>
+            <h3>Gider Seyri</h3>
+            <span class="chart-chip">{{ chartBucketLabel }}</span>
+          </div>
+          <div class="chart-card">
+            <app-bar-chart
+              [points]="expenseTrend"
+              [format]="moneyFull"
+              [axisFormat]="moneyAxis"
+              [color]="expenseColor"
+              [height]="200"
+              seriesName="Gider"
+              emptyText="Bu dönemde gider kaydı yok"/>
+          </div>
+        </div>
+      }
 
       <!-- Kategori dağılımı (gider özeti) -->
       @if ((earnings.expenseByCategory?.length ?? 0) > 0) {

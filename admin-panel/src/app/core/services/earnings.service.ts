@@ -23,6 +23,8 @@ export interface EarningsDto {
   totalExpenses:        number;
   netProfit:            number;
   expenseByCategory:    ExpenseSummaryDto[];
+  /** Güne göre gider, TRY'ye çevrilmiş — net kâr grafiğinin kaynağı. */
+  expenseDaily:         DailyExpenseDto[];
   // Fiyat farkı istatistikleri
   totalPriceDifference: number;
   priceDifferenceCount: number;
@@ -58,6 +60,12 @@ export interface DailyEarningDto {
   date:               string;
   earnings:           number;
   appointmentCount:   number;
+}
+
+export interface DailyExpenseDto {
+  date:   string;
+  total:  number;   // TRY
+  count:  number;
 }
 
 export interface StaffEarningDto {

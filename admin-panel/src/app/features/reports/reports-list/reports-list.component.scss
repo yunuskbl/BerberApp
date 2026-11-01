@@ -188,6 +188,17 @@
     break-inside: avoid;
   }
 
+  // Grafikler SVG olduğu için baskıda da keskin çıkıyor; yalnızca çerçeve
+  // kâğıtta görünecek kadar koyulaştırılıyor.
+  .chart-card {
+    border: 1px solid #d1d5db !important;
+    break-inside: avoid;
+    padding: 10px 12px 6px;
+  }
+
+  // Yan yana iki grafik kâğıtta sıkışıyor; alt alta basılıyor.
+  .chart-grid-2 { grid-template-columns: 1fr; }
+
   // Sekme içerikleri print'te her zaman görünür
   .tab-section {
     display: block !important;
@@ -352,6 +363,63 @@
   border-radius: 12px;
   border: 1px solid #f0f0f0;
   overflow: hidden;
+}
+
+/* ── Grafik kartları ── */
+.chart-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  padding: 14px 16px 10px;
+  /* overflow: hidden verilmiyor — tooltip kartın üstüne taşabiliyor. */
+}
+
+/* Kırılım etiketi: grafikte okunan dönemin günlük mü aylık mı olduğunu söyler. */
+.chart-chip {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #f3f4f6;
+  color: #6b7280;
+  text-transform: lowercase;
+}
+
+/* İki küçük grafik yan yana; dar ekranda alt alta. */
+.chart-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 0 20px;
+}
+
+/* İki renkli (ıraksak) grafikte lejant her zaman var — kimlik yalnızca
+   renge bırakılmaz. */
+.chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #6b7280;
+
+  .cl-item { display: inline-flex; align-items: center; gap: 6px; }
+
+  .cl-swatch {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    display: inline-block;
+
+    &--profit { background: #2563eb; }
+    &--loss   { background: #dc2626; }
+  }
+
+  .cl-note {
+    margin-left: auto;
+    font-weight: 500;
+    color: #9ca3af;
+  }
 }
 
 .table {

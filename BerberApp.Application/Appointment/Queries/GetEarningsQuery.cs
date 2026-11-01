@@ -37,6 +37,12 @@ public class EarningsDto
     public decimal TotalExpenses { get; set; }       // Seçili dönem toplam gider (TRY)
     public decimal NetProfit { get; set; }            // TotalInTry - TotalExpenses
     public List<ExpenseSummaryDto> ExpenseByCategory { get; set; } = new();
+    /// <summary>
+    /// Güne göre gider (TRY'ye çevrilmiş). Gider listesi tutarları kendi para
+    /// biriminde döndüğü için net kâr grafiği onlardan hesaplanamaz; çevrim
+    /// kurları yalnızca burada, sunucuda mevcut.
+    /// </summary>
+    public List<DailyExpenseDto> ExpenseDaily { get; set; } = new();
 
     // Fiyat farkı istatistikleri
     public decimal TotalPriceDifference { get; set; }
@@ -77,6 +83,13 @@ public class DailyEarningDto
     public DateTime Date { get; set; }
     public decimal Earnings { get; set; }
     public int AppointmentCount { get; set; }
+}
+
+public class DailyExpenseDto
+{
+    public DateTime Date { get; set; }
+    public decimal Total { get; set; }   // TRY
+    public int Count { get; set; }
 }
 
 public class StaffEarningDto

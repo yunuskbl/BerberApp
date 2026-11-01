@@ -1,0 +1,92 @@
+@if (points().length === 0) {
+  <div class="chart-empty">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="20" x2="21" y2="20"/><rect x="6" y="11" width="3" height="6"/><rect x="11" y="7" width="3" height="10"/><rect x="16" y="14" width="3" height="3"/>
+    </svg>
+    <span>{{ emptyText() }}</span>
+  </div>
+} @else {
+
+  <div class="chart-plot" [class.is-stale]="stale()"
+       tabindex="0" role="img" [attr.aria-label]="ariaLabel()"
+       (keydown)="onKey($event)" (blur)="active.set(-1)">
+
+    <svg [attr.width]="geo().w" [attr.height]="geo().h"
+         [attr.viewBox]="'0 0 ' + geo().w + ' ' + geo().h" aria-hidden="true">
+
+      @for (t of geo().ticks; track t.v) {
+        <line [attr.x1]="PAD.l" [attr.x2]="geo().w - PAD.r"
+              [attr.y1]="t.y" [attr.y2]="t.y"
+              [attr.stroke]="t.v === 0 ? ink.axis : ink.grid" stroke-width="1"/>
+        <text class="tick-label" [attr.x]="PAD.l - 8" [attr.y]="t.y + 3.5" text-anchor="end">
+          {{ t.label }}
+        </text>
+      }
+
+      <!-- Sütunlar: veri ucu 4px yuvarlak, taban tarafı köşeli -->
+      @for (b of geo().bars; track b.index) {
+        <!-- İmlecin altındaki sütun öne çıkıyor; diğerleri yalnızca bir tık
+             soluyor — hepsini silikleştirmek grafiği okunmaz yapıyordu. -->
+        <path [attr.d]="b.path" [attr.fill]="b.color"
+              [attr.opacity]="active() >= 0 && active() !== b.index ? 0.72 : 1"/>
+      }
+
+      <!-- Doğrudan etiketler -->
+      @for (b of geo().labelled; track b.index) {
+        <text class="value-label" [attr.x]="tooltipLeft(b.centerX)"
+              [attr.y]="b.labelY < PAD.t + 4 ? PAD.t + 4 : b.labelY" text-anchor="middle">
+          {{ barLabel(b.value) }}
+        </text>
+      }
+
+      <!-- X ekseni etiketleri -->
+      @for (b of geo().xLabels; track b.index) {
+        <text class="tick-label" [attr.x]="b.centerX" [attr.y]="geo().h - 8" text-anchor="middle">
+          {{ b.label }}
+        </text>
+      }
+
+      <!-- Vuruş alanları: işaretten geniş, bandın tamamı -->
+      @for (b of geo().bars; track b.index) {
+        <rect [attr.x]="b.bandX" [attr.y]="PAD.t"
+              [attr.width]="b.band" [attr.height]="geo().ih"
+              fill="transparent" style="cursor: pointer"
+              (pointerenter)="active.set(b.index)" (pointerleave)="active.set(-1)"/>
+      }
+    </svg>
+
+    @if (activeBar(); as bar) {
+      <div class="chart-tooltip"
+           [style.left.px]="tooltipLeft(bar.centerX)"
+           [style.top.px]="tooltipTop(bar)">
+        <span class="tt-value">
+          {{ diverging() && bar.value > 0 ? '+' : '' }}{{ format()(bar.value) }}
+        </span>
+        <span class="tt-label">{{ bar.fullLabel }}</span>
+        @if (bar.note) { <span class="tt-note">{{ bar.note }}</span> }
+      </div>
+    }
+  </div>
+
+  <details class="chart-table no-print">
+    <summary>Tabloyu göster</summary>
+    <table>
+      <thead>
+        <tr>
+          <th>Dönem</th>
+          <th>{{ seriesName() }}</th>
+          @if (noteHeader()) { <th>{{ noteHeader() }}</th> }
+        </tr>
+      </thead>
+      <tbody>
+        @for (b of geo().bars; track b.index) {
+          <tr>
+            <td>{{ b.fullLabel }}</td>
+            <td>{{ diverging() && b.value > 0 ? '+' : '' }}{{ format()(b.value) }}</td>
+            @if (noteHeader()) { <td>{{ b.note || '—' }}</td> }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </details>
+}
