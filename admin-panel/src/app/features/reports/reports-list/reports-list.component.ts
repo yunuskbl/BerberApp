@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { EarningsService, EarningsDto, PriceDifferenceDetailDto } from '../../../core/services/earnings.service';
+import {
+  EarningsService, EarningsDto, PriceDifferenceDetailDto, CustomerInsightsDto,
+} from '../../../core/services/earnings.service';
 import { ExpenseService, ExpenseDto } from '../../../core/services/expense.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -10,6 +12,9 @@ import { BranchService } from '../../../core/services/branch.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { TrendChartComponent } from '../../../shared/components/charts/trend-chart.component';
 import { BarChartComponent } from '../../../shared/components/charts/bar-chart.component';
+import {
+  StackedBarChartComponent, StackedPoint,
+} from '../../../shared/components/charts/stacked-bar-chart.component';
 import { CHART_INK, ChartPoint, compactNumber } from '../../../shared/components/charts/chart.model';
 import { environment } from '../../../../environments/environment';
 
@@ -29,7 +34,7 @@ interface DayRow {
   standalone: true,
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule, TranslatePipe,
-    TrendChartComponent, BarChartComponent,
+    TrendChartComponent, BarChartComponent, StackedBarChartComponent,
   ],
   templateUrl: './reports-list.component.html',
   styleUrl: './reports-list.component.scss'
@@ -62,6 +67,7 @@ export class ReportsListComponent implements OnInit {
     this.selectedScope = scope;
     this.selectedBranchId = branchId ?? null;
     this.loadEarnings();
+    if (this.insights) this.loadCustomerInsights();
   }
 
   onScopeChange(event: Event): void {
@@ -79,7 +85,7 @@ export class ReportsListComponent implements OnInit {
   showPriceDiffModal = false;
 
   // ── Aktif sekme ───────────────────────────────────────────────────────────
-  activeTab: 'income' | 'expense' = 'income';
+  activeTab: 'income' | 'expense' | 'customers' = 'income';
 
   // ── Tarih filtresi ────────────────────────────────────────────────────────
   reportStartDate = this.getDateString(new Date(new Date().setDate(new Date().getDate() - 30)));
@@ -281,7 +287,9 @@ export class ReportsListComponent implements OnInit {
 
   // Grafik bileşenlerine girdi olarak geçen biçimleyiciler. Ok işlevi olduğu
   // için `this` bağlamı şablonda da korunuyor.
-  readonly moneyFull = (v: number): string => this.formatCurrency(v);
+  // Grafik etiketlerinde kuruş gösterilmiyor: "₺6.448,09" bir sütunun ucunda
+  // okunurluğu düşürüyor, tablolarda ise tam değer zaten duruyor.
+  readonly moneyFull = (v: number): string => this.formatCurrency(Math.round(v));
   readonly moneyAxis = (v: number): string =>
     `${compactNumber(v, this.langService.dateLocale)} ₺`;
   readonly countFull = (v: number): string =>
@@ -306,7 +314,7 @@ export class ReportsListComponent implements OnInit {
     this.hasChartData = days.some(d => d.income > 0 || d.count > 0 || d.expense > 0);
     if (!this.hasChartData) return;
 
-    this.chartBucket = days.length <= 45 ? 'day' : days.length <= 182 ? 'week' : 'month';
+    this.chartBucket = this.bucketForRange(days.length);
     const buckets = this.bucketDays(days, this.chartBucket);
 
     this.incomeTrend = buckets.map(b => ({
@@ -372,18 +380,55 @@ export class ReportsListComponent implements OnInit {
     return rows;
   }
 
-  private bucketDays(days: DayRow[], bucket: 'day' | 'week' | 'month') {
-    const locale = this.langService.dateLocale;
-    const shortDay   = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' });
-    const longDay    = new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric', month: 'long' });
-    const shortMonth = new Intl.DateTimeFormat(locale, { month: 'short' });
-    const longMonth  = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' });
+  /** Aralığın uzunluğu kırılımı belirler; bütün grafikler aynı kırılımı kullanır. */
+  private bucketForRange(dayCount: number): 'day' | 'week' | 'month' {
+    return dayCount <= 45 ? 'day' : dayCount <= 182 ? 'week' : 'month';
+  }
 
+  private formatterCache: {
+    locale: string;
+    shortDay: Intl.DateTimeFormat; longDay: Intl.DateTimeFormat;
+    shortMonth: Intl.DateTimeFormat; longMonth: Intl.DateTimeFormat;
+  } | null = null;
+
+  /** Intl biçimleyicileri pahalı; dil değişmedikçe yeniden kurulmuyor. */
+  private get dateFormatters() {
+    const locale = this.langService.dateLocale;
+    if (!this.formatterCache || this.formatterCache.locale !== locale) {
+      this.formatterCache = {
+        locale,
+        shortDay:   new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }),
+        longDay:    new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric', month: 'long' }),
+        shortMonth: new Intl.DateTimeFormat(locale, { month: 'short' }),
+        longMonth:  new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }),
+      };
+    }
+    return this.formatterCache;
+  }
+
+  /** Bir kovanın ilk/son gününden eksen ve tooltip etiketlerini üretir. */
+  private bucketLabels(first: Date, last: Date, bucket: 'day' | 'week' | 'month') {
+    const f = this.dateFormatters;
+    return {
+      label: bucket === 'month' ? f.shortMonth.format(first) : f.shortDay.format(first),
+      fullLabel:
+        bucket === 'day'  ? f.longDay.format(first)
+      : bucket === 'week' ? `${f.shortDay.format(first)} – ${f.shortDay.format(last)}`
+      :                     f.longMonth.format(first),
+    };
+  }
+
+  /** Bir günü ait olduğu kovanın anahtarına çevirir. */
+  private bucketKey(day: DayRow | { date: Date; key: string }, bucket: 'day' | 'week' | 'month'): string {
+    return bucket === 'day'  ? day.key
+         : bucket === 'week' ? this.toDayKey(this.startOfWeek(day.date))
+         :                     day.key.slice(0, 7);
+  }
+
+  private bucketDays(days: DayRow[], bucket: 'day' | 'week' | 'month') {
     const groups = new Map<string, { first: Date; last: Date; income: number; count: number; expense: number }>();
     for (const d of days) {
-      const key = bucket === 'day'   ? d.key
-                : bucket === 'week'  ? this.toDayKey(this.startOfWeek(d.date))
-                :                      d.key.slice(0, 7);
+      const key = this.bucketKey(d, bucket);
       const g = groups.get(key);
       if (g) {
         g.last = d.date;
@@ -403,11 +448,7 @@ export class ReportsListComponent implements OnInit {
       income: g.income,
       count: g.count,
       expense: g.expense,
-      label: bucket === 'month' ? shortMonth.format(g.first) : shortDay.format(g.first),
-      fullLabel:
-        bucket === 'day'   ? longDay.format(g.first)
-      : bucket === 'week'  ? `${shortDay.format(g.first)} – ${shortDay.format(g.last)}`
-      :                      longMonth.format(g.first),
+      ...this.bucketLabels(g.first, g.last, bucket),
     }));
   }
 
@@ -446,6 +487,138 @@ export class ReportsListComponent implements OnInit {
       });
     }
     return bars;
+  }
+
+  // ── Müşteri takibi ────────────────────────────────────────────────────────
+
+  insights: CustomerInsightsDto | null = null;
+  isInsightsLoading = false;
+  /** Yeni / tekrar gelen müşteri kırılımı — yığılmış sütunlar. */
+  customerMix: StackedPoint[] = [];
+  /** Sadakat dağılımı: kaç müşteri kaç kez gelmiş. */
+  loyaltyBars: ChartPoint[] = [];
+  /** Alttaki parça önce: tekrar gelenler tabanda, yeni müşteriler üstte. */
+  readonly customerSeriesNames = ['Tekrar gelen', 'Yeni müşteri'];
+  /** Dönemde hiç müşteri hareketi yoksa grafik kartları basılmaz. */
+  hasCustomerActivity = false;
+
+  readonly countOnly = (v: number): string =>
+    new Intl.NumberFormat(this.langService.dateLocale).format(v);
+
+  /**
+   * Müşteri raporu sekmeye ilk girişte yükleniyor. Sayfa açılışında üçüncü bir
+   * istek atmak, raporu hiç açmayacak kullanıcıya da bedel ödetirdi.
+   */
+  setTab(tab: 'income' | 'expense' | 'customers'): void {
+    this.activeTab = tab;
+    if (tab === 'customers' && !this.insights && !this.isInsightsLoading) {
+      this.loadCustomerInsights();
+    }
+  }
+
+  loadCustomerInsights(): void {
+    this.isInsightsLoading = true;
+    const branchId = this.selectedScope === 'branch' ? this.selectedBranchId ?? undefined : undefined;
+    const consolidated = this.selectedScope === 'consolidated';
+
+    this.earningsService.getCustomerInsights(
+      this.reportStartDate, this.reportEndDate, branchId, consolidated
+    ).subscribe({
+      next: (res) => {
+        if (res.success) this.insights = res.data;
+        this.rebuildCustomerCharts();
+        this.isInsightsLoading = false;
+      },
+      error: () => { this.isInsightsLoading = false; }
+    });
+  }
+
+  private rebuildCustomerCharts(): void {
+    this.customerMix = [];
+    this.loyaltyBars = [];
+    this.hasCustomerActivity = false;
+
+    const data = this.insights;
+    if (!data) return;
+
+    this.hasCustomerActivity = data.activeCustomers > 0;
+
+    // Zaman serisi gelir grafikleriyle aynı kırılımda — iki sekme arasında
+    // geçerken okurun ölçeği yeniden öğrenmesi gerekmesin.
+    const start = this.parseDayKey(this.reportStartDate);
+    const end   = this.parseDayKey(this.reportEndDate);
+    if (start && end && end >= start) {
+      const byDay = new Map<string, { newCount: number; returningCount: number }>();
+      for (const point of data.timeline ?? []) {
+        byDay.set(this.dayKeyOf(point.date), {
+          newCount: point.newCount, returningCount: point.returningCount,
+        });
+      }
+
+      const rows: { date: Date; key: string; newCount: number; returningCount: number }[] = [];
+      const cursor = new Date(start);
+      while (cursor <= end && rows.length < 3700) {
+        const key = this.toDayKey(cursor);
+        const hit = byDay.get(key);
+        rows.push({
+          date: new Date(cursor), key,
+          newCount: hit?.newCount ?? 0,
+          returningCount: hit?.returningCount ?? 0,
+        });
+        cursor.setDate(cursor.getDate() + 1);
+      }
+
+      const bucket = this.bucketForRange(rows.length);
+      const groups = new Map<string, { first: Date; last: Date; newCount: number; returningCount: number }>();
+      for (const row of rows) {
+        const key = this.bucketKey(row, bucket);
+        const g = groups.get(key);
+        if (g) {
+          g.last = row.date;
+          g.newCount += row.newCount;
+          g.returningCount += row.returningCount;
+        } else {
+          groups.set(key, {
+            first: row.date, last: row.date,
+            newCount: row.newCount, returningCount: row.returningCount,
+          });
+        }
+      }
+
+      this.customerMix = [...groups.values()].map(g => ({
+        ...this.bucketLabels(g.first, g.last, bucket),
+        values: [g.returningCount, g.newCount],
+      }));
+    }
+
+    // Sadakat kovaları sıralı: eksende soldan sağa bağlılık artıyor.
+    this.loyaltyBars = [...(data.loyaltyBuckets ?? [])]
+      .sort((a, b) => a.order - b.order)
+      .map(b => ({
+        label: b.label.replace(' ziyaret', '').replace('Hiç gelmemiş', 'Hiç'),
+        fullLabel: b.label,
+        value: b.count,
+        note: data.totalCustomers > 0
+          ? `müşterilerin %${Math.round(b.count * 100 / data.totalCustomers)}'i`
+          : undefined,
+      }));
+  }
+
+  /** Kayıp riski listesindeki bir müşteriye tek tıkla mesaj yazmak için. */
+  whatsappLink(phone: string): string {
+    const digits = (phone ?? '').replace(/\D/g, '');
+    // 05xx… → 905xx…; zaten ülke koduyla başlıyorsa dokunulmuyor.
+    const international = digits.startsWith('0') ? `9${digits}`
+                        : digits.startsWith('90') ? digits
+                        : digits.length === 10 ? `90${digits}` : digits;
+    return `https://wa.me/${international}`;
+  }
+
+  formatDaysAgo(days: number): string {
+    if (days < 1)   return 'bugün';
+    if (days < 30)  return `${days} gün önce`;
+    const months = Math.floor(days / 30);
+    return months < 12 ? `${months} ay önce` : `${Math.floor(months / 12)} yıldan fazla`;
   }
 
   /** Haftanın başlangıcı pazartesi (TR takvimi). */
@@ -494,11 +667,28 @@ export class ReportsListComponent implements OnInit {
     }).format(rate)}`;
   }
 
+  /**
+   * Tarih iki biçimde gelebiliyor: yalnızca gün ("2026-10-04", gider kayıtları)
+   * ya da tam zaman damgası ("2026-08-12T21:00:00Z", randevu zamanları).
+   *
+   * Eskiden ikisine de "T12:00:00" ekleniyordu; zaman damgası gelen yerlerde
+   * "…T00:00:00T12:00:00" oluşup `Invalid Date` üretiyor ve sayfayı hataya
+   * düşürüyordu (fiyat farkı penceresindeki tarihler bu yüzden boştu).
+   */
   formatDate(dateStr: string): string {
     if (!dateStr) return '';
+
+    const hasTime = dateStr.includes('T');
+    const date = new Date(hasTime ? dateStr : `${dateStr}T12:00:00`);
+    if (isNaN(date.getTime())) return '';
+
     return new Intl.DateTimeFormat(this.langService.dateLocale, {
-      day: '2-digit', month: 'short', year: 'numeric'
-    }).format(new Date(dateStr + 'T12:00:00'));
+      day: '2-digit', month: 'short', year: 'numeric',
+      // Zaman damgası UTC geliyor; hangi güne denk geldiği Türkiye saatine
+      // göre belirlenmeli. Yalnızca gün bilgisi gelen değerde saat dilimi
+      // uygulamak, yurt dışındaki bir kullanıcıda günü kaydırırdı.
+      ...(hasTime ? { timeZone: 'Europe/Istanbul' } : {}),
+    }).format(date);
   }
 
   get todayStr(): string {
@@ -523,11 +713,13 @@ export class ReportsListComponent implements OnInit {
     this.reportEndDate   = this.getDateString(now);
     this.loadEarnings();
     this.loadExpenses();
+    if (this.insights) this.loadCustomerInsights();
   }
 
   onDateChange(): void {
     this.loadEarnings();
     this.loadExpenses();
+    if (this.insights) this.loadCustomerInsights();
   }
 
   staffShare(earnings: number): number {

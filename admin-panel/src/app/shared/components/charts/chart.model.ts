@@ -29,6 +29,12 @@ export const CHART_INK = {
   series:     '#7c3aed',
   /** Alan dolgusu: serinin %10 opaklıkta yıkaması, doygun blok değil. */
   seriesWash: 'rgba(124, 58, 237, 0.10)',
+  /**
+   * İkinci seri. Marka moruyla yan yana duracağı için turuncu: mor↔mavi
+   * çifti en yaygın renk körlüğünde tek renge düşüyor (OKLab ΔE 0.4),
+   * mor↔turuncu arası 32.
+   */
+  accent:     '#eb6834',
   /** Sıfır çizgisinin üstü (kâr). */
   positive:   '#2563eb',
   /** Sıfır çizgisinin altı (zarar). */

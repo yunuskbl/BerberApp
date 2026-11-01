@@ -89,7 +89,7 @@
 
   <!-- ── Sekme Çubuğu ──────────────────────────────────────────────────── -->
   <div class="tab-bar no-print">
-    <button class="tab-btn" [class.active]="activeTab === 'income'" (click)="activeTab = 'income'">
+    <button class="tab-btn" [class.active]="activeTab === 'income'" (click)="setTab('income')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
       Gelir Raporu
       @if (selectedScope !== 'main') {
@@ -97,11 +97,15 @@
       }
     </button>
     @if (selectedScope === 'main') {
-      <button class="tab-btn" [class.active]="activeTab === 'expense'" (click)="activeTab = 'expense'">
+      <button class="tab-btn" [class.active]="activeTab === 'expense'" (click)="setTab('expense')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
         Gider Yönetimi
       </button>
     }
+    <button class="tab-btn" [class.active]="activeTab === 'customers'" (click)="setTab('customers')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Müşteri Takibi
+    </button>
   </div>
 
   @if (isLoading) {
@@ -579,6 +583,238 @@
       </div>
 
     </div><!-- /tab-section expense -->
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- MÜŞTERİ TAKİBİ SEKMESİ                                             -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <div class="tab-section" [class.tab-hidden]="activeTab !== 'customers'">
+
+      @if (isInsightsLoading && !insights) {
+        <div class="loading-state"><div class="spinner"></div></div>
+      } @else if (insights) {
+
+        <!-- Özet kartları -->
+        <div class="stats-grid">
+          <div class="stat-card stat-card--purple">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="stat-label">Dönemde Gelen Müşteri</div>
+            <div class="stat-value">{{ insights.activeCustomers }}</div>
+            <div class="stat-sub">{{ insights.newCustomers }} yeni · {{ insights.returningCustomers }} tekrar</div>
+          </div>
+
+          <div class="stat-card stat-card--green">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </div>
+            <div class="stat-label">Tekrar Gelme Oranı</div>
+            <div class="stat-value">%{{ insights.repeatRate }}</div>
+            <div class="stat-sub">dönemde gelenlerin daha önce de gelmiş olanı</div>
+          </div>
+
+          <div class="stat-card stat-card--blue">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="stat-label">Müşteri Başına Ortalama</div>
+            <div class="stat-value">{{ formatCurrency(insights.averageSpendPerCustomer) }}</div>
+            <div class="stat-sub">dönem geliri ÷ gelen müşteri</div>
+          </div>
+
+          <div class="stat-card stat-card--amber">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+            </div>
+            <div class="stat-label">Ortalama Ziyaret Aralığı</div>
+            <div class="stat-value">
+              @if (insights.averageVisitGapDays > 0) { {{ insights.averageVisitGapDays }} gün }
+              @else { — }
+            </div>
+            <div class="stat-sub">en az iki kez gelenlerde · tüm zamanlar</div>
+          </div>
+
+          @if (insights.atRiskCount > 0) {
+            <div class="stat-card stat-card--red">
+              <div class="stat-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <div class="stat-label">Kayıp Riski</div>
+              <div class="stat-value">{{ insights.atRiskCount }}</div>
+              <div class="stat-sub">{{ insights.atRiskAfterDays }} gündür uğramayan düzenli müşteri</div>
+            </div>
+          }
+        </div>
+
+        <!-- Yeni / tekrar gelen kırılımı -->
+        @if (hasCustomerActivity) {
+          <div class="report-section">
+            <div class="section-title-row">
+              <div class="section-icon section-icon--purple">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+              </div>
+              <h3>Yeni ve Tekrar Gelen Müşteri</h3>
+              <span class="chart-chip">{{ chartBucketLabel }}</span>
+            </div>
+            <div class="chart-card">
+              <app-stacked-bar-chart
+                [points]="customerMix"
+                [seriesNames]="customerSeriesNames"
+                [format]="countOnly"
+                [integerAxis]="true"
+                [height]="220"
+                totalLabel="Toplam müşteri"
+                emptyText="Bu dönemde gelen müşteri yok"/>
+              <p class="chart-note">
+                Aynı gün iki randevusu olan müşteri bir kez sayılır; "yeni", hayatında
+                ilk kez o gün gelen müşteri demek.
+              </p>
+            </div>
+          </div>
+        }
+
+        <!-- Sadakat dağılımı -->
+        <div class="report-section">
+          <div class="section-title-row">
+            <div class="section-icon section-icon--green">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <h3>Sadakat Dağılımı</h3>
+            <span class="chart-chip">tüm zamanlar</span>
+          </div>
+          <div class="chart-card">
+            <app-bar-chart
+              [points]="loyaltyBars"
+              [format]="countOnly"
+              [axisFormat]="countAxis"
+              [labelFormat]="countOnly"
+              [integerAxis]="true"
+              [height]="200"
+              seriesName="Müşteri sayısı"
+              noteHeader="Pay"
+              emptyText="Henüz müşteri kaydı yok"/>
+            <p class="chart-note">
+              {{ insights.totalCustomers }} kayıtlı müşterinin
+              {{ insights.everVisitedCustomers }} tanesi en az bir kez geldi.
+            </p>
+          </div>
+        </div>
+
+        <!-- Kayıp riski -->
+        @if (insights.atRisk.length > 0) {
+          <div class="report-section">
+            <div class="section-title-row">
+              <div class="section-icon section-icon--red">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <h3>Kayıp Riskindeki Müşteriler</h3>
+              <span class="chart-chip">{{ insights.atRiskAfterDays }}+ gündür yok</span>
+            </div>
+
+            <div class="info-note no-print">
+              En az iki kez gelmiş ama {{ insights.atRiskAfterDays }} gündür uğramamış müşteriler;
+              en son geleni en üstte. Toplu kampanya mesajı yalnızca açık rızası olanlara
+              gönderilebilir — listede {{ insights.atRiskWithConsent }} kişinin rızası var.
+              Tek tek arama ya da randevu hatırlatması bu kapsamda değil.
+            </div>
+
+            <div class="table-card">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Müşteri</th>
+                    <th>Son Ziyaret</th>
+                    <th>Ziyaret</th>
+                    <th>Toplam Harcama</th>
+                    <th class="no-print">İletişim</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of insights.atRisk; track c.id) {
+                    <tr>
+                      <td>
+                        <div class="staff-cell">
+                          <div class="staff-avatar">{{ (c.fullName || '?')[0].toUpperCase() }}</div>
+                          <div class="risk-name">
+                            <span class="staff-name">{{ c.fullName }}</span>
+                            @if (!c.hasMarketingConsent) {
+                              <span class="consent-chip" title="Kampanya mesajı için açık rıza yok">izin yok</span>
+                            }
+                          </div>
+                        </div>
+                      </td>
+                      <td class="date-cell">
+                        {{ formatDaysAgo(c.daysSinceLastVisit) }}
+                        @if (c.lastVisit) { <span class="date-exact">{{ formatDate(c.lastVisit) }}</span> }
+                      </td>
+                      <td class="center-cell">{{ c.visitCount }}</td>
+                      <td class="amount-cell">{{ formatCurrency(c.totalSpend) }}</td>
+                      <td class="action-cell no-print">
+                        @if (c.phone) {
+                          <a class="wa-btn" [href]="whatsappLink(c.phone)" target="_blank" rel="noopener"
+                             [title]="c.phone + ' numarasına WhatsApp\'tan yaz'">WhatsApp</a>
+                        } @else {
+                          <span class="text-muted">telefon yok</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            @if (insights.atRiskCount > insights.atRisk.length) {
+              <p class="chart-note">
+                {{ insights.atRiskCount }} müşteriden ilk {{ insights.atRisk.length }} tanesi gösteriliyor.
+              </p>
+            }
+          </div>
+        }
+
+        <!-- En değerli müşteriler -->
+        @if (insights.topCustomers.length > 0) {
+          <div class="report-section">
+            <div class="section-title-row">
+              <div class="section-icon section-icon--purple">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+              </div>
+              <h3>En Çok Harcayan Müşteriler</h3>
+              <span class="chart-chip">seçili dönem</span>
+            </div>
+            <div class="table-card">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Müşteri</th>
+                    <th>Ziyaret</th>
+                    <th>Toplam Harcama</th>
+                    <th>Son Ziyaret</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of insights.topCustomers; track c.id; let i = $index) {
+                    <tr>
+                      <td>
+                        <div class="staff-cell">
+                          <div class="staff-avatar" [attr.data-rank]="i === 0 ? '1' : null">
+                            {{ (c.fullName || '?')[0].toUpperCase() }}
+                          </div>
+                          <span class="staff-name">{{ c.fullName }}</span>
+                          @if (i === 0) { <span class="top-badge">🏆 #1</span> }
+                        </div>
+                      </td>
+                      <td class="center-cell">{{ c.visitCount }}</td>
+                      <td class="amount-cell">{{ formatCurrency(c.totalSpend) }}</td>
+                      <td class="date-cell">{{ c.lastVisit ? formatDate(c.lastVisit) : '—' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      }
+
+    </div><!-- /tab-section customers -->
 
   }
 

@@ -99,11 +99,17 @@ export class BarChartComponent implements AfterViewInit, OnDestroy {
 
     // Sütun kalınlığı 24px'i geçmiyor; bandın artanı hava olarak kalıyor.
     // Komşu sütunlar arasında 2px'lik zemin boşluğu bırakılıyor.
-    const band = iw / Math.max(pts.length, 1);
+    //
+    // Band genişliği de sınırlı: altı sütunu 1200px'e yaymak, kalınlığı sabit
+    // kaldığı için grafiği birbirinden kopuk çubuklara çeviriyor. Az sütun
+    // varsa çizim alanı daraltılıp kart içinde ortalanıyor.
+    const band = Math.min(iw / Math.max(pts.length, 1), 88);
     const barW = Math.max(2, Math.min(24, band - 2));
+    const used = band * pts.length;
+    const left = this.PAD.l + Math.max(0, (iw - used) / 2);
 
     const bars = pts.map((p, i) => {
-      const bandX = this.PAD.l + i * band;
+      const bandX = left + i * band;
       const x = bandX + (band - barW) / 2;
       const tipY = yAt(p.value);
       return {
@@ -138,12 +144,13 @@ export class BarChartComponent implements AfterViewInit, OnDestroy {
     // Eksen etiketi sayısı bandın genişliğine göre: dar ekranda 3-4 etiket
     // kalıyor, geniş ekranda 12'ye kadar çıkıyor. Sabit bir sayı telefonda
     // etiketleri üst üste bindiriyordu.
-    const maxLabels = Math.max(2, Math.floor(iw / 52));
+    const maxLabels = Math.max(2, Math.floor(used / 52));
     const stride = Math.max(1, Math.ceil(bars.length / maxLabels));
     const xLabels = bars.filter((_, i) => i % stride === 0);
 
     return {
       w, h, iw, ih, bars, zeroY, labelled, xLabels,
+      left, right: left + used,
       ticks: ticks.map((v) => ({ v, y: yAt(v), label: this.axisFormat()(v) })),
     };
   });

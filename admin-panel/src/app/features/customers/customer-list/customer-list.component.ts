@@ -505,6 +505,26 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   }
 
   // ─── HELPERS ─────────────────────────────────────────────
+
+  /**
+   * Son ziyaret: yakın tarihler "12 gün önce" olarak, eskiler tarihle.
+   * Hiç gelmemiş müşteri "—" değil "hiç gelmedi" — ikisi farklı şey ve
+   * müşteri takibinde bu ayrım asıl bilgi.
+   */
+  lastVisitLabel(customer: Customer): string {
+    if (!customer.lastVisitAt) return customer.totalVisits > 0 ? '—' : 'hiç gelmedi';
+
+    const last = new Date(customer.lastVisitAt);
+    const days = Math.floor((Date.now() - last.getTime()) / 86400000);
+    if (days < 1)  return 'bugün';
+    if (days === 1) return 'dün';
+    if (days < 30) return `${days} gün önce`;
+
+    return last.toLocaleDateString('tr-TR', {
+      day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Europe/Istanbul',
+    });
+  }
+
   getInitials(name: string): string {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   }

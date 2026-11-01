@@ -39,6 +39,7 @@
             <th>{{ 'common.phone' | translate }}</th>
             <th>{{ 'common.email' | translate }}</th>
             <th>{{ 'customers.colVisits' | translate }}</th>
+            <th>Son Ziyaret</th>
             <th>{{ 'common.notes' | translate }}</th>
             <th>{{ 'common.actions' | translate }}</th>
           </tr>
@@ -57,6 +58,7 @@
               <td>
                 <span class="visit-badge">{{ customer.totalVisits }} {{ 'customers.visit' | translate }}</span>
               </td>
+              <td class="text-muted">{{ lastVisitLabel(customer) }}</td>
               <td class="text-muted notes-cell">{{ customer.notes || '—' }}</td>
               <td>
                 <div class="actions">
