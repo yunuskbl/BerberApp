@@ -1730,3 +1730,11 @@ $green:        #059669;
   .compare-feat-col { padding: 12px 14px; font-size: 13px; }
   .compare-plan-col { padding: 12px 6px; font-size: 12px; }
 }
+
+/* Yasal kimlik satırı: okunur ama altbilginin geri kalanından sessiz. */
+.footer-legal {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.6;
+}

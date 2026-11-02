@@ -427,6 +427,19 @@
         <button (click)="goToApp()">{{ isLoggedIn ? ('pricing.nav.panel' | translate) : ('pricing.footer.login' | translate) }}</button>
       </div>
       <p class="footer-copy">{{ 'pricing.footer.copy' | translate }}</p>
+      <!-- Hizmet sağlayıcının yasal kimliği. Marka (ayarlıyo) tüzel kişi değil;
+           Meta işletme doğrulaması belgedeki adı burada arıyor, e-ticaret ve
+           KVKK mevzuatı da hizmeti kimin verdiğinin yazılmasını istiyor. -->
+      @if (company$ | async; as company) {
+        @if (company.legalName) {
+          <p class="footer-legal">
+            {{ company.legalName }}
+            @if (company.address) { · {{ company.address }} }
+            @if (company.taxInfo) { · {{ company.taxInfo }} }
+            @if (company.phone) { · {{ company.phone }} }
+          </p>
+        }
+      }
     </div>
   </footer>
 

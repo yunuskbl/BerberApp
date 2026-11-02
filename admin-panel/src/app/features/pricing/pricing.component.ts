@@ -6,6 +6,8 @@ import { LanguageService, Lang } from '../../core/services/language.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { PLANS, displayMonthly, formatPrice } from '../../core/pricing';
+import { CompanyInfo, CompanyInfoService } from '../../core/services/company-info.service';
+import { Observable } from 'rxjs';
 
 interface Feature  { name: string; included: boolean; }
 interface PlanLimit { staff: string; appointments: string; }
@@ -181,12 +183,17 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get isLoggedIn(): boolean { return !!localStorage.getItem('accessToken'); }
 
+  /** Altbilgide gösterilen yasal kimlik. */
+  readonly company$: Observable<CompanyInfo | null>;
+
   constructor(
     private router: Router,
     private sanitizer: DomSanitizer,
     private route: ActivatedRoute,
     public langSvc: LanguageService,
+    companyInfo: CompanyInfoService,
   ) {
+    this.company$ = companyInfo.info$;
     this.appFeatures = this.rawFeatureKeys.map(f => ({
       icon:     this.sanitizer.bypassSecurityTrustHtml(f.icon),
       titleKey: `pricing.card.${f.cardKey}.title`,

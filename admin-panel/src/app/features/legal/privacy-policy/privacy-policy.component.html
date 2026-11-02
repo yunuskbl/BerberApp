@@ -14,11 +14,30 @@
 
       <section>
         <h2>1. Veri Sorumlusu</h2>
-        <p>
-          ayarlıyo ("biz", "platform"), 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK)
-          kapsamında veri sorumlusudur. Bu politika, hizmetlerimizi kullanırken toplanan kişisel
-          verilerin nasıl işlendiğini açıklamaktadır.
-        </p>
+        <!-- Veri sorumlusu bir marka değil, gerçek ya da tüzel kişidir.
+             Yasal ad yapılandırılmışsa o yazılıyor; yoksa eski metin. -->
+        @if (company$ | async; as company) {
+          @if (company.legalName) {
+            <p>
+              ayarlıyo platformunun işletmecisi <strong>{{ company.legalName }}</strong>
+              ("biz"), 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında
+              veri sorumlusudur. Bu politika, hizmetlerimizi kullanırken toplanan kişisel
+              verilerin nasıl işlendiğini açıklamaktadır.
+            </p>
+            @if (company.address) {
+              <p>Adres: {{ company.address }}</p>
+            }
+            @if (company.taxInfo) {
+              <p>{{ company.taxInfo }}</p>
+            }
+          } @else {
+            <p>
+              ayarlıyo ("biz", "platform"), 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK)
+              kapsamında veri sorumlusudur. Bu politika, hizmetlerimizi kullanırken toplanan kişisel
+              verilerin nasıl işlendiğini açıklamaktadır.
+            </p>
+          }
+        }
         <p>
           İletişim: <a href="mailto:info@ayarliyo.com">info&#64;ayarliyo.com</a>
         </p>
