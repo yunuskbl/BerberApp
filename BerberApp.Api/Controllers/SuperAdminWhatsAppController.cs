@@ -47,6 +47,19 @@ public class SuperAdminWhatsAppController : ControllerBase
 
     private static CancellationTokenSource CallTimeout() => new(WppCallTimeout);
 
+    /// <summary>
+    /// En son ne zaman oturum başlatma isteği gönderdiğimiz.
+    ///
+    /// QR ucuna arka arkaya gelen her istek <c>start-session</c> çağırıyordu;
+    /// panel tarafındaki zamanlayıcı sızıntısıyla birleşince oturum saniyede
+    /// bir yeniden başlatılıyor ve tarayıcı QR üretecek kadar ilerleyemiyordu.
+    /// Chromium'un açılıp QR basması ~15-20 saniye sürdüğü için başlatma
+    /// isteği bu aralıkta bir kez gönderiliyor; ara çağrılar yalnızca mevcut
+    /// QR'ı soruyor.
+    /// </summary>
+    private static DateTime _lastStartAttemptUtc = DateTime.MinValue;
+    private static readonly TimeSpan StartCooldown = TimeSpan.FromSeconds(25);
+
     // Token'ı Bearer header olarak eklenmiş HttpRequestMessage oluşturur
     private HttpRequestMessage WppRequest(HttpMethod method, string url)
     {
@@ -135,10 +148,25 @@ public class SuperAdminWhatsAppController : ControllerBase
         }
         catch (Exception ex) { _logger.LogDebug(ex, "[WA] Mevcut QR alınamadı, oturum başlatılacak."); }
 
-        // 2. Oturumu başlat. waitQrCode GÖNDERİLMİYOR: WPPConnect bu bayrakla
-        //    QR üretilene kadar isteği açık tutuyor ve oturum takılı bir
-        //    durumdaysa dakikalarca cevap vermiyor. Başlatmayı tetikleyip
-        //    bırakıyoruz, QR'ı aşağıda soruyoruz.
+        // 2. Oturumu başlat — ama sık sık değil. waitQrCode GÖNDERİLMİYOR:
+        //    WPPConnect bu bayrakla QR üretilene kadar isteği açık tutuyor ve
+        //    oturum takılı bir durumdaysa dakikalarca cevap vermiyor.
+        //    Başlatmayı tetikleyip bırakıyoruz, QR'ı aşağıda soruyoruz.
+        var sinceLastStart = DateTime.UtcNow - _lastStartAttemptUtc;
+        if (sinceLastStart < StartCooldown)
+        {
+            // Başlatma zaten yolda; üstüne bir daha göndermek tarayıcıyı
+            // baştan başlatıp QR üretimini sıfırlıyor.
+            _logger.LogDebug("[WA] start-session atlandı, {Seconds:F0} sn önce denendi.",
+                sinceLastStart.TotalSeconds);
+            return Ok(new
+            {
+                success = false,
+                message = "Oturum başlatılıyor, QR birkaç saniye içinde hazır olacak."
+            });
+        }
+
+        _lastStartAttemptUtc = DateTime.UtcNow;
         try
         {
             var startUrl  = $"{base_}/api/{_cfg.Session}/start-session";
@@ -155,7 +183,7 @@ public class SuperAdminWhatsAppController : ControllerBase
         catch (Exception ex) { _logger.LogDebug(ex, "[WA] start-session QR döndürmedi."); }
 
         // 3. Kısa bir süre bekleyip tekrar sor. Uzun poll etmek yerine hızlıca
-        //    "henüz hazır değil" demek daha iyi: panel zaten 20 saniyede bir
+        //    "henüz hazır değil" demek daha iyi: panel zaten altı saniyede bir
         //    yeniden soruyor ve uzun bekleyen istek proxy'de ölüyor.
         for (int i = 0; i < 2; i++)
         {

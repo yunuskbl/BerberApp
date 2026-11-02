@@ -57,7 +57,7 @@ export class SuperAdminWhatsAppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     clearInterval(this.statusInterval);
-    clearInterval(this.qrInterval);
+    this.stopQrPolling();
   }
 
   /**
@@ -86,16 +86,40 @@ export class SuperAdminWhatsAppComponent implements OnInit, OnDestroy {
         this.status    = res.connected ? 'connected' : 'disconnected';
         this.statusRaw = res.status ?? '';
         if (this.status === 'disconnected' && !this.qrImage) {
-          this.loadQr();
-          this.qrInterval = setInterval(() => this.loadQr(), 20000);
+          this.startQrPolling();
         }
         if (this.status === 'connected') {
-          clearInterval(this.qrInterval);
+          this.stopQrPolling();
           this.qrImage = '';
         }
       },
       error: () => { this.status = 'error'; }
     });
+  }
+
+  /**
+   * QR beklerken tek bir zamanlayıcı çalışır.
+   *
+   * Eskiden durum kontrolü (15 sn) her seferinde yeni bir 20 saniyelik interval
+   * kuruyordu, öncekini temizlemeden. Birkaç dakika sonra onlarca zamanlayıcı
+   * birikip saniyede bir /qr isteği atıyordu; her istek de oturumu yeniden
+   * başlattığı için QR üretilecek kadar ilerleyemiyordu. Merkezi oturumun
+   * dosyaları bu yüzden günlerce güncellenmemişti.
+   */
+  private startQrPolling(): void {
+    if (this.qrInterval) return;          // zaten bekliyoruz
+    this.loadQr();
+    this.qrInterval = setInterval(() => {
+      if (this.qrImage) { this.stopQrPolling(); return; }
+      this.loadQr();
+    }, 6000);
+  }
+
+  private stopQrPolling(): void {
+    if (this.qrInterval) {
+      clearInterval(this.qrInterval);
+      this.qrInterval = undefined;
+    }
   }
 
   loadQr(): void {
