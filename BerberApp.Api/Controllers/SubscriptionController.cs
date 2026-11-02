@@ -1,5 +1,6 @@
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Application.Common.Pricing;
+using BerberApp.Application.Common.Services;
 using BerberApp.Domain.Entities;
 using BerberApp.Domain.Enums;
 using MediatR;
@@ -16,15 +17,17 @@ public class SubscriptionController : BaseApiController
     private readonly IAppDbContext _context;
     private readonly IIyzicoService _iyzico;
     private readonly IEmailService _email;
+    private readonly ITrialUsageService _trialUsage;
     private readonly string _frontendSuccessUrl;
     private readonly string _frontendFailUrl;
 
-    public SubscriptionController(IMediator mediator, IAppDbContext context, IIyzicoService iyzico, IEmailService email, IConfiguration config)
+    public SubscriptionController(IMediator mediator, IAppDbContext context, IIyzicoService iyzico, IEmailService email, IConfiguration config, ITrialUsageService trialUsage)
         : base(mediator)
     {
         _context            = context;
         _iyzico             = iyzico;
         _email              = email;
+        _trialUsage         = trialUsage;
         _frontendSuccessUrl = config["Iyzico:FrontendSuccessUrl"] ?? "https://ayarliyo.com/payment/success";
         _frontendFailUrl    = config["Iyzico:FrontendFailUrl"]    ?? "https://ayarliyo.com/payment/fail";
     }
@@ -51,6 +54,19 @@ public class SubscriptionController : BaseApiController
             autoRenewal = sub.IsAutoRenewal,
             isActive    = sub.IsActive
         });
+    }
+
+    /// <summary>
+    /// Deneme süresi özeti — panel şeridi bunu gösteriyor. Soyut bir yükseltme
+    /// çağrısı yerine işletmenin kendi rakamları: aldığı randevu, gelen müşteri,
+    /// sistemin onun adına gönderdiği hatırlatma ve bu randevuların cirosu.
+    /// </summary>
+    [HttpGet("trial-summary")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    public async Task<IActionResult> GetTrialSummary(CancellationToken ct)
+    {
+        var usage = await _trialUsage.GetAsync(TenantId, ct);
+        return Ok(new { success = true, data = usage });
     }
 
     // POST /api/subscription/checkout

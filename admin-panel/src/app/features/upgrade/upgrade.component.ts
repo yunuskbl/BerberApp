@@ -52,12 +52,6 @@ export class UpgradeComponent implements OnInit {
   get current(): PlanInfo  { return this.plans[this.currentPlanName]  ?? this.plans['Baslangic']; }
   get required(): PlanInfo { return this.plans[this.requiredPlanName] ?? this.plans['Profesyonel']; }
 
-  private readonly slugMap: Record<string, string> = {
-    Profesyonel: 'profesyonel',
-    Premium:     'premium',
-    Baslangic:   'baslangic',
-  };
-
   constructor(private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit(): void {
@@ -67,10 +61,23 @@ export class UpgradeComponent implements OnInit {
     });
   }
 
-  goToPayment(): void {
-    const slug = this.slugMap[this.requiredPlanName] ?? 'profesyonel';
-    this.router.navigate(['/payment'], { queryParams: { plan: slug } });
+  /**
+   * Yükseltme konuşmayla ilerliyor. Satış yüz yüze yapıldığı için buradan
+   * havale formuna göndermek, işletmeyi kişisel bir IBAN'a para yollayıp
+   * onay beklemeye bırakıyordu; bir mesaj ya da telefon hem daha hızlı hem
+   * de satışın gerçekten yapıldığı kanal.
+   *
+   * Havale formu (/payment) silinmedi: doğrudan bağlantıyla hâlâ açılıyor,
+   * böylece "havale ile ödeyeyim" diyen işletmeye link gönderilebiliyor.
+   */
+  contactUrl(): string {
+    const plan = this.required.label;
+    const text = encodeURIComponent(
+      `Merhaba, ayarlıyo'da ${plan} planına geçmek istiyorum.`);
+    return `https://wa.me/905305606916?text=${text}`;
   }
+
+  readonly supportPhone = '0530 560 69 16';
 
   goBack(): void { this.router.navigate(['/dashboard']); }
 }

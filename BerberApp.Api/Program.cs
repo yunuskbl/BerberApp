@@ -181,6 +181,11 @@ builder.Services.AddScoped<LinkNotificationService>();
 builder.Services.AddScoped<INotificationService, QueuedNotificationService>();
 builder.Services.AddScoped<IBroadcastQueue, HangfireBroadcastQueue>();
 builder.Services.AddScoped<IPlanService, PlanService>();
+// Deneme kullanım özeti: hem panel şeridi hem deneme bitiş e-postası aynı
+// hesabı okusun diye tek servis.
+builder.Services.AddScoped<BerberApp.Application.Common.Services.ITrialUsageService,
+                           BerberApp.Application.Common.Services.TrialUsageService>();
+builder.Services.AddScoped<BerberApp.Application.Common.Services.TrialUsageService>();
 builder.Services.AddScoped<IIyzicoService, BerberApp.Infrastructure.Services.IyzicoService>();
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();

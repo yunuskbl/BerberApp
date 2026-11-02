@@ -271,8 +271,8 @@
                   class="plan-btn btn-buy"
                   [class.btn-primary]="plan.featured"
                   [class.btn-primary-light]="!plan.featured"
-                  (click)="buyPlan(plan.name)">
-                  {{ isUpgradeMode ? ('pricing.plan.buyTransfer' | translate) : ('pricing.plan.buyNow' | translate) }}
+                  (click)="contactForPlan(plan.name)">
+                  {{ 'pricing.plan.contactSales' | translate }}
                 </button>
                 @if (!isUpgradeMode) {
                   <button class="plan-btn btn-trial btn-outline" (click)="selectPlan(plan.name)">

@@ -61,7 +61,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
   errorMessage = '';
   showPassword = false;
   selectedPlan = '';
-  buyMode = false;
 
   // OTP state
   otpSent = false;
@@ -111,7 +110,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.selectedPlan = this.route.snapshot.queryParamMap.get('plan') || '';
-    this.buyMode = this.route.snapshot.queryParamMap.get('mode') === 'buy';
     if (this.authService.isLoggedIn()) {
       this.router.navigate(['/dashboard']);
     }
@@ -251,11 +249,10 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.authService.register(payload).subscribe({
       next: (res) => {
         if (res.success) {
-          if (this.buyMode && this.selectedPlan) {
-            this.router.navigate(['/payment'], { queryParams: { plan: this.selectedPlan } });
-          } else {
-            this.router.navigate(['/dashboard']);
-          }
+          // Kayıt biter bitmez panele. Eskiden "satın alma" modunda havale
+          // formuna gidiliyordu; artık satış konuşmayla ilerliyor ve yeni
+          // işletme 30 günlük denemesini Profesyonel haklarıyla kullanıyor.
+          this.router.navigate(['/dashboard']);
         } else {
           this.errorMessage = res.message || 'Kayıt oluşturulamadı.';
         }

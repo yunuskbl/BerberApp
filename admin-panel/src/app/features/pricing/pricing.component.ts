@@ -299,24 +299,35 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
     window.open('/salons', '_blank');
   }
 
+  /**
+   * "Ücretsiz Dene" → kayıt. Giriş yapmış kullanıcı zaten içeride olduğu için
+   * panele gider; eskiden havale formuna yollanıyordu ki denemeyi deneyen
+   * birine ödeme sayfası göstermek anlamsızdı.
+   */
   selectPlan(name: string): void {
+    if (this.isLoggedIn) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
     const params: Record<string, string> = { plan: name };
     if (this.billingYearly) params['billing'] = 'yearly';
-    if (this.isLoggedIn) {
-      this.router.navigate(['/payment'], { queryParams: params });
-    } else {
-      this.router.navigate(['/kayit'], { queryParams: params });
-    }
+    this.router.navigate(['/kayit'], { queryParams: params });
   }
 
-  buyPlan(name: string): void {
-    const params: Record<string, string> = { plan: name, mode: 'buy' };
-    if (this.billingYearly) params['billing'] = 'yearly';
-    if (this.isLoggedIn) {
-      this.router.navigate(['/payment'], { queryParams: params });
-    } else {
-      this.router.navigate(['/kayit'], { queryParams: params });
-    }
+  /**
+   * Satın alma self-servis değil: satış yüz yüze/telefonla yapılıyor, bu yüzden
+   * plan kartındaki düğme WhatsApp'a gidiyor. Havale formu (/payment) duruyor
+   * ama kamuya açık bir girişi yok — "havale ile ödeyeyim" diyene link
+   * gönderiliyor. Kişisel bir IBAN'a para yollayıp 24 saat onay bekletmek,
+   * zaten konuşulan bir müşteri için gereksiz bir adımdı.
+   */
+  contactForPlan(name: string): void {
+    const plan = this.plans.find(p => p.name === name);
+    const label = plan ? this.langSvc.t(plan.labelKey) : name;
+    const period = this.billingYearly ? 'yıllık' : 'aylık';
+    const text = encodeURIComponent(
+      `Merhaba, ayarlıyo ${label} planı (${period}) hakkında bilgi almak istiyorum.`);
+    window.open(`https://wa.me/905305606916?text=${text}`, '_blank', 'noopener');
   }
 
   toggleFAQ(i: number): void { this.faqItems[i].open = !this.faqItems[i].open; }

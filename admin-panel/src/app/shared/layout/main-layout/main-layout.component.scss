@@ -36,6 +36,16 @@
 
   .trial-text { flex: 1; }
 
+  /* İşletmenin kendi rakamları — dar ekranda alt satıra iniyor. */
+  .trial-proof {
+    opacity: 0.85;
+
+    @media (max-width: 720px) {
+      display: block;
+      margin-top: 2px;
+    }
+  }
+
   .trial-cta {
     padding: 4px 14px;
     background: #111827;

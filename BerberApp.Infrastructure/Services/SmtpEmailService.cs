@@ -280,9 +280,47 @@ public class SmtpEmailService : IEmailService
         await SendAsync(toEmail, $"Aboneliğiniz Aktifleşti — ayarlıyo {planName}", body);
     }
 
-    public async Task SendSubscriptionExpiryWarningAsync(string toEmail, string fullName, string salonName, int daysRemaining, DateTime expiryDate)
+    public async Task SendSubscriptionExpiryWarningAsync(
+        string toEmail, string fullName, string salonName,
+        int daysRemaining, DateTime expiryDate,
+        bool isTrial = false,
+        int appointments = 0, int customers = 0, int notifications = 0,
+        decimal revenueInTry = 0m)
     {
-        var dateStr = expiryDate.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("tr-TR"));
+        var tr      = new System.Globalization.CultureInfo("tr-TR");
+        var dateStr = expiryDate.ToString("dd MMMM yyyy", tr);
+        var money   = revenueInTry.ToString("N0", tr);
+
+        var heading = isTrial ? "Deneme Süreniz Bitiyor" : "Aboneliğiniz Sona Eriyor";
+        var lead = isTrial
+            ? $"Merhaba <strong>{fullName}</strong>, <strong>{salonName}</strong> için ücretsiz deneme süreniz <strong>{daysRemaining} gün içinde</strong> ({dateStr}) doluyor."
+            : $"Merhaba <strong>{fullName}</strong>, <strong>{salonName}</strong> hesabınızın aboneliği <strong>{daysRemaining} gün içinde</strong> ({dateStr}) sona erecek.";
+
+        // Kullanım özeti: işletmenin bu dönemde sistemden fiilen ne aldığı.
+        // Hiç randevu yoksa blok hiç basılmıyor — sıfırlarla dolu bir tablo,
+        // yükseltmek için sebep olmadığını söylemek olurdu.
+        var usageBlock = appointments > 0
+            ? $"""
+                <tr><td style="padding-bottom:8px;font-size:14px;font-weight:700;color:#111827;">Bu sürede ayarlıyo ile:</td></tr>
+                <tr><td style="padding-bottom:24px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;color:#374151;">
+                    <tr><td style="padding:6px 0;">Tamamlanan randevu</td>
+                        <td align="right" style="padding:6px 0;font-weight:700;">{appointments}</td></tr>
+                    <tr><td style="padding:6px 0;border-top:1px solid #f3f4f6;">Gelen farklı müşteri</td>
+                        <td align="right" style="padding:6px 0;border-top:1px solid #f3f4f6;font-weight:700;">{customers}</td></tr>
+                    <tr><td style="padding:6px 0;border-top:1px solid #f3f4f6;">Adınıza gönderilen hatırlatma</td>
+                        <td align="right" style="padding:6px 0;border-top:1px solid #f3f4f6;font-weight:700;">{notifications}</td></tr>
+                    <tr><td style="padding:6px 0;border-top:1px solid #f3f4f6;">Bu randevuların cirosu</td>
+                        <td align="right" style="padding:6px 0;border-top:1px solid #f3f4f6;font-weight:700;">₺{money}</td></tr>
+                  </table>
+                </td></tr>
+                """
+            : "";
+
+        var closing = isTrial
+            ? "Devam etmek isterseniz bize yazın ya da arayın; planınızı birlikte seçelim."
+            : "Hizmet kesintisi yaşamamak için bize yazın ya da arayın.";
+
         var body = $"""
             <!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"></head>
             <body style="margin:0;padding:0;background:#f3f4f6;font-family:'Inter',Arial,sans-serif;">
@@ -292,13 +330,15 @@ public class SmtpEmailService : IEmailService
                     <tr><td align="center" style="padding-bottom:28px;">
                       <span style="font-size:28px;font-weight:800;color:#111827;">ayarlıyo<span style="display:inline-block;width:8px;height:8px;background:#111827;border-radius:50%;margin-left:2px;vertical-align:middle;"></span></span>
                     </td></tr>
-                    <tr><td style="font-size:22px;font-weight:700;color:#dc2626;padding-bottom:16px;">Aboneliğiniz Sona Eriyor ⚠️</td></tr>
-                    <tr><td style="font-size:15px;color:#6b7280;line-height:1.6;padding-bottom:20px;">
-                      Merhaba <strong>{fullName}</strong>, <strong>{salonName}</strong> hesabınızın aboneliği <strong>{daysRemaining} gün içinde</strong> ({dateStr}) sona erecek.
-                      Hizmet kesintisi yaşamamak için aboneliğinizi yenileyin.
+                    <tr><td style="font-size:22px;font-weight:700;color:#111827;padding-bottom:16px;">{heading}</td></tr>
+                    <tr><td style="font-size:15px;color:#6b7280;line-height:1.6;padding-bottom:24px;">{lead}</td></tr>
+                    {usageBlock}
+                    <tr><td style="font-size:15px;color:#6b7280;line-height:1.6;padding-bottom:24px;">{closing}</td></tr>
+                    <tr><td align="center" style="padding-bottom:12px;">
+                      <a href="https://wa.me/905305606916" style="display:inline-block;padding:14px 36px;background:#111827;color:#fff;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;">WhatsApp'tan Yazın</a>
                     </td></tr>
-                    <tr><td align="center" style="padding-bottom:28px;">
-                      <a href="https://ayarliyo.com/pricing" style="display:inline-block;padding:14px 36px;background:#dc2626;color:#fff;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;">Aboneliği Yenile</a>
+                    <tr><td align="center" style="padding-bottom:28px;font-size:13px;color:#6b7280;">
+                      ya da <a href="tel:+905305606916" style="color:#111827;font-weight:600;">0530 560 69 16</a>
                     </td></tr>
                     <tr><td style="font-size:13px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:20px;">
                       Sorularınız için info@ayarliyo.com adresine yazabilirsiniz.
@@ -308,7 +348,12 @@ public class SmtpEmailService : IEmailService
               </table>
             </body></html>
             """;
-        await SendAsync(toEmail, $"Aboneliğiniz {daysRemaining} Gün İçinde Sona Eriyor — ayarlıyo", body);
+
+        var subject = isTrial
+            ? $"Deneme süreniz {daysRemaining} gün içinde bitiyor — ayarlıyo"
+            : $"Aboneliğiniz {daysRemaining} Gün İçinde Sona Eriyor — ayarlıyo";
+
+        await SendAsync(toEmail, subject, body);
     }
 
     public async Task SendMonthlyLimitWarningAsync(string toEmail, string salonName, int currentCount, int limit, bool isFull)

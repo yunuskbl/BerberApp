@@ -12,6 +12,16 @@
           } @else {
             Ücretsiz deneme süreniz bugün sona eriyor.
           }
+          <!-- İşletmenin kendi rakamları. Hiç randevu yoksa basılmıyor:
+               "0 randevu aldınız" yükseltmek için sebep değil. -->
+          @if (hasUsageProof && usage) {
+            <span class="trial-proof">
+              Şu ana kadar <strong>{{ usage.completedAppointments }} randevu</strong>,
+              <strong>{{ usage.distinctCustomers }} müşteri</strong>@if (usage.revenueInTry > 0) {,
+              <strong>₺{{ formatMoney(usage.revenueInTry) }} ciro</strong>}@if (usage.notificationsSent > 0) {
+              · adınıza <strong>{{ usage.notificationsSent }} hatırlatma</strong> gönderildi}.
+            </span>
+          }
         </span>
         <a routerLink="/upgrade" class="trial-cta">Planı Yükselt →</a>
       </div>
