@@ -541,13 +541,15 @@ export class BookingComponent implements OnInit, OnDestroy {
       next: (res) => {
         if (res.success) {
           this.otpSent = true;
-          this.otpSuccess = res.message || (email ? 'Doğrulama kodu e-posta adresinize gönderildi.' : 'Doğrulama kodu SMS ile gönderildi.');
+          // Sunucu mesajı Türkçe geldiği için yerel çeviri tercih ediliyor;
+          // başka dildeki müşteri kendi dilinde okuyor.
+          this.otpSuccess = this.langService.t(email ? 'otp.sentEmail' : 'otp.sentSms');
           this.startTimer();
         }
         this.isSendingOtp = false;
       },
       error: (err) => {
-        this.otpError = err.error?.message || 'Bir hata oluştu. Lütfen tekrar deneyin.';
+        this.otpError = err.error?.message || this.langService.t('otp.error');
         this.isSendingOtp = false;
       },
     });
@@ -582,7 +584,7 @@ export class BookingComponent implements OnInit, OnDestroy {
         if (res.success) {
           this.otpVerified = true;
           this.verifiedPhone = this.fullPhone;
-          this.otpSuccess = 'Telefon doğrulandı! ✓';
+          this.otpSuccess = this.langService.t('otp.phoneVerified');
           // Numaranın sahibi olduğu doğrulandı; kayıtlı adı şimdi getirebiliriz.
           this.prefillVerifiedCustomer();
         }
@@ -591,7 +593,7 @@ export class BookingComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.otpError = err.status < 500 && err.error?.message
           ? err.error.message
-          : 'Bir hata oluştu. Lütfen tekrar deneyin.';
+          : this.langService.t('otp.error');
         this.isVerifyingOtp = false;
       },
     });

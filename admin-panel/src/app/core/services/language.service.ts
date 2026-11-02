@@ -184,6 +184,7 @@ const T: Record<Lang, Record<string, string>> = {
     'common.saving':           'Kaydediliyor...',
     'common.update':           'Güncelle',
     'common.edit':             'Düzenle',
+    'common.delete':           'Sil',
     'common.actions':          'İşlemler',
     'common.status':           'Durum',
     'common.phone':            'Telefon',
@@ -532,6 +533,21 @@ const T: Record<Lang, Record<string, string>> = {
     'booking.dateAndTime':      'Tarih & Saat',
     'booking.submitting':       'Randevu Oluşturuluyor...',
     'booking.submit':           'Randevu Al →',
+
+    // OTP doğrulama
+    'otp.send':          'Kodu Gönder',
+    'otp.sending':       'Gönderiliyor...',
+    'otp.verified':      'Doğrulandı',
+    'otp.emailHint':     'Kod {email} adresine gönderilecek.',
+    'otp.placeholder':   '6 haneli kod',
+    'otp.verify':        'Doğrula',
+    'otp.verifying':     'Doğrulanıyor...',
+    'otp.timer':         'Kod {time} içinde geçerli.',
+    'otp.resend':        'Tekrar Gönder',
+    'otp.sentEmail':     'Doğrulama kodu e-posta adresinize gönderildi.',
+    'otp.sentSms':       'Doğrulama kodu SMS ile gönderildi.',
+    'otp.phoneVerified': 'Telefon doğrulandı! ✓',
+    'otp.error':         'Bir hata oluştu. Lütfen tekrar deneyin.',
     'booking.poweredBy':        'ayarlıyo ile güçlendirildi',
   },
 
@@ -702,6 +718,7 @@ const T: Record<Lang, Record<string, string>> = {
     'common.saving':           'Saving...',
     'common.update':           'Update',
     'common.edit':             'Edit',
+    'common.delete':           'Delete',
     'common.actions':          'Actions',
     'common.status':           'Status',
     'common.phone':            'Phone',
@@ -1050,6 +1067,21 @@ const T: Record<Lang, Record<string, string>> = {
     'booking.dateAndTime':      'Date & Time',
     'booking.submitting':       'Creating Appointment...',
     'booking.submit':           'Book Appointment →',
+
+    // OTP verification
+    'otp.send':          'Send Code',
+    'otp.sending':       'Sending...',
+    'otp.verified':      'Verified',
+    'otp.emailHint':     'The code will be sent to {email}.',
+    'otp.placeholder':   '6-digit code',
+    'otp.verify':        'Verify',
+    'otp.verifying':     'Verifying...',
+    'otp.timer':         'Code valid for {time}.',
+    'otp.resend':        'Resend',
+    'otp.sentEmail':     'Verification code sent to your email address.',
+    'otp.sentSms':       'Verification code sent by SMS.',
+    'otp.phoneVerified': 'Phone verified! ✓',
+    'otp.error':         'Something went wrong. Please try again.',
     'booking.poweredBy':        'Powered by ayarlıyo',
   },
 
@@ -1220,6 +1252,7 @@ const T: Record<Lang, Record<string, string>> = {
     'common.saving':           'Сохранение...',
     'common.update':           'Обновить',
     'common.edit':             'Редактировать',
+    'common.delete':           'Удалить',
     'common.actions':          'Действия',
     'common.status':           'Статус',
     'common.phone':            'Телефон',
@@ -1568,6 +1601,21 @@ const T: Record<Lang, Record<string, string>> = {
     'booking.dateAndTime':      'Дата и время',
     'booking.submitting':       'Создание записи...',
     'booking.submit':           'Записаться →',
+
+    // Подтверждение по коду
+    'otp.send':          'Отправить код',
+    'otp.sending':       'Отправка...',
+    'otp.verified':      'Подтверждено',
+    'otp.emailHint':     'Код будет отправлен на {email}.',
+    'otp.placeholder':   'Код из 6 цифр',
+    'otp.verify':        'Подтвердить',
+    'otp.verifying':     'Проверка...',
+    'otp.timer':         'Код действителен {time}.',
+    'otp.resend':        'Отправить ещё раз',
+    'otp.sentEmail':     'Код подтверждения отправлен на вашу электронную почту.',
+    'otp.sentSms':       'Код подтверждения отправлен по SMS.',
+    'otp.phoneVerified': 'Телефон подтверждён! ✓',
+    'otp.error':         'Произошла ошибка. Пожалуйста, попробуйте снова.',
     'booking.poweredBy':        'Работает на ayarlıyo',
   },
 
@@ -1735,6 +1783,7 @@ const T: Record<Lang, Record<string, string>> = {
     'common.saving':           'Wird gespeichert...',
     'common.update':           'Aktualisieren',
     'common.edit':             'Bearbeiten',
+    'common.delete':           'Löschen',
     'common.actions':          'Aktionen',
     'common.status':           'Status',
     'common.phone':            'Telefon',
@@ -2073,6 +2122,21 @@ const T: Record<Lang, Record<string, string>> = {
     'booking.dateAndTime':      'Datum & Uhrzeit',
     'booking.submitting':       'Termin wird erstellt...',
     'booking.submit':           'Termin buchen →',
+
+    // Bestätigungscode
+    'otp.send':          'Code senden',
+    'otp.sending':       'Wird gesendet...',
+    'otp.verified':      'Bestätigt',
+    'otp.emailHint':     'Der Code wird an {email} gesendet.',
+    'otp.placeholder':   '6-stelliger Code',
+    'otp.verify':        'Bestätigen',
+    'otp.verifying':     'Wird geprüft...',
+    'otp.timer':         'Code {time} lang gültig.',
+    'otp.resend':        'Erneut senden',
+    'otp.sentEmail':     'Bestätigungscode an Ihre E-Mail-Adresse gesendet.',
+    'otp.sentSms':       'Bestätigungscode per SMS gesendet.',
+    'otp.phoneVerified': 'Telefonnummer bestätigt! ✓',
+    'otp.error':         'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.',
     'booking.poweredBy':        'Unterstützt von ayarlıyo',
   },
 };
@@ -2086,8 +2150,16 @@ export class LanguageService {
     localStorage.setItem('lang', l);
   }
 
-  t(key: string): string {
-    return T[this.lang()][key] ?? key;
+  /**
+   * Çeviriyi döndürür. `params` verilirse metindeki {ad} yer tutucuları
+   * doldurulur — "Kod {email} adresine gönderilecek." gibi cümleleri parçalara
+   * bölüp birleştirmek, sözdizimi farklı dillerde kelime sırasını bozuyor.
+   */
+  t(key: string, params?: Record<string, string | number>): string {
+    const raw = T[this.lang()][key] ?? key;
+    if (!params) return raw;
+    return raw.replace(/\{(\w+)\}/g, (_, name: string) =>
+      params[name] !== undefined ? String(params[name]) : `{${name}}`);
   }
 
   get dateLocale(): string {

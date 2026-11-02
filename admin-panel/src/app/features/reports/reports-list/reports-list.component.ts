@@ -27,6 +27,7 @@ interface PeriodDelta {
   direction: 'up' | 'down' | 'flat';
   good: boolean;
 }
+import { planAtLeast } from '../../../core/plans';
 import { environment } from '../../../../environments/environment';
 
 interface BranchOption { id: string; name: string; }
@@ -61,8 +62,7 @@ export class ReportsListComponent implements OnInit {
   selectedBranchId: string | null = null;
 
   get isPremium(): boolean {
-    const levels: Record<string, number> = { Baslangic: 1, Profesyonel: 2, Premium: 3 };
-    return (levels[this.authService.getUserPlan()] ?? 1) >= 3;
+    return planAtLeast(this.authService.getUserPlan(), 'Premium');
   }
 
   get showScopeSelector(): boolean {

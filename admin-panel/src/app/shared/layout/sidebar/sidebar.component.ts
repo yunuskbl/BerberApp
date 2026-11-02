@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { planAtLeast, planGateFor } from '../../../core/plans';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { LanguageService, Lang } from '../../../core/services/language.service';
@@ -20,26 +21,29 @@ export class SidebarComponent {
   isCollapsed = false;
 
   menuItems = [
-    { key: 'nav.home',         icon: 'home',      route: '/dashboard',    minPlan: null,          parentOnly: false },
-    { key: 'nav.appointments', icon: 'calendar',  route: '/appointments', minPlan: null,          parentOnly: false },
-    { key: 'nav.staff',        icon: 'user',      route: '/staff',        minPlan: null,          parentOnly: false },
-    { key: 'nav.services',     icon: 'scissors',  route: '/services',     minPlan: null,          parentOnly: false },
-    { key: 'nav.customers',    icon: 'users',     route: '/customers',    minPlan: null,          parentOnly: false },
-    { key: 'nav.receipts',    icon: 'receipt',   route: '/receipts',     minPlan: null,          parentOnly: false },
-    { key: 'nav.reviews',      icon: 'star',      route: '/reviews',      minPlan: 'Profesyonel', parentOnly: false },
-    { key: 'nav.reports',      icon: 'chart-bar', route: '/reports',      minPlan: 'Premium',     parentOnly: false },
-    { key: 'nav.branches',     icon: 'branch',    route: '/branches',     minPlan: 'Premium',     parentOnly: true  },
+    { key: 'nav.home',         icon: 'home',      route: '/dashboard',    parentOnly: false },
+    { key: 'nav.appointments', icon: 'calendar',  route: '/appointments', parentOnly: false },
+    { key: 'nav.staff',        icon: 'user',      route: '/staff',        parentOnly: false },
+    { key: 'nav.services',     icon: 'scissors',  route: '/services',     parentOnly: false },
+    { key: 'nav.customers',    icon: 'users',     route: '/customers',    parentOnly: false },
+    { key: 'nav.receipts',    icon: 'receipt',   route: '/receipts',     parentOnly: false },
+    { key: 'nav.reviews',      icon: 'star',      route: '/reviews',      parentOnly: false },
+    { key: 'nav.reports',      icon: 'chart-bar', route: '/reports',      parentOnly: false },
+    { key: 'nav.branches',     icon: 'branch',    route: '/branches',     parentOnly: true  },
   ];
 
-  private readonly planLevels: Record<string, number> = {
-    Baslangic: 1, Profesyonel: 2, Premium: 3,
-    Basic: 1, Standard: 2, Full: 3,
-  };
+  /**
+   * Menüdeki kilit, rotanın kendi kapısıyla aynı kaynaktan okunuyor
+   * (core/plans.ts). Kenar çubuğunun ayrı bir liste tutması, raporların
+   * menüde Premium rotada Profesyonel istemesine yol açmıştı.
+   */
+  isLocked(route: string): boolean {
+    return !planAtLeast(this.authService.getUserPlan(), planGateFor(route));
+  }
 
-  isLocked(minPlan: string | null): boolean {
-    if (!minPlan) return false;
-    const userLevel = this.planLevels[this.authService.getUserPlan()] ?? 1;
-    return userLevel < (this.planLevels[minPlan] ?? 1);
+  /** Kilit ipucunda hangi planın gerektiği yazıyor. */
+  gateFor(route: string): string | null {
+    return planGateFor(route);
   }
 
   bottomItems = [
@@ -50,6 +54,7 @@ export class SidebarComponent {
   languages: { code: Lang; flag: string }[] = [
     { code: 'tr', flag: '🇹🇷' },
     { code: 'en', flag: '🇬🇧' },
+    { code: 'de', flag: '🇩🇪' },
     { code: 'ru', flag: '🇷🇺' },
   ];
 

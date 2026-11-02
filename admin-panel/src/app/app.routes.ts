@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { PLAN_GATES } from './core/plans';
 import { authGuard } from './core/guards/auth.guard';
 import { staffPanelGuard } from './core/guards/staff-panel.guard';
 import { MainLayoutComponent } from './shared/layout/main-layout/main-layout.component';
@@ -267,7 +268,7 @@ export const routes: Routes = [
             (m) => m.ReportsListComponent,
           ),
         canActivate: [PlanGuard],
-        data: { requiredPlan: 'Profesyonel' },
+        data: { requiredPlan: PLAN_GATES['reports'] },
       },
       {
         path: 'settings',
@@ -318,7 +319,7 @@ export const routes: Routes = [
             (m) => m.ReviewsComponent,
           ),
         canActivate: [PlanGuard],
-        data: { requiredPlan: 'Profesyonel' },
+        data: { requiredPlan: PLAN_GATES['reviews'] },
       },
       {
         path: 'branches',
@@ -327,7 +328,7 @@ export const routes: Routes = [
             (m) => m.BranchesComponent,
           ),
         canActivate: [PlanGuard],
-        data: { requiredPlan: 'Premium' },
+        data: { requiredPlan: PLAN_GATES['branches'] },
       },
       {
         path: '',
