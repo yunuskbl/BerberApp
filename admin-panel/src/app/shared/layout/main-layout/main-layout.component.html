@@ -3,6 +3,20 @@
   <div class="layout-content">
     <app-header></app-header>
 
+    <!-- WhatsApp hattı koptuğunda kalıcı uyarı. Deneme şeridinin üstünde:
+         hatırlatmaların durması, deneme süresinden daha acil bir sorun. -->
+    @if (isWhatsAppDown) {
+      <div class="whatsapp-banner">
+        <span class="wa-icon">⚠️</span>
+        <span class="wa-text">
+          <strong>WhatsApp hattınız bağlı değil.</strong>
+          Randevu bildirimleri ve hatırlatmalar şu anda müşterilerinize
+          ulaşmıyor. Telefonunuzdan WhatsApp bağlantısı düşmüş olabilir.
+        </span>
+        <a routerLink="/settings" class="wa-cta">Yeniden Bağlan →</a>
+      </div>
+    }
+
     @if (isOnTrial) {
       <div class="trial-banner" [class.trial-urgent]="trialDaysLeft <= 3">
         <span class="trial-icon">⏳</span>

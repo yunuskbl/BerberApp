@@ -120,4 +120,61 @@
       </div>
     }
   </div>
+
+  <!-- ── İşletme hatları ─────────────────────────────────────────────────
+       Yukarısı merkezi ayarlıyo oturumu. Kendi numarasını bağlamış
+       işletmelerin hattı koptuğunda bildirimleri sessizce duruyor; burası o
+       hatları görünür kılıyor. -->
+  <div class="card">
+    <h2 class="section-title">İşletme Hatları</h2>
+    <p class="section-sub">
+      Kendi WhatsApp numarasını bağlamış işletmeler. Durum anlık sorgulanıyor.
+      @if (tenantsDown > 0) {
+        <strong class="tenants-down-note">{{ tenantsDown }} işletmenin hattı kopuk.</strong>
+      }
+      @if (tenantsUnknown > 0) {
+        <span class="tenants-unknown-note">{{ tenantsUnknown }} oturuma ulaşılamadı.</span>
+      }
+    </p>
+
+    <button class="btn-outline" (click)="loadTenantSessions()" [disabled]="tenantsLoading">
+      @if (tenantsLoading) { ⏳ Sorgulanıyor… } @else { ↻ Yenile }
+    </button>
+
+    @if (tenantSessions.length > 0) {
+      <table class="tenant-table">
+        <thead>
+          <tr>
+            <th>İşletme</th>
+            <th>Oturum</th>
+            <th>Durum</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of tenantSessions; track t.id) {
+            <tr [class.row-down]="t.isDown">
+              <td>
+                <span class="tenant-name">{{ t.name }}</span>
+                @if (t.subdomain) { <span class="tenant-sub">{{ t.subdomain }}</span> }
+              </td>
+              <td><code class="tenant-session">{{ t.session }}</code></td>
+              <td>
+                @if (t.isConnected) {
+                  <span class="pill pill-ok">Bağlı</span>
+                } @else if (t.isDown) {
+                  <span class="pill pill-down">Kopuk</span>
+                } @else {
+                  <!-- Ulaşılamayan oturum kopuk sayılmıyor: bilmemek başka. -->
+                  <span class="pill pill-unknown">Bilinmiyor</span>
+                }
+                <span class="status-raw">{{ t.status }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else if (!tenantsLoading) {
+      <p class="tenant-empty">Kendi numarasını bağlamış işletme yok.</p>
+    }
+  </div>
 </div>

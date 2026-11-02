@@ -5,6 +5,18 @@ import { environment } from '../../../../environments/environment';
 
 type ConnStatus = 'loading' | 'connected' | 'disconnected' | 'error' | 'no_token';
 
+/** Kendi numarasını bağlamış bir işletmenin hat durumu. */
+interface TenantSession {
+  id:          string;
+  name:        string;
+  subdomain:   string | null;
+  session:     string;
+  status:      string;
+  isConnected: boolean;
+  isReachable: boolean;
+  isDown:      boolean;
+}
+
 @Component({
   selector: 'app-super-admin-whatsapp',
   standalone: true,
@@ -24,6 +36,12 @@ export class SuperAdminWhatsAppComponent implements OnInit, OnDestroy {
   actionMsg = '';
   generatedToken = '';
 
+  /** İşletme hatları — merkezi oturumdan ayrı, canlı sorgulanıyor. */
+  tenantSessions: TenantSession[] = [];
+  tenantsDown = 0;
+  tenantsUnknown = 0;
+  tenantsLoading = false;
+
   private statusInterval?: ReturnType<typeof setInterval>;
   private qrInterval?: ReturnType<typeof setInterval>;
 
@@ -31,12 +49,32 @@ export class SuperAdminWhatsAppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.checkStatus();
+    this.loadTenantSessions();
     this.statusInterval = setInterval(() => this.checkStatus(), 15000);
   }
 
   ngOnDestroy(): void {
     clearInterval(this.statusInterval);
     clearInterval(this.qrInterval);
+  }
+
+  /**
+   * İşletmelerin kendi hatları. Her satır WPPConnect'e bir istek demek, bu
+   * yüzden merkezi durum gibi 15 saniyede bir değil, elle yenileniyor.
+   */
+  loadTenantSessions(): void {
+    this.tenantsLoading = true;
+    this.http.get<any>(`${this.api}/tenant-sessions`).subscribe({
+      next: res => {
+        if (res?.success) {
+          this.tenantSessions = res.data.sessions ?? [];
+          this.tenantsDown    = res.data.down ?? 0;
+          this.tenantsUnknown = res.data.unknown ?? 0;
+        }
+        this.tenantsLoading = false;
+      },
+      error: () => { this.tenantsLoading = false; },
+    });
   }
 
   checkStatus(): void {

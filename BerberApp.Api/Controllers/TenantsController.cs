@@ -420,21 +420,43 @@ public class TenantsController : BaseApiController
         }
     }
 
+    /// <summary>
+    /// İşletmenin kendi WhatsApp hattının durumu.
+    ///
+    /// Yanıt "ulaşılamıyor" ile "kopuk" ayrımını koruyor: panelde kalıcı uyarı
+    /// yalnızca <c>isDefinitelyDisconnected</c> olduğunda çıkıyor. WPPConnect bir
+    /// an yavaşladığında sağlıklı bir hattı "kopuk" diye göstermek, uyarıyı
+    /// güvenilmez kılar ve işletme bir süre sonra ona bakmaz.
+    /// </summary>
     [HttpGet("whatsapp/status")]
     public async Task<IActionResult> WhatsAppStatus(
         [FromServices] IWppConnectManagementService mgmt)
     {
         var tenant = await _context.Tenants.FirstOrDefaultAsync(x => x.Id == TenantId);
+
+        // Kendi numarasını bağlamamış işletme merkezi numaradan gönderiyor;
+        // onun için "kopuk" diye bir durum yok.
         if (string.IsNullOrWhiteSpace(tenant?.WppConnectSession))
-            return Success(new { status = "DISCONNECTED", isConnected = false, hasSession = false });
+            return Success(new
+            {
+                status                   = "NO_SESSION",
+                isConnected              = false,
+                isReachable              = true,
+                isDefinitelyDisconnected = false,
+                hasSession               = false,
+                usesOwnNumber            = false,
+            });
 
         var status = await mgmt.GetSessionStatusAsync(tenant.WppConnectSession, tenant.WppConnectToken!);
         return Success(new
         {
-            status      = status.Value,
-            isConnected = status.IsConnected,
-            hasSession  = true,
-            session     = tenant.WppConnectSession
+            status                   = status.Value,
+            isConnected              = status.IsConnected,
+            isReachable              = status.IsReachable,
+            isDefinitelyDisconnected = status.IsDefinitelyDisconnected,
+            hasSession               = true,
+            usesOwnNumber            = true,
+            session                  = tenant.WppConnectSession,
         });
     }
 

@@ -291,3 +291,47 @@
   .wa-page { padding: 16px; }
   .qr-img  { width: 200px; height: 200px; }
 }
+
+/* ── İşletme hatları tablosu ── */
+.tenants-down-note   { color: #b91c1c; margin-left: 4px; }
+.tenants-unknown-note { color: #9ca3af; margin-left: 4px; }
+
+.tenant-table {
+  width: 100%;
+  margin-top: 14px;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th, td {
+    padding: 9px 10px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  th { font-size: 11.5px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.02em; }
+
+  /* Kopuk satır hafifçe işaretleniyor; asıl bilgiyi rozet taşıyor. */
+  .row-down { background: #fef2f2; }
+
+  .tenant-name { font-weight: 600; color: #111827; }
+  .tenant-sub  { display: block; font-size: 11.5px; color: #9ca3af; }
+  .tenant-session { font-size: 11.5px; color: #6b7280; }
+  .status-raw { font-size: 11px; color: #9ca3af; margin-left: 8px; }
+}
+
+/* Durum rozetleri — renk tek başına anlam taşımasın diye metinli. */
+.pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &.pill-ok      { background: #ecfdf5; color: #047857; }
+  /* Satırın kendisi zaten açık kırmızı; rozet onun üstünde kaybolmasın diye
+     dolu zemin alıyor. */
+  &.pill-down    { background: #b91c1c; color: #fff; }
+  &.pill-unknown { background: #f3f4f6; color: #6b7280; }
+}
+
+.tenant-empty { margin-top: 14px; font-size: 13px; color: #9ca3af; }

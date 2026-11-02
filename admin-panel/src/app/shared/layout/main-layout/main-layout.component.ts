@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { RouterLink, RouterOutlet } from '@angular/router';
@@ -8,6 +8,16 @@ import { BottomNavComponent } from '../../components/bottom-nav/bottom-nav.compo
 import { AuthService } from '../../../core/services/auth.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { environment } from '../../../../environments/environment';
+
+/** İşletmenin kendi WhatsApp hattının durumu. */
+interface WhatsAppStatus {
+  status:                   string;
+  isConnected:              boolean;
+  isReachable:              boolean;
+  isDefinitelyDisconnected: boolean;
+  hasSession:               boolean;
+  usesOwnNumber:            boolean;
+}
 
 /** Deneme süresince işletmenin sistemden fiilen ne aldığı. */
 interface TrialUsage {
@@ -26,11 +36,15 @@ interface TrialUsage {
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss'
 })
-export class MainLayoutComponent implements OnInit {
+export class MainLayoutComponent implements OnInit, OnDestroy {
   isSidebarCollapsed = false;
 
   /** Deneme kullanım özeti; gelene kadar şerit yalnızca kalan günü gösterir. */
   usage: TrialUsage | null = null;
+
+  /** WhatsApp hattı; null ise henüz bilinmiyor. */
+  whatsApp: WhatsAppStatus | null = null;
+  private whatsAppTimer?: ReturnType<typeof setInterval>;
 
   constructor(
     public authService: AuthService,
@@ -39,7 +53,13 @@ export class MainLayoutComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Yalnızca denemedeyken sorulur; ödeyen işletmeye gereksiz istek atılmaz.
+    this.checkWhatsApp();
+    // Hat koptuğunda uyarı ekranda kalmalı ama bağlantı kurulunca da
+    // kendiliğinden kalkmalı; beş dakikada bir yeniden soruluyor.
+    this.whatsAppTimer = setInterval(() => this.checkWhatsApp(), 5 * 60_000);
+
+    // Deneme özeti yalnızca denemedeyken sorulur; ödeyen işletmeye gereksiz
+    // istek atılmaz.
     if (!this.isOnTrial) return;
 
     this.http.get<any>(`${environment.apiUrl}/subscription/trial-summary`).subscribe({
@@ -49,6 +69,29 @@ export class MainLayoutComponent implements OnInit {
       // Özet gelmezse şerit sade hâliyle çalışmaya devam eder.
       error: () => {},
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.whatsAppTimer) clearInterval(this.whatsAppTimer);
+  }
+
+  private checkWhatsApp(): void {
+    this.http.get<any>(`${environment.apiUrl}/tenants/whatsapp/status`).subscribe({
+      next: (res) => { if (res?.success) this.whatsApp = res.data; },
+      // Durum alınamadıysa uyarı gösterilmiyor: bilmemek, kopuk olmakla aynı
+      // şey değil.
+      error: () => { this.whatsApp = null; },
+    });
+  }
+
+  /**
+   * Uyarı yalnızca kendi numarasını bağlamış ve hattının kopuk olduğu
+   * <b>kesin</b> olan işletmede çıkıyor. WPPConnect'e ulaşılamadığında
+   * ("bilmiyoruz") uyarı basmak, bir süre sonra kimsenin bakmadığı bir şerit
+   * üretir.
+   */
+  get isWhatsAppDown(): boolean {
+    return !!this.whatsApp?.usesOwnNumber && this.whatsApp.isDefinitelyDisconnected;
   }
 
   get trialDaysLeft(): number { return this.authService.getTrialDaysLeft(); }

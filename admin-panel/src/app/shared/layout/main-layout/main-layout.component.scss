@@ -75,3 +75,37 @@
     padding-bottom: calc(60px + env(safe-area-inset-bottom, 16px) + 16px);
   }
 }
+
+/* WhatsApp hattı kopuk uyarısı. Deneme şeridinden daha baskın bir kırmızı:
+   bu bir süre bilgisi değil, şu anda müşteriye mesaj gitmediği bilgisi. */
+.whatsapp-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+  font-size: 13px;
+  color: #991b1b;
+
+  .wa-icon { flex-shrink: 0; }
+  .wa-text { flex: 1; line-height: 1.45; }
+
+  .wa-cta {
+    padding: 5px 14px;
+    background: #b91c1c;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    &:hover { background: #991b1b; }
+  }
+
+  @media (max-width: 720px) {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    .wa-cta { margin-left: 28px; }
+  }
+}

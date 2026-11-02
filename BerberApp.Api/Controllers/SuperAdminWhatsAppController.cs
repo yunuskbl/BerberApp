@@ -2,6 +2,7 @@ using BerberApp.Application.Common.Interfaces;
 using BerberApp.Application.Common.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -286,4 +287,68 @@ public class SuperAdminWhatsAppController : ControllerBase
         var opts = new JsonSerializerOptions { WriteIndented = true };
         await System.IO.File.WriteAllTextAsync(path, node.ToJsonString(opts));
     }
+
+    /// <summary>
+    /// Kendi numarasını bağlamış işletmelerin hat durumu.
+    ///
+    /// Bu denetleyicinin geri kalanı merkezi ayarlıyo oturumuyla ilgileniyor;
+    /// işletmelerin kendi hatlarını şimdiye kadar kimse göremiyordu. Bir
+    /// işletmenin hattı koptuğunda bildirimler sessizce durduğu için, bunu
+    /// müşteri şikâyet edene kadar fark etmek mümkün değildi.
+    ///
+    /// Durum canlı sorgulanıyor, saklanmıyor: kaydedilen bir "son hata zamanı"
+    /// hem şema değişikliği hem de bayatlama riski demekti. Ulaşılamayan
+    /// oturumlar "bilinmiyor" olarak işaretleniyor, kopuk sayılmıyor.
+    /// </summary>
+    [HttpGet("tenant-sessions")]
+    public async Task<IActionResult> GetTenantSessions(
+        [FromServices] IAppDbContext context,
+        [FromServices] IWppConnectManagementService mgmt,
+        CancellationToken ct = default)
+    {
+        // Silinmiş işletmeler global sorgu filtresiyle zaten dışarıda.
+        var tenants = await context.Tenants
+            .Where(t => t.WppConnectSession != null && t.WppConnectSession != "" &&
+                        t.WppConnectToken != null && t.WppConnectToken != "")
+            .Select(t => new { t.Id, t.Name, t.Subdomain, t.WppConnectSession, t.WppConnectToken })
+            .ToListAsync(ct);
+
+        // Sıralı sorgulanıyor: işletme sayısı bir elin parmağını geçmiyor ve
+        // WPPConnect'e aynı anda onlarca istek atmak onu zaten yavaşlatıyor.
+        var rows = new List<TenantSessionRow>(tenants.Count);
+        foreach (var tenant in tenants)
+        {
+            var status = await mgmt.GetSessionStatusAsync(
+                tenant.WppConnectSession!, tenant.WppConnectToken!, ct);
+
+            rows.Add(new TenantSessionRow(
+                tenant.Id, tenant.Name, tenant.Subdomain, tenant.WppConnectSession!,
+                status.Value, status.IsConnected, status.IsReachable,
+                status.IsDefinitelyDisconnected));
+        }
+
+        return Ok(new
+        {
+            success = true,
+            data = new
+            {
+                total    = rows.Count,
+                down     = rows.Count(r => r.IsDown),
+                unknown  = rows.Count(r => !r.IsReachable),
+                sessions = rows,
+            }
+        });
+    }
 }
+
+/// <summary>SuperAdmin panelindeki işletme hattı satırı.</summary>
+public record TenantSessionRow(
+    Guid Id,
+    string Name,
+    string? Subdomain,
+    string Session,
+    string Status,
+    bool IsConnected,
+    bool IsReachable,
+    bool IsDown
+);
