@@ -48,8 +48,10 @@ export class SuperAdminWhatsAppComponent implements OnInit, OnDestroy {
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
+    // İşletme hatları açılışta sorgulanmıyor: her satır WPPConnect'e ayrı bir
+    // istek demek ve merkezi oturumun QR'ı zaten aynı servisi bekliyor. Sayfanın
+    // ilk işi merkezi bağlantı; hatlara "Yenile" ile bakılıyor.
     this.checkStatus();
-    this.loadTenantSessions();
     this.statusInterval = setInterval(() => this.checkStatus(), 15000);
   }
 

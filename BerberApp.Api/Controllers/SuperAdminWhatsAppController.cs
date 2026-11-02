@@ -33,6 +33,20 @@ public class SuperAdminWhatsAppController : ControllerBase
         _env          = env;
     }
 
+    /// <summary>
+    /// Tek bir WPPConnect çağrısına tanınan süre.
+    ///
+    /// <c>CreateClient("wppconnect")</c> kayıtlı bir isim değil; dolayısıyla
+    /// varsayılan 100 saniyelik timeout'la çalışıyordu. QR ucu üstüne
+    /// <c>waitQrCode:true</c> ile blokluyor ve 5 kez 4 saniye poll ediyordu —
+    /// toplam süre Cloudflare'ın ~100 saniyelik sınırını aşınca tarayıcı yanıtı
+    /// hiç görmüyor ve QR "yüklenmiyor" gibi görünüyordu. Her çağrı artık
+    /// kendi süresiyle sınırlı.
+    /// </summary>
+    private static readonly TimeSpan WppCallTimeout = TimeSpan.FromSeconds(8);
+
+    private static CancellationTokenSource CallTimeout() => new(WppCallTimeout);
+
     // Token'ı Bearer header olarak eklenmiş HttpRequestMessage oluşturur
     private HttpRequestMessage WppRequest(HttpMethod method, string url)
     {
@@ -53,8 +67,9 @@ public class SuperAdminWhatsAppController : ControllerBase
         {
             var http = _httpFactory.CreateClient("wppconnect");
             var url  = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{_cfg.Session}/check-connection-session";
-            var res  = await http.SendAsync(WppRequest(HttpMethod.Get, url));
-            var body = await res.Content.ReadAsStringAsync();
+            using var cts = CallTimeout();
+            var res  = await http.SendAsync(WppRequest(HttpMethod.Get, url), cts.Token);
+            var body = await res.Content.ReadAsStringAsync(cts.Token);
 
             if (body.TrimStart().StartsWith('<'))
                 return Ok(new { connected = false, status = "ERROR", message = "WppConnect erişilemiyor." });
@@ -118,41 +133,55 @@ public class SuperAdminWhatsAppController : ControllerBase
             var qr = await TryGetQrCode(http, base_);
             if (qr != null) return Ok(new { success = true, qr });
         }
-        catch { /* devam et */ }
+        catch (Exception ex) { _logger.LogDebug(ex, "[WA] Mevcut QR alınamadı, oturum başlatılacak."); }
 
-        // 2. Session başlat
+        // 2. Oturumu başlat. waitQrCode GÖNDERİLMİYOR: WPPConnect bu bayrakla
+        //    QR üretilene kadar isteği açık tutuyor ve oturum takılı bir
+        //    durumdaysa dakikalarca cevap vermiyor. Başlatmayı tetikleyip
+        //    bırakıyoruz, QR'ı aşağıda soruyoruz.
         try
         {
             var startUrl  = $"{base_}/api/{_cfg.Session}/start-session";
             var startReq  = WppRequest(HttpMethod.Post, startUrl);
-            startReq.Content = new StringContent("{\"waitQrCode\":true}", System.Text.Encoding.UTF8, "application/json");
-            var startRes  = await http.SendAsync(startReq);
-            var startStr  = await startRes.Content.ReadAsStringAsync();
+            startReq.Content = new StringContent("{\"waitQrCode\":false}", System.Text.Encoding.UTF8, "application/json");
+
+            using var cts = CallTimeout();
+            var startRes  = await http.SendAsync(startReq, cts.Token);
+            var startStr  = await startRes.Content.ReadAsStringAsync(cts.Token);
 
             if (TryExtractQr(startStr, out var qrFromStart))
                 return Ok(new { success = true, qr = qrFromStart });
         }
-        catch { /* devam et */ }
+        catch (Exception ex) { _logger.LogDebug(ex, "[WA] start-session QR döndürmedi."); }
 
-        // 3. QR hazır olana kadar poll et (max 20 saniye)
-        for (int i = 0; i < 5; i++)
+        // 3. Kısa bir süre bekleyip tekrar sor. Uzun poll etmek yerine hızlıca
+        //    "henüz hazır değil" demek daha iyi: panel zaten 20 saniyede bir
+        //    yeniden soruyor ve uzun bekleyen istek proxy'de ölüyor.
+        for (int i = 0; i < 2; i++)
         {
-            await Task.Delay(4000);
+            await Task.Delay(2500);
             try
             {
                 var qr = await TryGetQrCode(http, base_);
                 if (qr != null) return Ok(new { success = true, qr });
             }
-            catch { /* devam et */ }
+            catch (Exception ex) { _logger.LogDebug(ex, "[WA] QR hâlâ hazır değil."); }
         }
 
-        return Ok(new { success = false, message = "QR alınamadı. 'QR'ı Yenile' butonuna tekrar tıklayın." });
+        _logger.LogWarning("[WA] Merkezi oturum için QR üretilemedi. Session={Session}", _cfg.Session);
+        return Ok(new
+        {
+            success = false,
+            message = "QR henüz hazır değil. Birkaç saniye içinde otomatik olarak yeniden denenecek; " +
+                      "sürerse oturumu kapatıp (Bağlantıyı Kes) tekrar deneyin."
+        });
     }
 
     private async Task<string?> TryGetQrCode(HttpClient http, string baseUrl)
     {
         var url = $"{baseUrl}/api/{_cfg.Session}/qrcode-session";
-        var res = await http.SendAsync(WppRequest(HttpMethod.Get, url));
+        using var cts = CallTimeout();
+        var res = await http.SendAsync(WppRequest(HttpMethod.Get, url), cts.Token);
         if (!res.IsSuccessStatusCode) return null;
 
         var ct = res.Content.Headers.ContentType?.MediaType ?? "";
@@ -199,9 +228,11 @@ public class SuperAdminWhatsAppController : ControllerBase
             var http = _httpFactory.CreateClient("wppconnect");
             var url  = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{_cfg.Session}/start-session";
             var req  = WppRequest(HttpMethod.Post, url);
-            req.Content = new StringContent("{\"waitQrCode\":true}", System.Text.Encoding.UTF8, "application/json");
-            var res  = await http.SendAsync(req);
-            var body = await res.Content.ReadAsStringAsync();
+            // waitQrCode:false — bloklamadan tetikle; QR'ı /qr ucu soruyor.
+            req.Content = new StringContent("{\"waitQrCode\":false}", System.Text.Encoding.UTF8, "application/json");
+            using var cts = CallTimeout();
+            var res  = await http.SendAsync(req, cts.Token);
+            var body = await res.Content.ReadAsStringAsync(cts.Token);
             return Ok(new { success = true, raw = body });
         }
         catch (Exception ex)
