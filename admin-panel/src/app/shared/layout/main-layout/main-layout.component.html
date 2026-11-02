@@ -8,9 +8,11 @@
         <span class="trial-icon">⏳</span>
         <span class="trial-text">
           @if (trialDaysLeft > 0) {
-            Ücretsiz deneme süreniz <strong>{{ trialDaysLeft }} gün</strong> sonra sona eriyor.
+            Deneme sürenizin <strong>{{ trialDaysLeft }} günü</strong> kaldı —
+            Profesyonel özellikleri açık: raporlar ve 5 personele kadar ekleme.
           } @else {
-            Ücretsiz deneme süreniz bugün sona eriyor.
+            Ücretsiz deneme süreniz bugün sona eriyor. Yükseltmezseniz raporlar
+            ve ek personel hakkı kapanacak.
           }
         </span>
         <a routerLink="/upgrade" class="trial-cta">Planı Yükselt →</a>

@@ -29,10 +29,15 @@ public class CreateStaffHandler : IRequestHandler<CreateStaffCommand, StaffDto>
         if (!tenantExists)
             throw new NotFoundException("Tenant", request.TenantId);
 
-        // Plan limit kontrolü
+        // Plan limit kontrolü. Deneme aboneliği de sayılıyor: durum Trial
+        // olduğu için bu sorgu onu hiç görmüyordu ve denemedeki her işletme
+        // tek personelde takılıyordu — üç kişilik bir kuaför ürünü kendi
+        // işiyle deneyemiyordu.
         var subscription = await _subscriptionRepo.GetAsync(
-            x => x.TenantId == request.TenantId && x.Status == SubscriptionStatus.Active, ct);
-        var plan = subscription?.Plan ?? PlanType.Baslangic;
+            x => x.TenantId == request.TenantId &&
+                 (x.Status == SubscriptionStatus.Active || x.Status == SubscriptionStatus.Trial) &&
+                 x.ExpiryDate > DateTime.UtcNow, ct);
+        var plan = subscription?.EffectivePlan ?? PlanType.Baslangic;
 
         int staffLimit = plan switch
         {

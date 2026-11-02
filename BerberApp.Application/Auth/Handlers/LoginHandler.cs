@@ -70,7 +70,10 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResponse>
                 await _context.SaveChangesAsync(ct);
             }
 
-            userPlan = subscription.Plan;
+            // Deneme süresince Profesyonel haklarını veren kural burada değil,
+            // Subscription.EffectivePlan içinde — giriş, token yenileme ve
+            // personel limiti aynı tek kuralı okuyor.
+            userPlan = subscription.EffectivePlan;
         }
         catch (Exception)
         {

@@ -91,7 +91,12 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, LoginResponse>
         };
         _context.Users.Add(user);
 
-        // 30 günlük ücretsiz deneme aboneliği
+        // 30 günlük ücretsiz deneme aboneliği.
+        // Plan alanı bilerek Baslangic: deneme süresince verilen haklar
+        // Subscription.EffectivePlan'dan (Profesyonel) geliyor, bu alan ise
+        // deneme bitince düşülecek planı tutuyor. Buraya Profesyonel yazmak,
+        // satır bir gün ödeme alınmadan Active'e çevrilirse ücretli planı
+        // bedava vermek olurdu.
         var trialEnd = DateTime.UtcNow.AddDays(30);
         var trial = new BerberApp.Domain.Entities.Subscription
         {

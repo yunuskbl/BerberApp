@@ -31,14 +31,18 @@ public class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, RefreshT
             throw new UnauthorizedException("Geçersiz veya süresi dolmuş refresh token.");
         }
 
+        // Deneme abonelikleri de kapsanıyor. Access token 15 dakikalık; yalnızca
+        // Active aranırsa denemedeki işletme ilk yenilemede sessizce Başlangıç'a
+        // düşüyor ve girişte verilen haklar yarım saat içinde kayboluyordu.
         var subscription = await _context.Subscriptions
             .Where(x => x.TenantId == user.TenantId
-                     && x.Status == SubscriptionStatus.Active
+                     && (x.Status == SubscriptionStatus.Active
+                         || x.Status == SubscriptionStatus.Trial)
                      && x.ExpiryDate > DateTime.UtcNow)
             .OrderByDescending(x => x.StartDate)
             .FirstOrDefaultAsync(ct);
 
-        var plan = subscription?.Plan ?? PlanType.Baslangic;
+        var plan = subscription?.EffectivePlan ?? PlanType.Baslangic;
 
         var newAccessToken = _jwtService.GenerateAccessToken(user, plan);
         var newRefreshToken = _jwtService.GenerateRefreshToken();

@@ -710,11 +710,18 @@ public class BookingController : ControllerBase
 
     private async Task<(int count, int limit)> GetMonthlyAppointmentUsageAsync(Guid tenantId)
     {
-        var plan = await _context.Subscriptions
-            .Where(s => s.TenantId == tenantId && s.Status == BerberApp.Domain.Enums.SubscriptionStatus.Active)
+        // Deneme aboneliği de kapsanıyor; yalnızca Active arandığında denemedeki
+        // işletme ayda 150 randevuda sınırlanıyordu. EffectivePlan hesaplanan bir
+        // özellik olduğu için projeksiyonda kullanılamaz, satırın kendisi çekiliyor.
+        var subscription = await _context.Subscriptions
+            .Where(s => s.TenantId == tenantId &&
+                        (s.Status == BerberApp.Domain.Enums.SubscriptionStatus.Active ||
+                         s.Status == BerberApp.Domain.Enums.SubscriptionStatus.Trial) &&
+                        s.ExpiryDate > DateTime.UtcNow)
             .OrderByDescending(s => s.StartDate)
-            .Select(s => s.Plan)
             .FirstOrDefaultAsync();
+
+        var plan = subscription?.EffectivePlan ?? BerberApp.Domain.Enums.PlanType.Baslangic;
 
         var limit = plan switch
         {
