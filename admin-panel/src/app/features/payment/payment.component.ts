@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { PLANS, annualSaving, durationDays, priceFor } from '../../core/pricing';
+import { PLANS, annualSaving, durationDays, formatPrice as formatTry, priceFor } from '../../core/pricing';
 import { LanguageService } from '../../core/services/language.service';
 
 @Component({
@@ -22,14 +22,12 @@ export class PaymentComponent implements OnInit {
   billingPeriod: 'monthly' | 'annual' = 'monthly';
   /**
    * Tutarları Angular'ın `number` pipe'ı yerine Intl ile biçimlendiriyoruz:
-   * pipe varsayılan en-US yerelini kullanıyor ve ₺2.999 "₺2,999" olarak
+   * pipe varsayılan en-US yerelini kullanıyor ve ₺2.399 "₺2,399" olarak
    * çıkıyordu — Türkçe okurda bu "iki virgül dokuz" demek. Raporlar sayfası da
    * aynı yolu izliyor.
    */
   formatPrice(value: number): string {
-    return new Intl.NumberFormat(this.langService.dateLocale, {
-      maximumFractionDigits: 0,
-    }).format(value);
+    return formatTry(value, this.langService.dateLocale);
   }
 
   get price(): number        { return priceFor(this.monthlyPrice, this.billingPeriod); }

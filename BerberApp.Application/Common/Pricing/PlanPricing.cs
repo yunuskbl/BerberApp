@@ -10,11 +10,10 @@ public enum BillingPeriod
 /// <summary>
 /// Abonelik fiyatları ve süreleri — tek kaynak.
 ///
-/// Bu dosyadan önce aynı tablo dört ayrı yerde yazılıydı: iki ön yüz bileşeni
-/// (fiyat sayfası ve ödeme sayfası), <c>IyzicoService</c> ve
-/// <c>SubscriptionController</c>. İkisi Premium'u ₺2.999, ikisi ₺2.399
-/// gösteriyordu — yani müşteriye bir tutar yazıp başka tutar tahsil edilecekti.
-/// Müşteriye gösterilen değer esas alındı.
+/// Bu dosyadan önce aynı tablo dört ayrı yerde yazılıydı ve kopyalar Premium
+/// fiyatında birbirinden ayrışmıştı — müşteriye bir tutar yazıp başka tutar
+/// tahsil edilecekti. Fiyat değişikliği artık yalnızca burada ve ön yüzdeki
+/// core/pricing.ts'te yapılır; ikisi aynı kalmalı.
 ///
 /// Tutar <b>her zaman sunucuda hesaplanır</b>. İstemciden gelen tutar bilgi
 /// amaçlıdır; ödeme kaydına yazılmaz.
@@ -25,9 +24,9 @@ public static class PlanPricing
     public static readonly IReadOnlyDictionary<string, decimal> MonthlyPrices =
         new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase)
         {
-            ["baslangic"]   = 899m,
-            ["profesyonel"] = 1799m,
-            ["premium"]     = 2999m,
+            ["baslangic"]   = 699m,
+            ["profesyonel"] = 1499m,
+            ["premium"]     = 2399m,
         };
 
     /// <summary>Yıllık ödemede uygulanan indirim oranı.</summary>

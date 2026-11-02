@@ -242,10 +242,10 @@
                 <p class="plan-desc">{{ plan.descKey | translate }}</p>
               </div>
               <div class="plan-price">
-                <span class="price-amount" [class.fading]="priceAnimating">₺{{ getDisplayPrice(plan.price) }}</span>
+                <span class="price-amount" [class.fading]="priceAnimating">₺{{ fmt(getDisplayPrice(plan.price)) }}</span>
                 <span class="price-period">{{ isUpgradeMode ? ('pricing.plan.perYear' | translate) : (('pricing.plan.perMonth' | translate) + (billingYearly ? (' ' + ('pricing.billing.yearly' | translate)) : '')) }}</span>
                 @if (billingYearly && !isUpgradeMode) {
-                  <div class="price-original">₺{{ plan.price }}/{{ 'pricing.billing.monthly' | translate }}</div>
+                  <div class="price-original">₺{{ fmt(plan.price) }}/{{ 'pricing.billing.monthly' | translate }}</div>
                 }
                 <div class="price-vat-note">{{ 'pricing.plan.vatNote' | translate }}</div>
               </div>

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { PLANS, formatPrice } from '../../core/pricing';
 
 interface PlanInfo {
   name: string;
@@ -24,21 +25,21 @@ export class UpgradeComponent implements OnInit {
 
   private readonly plans: Record<string, PlanInfo> = {
     Baslangic: {
-      name: 'Baslangic', label: 'Başlangıç', price: 899, icon: '🌱', color: '#6b7280',
+      name: 'Baslangic', label: 'Başlangıç', price: PLANS['baslangic'].monthly, icon: '🌱', color: '#6b7280',
       extras: [],
     },
     Profesyonel: {
-      name: 'Profesyonel', label: 'Profesyonel', price: 1799, icon: '⚡', color: '#7c3aed',
+      name: 'Profesyonel', label: 'Profesyonel', price: PLANS['profesyonel'].monthly, icon: '⚡', color: '#7c3aed',
       extras: [
         'Toplu WhatsApp Kampanyası',
         'Gelir & Gider Yönetimi',
         'Personel Girişi & Yetkilendirme',
         '5 Personele Kadar',
-        'Sınırsız Randevu',
+        'Aylık 500 Randevu',
       ],
     },
     Premium: {
-      name: 'Premium', label: 'Premium', price: 2999, icon: '👑', color: '#d97706',
+      name: 'Premium', label: 'Premium', price: PLANS['premium'].monthly, icon: '👑', color: '#d97706',
       extras: [
         'Çoklu Şube Yönetimi',
         'Sınırsız Personel',
@@ -78,6 +79,8 @@ export class UpgradeComponent implements OnInit {
   }
 
   readonly supportPhone = '0530 560 69 16';
+
+  fmt(value: number): string { return formatPrice(value); }
 
   goBack(): void { this.router.navigate(['/dashboard']); }
 }

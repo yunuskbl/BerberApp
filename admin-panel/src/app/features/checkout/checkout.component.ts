@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { SubscriptionService } from '../../core/services/subscription.service';
+import { PLANS, formatPrice } from '../../core/pricing';
 
 @Component({
   selector: 'app-checkout',
@@ -17,7 +18,11 @@ export class CheckoutComponent implements OnInit {
   error = '';
   formContent: SafeHtml | null = null;
 
-  planPrices: Record<string, number> = { Basic: 899, Standard: 1799, Full: 2399 };
+  /** Eski plan adları (Basic/Standard/Full) yeni anahtarlara; fiyat tek kaynaktan. */
+  private readonly legacyKeys: Record<string, string> = {
+    Basic: 'baslangic', Standard: 'profesyonel', Full: 'premium',
+    Baslangic: 'baslangic', Profesyonel: 'profesyonel', Premium: 'premium',
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -66,5 +71,7 @@ export class CheckoutComponent implements OnInit {
     document.body.appendChild(s);
   }
 
-  get price(): number { return this.planPrices[this.plan] ?? 0; }
+  get price(): number { return PLANS[this.legacyKeys[this.plan] ?? '']?.monthly ?? 0; }
+
+  fmt(value: number): string { return formatPrice(value); }
 }

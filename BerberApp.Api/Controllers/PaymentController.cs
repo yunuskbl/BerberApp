@@ -107,7 +107,7 @@ public class PaymentController : BaseApiController
             var price  = PlanPricing.PriceFor(result.Plan ?? "baslangic", result.Period);
             var now    = DateTime.UtcNow;
             // Süre ödenen periyoda göre. Eskiden her ödemede AddYears(1) veriliyordu:
-            // aylık ₺1.799 ödeyen on iki ay kullanıyordu.
+            // aylık ödeme yapan on iki ay kullanıyordu.
             var expiry = PlanPricing.ExpiryFrom(now, result.Period);
 
             // Subscription güncelle / oluştur
@@ -243,7 +243,7 @@ public class PaymentController : BaseApiController
     [AllowAnonymous]
     /// <summary>
     /// Geçerli fiyatlar. Tek kaynaktan (PlanPricing) üretiliyor; burada elle
-    /// yazılı bir tablo daha vardı ve Premium'u ₺2.399 gösteriyordu.
+    /// yazılı bir tablo daha vardı ve öteki kopyalarla ayrışmıştı.
     /// </summary>
     [HttpGet("prices")]
     public IActionResult GetPrices() => Ok(new

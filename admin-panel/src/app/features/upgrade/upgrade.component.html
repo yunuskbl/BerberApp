@@ -24,7 +24,7 @@
         <div class="plan-icon">{{ current.icon }}</div>
         <div class="plan-label">Mevcut Planınız</div>
         <div class="plan-name">{{ current.label }}</div>
-        <div class="plan-price">₺{{ current.price | number }}<span>/ay</span></div>
+        <div class="plan-price">₺{{ fmt(current.price) }}<span>/ay</span></div>
       </div>
 
       <!-- Arrow -->
@@ -40,7 +40,7 @@
         <div class="plan-icon">{{ required.icon }}</div>
         <div class="plan-label">Hedef Plan</div>
         <div class="plan-name">{{ required.label }}</div>
-        <div class="plan-price">₺{{ required.price | number }}<span>/ay</span></div>
+        <div class="plan-price">₺{{ fmt(required.price) }}<span>/ay</span></div>
       </div>
 
     </div>

@@ -5,7 +5,7 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { LanguageService, Lang } from '../../core/services/language.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { PLANS, displayMonthly } from '../../core/pricing';
+import { PLANS, displayMonthly, formatPrice } from '../../core/pricing';
 
 interface Feature  { name: string; included: boolean; }
 interface PlanLimit { staff: string; appointments: string; }
@@ -244,6 +244,11 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
       this.animatedStats[index] = format(Math.round(eased * target));
       if (step >= STEPS) clearInterval(timer);
     }, 33);
+  }
+
+  /** Tutarı seçili dile göre biçimlendirir (TR'de ₺1.499). */
+  fmt(value: number): string {
+    return formatPrice(value, this.langSvc.dateLocale);
   }
 
   /** Kartta görünen aylık tutar; yıllık seçiliyse indirimli karşılığı. */

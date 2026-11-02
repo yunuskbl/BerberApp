@@ -126,7 +126,7 @@ public class LoginHandlerTests
             Status     = SubscriptionStatus.Active,
             StartDate  = DateTime.UtcNow.AddDays(-5),
             ExpiryDate = DateTime.UtcNow.AddDays(25),
-            Price      = 1799m,
+            Price      = 1499m,
             Currency   = "TRY"
         });
         await db.SaveChangesAsync();

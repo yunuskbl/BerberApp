@@ -27,7 +27,7 @@ public class SubscriptionFlowTests
             Status               = SubscriptionStatus.Pending,
             StartDate            = DateTime.UtcNow,
             ExpiryDate           = DateTime.UtcNow.AddMonths(1),
-            Price                = 1799m,
+            Price                = 1499m,
             Currency             = "TRY",
             IsAutoRenewal        = true,
             IyzicoConversationId = conversationId
