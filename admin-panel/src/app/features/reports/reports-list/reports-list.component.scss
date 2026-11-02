@@ -393,6 +393,110 @@
   gap: 0 20px;
 }
 
+/* Önceki döneme göre değişim rozeti. Renk tek başına anlam taşımasın diye
+   yön oku da yazılıyor — kırmızı/yeşil ayrımını göremeyen okur için ▲/▼ kalıyor. */
+.delta {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 7px;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: help;
+  background: #f3f4f6;
+  color: #6b7280;
+
+  &--good { background: #ecfdf5; color: #047857; }
+  &--bad  { background: #fef2f2; color: #b91c1c; }
+}
+
+/* Randevu durumları: grafik solda, oran kartları sağda */
+.status-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 16px;
+  align-items: start;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.status-rates {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rate-card {
+  background: white;
+  border: 1px solid #f0f0f0;
+  border-left: 4px solid #d1d5db;
+  border-radius: 12px;
+  padding: 14px 16px;
+
+  .rate-label { font-size: 11.5px; font-weight: 600; color: #6b7280; }
+  .rate-value { font-size: 24px; font-weight: 700; color: #111827; letter-spacing: -0.02em; margin: 2px 0; }
+  .rate-sub   { font-size: 11px; color: #9ca3af; line-height: 1.4; }
+
+  /* Eşiği aşan oran kırmızıya dönüyor; sayı zaten yazılı, renk yalnızca
+     dikkat çekmek için. */
+  &--warn {
+    border-left-color: #dc2626;
+    .rate-value { color: #b91c1c; }
+  }
+
+  &--good { border-left-color: #059669; }
+}
+
+/* Grafik kartı içindeki alt başlık — grafiğin neyi çizdiğini söyler. */
+.chart-subtitle {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+/* Boşluğun iyi haber olduğu durum: "hiç iptal yok". */
+.chart-empty-positive {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 28px 12px;
+  font-size: 13px;
+  color: #047857;
+  justify-content: center;
+  text-align: center;
+}
+
+/* En yoğun dilimler tablosu */
+.slot-cell {
+  display: flex;
+  flex-direction: column;
+
+  .slot-day  { font-size: 13px; font-weight: 600; color: #111827; }
+  .slot-hour { font-size: 11.5px; color: #9ca3af; font-variant-numeric: tabular-nums; }
+}
+
+.slot-services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.slot-service {
+  font-size: 11.5px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: #f9fafb;
+  border: 1px solid #f0f0f0;
+  color: #6b7280;
+  white-space: nowrap;
+
+  b { color: #111827; margin-left: 4px; }
+}
+
 /* Grafiğin altındaki tek satırlık açıklama: sayının nasıl hesaplandığı. */
 .chart-note {
   margin: 8px 2px 0;

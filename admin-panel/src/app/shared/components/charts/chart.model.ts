@@ -24,6 +24,28 @@ export interface ChartPoint {
   note?: string;
 }
 
+/** Isı haritası hücresi. */
+export interface HeatCell {
+  /** Satır indeksi (0 tabanlı). */
+  row: number;
+  /** Sütun indeksi (0 tabanlı). */
+  col: number;
+  value: number;
+  /** Tooltip ve tablo için okunur açıklama. */
+  label: string;
+  /** Tooltip'te değerin altında görünen ek bilgi. */
+  note?: string;
+}
+
+/**
+ * Sıralı mor rampa — ısı haritası gibi sürekli büyüklükler için.
+ * Tek hue, açıktan koyuya; doğrulandı: monoton açıklık, komşu adım farkı
+ * ≥ 0.06, hue yayılımı 1°. En açık adım zemine yakın duruyor; bu sequential
+ * ölçekte kasıtlı — "sıfıra yakın" zaten geri çekilmeli. Hiç değeri olmayan
+ * hücre boyanmıyor, böylece "yok" ile "az" karışmıyor.
+ */
+export const HEAT_RAMP = ['#ddd6fe', '#c4b5fd', '#a78bfa', '#8b5cf6', '#6d28d9'] as const;
+
 export const CHART_INK = {
   /** Tek serinin rengi — marka moru. */
   series:     '#7c3aed',

@@ -1,0 +1,30 @@
+@use './chart-base' as *;
+
+/* Ölçek açıklaması — sürekli renk ölçeği her zaman bir anahtarla gelir. */
+.heat-scale {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #9ca3af;
+
+  .hs-label { font-weight: 600; }
+
+  .hs-step {
+    width: 18px;
+    height: 8px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  .hs-max {
+    margin-left: auto;
+    font-weight: 600;
+    color: #6b7280;
+  }
+}
+
+@media print {
+  .heat-scale { color: #6b7280; }
+}

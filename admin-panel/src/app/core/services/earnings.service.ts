@@ -29,6 +29,47 @@ export interface EarningsDto {
   totalPriceDifference: number;
   priceDifferenceCount: number;
   priceDifferences:     PriceDifferenceDetailDto[];
+  // Önceki dönem (aynı uzunlukta, hemen öncesi)
+  previousStartDate:         string;
+  previousEndDate:           string;
+  previousTotalInTry:        number;
+  previousTotalAppointments: number;
+  previousTotalExpenses:     number;
+  previousNetProfit:         number;
+  // Randevu durumları
+  statusBreakdown:       StatusBreakdownDto[];
+  allAppointments:       number;
+  cancelledAppointments: number;
+  noShowAppointments:    number;
+  // Yoğunluk
+  peakHours: PeakHourCellDto[];
+  peakSlots: PeakSlotDto[];
+}
+
+export interface StatusBreakdownDto {
+  status: string;   // Completed | Confirmed | Pending | Cancelled | NoShow
+  count:  number;
+  order:  number;
+}
+
+export interface PeakHourCellDto {
+  dayOfWeek: number;   // 0 = pazar … 6 = cumartesi
+  hour:      number;   // 0-23, Türkiye saati
+  count:     number;
+  revenue:   number;
+}
+
+export interface SlotServiceDto {
+  serviceName: string;
+  count:       number;
+}
+
+export interface PeakSlotDto {
+  dayOfWeek: number;
+  hour:      number;
+  count:     number;
+  revenue:   number;
+  services:  SlotServiceDto[];
 }
 
 export interface PriceDifferenceDetailDto {
@@ -116,6 +157,7 @@ export interface AtRiskCustomerDto extends CustomerRankDto {
 export interface CustomerInsightsDto {
   // Seçili dönem
   activeCustomers:         number;
+  previousActiveCustomers: number;
   newCustomers:            number;
   returningCustomers:      number;
   repeatRate:              number;

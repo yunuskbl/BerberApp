@@ -122,7 +122,15 @@
           Toplam Gelir
         </div>
         <div class="pnl-value">{{ formatCurrency(earnings.totalInTry) }}</div>
-        <div class="pnl-sub">{{ earnings.totalAppointments }} randevu</div>
+        <div class="pnl-sub">
+          {{ earnings.totalAppointments }} randevu
+          @if (delta(earnings.totalInTry, earnings.previousTotalInTry); as d) {
+            <span class="delta" [class.delta--good]="d.good" [class.delta--bad]="!d.good"
+                  [title]="'Önceki dönem: ' + previousPeriodLabel + ' · ' + formatCurrency(earnings.previousTotalInTry)">
+              {{ d.direction === 'up' ? '▲' : d.direction === 'down' ? '▼' : '=' }} %{{ d.percent }}
+            </span>
+          }
+        </div>
       </div>
       <div class="pnl-divider no-print">—</div>
       <div class="pnl-item pnl-expense">
@@ -131,7 +139,16 @@
           Toplam Gider
         </div>
         <div class="pnl-value">{{ formatCurrency(earnings.totalExpenses) }}</div>
-        <div class="pnl-sub">{{ earnings.expenseByCategory?.length ?? 0 }} kategori</div>
+        <div class="pnl-sub">
+          {{ earnings.expenseByCategory?.length ?? 0 }} kategori
+          <!-- Giderde artış iyi haber değil: yön aynı, renk ters. -->
+          @if (delta(earnings.totalExpenses, earnings.previousTotalExpenses, false); as d) {
+            <span class="delta" [class.delta--good]="d.good" [class.delta--bad]="!d.good"
+                  [title]="'Önceki dönem: ' + previousPeriodLabel + ' · ' + formatCurrency(earnings.previousTotalExpenses)">
+              {{ d.direction === 'up' ? '▲' : d.direction === 'down' ? '▼' : '=' }} %{{ d.percent }}
+            </span>
+          }
+        </div>
       </div>
       <div class="pnl-divider no-print">=</div>
       <div class="pnl-item" [class.pnl-profit]="earnings.netProfit >= 0" [class.pnl-loss]="earnings.netProfit < 0">
@@ -145,6 +162,12 @@
             Kâr marjı: %{{ (earnings.netProfit / earnings.totalInTry * 100) | number: '1.0-0' }}
           } @else {
             Dönemde gelir yok
+          }
+          @if (delta(earnings.netProfit, earnings.previousNetProfit); as d) {
+            <span class="delta" [class.delta--good]="d.good" [class.delta--bad]="!d.good"
+                  [title]="'Önceki dönem: ' + previousPeriodLabel + ' · ' + formatCurrency(earnings.previousNetProfit)">
+              {{ d.direction === 'up' ? '▲' : d.direction === 'down' ? '▼' : '=' }} %{{ d.percent }}
+            </span>
           }
         </div>
       </div>
@@ -306,6 +329,145 @@
               </div>
             </div>
           }
+        </div>
+      }
+
+      <!-- ── Yoğun saatler ──────────────────────────────────────────────── -->
+      @if (hasHeatData) {
+        <div class="report-section">
+          <div class="section-title-row">
+            <div class="section-icon section-icon--purple">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+            </div>
+            <h3>Yoğun Saatler</h3>
+            <span class="chart-chip">gün × saat</span>
+          </div>
+          <div class="chart-card">
+            <app-heatmap-chart
+              [cells]="heatCells"
+              [rowLabels]="heatRows"
+              [colLabels]="heatCols"
+              [format]="countOnly"
+              lowLabel="az"
+              highLabel="çok"
+              emptyText="Bu dönemde randevu yok"/>
+            <p class="chart-note">
+              Tamamlanmış randevunun başladığı saate göre, Türkiye saatiyle.
+              Boş bırakılan hücrelerde hiç randevu yok.
+            </p>
+          </div>
+        </div>
+
+        <!-- En yoğun dilimlerde hangi hizmet uygulanıyor -->
+        @if (peakSlots.length > 0) {
+          <div class="report-section">
+            <div class="section-title-row">
+              <div class="section-icon section-icon--green">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42"/></svg>
+              </div>
+              <h3>En Yoğun Dilimler ve Hizmetler</h3>
+            </div>
+            <div class="table-card">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Dilim</th>
+                    <th>Randevu</th>
+                    <th>Gelir</th>
+                    <th>Uygulanan Hizmetler</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (slot of peakSlots; track slot.dayOfWeek + '-' + slot.hour; let i = $index) {
+                    <tr>
+                      <td>
+                        <div class="slot-cell">
+                          <span class="slot-day">{{ slotDayLabel(slot.dayOfWeek) }}</span>
+                          <span class="slot-hour">{{ slotHourLabel(slot.hour) }}</span>
+                        </div>
+                      </td>
+                      <td class="center-cell">{{ slot.count }}</td>
+                      <td class="amount-cell">{{ formatCurrency(slot.revenue) }}</td>
+                      <td>
+                        <div class="slot-services">
+                          @for (service of slot.services; track service.serviceName) {
+                            <span class="slot-service">
+                              {{ service.serviceName }}
+                              <b>{{ service.count }}</b>
+                            </span>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <p class="chart-note">
+              Personel planlamasında işe yarayan kısım burası: aynı saatte yığılan
+              hizmet uzun sürüyorsa o dilimde ikinci bir personel gerekiyor.
+            </p>
+          </div>
+        }
+      }
+
+      <!-- ── Randevu durumları ──────────────────────────────────────────── -->
+      @if (hasStatusData) {
+        <div class="report-section">
+          <div class="section-title-row">
+            <div class="section-icon section-icon--amber">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h3>Randevu Durumları</h3>
+            <span class="chart-chip">{{ earnings.allAppointments }} randevu</span>
+          </div>
+
+          <div class="status-layout">
+            <div class="chart-card">
+              @if (hasIncompleteAppointments) {
+                <div class="chart-subtitle">Tamamlanmayan randevular</div>
+                <app-bar-chart
+                  [points]="statusBars"
+                  [format]="countOnly"
+                  [axisFormat]="countAxis"
+                  [labelFormat]="countOnly"
+                  [integerAxis]="true"
+                  [height]="190"
+                  seriesName="Randevu"
+                  noteHeader="Pay"/>
+              } @else {
+                <div class="chart-empty-positive">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  <span>Bu dönemde iptal, gelmedi ya da kapatılmamış randevu yok.</span>
+                </div>
+              }
+            </div>
+
+            <div class="status-rates">
+              <div class="rate-card rate-card--good">
+                <div class="rate-label">Tamamlanma Oranı</div>
+                <div class="rate-value">%{{ completionRate }}</div>
+                <div class="rate-sub">{{ earnings.totalAppointments }} randevu tamamlandı</div>
+              </div>
+              <div class="rate-card" [class.rate-card--warn]="cancelRate >= 15">
+                <div class="rate-label">İptal Oranı</div>
+                <div class="rate-value">%{{ cancelRate }}</div>
+                <div class="rate-sub">{{ earnings.cancelledAppointments }} randevu iptal edildi</div>
+              </div>
+              <div class="rate-card" [class.rate-card--warn]="noShowRate >= 10">
+                <div class="rate-label">Gelmedi Oranı</div>
+                <div class="rate-value">%{{ noShowRate }}</div>
+                <div class="rate-sub">{{ earnings.noShowAppointments }} randevuya gelinmedi</div>
+              </div>
+            </div>
+          </div>
+          <p class="chart-note">
+            Grafikte tamamlanan randevular yok; tamamlananların yanında iptaller
+            birkaç piksele iniyor, oysa asıl karşılaştırma iptal ile gelmedi
+            arasında. Tamamlanan sayısı sağdaki kartta.
+            "Bekliyor" ve "Onaylı" ise geçmiş bir dönemde kapatılmamış randevu
+            demek — tamamlandı ya da gelmedi olarak işaretlenmemiş kayıtlar.
+          </p>
         </div>
       }
 
@@ -601,7 +763,15 @@
             </div>
             <div class="stat-label">Dönemde Gelen Müşteri</div>
             <div class="stat-value">{{ insights.activeCustomers }}</div>
-            <div class="stat-sub">{{ insights.newCustomers }} yeni · {{ insights.returningCustomers }} tekrar</div>
+            <div class="stat-sub">
+              {{ insights.newCustomers }} yeni · {{ insights.returningCustomers }} tekrar
+              @if (delta(insights.activeCustomers, insights.previousActiveCustomers); as d) {
+                <span class="delta" [class.delta--good]="d.good" [class.delta--bad]="!d.good"
+                      [title]="'Önceki dönem: ' + previousPeriodLabel + ' · ' + insights.previousActiveCustomers + ' müşteri'">
+                  {{ d.direction === 'up' ? '▲' : d.direction === 'down' ? '▼' : '=' }} %{{ d.percent }}
+                </span>
+              }
+            </div>
           </div>
 
           <div class="stat-card stat-card--green">

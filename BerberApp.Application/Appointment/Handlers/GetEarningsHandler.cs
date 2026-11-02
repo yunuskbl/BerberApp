@@ -47,19 +47,42 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
         var endUtc = TimeZoneInfo.ConvertTimeToUtc(
             DateTime.SpecifyKind(request.EndDate.AddDays(1), DateTimeKind.Unspecified), turkeyTz);
 
+        // Önceki dönem: aynı uzunlukta, hemen öncesi. 1-30 Ekim seçiliyse
+        // 1-30 Eylül ile karşılaştırılır.
+        var periodDays        = Math.Max(1, (int)(request.EndDate.Date - request.StartDate.Date).TotalDays + 1);
+        var previousStartDate = request.StartDate.Date.AddDays(-periodDays);
+        var previousEndDate   = request.StartDate.Date.AddDays(-1);
+        var previousStartUtc  = TimeZoneInfo.ConvertTimeToUtc(
+            DateTime.SpecifyKind(previousStartDate, DateTimeKind.Unspecified), turkeyTz);
+
         var query = new List<AppointmentEntity>();
         var tenantIds = request.TenantIds ?? new List<Guid> { request.TenantId };
 
-        var allAppointments = await _appointmentRepo.GetAllAsync(
-            x => tenantIds.Contains(x.TenantId) &&
-                 x.Status == AppointmentStatus.Completed, ct);
+        // Durum kırılımı iptal ve gelmedi sayılarını da istiyor, bu yüzden
+        // randevular duruma göre süzülmeden çekiliyor; "tamamlandı" ayrımı
+        // aşağıda bellekte yapılıyor. Tek sorgu, aynı tablo taraması.
+        var everyAppointment = await _appointmentRepo.GetAllAsync(
+            x => tenantIds.Contains(x.TenantId), ct);
+
+        if (request.StaffId.HasValue)
+            everyAppointment = everyAppointment.Where(x => x.StaffId == request.StaffId.Value).ToList();
+
+        var allAppointments = everyAppointment
+            .Where(x => x.Status == AppointmentStatus.Completed)
+            .ToList();
 
         var appointments = allAppointments
             .Where(x => x.StartTime >= startUtc && x.StartTime < endUtc)
             .ToList();
 
-        if (request.StaffId.HasValue)
-            appointments = appointments.Where(x => x.StaffId == request.StaffId.Value).ToList();
+        // Dönemdeki bütün randevular (tamamlanmayanlar dahil) — durum kırılımı için.
+        var appointmentsInRangeAnyStatus = everyAppointment
+            .Where(x => x.StartTime >= startUtc && x.StartTime < endUtc)
+            .ToList();
+
+        var previousAppointments = allAppointments
+            .Where(x => x.StartTime >= previousStartUtc && x.StartTime < startUtc)
+            .ToList();
 
         var today = appointments
             .Where(x => x.StartTime >= TimeZoneInfo.ConvertTimeToUtc(
@@ -203,12 +226,18 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             .ToList();
 
         // ── Giderler (Expenses) ─────────────────────────────────────────────
-        var allExpenses = await _expenseRepo.GetAllAsync(
+        // Aralık önceki dönemi de kapsayacak şekilde geniş çekiliyor; seçili
+        // dönem ile karşılaştırma dönemi bellekte ayrılıyor.
+        var expensesWithPrevious = await _expenseRepo.GetAllAsync(
             x => tenantIds.Contains(x.TenantId) &&
-                 x.Date >= startUtc && x.Date < endUtc, ct);
+                 x.Date >= previousStartUtc && x.Date < endUtc, ct);
+
+        var allExpenses = expensesWithPrevious
+            .Where(x => x.Date >= startUtc)
+            .ToList();
 
         // Tüm gider para birimlerini döviz kurlarına ekle
-        var expenseCurrencies = allExpenses.Select(e => e.Currency).Distinct();
+        var expenseCurrencies = expensesWithPrevious.Select(e => e.Currency).Distinct();
         foreach (var cur in expenseCurrencies)
         {
             if (!rates.ContainsKey(cur.ToUpper()))
@@ -246,6 +275,86 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             })
             .ToList();
 
+        // ── Önceki dönem karşılaştırması ────────────────────────────────────
+        var previousTotalInTry = previousAppointments.Sum(EffectivePriceInTry);
+        var previousExpenses = expensesWithPrevious
+            .Where(e => e.Date >= previousStartUtc && e.Date < startUtc)
+            .Sum(e => e.Amount * rates.GetValueOrDefault(e.Currency.ToUpper(), 1m));
+
+        // ── Randevu durumları ───────────────────────────────────────────────
+        // Sıra bilinçli: tamamlanan önce, sorunlu durumlar sonra. Enum adı
+        // olduğu gibi gönderiliyor; Türkçe etiket istemcide, çeviri orada.
+        var statusOrder = new[]
+        {
+            AppointmentStatus.Completed,
+            AppointmentStatus.Confirmed,
+            AppointmentStatus.Pending,
+            AppointmentStatus.Cancelled,
+            AppointmentStatus.NoShow,
+        };
+
+        var statusBreakdown = statusOrder
+            .Select((status, index) => new StatusBreakdownDto
+            {
+                Status = status.ToString(),
+                Count  = appointmentsInRangeAnyStatus.Count(x => x.Status == status),
+                Order  = index,
+            })
+            .ToList();
+
+        // ── Yoğunluk: gün × saat ────────────────────────────────────────────
+        // Saat Türkiye saatine çevriliyor; UTC saatiyle gruplamak bütün
+        // haritayı üç saat kaydırırdı.
+        var peakCells = appointments
+            .Select(x => new
+            {
+                Local = TimeZoneInfo.ConvertTimeFromUtc(
+                    DateTime.SpecifyKind(x.StartTime, DateTimeKind.Utc), turkeyTz),
+                Appointment = x,
+            })
+            .GroupBy(x => new { Day = (int)x.Local.DayOfWeek, x.Local.Hour })
+            .Select(g => new PeakHourCellDto
+            {
+                DayOfWeek = g.Key.Day,
+                Hour      = g.Key.Hour,
+                Count     = g.Count(),
+                Revenue   = g.Sum(x => EffectivePriceInTry(x.Appointment)),
+            })
+            .OrderBy(x => x.DayOfWeek).ThenBy(x => x.Hour)
+            .ToList();
+
+        // En yoğun dilimler ve o dilimde ne yapıldığı: "cumartesi 14:00'te
+        // kalabalık" bilgisi tek başına eksik, hangi hizmetin yığıldığı
+        // personel planlamasını değiştiriyor.
+        var peakSlots = peakCells
+            .OrderByDescending(x => x.Count)
+            .ThenByDescending(x => x.Revenue)
+            .Take(5)
+            .Select(cell =>
+            {
+                var slotAppointments = appointments.Where(x =>
+                {
+                    var local = TimeZoneInfo.ConvertTimeFromUtc(
+                        DateTime.SpecifyKind(x.StartTime, DateTimeKind.Utc), turkeyTz);
+                    return (int)local.DayOfWeek == cell.DayOfWeek && local.Hour == cell.Hour;
+                });
+
+                return new PeakSlotDto
+                {
+                    DayOfWeek = cell.DayOfWeek,
+                    Hour      = cell.Hour,
+                    Count     = cell.Count,
+                    Revenue   = cell.Revenue,
+                    Services  = slotAppointments
+                        .GroupBy(x => services.FirstOrDefault(s => s.Id == x.ServiceId)?.Name ?? "—")
+                        .Select(g => new SlotServiceDto { ServiceName = g.Key, Count = g.Count() })
+                        .OrderByDescending(x => x.Count)
+                        .Take(3)
+                        .ToList(),
+                };
+            })
+            .ToList();
+
         return new EarningsDto
         {
             TotalEarnings = totalEarnings,
@@ -269,7 +378,22 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             ExpenseDaily = expenseDaily,
             TotalPriceDifference = totalPriceDiff,
             PriceDifferenceCount = priceDiffCount,
-            PriceDifferences = priceDiffDetails
+            PriceDifferences = priceDiffDetails,
+
+            PreviousStartDate        = previousStartDate,
+            PreviousEndDate          = previousEndDate,
+            PreviousTotalInTry       = previousTotalInTry,
+            PreviousTotalAppointments = previousAppointments.Count,
+            PreviousTotalExpenses    = previousExpenses,
+            PreviousNetProfit        = previousTotalInTry - previousExpenses,
+
+            StatusBreakdown       = statusBreakdown,
+            AllAppointments       = appointmentsInRangeAnyStatus.Count,
+            CancelledAppointments = appointmentsInRangeAnyStatus.Count(x => x.Status == AppointmentStatus.Cancelled),
+            NoShowAppointments    = appointmentsInRangeAnyStatus.Count(x => x.Status == AppointmentStatus.NoShow),
+
+            PeakHours = peakCells,
+            PeakSlots = peakSlots,
         };
     }
 }

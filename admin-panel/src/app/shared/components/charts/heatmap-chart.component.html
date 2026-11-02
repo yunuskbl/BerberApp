@@ -1,0 +1,83 @@
+@if (cells().length === 0) {
+  <div class="chart-empty">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    <span>{{ emptyText() }}</span>
+  </div>
+} @else {
+
+  <div class="chart-plot" [class.is-stale]="stale()"
+       tabindex="0" role="img" [attr.aria-label]="ariaLabel()"
+       (blur)="active.set(null)">
+
+    <svg [attr.width]="geo().w" [attr.height]="geo().h"
+         [attr.viewBox]="'0 0 ' + geo().w + ' ' + geo().h" aria-hidden="true">
+
+      <!-- Saat şeridi -->
+      @for (c of geo().cols; track c.i) {
+        @if (c.show) {
+          <text class="tick-label" [attr.x]="c.x" [attr.y]="12" text-anchor="middle">{{ c.label }}</text>
+        }
+      }
+
+      <!-- Gün başlıkları -->
+      @for (r of geo().rows; track r.i) {
+        <text class="tick-label" [attr.x]="geo().left - 8" [attr.y]="r.y + 3.5" text-anchor="end">{{ r.label }}</text>
+      }
+
+      <!-- Dolu hücreler. Boş hücre hiç çizilmiyor: "randevu yok" ile
+           "az randevu" aynı görünmemeli. -->
+      @for (cell of geo().painted; track cell.key) {
+        <rect [attr.x]="cell.x" [attr.y]="cell.y"
+              [attr.width]="cell.w" [attr.height]="cell.h"
+              rx="3" [attr.fill]="cell.color"
+              [attr.opacity]="active() && active() !== cell.key ? 0.55 : 1"
+              style="cursor: pointer"
+              (pointerenter)="active.set(cell.key)" (pointerleave)="active.set(null)"/>
+      }
+    </svg>
+
+    @if (activeCell(); as cell) {
+      <div class="chart-tooltip"
+           [style.left.px]="tooltipLeft(cell.centerX)"
+           [style.top.px]="cell.centerY - 6">
+        <span class="tt-value">{{ format()(cell.value) }}</span>
+        <span class="tt-label">{{ cell.label }}</span>
+        @if (cell.note) { <span class="tt-note">{{ cell.note }}</span> }
+      </div>
+    }
+  </div>
+
+  <!-- Ölçek açıklaması: renk ne kadarı gösteriyor -->
+  <div class="heat-scale">
+    <span class="hs-label">{{ lowLabel() }}</span>
+    @for (step of ramp; track step) {
+      <i class="hs-step" [style.background]="step"></i>
+    }
+    <span class="hs-label">{{ highLabel() }}</span>
+    <span class="hs-max">en yoğun: {{ format()(geo().max) }}</span>
+  </div>
+
+  <details class="chart-table no-print">
+    <summary>Tabloyu göster</summary>
+    <table>
+      <thead>
+        <tr>
+          <th>Dilim</th>
+          <th>Değer</th>
+          <th>Ayrıntı</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (cell of tableRows(); track cell.key) {
+          <tr>
+            <td>{{ cell.label }}</td>
+            <td>{{ format()(cell.value) }}</td>
+            <td>{{ cell.note || '—' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </details>
+}

@@ -26,6 +26,8 @@ public class CustomerInsightsDto
     // ── Seçili dönem ────────────────────────────────────────────────────────
     /// <summary>Dönemde en az bir kez gelen farklı müşteri sayısı.</summary>
     public int ActiveCustomers { get; set; }
+    /// <summary>Aynı uzunluktaki bir önceki dönemde gelen farklı müşteri.</summary>
+    public int PreviousActiveCustomers { get; set; }
     /// <summary>Bunların, hayatında ilk kez bu dönemde geleni.</summary>
     public int NewCustomers { get; set; }
     /// <summary>Bunların, daha önce de gelmiş olanı.</summary>

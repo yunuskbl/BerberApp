@@ -94,6 +94,18 @@ public class GetCustomerInsightsHandler
         var periodRevenue = inRange.Sum(PriceInTry);
         var activeIds = inRange.Select(x => x.CustomerId).Distinct().ToList();
 
+        // Aynı uzunluktaki önceki dönem — gelir raporundaki karşılaştırmayla
+        // aynı mantık, ek sorgu gerektirmiyor.
+        var periodDays = Math.Max(1, (int)(request.EndDate.Date - request.StartDate.Date).TotalDays + 1);
+        var previousStartUtc = TimeZoneInfo.ConvertTimeToUtc(
+            DateTime.SpecifyKind(request.StartDate.Date.AddDays(-periodDays), DateTimeKind.Unspecified), turkeyTz);
+
+        var previousActive = completed
+            .Where(x => x.StartTime >= previousStartUtc && x.StartTime < startUtc && x.CustomerId != Guid.Empty)
+            .Select(x => x.CustomerId)
+            .Distinct()
+            .Count();
+
         var newCount = activeIds.Count(id =>
             summaries.TryGetValue(id, out var s) && s.First >= startUtc && s.First < endUtc);
         var returningCount = activeIds.Count - newCount;
@@ -202,6 +214,7 @@ public class GetCustomerInsightsHandler
         return new CustomerInsightsDto
         {
             ActiveCustomers         = activeIds.Count,
+            PreviousActiveCustomers = previousActive,
             NewCustomers            = newCount,
             ReturningCustomers      = returningCount,
             RepeatRate              = activeIds.Count > 0

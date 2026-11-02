@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { HttpClient } from '@angular/common/http';
 import {
   EarningsService, EarningsDto, PriceDifferenceDetailDto, CustomerInsightsDto,
+  PeakSlotDto,
 } from '../../../core/services/earnings.service';
 import { ExpenseService, ExpenseDto } from '../../../core/services/expense.service';
 import { LanguageService } from '../../../core/services/language.service';
@@ -15,7 +16,17 @@ import { BarChartComponent } from '../../../shared/components/charts/bar-chart.c
 import {
   StackedBarChartComponent, StackedPoint,
 } from '../../../shared/components/charts/stacked-bar-chart.component';
-import { CHART_INK, ChartPoint, compactNumber } from '../../../shared/components/charts/chart.model';
+import { HeatmapChartComponent } from '../../../shared/components/charts/heatmap-chart.component';
+import {
+  CHART_INK, ChartPoint, HeatCell, compactNumber,
+} from '../../../shared/components/charts/chart.model';
+
+/** Önceki döneme göre değişim — yön ve bunun iyi mi kötü mü olduğu. */
+interface PeriodDelta {
+  percent: number;
+  direction: 'up' | 'down' | 'flat';
+  good: boolean;
+}
 import { environment } from '../../../../environments/environment';
 
 interface BranchOption { id: string; name: string; }
@@ -35,6 +46,7 @@ interface DayRow {
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule, TranslatePipe,
     TrendChartComponent, BarChartComponent, StackedBarChartComponent,
+    HeatmapChartComponent,
   ],
   templateUrl: './reports-list.component.html',
   styleUrl: './reports-list.component.scss'
@@ -285,6 +297,182 @@ export class ReportsListComponent implements OnInit {
   /** Gider grafiği, sayfanın geri kalanıyla aynı kırmızıyı giyiyor. */
   readonly expenseColor = CHART_INK.negative;
 
+  // ── Yoğunluk ve randevu durumları ─────────────────────────────────────────
+
+  /** Gün × saat ısı haritası. */
+  heatCells: HeatCell[] = [];
+  heatRows: string[] = [];
+  heatCols: string[] = [];
+  /** En yoğun saat dilimleri ve orada uygulanan hizmetler. */
+  peakSlots: PeakSlotDto[] = [];
+  /**
+   * Tamamlanmayan randevuların kırılımı. "Tamamlandı" bilerek dışarıda:
+   * 168'e karşı 14 ve 6 çizdirildiğinde küçük sütunlar birkaç piksele
+   * iniyor ve asıl karşılaştırma (iptal mi, gelmedi mi) okunamıyor.
+   * Tamamlanan sayısı zaten sayfanın her yerinde; buradaki soru "ne oldu da
+   * olmadı".
+   */
+  statusBars: ChartPoint[] = [];
+  /** Dönemde hiç sorunlu randevu yoksa grafik yerine olumlu bir not basılır. */
+  get hasIncompleteAppointments(): boolean {
+    return this.statusBars.some(b => b.value > 0);
+  }
+
+  get completionRate(): number {
+    const all = this.earnings?.allAppointments ?? 0;
+    if (all === 0) return 0;
+    const completed = this.earnings?.statusBreakdown?.find(s => s.status === 'Completed')?.count ?? 0;
+    return Math.round((completed / all) * 1000) / 10;
+  }
+
+  /** Gün sırası pazartesiden başlıyor; DayOfWeek 0 = pazar. */
+  private readonly weekdayOrder = [1, 2, 3, 4, 5, 6, 0];
+
+  get cancelRate(): number {
+    const all = this.earnings?.allAppointments ?? 0;
+    return all > 0 ? Math.round((this.earnings!.cancelledAppointments / all) * 1000) / 10 : 0;
+  }
+
+  get noShowRate(): number {
+    const all = this.earnings?.allAppointments ?? 0;
+    return all > 0 ? Math.round((this.earnings!.noShowAppointments / all) * 1000) / 10 : 0;
+  }
+
+  get hasStatusData(): boolean {
+    return (this.earnings?.allAppointments ?? 0) > 0;
+  }
+
+  /** Isı haritası ancak birkaç dolu hücre varsa bir şey anlatıyor. */
+  get hasHeatData(): boolean {
+    return this.heatCells.length >= 3;
+  }
+
+  // ── Önceki döneme göre değişim ─────────────────────────────────────────────
+
+  /**
+   * Yüzde değişim. Önceki dönem sıfırsa `null` dönüyor: sıfırdan artışı
+   * yüzdeyle ifade etmek ("%∞ arttı") bilgi taşımıyor, kartta hiç
+   * göstermemek daha dürüst.
+   */
+  delta(current: number, previous: number, upIsGood = true): PeriodDelta | null {
+    if (!previous) return null;
+
+    const percent = Math.round(((current - previous) / Math.abs(previous)) * 100);
+    const direction: PeriodDelta['direction'] =
+      percent > 0 ? 'up' : percent < 0 ? 'down' : 'flat';
+
+    return {
+      percent: Math.abs(percent),
+      direction,
+      // Giderde artış iyi haber değil; yön aynı, yorum ters.
+      good: direction === 'flat' ? true : (direction === 'up') === upIsGood,
+    };
+  }
+
+  get previousPeriodLabel(): string {
+    const e = this.earnings;
+    if (!e?.previousStartDate) return 'önceki dönem';
+    return `${this.formatDate(e.previousStartDate)} – ${this.formatDate(e.previousEndDate)}`;
+  }
+
+  private rebuildStatusAndHeat(): void {
+    this.heatCells = [];
+    this.heatRows = [];
+    this.heatCols = [];
+    this.peakSlots = [];
+    this.statusBars = [];
+
+    const e = this.earnings;
+    if (!e) return;
+
+    this.peakSlots = e.peakSlots ?? [];
+
+    const labels: Record<string, string> = {
+      Confirmed: 'Onaylı',
+      Pending:   'Bekliyor',
+      Cancelled: 'İptal',
+      NoShow:    'Gelmedi',
+    };
+    const order = ['Cancelled', 'NoShow', 'Pending', 'Confirmed'];
+
+    this.statusBars = order
+      .map(status => {
+        const row = (e.statusBreakdown ?? []).find(s => s.status === status);
+        return {
+          label: labels[status],
+          fullLabel: labels[status],
+          value: row?.count ?? 0,
+          note: (e.allAppointments ?? 0) > 0
+            ? `randevuların %${Math.round((row?.count ?? 0) * 100 / e.allAppointments)}'i`
+            : undefined,
+        };
+      });
+
+    // ── Isı haritası ────────────────────────────────────────────────────────
+    const cells = e.peakHours ?? [];
+    if (cells.length === 0) return;
+
+    // Saat şeridi yalnızca gerçekten randevu olan saatleri kapsıyor; 00-23
+    // arasını baştan çizmek haritanın yarısını boş bırakıyordu.
+    const hours = cells.map(c => c.hour);
+    const minHour = Math.min(...hours);
+    const maxHour = Math.max(...hours);
+
+    this.heatCols = [];
+    for (let hour = minHour; hour <= maxHour; hour++) {
+      this.heatCols.push(`${hour}`.padStart(2, '0'));
+    }
+
+    const weekdayNames = this.weekdayNameList();
+    this.heatRows = this.weekdayOrder.map(day => weekdayNames.short[day]);
+
+    this.heatCells = cells.map(c => ({
+      row: this.weekdayOrder.indexOf(c.dayOfWeek),
+      col: c.hour - minHour,
+      value: c.count,
+      label: `${weekdayNames.long[c.dayOfWeek]} ${`${c.hour}`.padStart(2, '0')}:00`,
+      note: `${this.formatCurrency(Math.round(c.revenue))} gelir`,
+    })).filter(c => c.row >= 0);
+  }
+
+  private weekdayCache: { locale: string; short: string[]; long: string[] } | null = null;
+
+  /**
+   * Gün adları yerel takvime göre; sabit Türkçe dizi yazmak dil seçimini
+   * bozardı. Şablondan satır başına çağrıldığı için sonuç önbelleğe alınıyor —
+   * her değişiklik algılamasında iki Intl biçimleyici kurmak boşa maliyet.
+   */
+  private weekdayNameList(): { short: string[]; long: string[] } {
+    const locale = this.langService.dateLocale;
+    if (this.weekdayCache?.locale === locale) return this.weekdayCache;
+
+    const shortFmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+    const longFmt  = new Intl.DateTimeFormat(locale, { weekday: 'long' });
+
+    // 4 Ocak 2026 bir pazar; DayOfWeek 0 = pazar ile hizalı.
+    const sunday = new Date(2026, 0, 4);
+    const short: string[] = [];
+    const long: string[] = [];
+    for (let day = 0; day < 7; day++) {
+      const date = new Date(sunday);
+      date.setDate(sunday.getDate() + day);
+      short.push(shortFmt.format(date));
+      long.push(longFmt.format(date));
+    }
+
+    this.weekdayCache = { locale, short, long };
+    return this.weekdayCache;
+  }
+
+  /** Isı haritası ve dilim tablosunda saat aralığı: "14:00 – 15:00". */
+  slotHourLabel(hour: number): string {
+    return `${`${hour}`.padStart(2, '0')}:00 – ${`${(hour + 1) % 24}`.padStart(2, '0')}:00`;
+  }
+
+  slotDayLabel(dayOfWeek: number): string {
+    return this.weekdayNameList().long[dayOfWeek] ?? '';
+  }
+
   // Grafik bileşenlerine girdi olarak geçen biçimleyiciler. Ok işlevi olduğu
   // için `this` bağlamı şablonda da korunuyor.
   // Grafik etiketlerinde kuruş gösterilmiyor: "₺6.448,09" bir sütunun ucunda
@@ -307,6 +495,11 @@ export class ReportsListComponent implements OnInit {
 
     const e = this.earnings;
     if (!e) return;
+
+    // Durum kırılımı ve yoğunluk, gelir grafiklerinden bağımsız kuruluyor:
+    // dönemdeki bütün randevular iptal edilmişse gelir grafiği boş kalır ama
+    // asıl görülmesi gereken şey tam da o iptallerdir.
+    this.rebuildStatusAndHeat();
 
     const days = this.buildDayRows(e.daily ?? [], e.expenseDaily ?? []);
     if (days.length === 0) return;

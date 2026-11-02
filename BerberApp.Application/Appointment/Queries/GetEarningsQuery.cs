@@ -48,6 +48,65 @@ public class EarningsDto
     public decimal TotalPriceDifference { get; set; }
     public int PriceDifferenceCount { get; set; }
     public List<PriceDifferenceDetailDto> PriceDifferences { get; set; } = new();
+
+    // ── Önceki dönem (aynı uzunlukta, hemen öncesi) ────────────────────────
+    // Karşılaştırma sunucuda hesaplanıyor: handler zaten işletmenin bütün
+    // randevularını belleğe alıyor, önceki dönemi süzmek fazladan sorgu
+    // getirmiyor. İstemciden ikinci bir istek atmak gereksiz olurdu.
+    public DateTime PreviousStartDate { get; set; }
+    public DateTime PreviousEndDate { get; set; }
+    public decimal PreviousTotalInTry { get; set; }
+    public int PreviousTotalAppointments { get; set; }
+    public decimal PreviousTotalExpenses { get; set; }
+    public decimal PreviousNetProfit { get; set; }
+
+    // ── Randevu durumları ───────────────────────────────────────────────────
+    /// <summary>Dönemdeki randevuların durum kırılımı (iptal, gelmedi dahil).</summary>
+    public List<StatusBreakdownDto> StatusBreakdown { get; set; } = new();
+    /// <summary>Dönemdeki toplam randevu — tamamlanmayanlar dahil.</summary>
+    public int AllAppointments { get; set; }
+    public int CancelledAppointments { get; set; }
+    public int NoShowAppointments { get; set; }
+
+    // ── Yoğunluk ────────────────────────────────────────────────────────────
+    /// <summary>Gün × saat kırılımı; yalnızca randevu olan hücreler.</summary>
+    public List<PeakHourCellDto> PeakHours { get; set; } = new();
+    /// <summary>En yoğun saat dilimleri ve o dilimde uygulanan hizmetler.</summary>
+    public List<PeakSlotDto> PeakSlots { get; set; } = new();
+}
+
+public class StatusBreakdownDto
+{
+    /// <summary>Enum adı (Completed, Cancelled, NoShow, …) — etiket istemcide.</summary>
+    public string Status { get; set; } = string.Empty;
+    public int Count { get; set; }
+    public int Order { get; set; }
+}
+
+public class PeakHourCellDto
+{
+    /// <summary>0 = pazar … 6 = cumartesi (DayOfWeek ile aynı).</summary>
+    public int DayOfWeek { get; set; }
+    /// <summary>Türkiye saatiyle randevunun başladığı saat (0-23).</summary>
+    public int Hour { get; set; }
+    public int Count { get; set; }
+    public decimal Revenue { get; set; }
+}
+
+public class PeakSlotDto
+{
+    public int DayOfWeek { get; set; }
+    public int Hour { get; set; }
+    public int Count { get; set; }
+    public decimal Revenue { get; set; }
+    /// <summary>O saat diliminde en çok uygulanan hizmetler.</summary>
+    public List<SlotServiceDto> Services { get; set; } = new();
+}
+
+public class SlotServiceDto
+{
+    public string ServiceName { get; set; } = string.Empty;
+    public int Count { get; set; }
 }
 
 public class PriceDifferenceDetailDto
