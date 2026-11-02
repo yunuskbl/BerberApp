@@ -27,7 +27,7 @@
         <div class="billing-card" (click)="selectBilling('monthly')">
           <div class="billing-badge">Esnek</div>
           <div class="billing-period">Aylık</div>
-          <div class="billing-price">₺{{ monthlyPrice | number:'1.0-0' }}</div>
+          <div class="billing-price">₺{{ formatPrice(monthlyPrice) }}</div>
           <div class="billing-period-label">/ay</div>
           <ul class="billing-features">
             <li>✓ 30 günlük abonelik</li>
@@ -40,9 +40,9 @@
         <div class="billing-card billing-card--featured" (click)="selectBilling('annual')">
           <div class="billing-badge billing-badge--save">%20 İndirim</div>
           <div class="billing-period">Yıllık</div>
-          <div class="billing-price">₺{{ annualPrice | number:'1.0-0' }}</div>
+          <div class="billing-price">₺{{ formatPrice(annualPrice) }}</div>
           <div class="billing-period-label">/yıl</div>
-          <div class="billing-saving">₺{{ saving | number:'1.0-0' }} tasarruf</div>
+          <div class="billing-saving">₺{{ formatPrice(saving) }} tasarruf</div>
           <ul class="billing-features">
             <li>✓ 365 günlük abonelik</li>
             <li>✓ %20 daha ucuz</li>
@@ -76,7 +76,7 @@
           </div>
           <div class="order-total">
             <span>Toplam</span>
-            <span class="total-price">₺{{ price | number:'1.0-0' }}</span>
+            <span class="total-price">₺{{ formatPrice(price) }}</span>
           </div>
           <ul class="order-features">
             <li>✓ Onay sonrası anında aktif</li>
@@ -109,7 +109,7 @@
           </div>
           <div class="bank-row">
             <span class="bank-label">Tutar</span>
-            <span class="bank-value amount">₺{{ price | number:'1.0-0' }}</span>
+            <span class="bank-value amount">₺{{ formatPrice(price) }}</span>
           </div>
         </div>
 
@@ -125,12 +125,15 @@
              Ödeme ekranında bu bilgilerin gösterilmesi zorunlu; önceden yalnızca
              "Dilediğinde iptal" gibi pazarlama ifadeleri vardı.
 
-             DİKKAT — metin bugünkü akışı anlatıyor: havale ile tek seferlik
-             ödeme, kayıtlı kart yok, otomatik çekim yok. Kart ile otomatik
-             yenilemeye geçildiğinde (İyzico devreye alındığında) BU BLOK
-             GÜNCELLENMELİDİR: çekim tarihi, çekilecek tutar, kartın saklanması
-             ve iptal için son an eklenmelidir. Altyapı yokken "otomatik
-             yenilenir" yazmak yanıltıcı ön bilgilendirme olur. -->
+             DİKKAT — metin bugünkü akışı anlatıyor: tek seferlik ödeme,
+             kayıtlı kart yok, otomatik çekim yok. Bu, İyzico devreye
+             alındığında da geçerli kalacak: kart ile ödeme tek seferlik
+             tahsilat yapıyor, yinelenen çekim kurulu değil
+             (PaymentController abonelik kaydına IsAutoRenewal = false
+             yazıyor). Yinelenen çekim gerçekten eklendiğinde BU BLOK
+             GÜNCELLENMELİDİR: çekim tarihi, çekilecek tutar, kartın
+             saklanması ve iptal için son an eklenmelidir. Altyapı yokken
+             "otomatik yenilenir" yazmak yanıltıcı ön bilgilendirme olur. -->
         <div class="terms-box">
           <h2 class="terms-title">Abonelik Şartları</h2>
           <dl class="terms-list">
@@ -138,7 +141,13 @@
             <dd>{{ durationDays }} gün ({{ billingPeriod === 'annual' ? 'yıllık' : 'aylık' }} abonelik)</dd>
 
             <dt>Bedel</dt>
-            <dd>₺{{ price | number:'1.0-0' }} — KDV dahil, tek seferlik havale</dd>
+            <dd>
+              ₺{{ formatPrice(price) }} — KDV dahil, tek seferlik
+              @if (billingPeriod === 'annual') {
+                (₺{{ formatPrice(monthlyPrice) }}/ay yerine yıllık ödemede
+                ₺{{ formatPrice(saving) }} indirim)
+              }
+            </dd>
 
             <dt>Başlangıç</dt>
             <dd>Ödemeniz onaylandıktan sonra başlar (en geç 24 saat içinde)</dd>

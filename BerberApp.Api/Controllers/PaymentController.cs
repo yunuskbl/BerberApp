@@ -1,4 +1,5 @@
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Application.Common.Pricing;
 using BerberApp.Domain.Entities;
 using BerberApp.Domain.Enums;
 using BerberApp.Infrastructure.Services;
@@ -38,7 +39,12 @@ public class PaymentController : BaseApiController
     public async Task<IActionResult> Initiate([FromBody] InitiateRequest req)
     {
         req = req with { Plan = req.Plan.ToLower() };
-        var price = IyzicoService.GetPrice(req.Plan);
+
+        // Periyot uçtan uca taşınıyor. Önceden yalnızca plan adı geliyordu, bu
+        // yüzden fiyat sayfasında vaat edilen yıllık indirim sunucuda hiç
+        // uygulanmıyor ve her ödeme aylık fiyattan tahsil ediliyordu.
+        var period = PlanPricing.Parse(req.Billing);
+        var price  = PlanPricing.PriceFor(req.Plan, period);
         if (price == 0)
             return BadRequest(new { success = false, message = "Geçersiz plan." });
 
@@ -60,7 +66,8 @@ public class PaymentController : BaseApiController
             BuyerSurname: surname,
             BuyerPhone:   tenant?.Phone ?? "+905000000000",
             Plan:         req.Plan,
-            Price:        price
+            Price:        price,
+            Period:       period
         ));
 
         if (!result.Success)
@@ -69,7 +76,7 @@ public class PaymentController : BaseApiController
             return BadRequest(new { success = false, message = result.ErrorMessage });
         }
 
-        return Ok(new { success = true, data = new { result.CheckoutFormContent, result.ConversationId, price } });
+        return Ok(new { success = true, data = new { result.CheckoutFormContent, result.ConversationId, price, period = period.ToString() } });
     }
 
     // ─── Callback ─────────────────────────────────────────────────────────────
@@ -96,9 +103,12 @@ public class PaymentController : BaseApiController
                 return Redirect($"{failUrl}?reason={Uri.EscapeDataString(result.ErrorMessage ?? "Bilinmeyen hata")}");
             }
 
-            var plan  = Enum.TryParse<PlanType>(result.Plan, true, out var p) ? p : PlanType.Baslangic;
-            var price = IyzicoService.GetPrice(result.Plan ?? "baslangic");
-            var now   = DateTime.UtcNow;
+            var plan   = Enum.TryParse<PlanType>(result.Plan, true, out var p) ? p : PlanType.Baslangic;
+            var price  = PlanPricing.PriceFor(result.Plan ?? "baslangic", result.Period);
+            var now    = DateTime.UtcNow;
+            // Süre ödenen periyoda göre. Eskiden her ödemede AddYears(1) veriliyordu:
+            // aylık ₺1.799 ödeyen on iki ay kullanıyordu.
+            var expiry = PlanPricing.ExpiryFrom(now, result.Period);
 
             // Subscription güncelle / oluştur
             var existing = await _context.Subscriptions
@@ -109,11 +119,13 @@ public class PaymentController : BaseApiController
 
             if (existing != null)
             {
-                existing.Plan       = plan;
-                existing.Status     = SubscriptionStatus.Active;
-                existing.StartDate  = now;
-                existing.ExpiryDate = now.AddYears(1);
-                existing.Price      = price;
+                existing.Plan          = plan;
+                existing.Status        = SubscriptionStatus.Active;
+                existing.StartDate     = now;
+                existing.ExpiryDate    = expiry;
+                existing.Price         = price;
+                // Yinelenen çekim kurulu değil; veri bunu iddia etmesin.
+                existing.IsAutoRenewal = false;
             }
             else
             {
@@ -123,7 +135,7 @@ public class PaymentController : BaseApiController
                     Plan          = plan,
                     Status        = SubscriptionStatus.Active,
                     StartDate     = now,
-                    ExpiryDate    = now.AddYears(1),
+                    ExpiryDate    = expiry,
                     Price         = price,
                     Currency      = "TRY",
                     IsAutoRenewal = false
@@ -229,16 +241,22 @@ public class PaymentController : BaseApiController
 
     // ─── Fiyatlar ─────────────────────────────────────────────────────────────
     [AllowAnonymous]
+    /// <summary>
+    /// Geçerli fiyatlar. Tek kaynaktan (PlanPricing) üretiliyor; burada elle
+    /// yazılı bir tablo daha vardı ve Premium'u ₺2.399 gösteriyordu.
+    /// </summary>
     [HttpGet("prices")]
     public IActionResult GetPrices() => Ok(new
     {
         success = true,
-        data = new[]
+        data = PlanPricing.MonthlyPrices.Select(kv => new
         {
-            new { plan = "baslangic",   price = 899m  },
-            new { plan = "profesyonel", price = 1799m },
-            new { plan = "premium",     price = 2399m },
-        }
+            plan         = kv.Key,
+            price        = kv.Value,
+            monthlyPrice = PlanPricing.PriceFor(kv.Key, BillingPeriod.Monthly),
+            annualPrice  = PlanPricing.PriceFor(kv.Key, BillingPeriod.Annual),
+        }),
+        annualDiscount = PlanPricing.AnnualDiscount,
     });
 
     // ─── Yardımcı ─────────────────────────────────────────────────────────────
@@ -259,4 +277,8 @@ public class PaymentController : BaseApiController
     };
 }
 
-public record InitiateRequest(string Plan);
+public record InitiateRequest(
+    string Plan,
+    // "monthly" (varsayılan) ya da "annual".
+    string? Billing = null
+);

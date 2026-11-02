@@ -1,4 +1,5 @@
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Application.Common.Pricing;
 using BerberApp.Domain.Entities;
 using BerberApp.Domain.Enums;
 using MediatR;
@@ -33,14 +34,31 @@ public class PaymentRequestController : BaseApiController
         if (string.IsNullOrWhiteSpace(dto.PlanName))
             return BadRequest(new { success = false, message = "Plan adı boş olamaz." });
 
-        var tenantId = TenantId;
+        var planName = dto.PlanName.Trim().ToLowerInvariant();
+        if (!PlanPricing.IsKnownPlan(planName))
+            return BadRequest(new { success = false, message = "Geçersiz plan." });
 
-        // Aynı plan için bekleyen talep var mı kontrol et
         if (dto.DurationDays != 30 && dto.DurationDays != 365)
             return BadRequest(new { success = false, message = "Geçersiz abonelik süresi." });
 
+        var tenantId = TenantId;
+
+        // Tutar sunucuda hesaplanıyor; istemciden geleni kaydetmek, tarayıcıdan
+        // {amount: 1} gönderip onay ekranına ₺1'lik Premium talebi düşürmeye
+        // açık bir kapı bırakıyordu.
+        var period = PlanPricing.FromDurationDays(dto.DurationDays);
+        var amount = PlanPricing.PriceFor(planName, period);
+
+        if (dto.Amount != amount)
+        {
+            _logger.LogWarning(
+                "[ÖDEME] İstemci tutarı sunucu fiyatıyla uyuşmuyor. Tenant={TenantId} " +
+                "Plan={Plan} Süre={Days} İstemci={Client} Sunucu={Server}",
+                tenantId, planName, dto.DurationDays, dto.Amount, amount);
+        }
+
         var existing = await _context.PaymentRequests
-            .Where(r => r.TenantId == tenantId && r.PlanName == dto.PlanName && r.DurationDays == dto.DurationDays && r.Status == PaymentRequestStatus.Pending)
+            .Where(r => r.TenantId == tenantId && r.PlanName == planName && r.DurationDays == dto.DurationDays && r.Status == PaymentRequestStatus.Pending)
             .FirstOrDefaultAsync();
 
         if (existing != null)
@@ -52,9 +70,9 @@ public class PaymentRequestController : BaseApiController
         {
             Id            = Guid.NewGuid(),
             TenantId      = tenantId,
-            PlanName      = dto.PlanName,
+            PlanName      = planName,
             PlanLabel     = dto.PlanLabel,
-            Amount        = dto.Amount,
+            Amount        = amount,
             DurationDays  = dto.DurationDays,
             ReferenceCode = refCode,
             Status        = PaymentRequestStatus.Pending,
@@ -110,6 +128,10 @@ public class SubmitPaymentRequestDto
 {
     public string PlanName   { get; set; } = string.Empty;
     public string PlanLabel  { get; set; } = string.Empty;
+    /// <summary>
+    /// İstemcinin gösterdiği tutar. Yalnızca karşılaştırma ve kayıt amaçlı;
+    /// kaydedilen tutar sunucuda <see cref="PlanPricing"/> ile hesaplanır.
+    /// </summary>
     public decimal Amount    { get; set; }
     public int DurationDays  { get; set; } = 30;
 }

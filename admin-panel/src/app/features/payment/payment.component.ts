@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { PLANS, annualSaving, durationDays, priceFor } from '../../core/pricing';
+import { LanguageService } from '../../core/services/language.service';
 
 @Component({
   selector: 'app-payment',
@@ -18,24 +20,30 @@ export class PaymentComponent implements OnInit {
 
   // Seçilen faturalama periyodu
   billingPeriod: 'monthly' | 'annual' = 'monthly';
-  get price(): number {
-    return this.billingPeriod === 'annual'
-      ? Math.round(this.monthlyPrice * 12 * 0.8)
-      : this.monthlyPrice;
+  /**
+   * Tutarları Angular'ın `number` pipe'ı yerine Intl ile biçimlendiriyoruz:
+   * pipe varsayılan en-US yerelini kullanıyor ve ₺2.999 "₺2,999" olarak
+   * çıkıyordu — Türkçe okurda bu "iki virgül dokuz" demek. Raporlar sayfası da
+   * aynı yolu izliyor.
+   */
+  formatPrice(value: number): string {
+    return new Intl.NumberFormat(this.langService.dateLocale, {
+      maximumFractionDigits: 0,
+    }).format(value);
   }
-  get durationDays(): number { return this.billingPeriod === 'annual' ? 365 : 30; }
-  get annualPrice(): number  { return Math.round(this.monthlyPrice * 12 * 0.8); }
-  get saving(): number       { return Math.round(this.monthlyPrice * 12 * 0.2); }
+
+  get price(): number        { return priceFor(this.monthlyPrice, this.billingPeriod); }
+  get durationDays(): number { return durationDays(this.billingPeriod); }
+  get annualPrice(): number  { return priceFor(this.monthlyPrice, 'annual'); }
+  get saving(): number       { return annualSaving(this.monthlyPrice); }
 
   state: 'loading' | 'select-billing' | 'bank-info' | 'submitting' | 'submitted' | 'fail' = 'loading';
   errorMessage = '';
   referenceCode = '';
 
-  readonly planMap: Record<string, { label: string; price: number; icon: string }> = {
-    baslangic:   { label: 'Başlangıç',   price: 899,  icon: '🌱' },
-    profesyonel: { label: 'Profesyonel', price: 1799, icon: '⚡' },
-    premium:     { label: 'Premium',     price: 2999, icon: '👑' },
-  };
+  /** Fiyatlar core/pricing.ts'te; burada ayrı bir kopya tutmak Premium'un
+      iki farklı tutarla dolaşmasına yol açmıştı. */
+  readonly planMap = PLANS;
 
   readonly bankInfo = {
     bankName:      'Garanti Bankası',
@@ -44,6 +52,7 @@ export class PaymentComponent implements OnInit {
   };
 
   constructor(
+    public langService: LanguageService,
     private route: ActivatedRoute,
     private router: Router,
     private http: HttpClient
@@ -55,7 +64,7 @@ export class PaymentComponent implements OnInit {
       const info = this.planMap[this.plan];
       if (!info) { this.router.navigate(['/pricing']); return; }
       this.planLabel    = info.label;
-      this.monthlyPrice = info.price;
+      this.monthlyPrice = info.monthly;
 
       // Pricing sayfasından yıllık seçili geldiyse
       if (params.get('billing') === 'yearly') {

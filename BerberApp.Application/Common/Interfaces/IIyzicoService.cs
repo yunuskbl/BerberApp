@@ -1,3 +1,5 @@
+using BerberApp.Application.Common.Pricing;
+
 namespace BerberApp.Application.Common.Interfaces;
 
 public interface IIyzicoService
@@ -15,7 +17,8 @@ public record IyzicoCheckoutRequest(
     string BuyerSurname,
     string BuyerPhone,
     string Plan,
-    decimal Price
+    decimal Price,
+    BillingPeriod Period
 );
 
 public record IyzicoCheckoutResult(
@@ -32,7 +35,9 @@ public record IyzicoPaymentResult(
     Guid TenantId,
     string? ErrorMessage,
     string? PaymentId                = null,
-    string? PaymentTransactionId     = null
+    string? PaymentTransactionId     = null,
+    // Ödemenin hangi periyot için yapıldığı — abonelik süresi buna göre veriliyor.
+    BillingPeriod Period             = BillingPeriod.Monthly
 );
 
 public record IyzicoRefundResult(

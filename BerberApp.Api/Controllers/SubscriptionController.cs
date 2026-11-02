@@ -1,4 +1,5 @@
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Application.Common.Pricing;
 using BerberApp.Domain.Entities;
 using BerberApp.Domain.Enums;
 using MediatR;
@@ -17,13 +18,6 @@ public class SubscriptionController : BaseApiController
     private readonly IEmailService _email;
     private readonly string _frontendSuccessUrl;
     private readonly string _frontendFailUrl;
-
-    private static readonly Dictionary<string, decimal> PlanMap = new(StringComparer.OrdinalIgnoreCase)
-    {
-        { "baslangic",   899m  },
-        { "profesyonel", 1799m },
-        { "premium",     2399m },
-    };
 
     public SubscriptionController(IMediator mediator, IAppDbContext context, IIyzicoService iyzico, IEmailService email, IConfiguration config)
         : base(mediator)
@@ -65,8 +59,12 @@ public class SubscriptionController : BaseApiController
     public async Task<IActionResult> InitCheckout([FromBody] CheckoutRequest req, CancellationToken ct)
     {
         var planKey = req.Plan.ToLower();
-        if (!PlanMap.TryGetValue(planKey, out var price))
+        if (!PlanPricing.IsKnownPlan(planKey))
             return BadRequest(new { success = false, message = "Geçersiz plan." });
+
+        // Fiyat ve süre periyottan geliyor; bu uç da aynı tek kaynağı okuyor.
+        var period = PlanPricing.Parse(req.Billing);
+        var price  = PlanPricing.PriceFor(planKey, period);
 
         var tenant = await _context.Tenants.FirstOrDefaultAsync(t => t.Id == TenantId, ct);
         if (tenant == null)
@@ -85,7 +83,8 @@ public class SubscriptionController : BaseApiController
             BuyerSurname: user.LastName,
             BuyerPhone: tenant.Phone ?? user.Phone ?? "05000000000",
             Plan:       planKey,
-            Price:      price
+            Price:      price,
+            Period:     period
         ));
 
         if (!result.Success)
@@ -104,11 +103,12 @@ public class SubscriptionController : BaseApiController
             TenantId             = TenantId,
             Plan                 = planType,
             StartDate            = DateTime.UtcNow,
-            ExpiryDate           = DateTime.UtcNow.AddMonths(1),
+            ExpiryDate           = PlanPricing.ExpiryFrom(DateTime.UtcNow, period),
             Status               = SubscriptionStatus.Pending,
             Price                = price,
             Currency             = "TRY",
-            IsAutoRenewal        = true,
+            // Yinelenen çekim kurulu değil; ödeme sonrası da false kalıyor.
+            IsAutoRenewal        = false,
             IyzicoConversationId = result.ConversationId
         });
         await _context.SaveChangesAsync(ct);
@@ -144,10 +144,14 @@ public class SubscriptionController : BaseApiController
             old.Status = SubscriptionStatus.Cancelled;
 
         // Aktifleştir
+        // Süre ödenen periyoda göre; sabit bir ay vermek yıllık ödeyeni
+        // on bir ay eksik bırakıyordu.
+        var activatedAt = DateTime.UtcNow;
         sub.Status          = SubscriptionStatus.Active;
-        sub.StartDate       = DateTime.UtcNow;
-        sub.ExpiryDate      = DateTime.UtcNow.AddMonths(1);
+        sub.StartDate       = activatedAt;
+        sub.ExpiryDate      = PlanPricing.ExpiryFrom(activatedAt, verification.Period);
         sub.IyzicoPaymentId = verification.PaymentId;
+        sub.IsAutoRenewal   = false;
 
         await _context.SaveChangesAsync(ct);
 
@@ -184,7 +188,11 @@ public class SubscriptionController : BaseApiController
     }
 }
 
-public record CheckoutRequest(string Plan);
+public record CheckoutRequest(
+    string Plan,
+    // "monthly" (varsayılan) ya da "annual".
+    string? Billing = null
+);
 
 public class IyzicoCallbackPayload
 {

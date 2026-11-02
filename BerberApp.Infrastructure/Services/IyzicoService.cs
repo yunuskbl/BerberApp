@@ -1,4 +1,5 @@
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Application.Common.Pricing;
 using Iyzipay;
 using Iyzipay.Model;
 using Iyzipay.Request;
@@ -12,13 +13,6 @@ public class IyzicoService : IIyzicoService
     private readonly string _callbackUrl;
     private readonly string _frontendSuccessUrl;
     private readonly string _frontendFailUrl;
-
-    private static readonly Dictionary<string, decimal> PlanPrices = new()
-    {
-        { "baslangic",   899m  },
-        { "profesyonel", 1799m },
-        { "premium",     2399m },
-    };
 
     public IyzicoService(IConfiguration config)
     {
@@ -38,7 +32,12 @@ public class IyzicoService : IIyzicoService
     {
         try
         {
-            var conversationId = $"{req.TenantId}_{req.Plan}_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
+            // Periyot conversationId ile taşınıyor: callback'te İyzico'dan geri
+            // gelen tek bağlam bu ve abonelik süresi buna göre veriliyor.
+            // Biçim: {tenantId}_{plan}_{periyot}_{zaman}
+            var periodKey = req.Period == BillingPeriod.Annual ? "annual" : "monthly";
+            var conversationId =
+                $"{req.TenantId}_{req.Plan}_{periodKey}_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
             var priceStr = req.Price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
 
             var buyer = new Buyer
@@ -69,7 +68,7 @@ public class IyzicoService : IIyzicoService
             var basketItem = new BasketItem
             {
                 Id        = req.Plan,
-                Name      = $"ayarlıyo {req.Plan} Abonelik (1 Ay)",
+                Name      = $"ayarlıyo {req.Plan} Abonelik ({PlanPricing.PeriodLabel(req.Period)})",
                 Category1 = "Yazılım",
                 Category2 = "SaaS Abonelik",
                 ItemType  = "VIRTUAL",
@@ -123,17 +122,21 @@ public class IyzicoService : IIyzicoService
             if (form.PaymentStatus != "SUCCESS")
                 return new IyzicoPaymentResult(false, null, null, Guid.Empty, form.ErrorMessage ?? "Ödeme başarısız.");
 
-            // conversationId format: {tenantId}_{plan}_{timestamp}
+            // conversationId biçimi: {tenantId}_{plan}_{periyot}_{zaman}
+            // Periyot alanı olmayan eski biçim aylık sayılıyor.
             var parts = form.ConversationId?.Split('_');
             if (parts == null || parts.Length < 2)
                 return new IyzicoPaymentResult(false, null, null, Guid.Empty, "Geçersiz conversationId.");
 
             var tenantId             = Guid.Parse(parts[0]);
             var plan                 = parts[1];
+            var period               = parts.Length >= 4 ? PlanPricing.Parse(parts[2]) : BillingPeriod.Monthly;
             var paymentId            = form.PaymentId;
             var paymentTransactionId = form.PaymentItems?.FirstOrDefault()?.PaymentTransactionId;
 
-            return new IyzicoPaymentResult(true, form.ConversationId, plan, tenantId, null, paymentId, paymentTransactionId);
+            return new IyzicoPaymentResult(
+                true, form.ConversationId, plan, tenantId, null,
+                paymentId, paymentTransactionId, period);
         }
         catch (Exception ex)
         {
@@ -167,9 +170,6 @@ public class IyzicoService : IIyzicoService
             return new IyzicoRefundResult(false, ex.Message);
         }
     }
-
-    public static decimal GetPrice(string plan) =>
-        PlanPrices.TryGetValue(plan.ToLower(), out var p) ? p : 0;
 
     public string FrontendSuccessUrl => _frontendSuccessUrl;
     public string FrontendFailUrl    => _frontendFailUrl;

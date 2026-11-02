@@ -5,6 +5,7 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { LanguageService, Lang } from '../../core/services/language.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { PLANS, displayMonthly } from '../../core/pricing';
 
 interface Feature  { name: string; included: boolean; }
 interface PlanLimit { staff: string; appointments: string; }
@@ -94,7 +95,7 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   plans: Plan[] = [
     {
-      name: 'baslangic', labelKey: 'pricing.plan.baslangic.label', price: 899,
+      name: 'baslangic', labelKey: 'pricing.plan.baslangic.label', price: PLANS['baslangic'].monthly,
       descKey: 'pricing.plan.baslangic.desc',
       icon: '🌱', featured: false, ctaDisabled: false,
       limits: { staff: 'pricing.plan.baslangic.staff', appointments: 'pricing.plan.baslangic.appts' },
@@ -127,7 +128,7 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
       ctaKey: 'pricing.plan.baslangic.cta',
     },
     {
-      name: 'profesyonel', labelKey: 'pricing.plan.profesyonel.label', price: 1799, descKey: 'pricing.plan.profesyonel.desc',
+      name: 'profesyonel', labelKey: 'pricing.plan.profesyonel.label', price: PLANS['profesyonel'].monthly, descKey: 'pricing.plan.profesyonel.desc',
       icon: '⚡', featured: true,
       limits: { staff: 'pricing.plan.profesyonel.staff', appointments: 'pricing.plan.profesyonel.appts' },
       features: [
@@ -159,7 +160,7 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
       ctaKey: 'pricing.plan.profesyonel.cta',
     },
     {
-      name: 'premium', labelKey: 'pricing.plan.premium.label', price: 2999,
+      name: 'premium', labelKey: 'pricing.plan.premium.label', price: PLANS['premium'].monthly,
       descKey: 'pricing.plan.premium.desc',
       icon: '👑', featured: false,
       limits: { staff: 'pricing.plan.premium.staff', appointments: 'pricing.plan.premium.appts' },
@@ -245,8 +246,9 @@ export class PricingComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 33);
   }
 
+  /** Kartta görünen aylık tutar; yıllık seçiliyse indirimli karşılığı. */
   getDisplayPrice(basePrice: number): number {
-    return this.billingYearly ? Math.round(basePrice * 0.8) : basePrice;
+    return displayMonthly(basePrice, this.billingYearly ? 'annual' : 'monthly');
   }
 
   toggleBilling(): void {
