@@ -37,9 +37,9 @@ public class LoginHandlerTests
         return user;
     }
 
-    private static Subscription SeedTrialSubscription(BerberApp.Infrastructure.Persistence.AppDbContext db, Guid tenantId)
+    private static BerberApp.Domain.Entities.Subscription SeedTrialSubscription(BerberApp.Infrastructure.Persistence.AppDbContext db, Guid tenantId)
     {
-        var sub = new Subscription
+        var sub = new BerberApp.Domain.Entities.Subscription
         {
             Id         = Guid.NewGuid(),
             TenantId   = tenantId,
@@ -119,7 +119,7 @@ public class LoginHandlerTests
         using var db = TestDatabase.Create();
         var tenant = SeedTenant(db);
         SeedUser(db, tenant.Id);
-        db.Subscriptions.Add(new Subscription
+        db.Subscriptions.Add(new BerberApp.Domain.Entities.Subscription
         {
             TenantId   = tenant.Id,
             Plan       = PlanType.Profesyonel,

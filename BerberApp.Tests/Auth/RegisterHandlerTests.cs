@@ -134,7 +134,7 @@ public class RegisterHandlerTests
     }
 
     [Fact]
-    public async Task Register_Success_SendsBothVerificationAndWelcomeEmail()
+    public async Task Register_Success_SendsWelcomeEmailAndAdminNotification_ButNoVerificationEmail()
     {
         // Arrange
         using var db = TestDatabase.Create();
@@ -142,21 +142,22 @@ public class RegisterHandlerTests
         await db.SaveChangesAsync();
 
         var emailMock = new Mock<IEmailService>();
-        emailMock.Setup(x => x.SendEmailVerificationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                 .Returns(Task.CompletedTask);
         emailMock.Setup(x => x.SendWelcomeEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                 .Returns(Task.CompletedTask);
+        emailMock.Setup(x => x.SendNewTenantRegisteredAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                  .Returns(Task.CompletedTask);
 
         var handler = new RegisterHandler(db, new FakeJwtService(), emailMock.Object, AppSettingsMock().Object);
 
-        // Act
+        // Act — e-postalar fire-and-forget gönderiliyor, ama çağrılar Handle dönmeden
+        // senkron yapıldığı için mock onları anında kaydediyor; beklemeye gerek yok.
         await handler.Handle(ValidCommand, default);
 
-        // Wait for fire-and-forget emails
-        await Task.Delay(100);
-
-        // Assert — her iki email de gönderilmeli
-        emailMock.Verify(x => x.SendEmailVerificationAsync("ahmet@example.com", "Ahmet Yıldız", It.Is<string>(u => u.Contains("email-dogrula"))), Times.Once);
+        // Assert — telefon OTP ile doğrulanan kayıtta e-posta doğrulaması yok
+        // (c1c1b2d ile kaldırıldı): yalnızca hoş geldin e-postası ve platform
+        // yöneticisine yeni kayıt bildirimi gider.
         emailMock.Verify(x => x.SendWelcomeEmailAsync("ahmet@example.com", "Ahmet Yıldız", "Ahmet Berberi"), Times.Once);
+        emailMock.Verify(x => x.SendNewTenantRegisteredAsync("Ahmet Berberi", "ahmet-berberi", "Ahmet Yıldız", "ahmet@example.com", "+905551234567"), Times.Once);
+        emailMock.Verify(x => x.SendEmailVerificationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 }

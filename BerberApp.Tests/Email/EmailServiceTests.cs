@@ -114,10 +114,13 @@ public class EmailServiceTests
         var html       = GetEmailHtml(service, s =>
             s.SendSubscriptionExpiryWarningAsync("x@x.com", "Berk Şahin", "Berk Kuaför", 7, expiryDate));
 
-        html.Should().Contain("7");
+        html.Should().Contain("7 gün içinde");
         html.Should().Contain("Berk Şahin");
-        html.Should().Contain("Aboneliği Yenile");
-        html.Should().Contain("pricing");
+        // CTA, fiyat sayfasına "Aboneliği Yenile" butonu yerine doğrudan iletişime
+        // yönlendiriyor (053ceb9): WhatsApp butonu ve telefon numarası.
+        html.Should().Contain("WhatsApp'tan Yazın");
+        html.Should().Contain("https://wa.me/");
+        html.Should().Contain("tel:");
     }
 
     // ── Helper: SMTP çağrısı yapmadan HTML'i yakalar ─────────────────────────

@@ -18,7 +18,16 @@
     <PackageReference Include="FluentAssertions"                          Version="6.12.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"    Version="8.0.16" />
     <PackageReference Include="BCrypt.Net-Next"                           Version="4.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <!--
+      Microsoft.Extensions.Logging.Abstractions (used for NullLogger<T>) is deliberately NOT
+      referenced here: it flows in transitively from the production projects (AutoMapper and
+      EF Core). Pinning it in this project caused NU1605 package-downgrade errors whenever a
+      production dependency needed a newer version.
+    -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>
