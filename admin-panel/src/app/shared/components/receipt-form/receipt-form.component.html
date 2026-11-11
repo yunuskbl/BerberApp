@@ -4,13 +4,26 @@
     <span class="rf-count">{{ rows.length }} satır</span>
   </div>
 
+  @if (services().length) {
+    <div class="rf-quick" role="group" aria-label="Hızlı ekle">
+      @for (s of services(); track s.id) {
+        <button type="button" class="rf-chip" (click)="quickAdd(s)">
+          <span class="rf-chip-name">{{ s.name }}</span>
+          @if (s.price > 0 && (s.currency ?? 'TRY') === 'TRY') {
+            <span class="rf-chip-price">{{ money(s.price) }}</span>
+          }
+        </button>
+      }
+    </div>
+  }
+
   <div class="rf-table" role="table" aria-label="Fiş kalemleri">
     <div class="rf-row rf-row--header" role="row">
       <span role="columnheader">Hizmet</span>
-      <span role="columnheader" class="num">Adet</span>
       <span role="columnheader" class="num">Birim fiyat</span>
+      <span role="columnheader" aria-label="Adet"></span>
       <span role="columnheader" class="num">Tutar</span>
-      <span role="columnheader" class="sr-only">Sil</span>
+      <span role="columnheader" aria-label="Sil"></span>
     </div>
 
     @for (row of rows; track row.key; let i = $index) {
@@ -29,18 +42,6 @@
           (ngModelChange)="fillPriceFromService(row)"
           (blur)="normalizeName(row)">
 
-        <input
-          class="rf-input rf-qty num"
-          type="number"
-          inputmode="numeric"
-          min="1"
-          [max]="maxQuantity"
-          step="1"
-          placeholder="Adet"
-          aria-label="Adet"
-          [class.invalid]="showProblem(row, 'quantity')"
-          [(ngModel)]="row.quantity">
-
         <div class="rf-price">
           <span class="rf-currency" aria-hidden="true">₺</span>
           <input
@@ -54,6 +55,36 @@
             aria-label="Birim fiyat (₺)"
             [class.invalid]="showProblem(row, 'price')"
             [(ngModel)]="row.unitPrice">
+        </div>
+
+        <div class="rf-qty" [attr.data-qty-key]="row.key">
+          @if (row.qtyOpen) {
+            <div class="rf-stepper" role="group" aria-label="Adet">
+              <button type="button" class="rf-step" aria-label="Adedi azalt"
+                [disabled]="(row.quantity ?? 1) <= 1" (click)="stepQty(row, -1)">−</button>
+              <input
+                class="rf-step-value"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                [max]="maxQuantity"
+                step="1"
+                aria-label="Adet"
+                [class.invalid]="showProblem(row, 'quantity')"
+                [(ngModel)]="row.quantity"
+                (blur)="clampQty(row)">
+              <button type="button" class="rf-step rf-step--up" aria-label="Adedi artır"
+                [disabled]="(row.quantity ?? 1) >= maxQuantity" (click)="stepQty(row, 1)">+</button>
+            </div>
+          } @else {
+            <button
+              type="button"
+              class="rf-qty-chip"
+              [class.is-multi]="(row.quantity ?? 1) > 1"
+              [attr.aria-label]="'Adet ' + (row.quantity ?? 1) + ', değiştir'"
+              title="Adedi değiştir"
+              (click)="openQty(row)">×{{ row.quantity ?? 1 }}</button>
+          }
         </div>
 
         <span class="rf-line num" role="cell">

@@ -9,7 +9,8 @@ import { formatAmount } from './pricing';
  * uygulamadan basıyordu: adında "<" geçen bir hizmet yazdırılan sayfayı
  * bozuyor, betik içeren bir ad o pencerede çalışabiliyordu. Satırlarda yalnız
  * birim fiyat vardı ("2x 250₺"), satır tutarını okuyan hesaplamak
- * zorundaydı; artık adet × birim fiyat ve tutar ayrı yazılıyor.
+ * zorundaydı; artık her satırda tutar, adet 1'den fazlaysa altında
+ * "2 × ₺150" yazılıyor.
  */
 export function printReceipt(receipt: Receipt): void {
   const w = window.open('', '_blank', 'width=400,height=600');
@@ -23,10 +24,12 @@ export function printReceipt(receipt: Receipt): void {
 export function buildReceiptHtml(r: Receipt): string {
   const money = (v: number) => `₺${formatAmount(v)}`;
 
+  // Adet yalnızca 1'den fazlaysa yazılır: neredeyse her satır tek adet ve
+  // her satırda "1 × ₺250" yazmak dar fişte kalabalıktan başka bir şey değil.
   const rows = r.items.map(i => `
     <tr>
-      <td>${escapeHtml(i.serviceName)}</td>
-      <td class="num">${i.quantity} × ${money(i.unitPrice)}</td>
+      <td>${escapeHtml(i.serviceName)}${i.quantity > 1
+        ? `<div class="qty">${i.quantity} × ${money(i.unitPrice)}</div>` : ''}</td>
       <td class="num">${money(i.quantity * i.unitPrice)}</td>
     </tr>`).join('');
 
@@ -43,6 +46,7 @@ export function buildReceiptHtml(r: Receipt): string {
     table{width:100%;border-collapse:collapse}
     td{padding:2px 0;vertical-align:top}
     .num{text-align:right;white-space:nowrap;padding-left:6px}
+    .qty{font-size:11px;color:#666}
     .total{font-weight:bold;font-size:15px}
     .note{margin-top:6px;font-size:12px}
     .void{text-align:center;font-weight:bold;color:#b91c1c;margin:6px 0}

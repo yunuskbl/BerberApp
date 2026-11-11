@@ -1,5 +1,5 @@
 import {
-  Component, ElementRef, OnInit, QueryList, ViewChildren, input, output, signal,
+  Component, ElementRef, HostListener, OnInit, QueryList, ViewChildren, input, output, signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ReceiptService } from '../../../core/services/receipt.service';
@@ -20,6 +20,8 @@ interface ReceiptRow {
   serviceName: string;
   quantity: number | null;
   unitPrice: number | null;
+  /** Adet seçici açık mı. Kapalıyken satırda yalnızca "×1" görünür. */
+  qtyOpen: boolean;
 }
 
 type RowProblem = 'name' | 'quantity' | 'price';
@@ -45,6 +47,11 @@ const MAX_UNIT_PRICE = 1_000_000;
  * Artık her satırın silme düğmesi her zaman görünür, tamamen boş satırlar
  * gönderimde yok sayılır, hatalı satır işaretlenir ve sunucunun doğrulama
  * mesajları olduğu gibi gösterilir.
+ *
+ * Adet: berberde satırların neredeyse hepsi tek adet, ama ürün satışı ya da
+ * tüp başı boya gibi durumlar var. Bu yüzden adet her satırda bir giriş kutusu
+ * değil, sessiz bir "×1" düğmesi; dokununca − / + açılır. Hızlı ekle
+ * düğmeleriyle aynı hizmet ikinci kez eklenirse yeni satır açılmaz, adet artar.
  */
 @Component({
   selector: 'app-receipt-form',
@@ -84,6 +91,7 @@ export class ReceiptFormComponent implements OnInit {
   constructor(
     private receiptService: ReceiptService,
     private serviceService: ServiceService,
+    private host: ElementRef<HTMLElement>,
   ) {}
 
   ngOnInit(): void {
@@ -127,13 +135,70 @@ export class ReceiptFormComponent implements OnInit {
     }
   }
 
+  /**
+   * Hızlı ekle: aynı ad ve fiyatta satır varsa adedini artırır, yoksa ilk
+   * boş satırı doldurur, o da yoksa yeni satır açar.
+   */
+  quickAdd(service: Service): void {
+    const price = this.priceOf(service);
+    const same = this.rows.find(r =>
+      this.sameName(r.serviceName, service.name) && (price == null || r.unitPrice === price));
+    if (same) {
+      same.quantity = this.clamp((same.quantity ?? 1) + 1);
+      return;
+    }
+    const blank = this.rows.find(r => this.isBlank(r));
+    if (blank) {
+      blank.serviceName = service.name;
+      blank.unitPrice   = price;
+      blank.quantity    = 1;
+      return;
+    }
+    if (this.canAddRow) this.rows.push(this.makeRow(service.name, 1, price));
+  }
+
+  // ─── Adet ────────────────────────────────────────────────
+
+  openQty(row: ReceiptRow): void {
+    row.qtyOpen = true;
+    // Klavye kullanan için odağı "+"ya taşı; giriş kutusuna değil ki telefonda
+    // klavye açılmasın.
+    setTimeout(() =>
+      this.host.nativeElement
+        .querySelector<HTMLButtonElement>(`[data-qty-key="${row.key}"] .rf-step--up`)
+        ?.focus());
+  }
+
+  stepQty(row: ReceiptRow, delta: number): void {
+    row.quantity = this.clamp((row.quantity ?? 1) + delta);
+  }
+
+  /** Elle yazılan adedi 1–999 aralığına çeker; boş ya da geçersizse 1. */
+  clampQty(row: ReceiptRow): void {
+    row.quantity = this.clamp(row.quantity);
+  }
+
+  /**
+   * Seçicinin dışına dokununca seçici kapanır ve satır yine "×N" görünür.
+   * Odak kaybı yerine dokunuşa bakılıyor: iOS'ta düğmeye dokunmak odak
+   * vermediği için odak olayıyla kapatmak "+" tıklamasını yutuyordu.
+   */
+  @HostListener('document:pointerdown', ['$event'])
+  onDocumentPointerDown(event: PointerEvent): void {
+    const target = event.target as Element | null;
+    const holder = target?.closest?.('[data-qty-key]');
+    const key = holder ? Number(holder.getAttribute('data-qty-key')) : null;
+    for (const r of this.rows) {
+      if (r.qtyOpen && r.key !== key) this.closeQty(r);
+    }
+  }
+
   /** Tanımlı bir hizmet seçildiyse ve fiyat henüz girilmediyse fiyatı getirir. */
   fillPriceFromService(row: ReceiptRow): void {
     if (row.unitPrice != null && row.unitPrice > 0) return;
     const match = this.findService(row.serviceName);
-    if (match && match.price > 0 && (match.currency ?? 'TRY') === 'TRY') {
-      row.unitPrice = match.price;
-    }
+    const price = match ? this.priceOf(match) : null;
+    if (price != null) row.unitPrice = price;
   }
 
   /** Alandan çıkınca adı tanımlı hizmetin yazımına çevirir ("saç kesimi" → "Saç Kesimi"). */
@@ -185,7 +250,7 @@ export class ReceiptFormComponent implements OnInit {
       const filled = this.rows.filter(r => !this.isBlank(r));
       if (filled.length === 0) return 'Fişe en az bir hizmet ekleyin.';
       if (filled.some(r => this.problemsOf(r).length > 0)) {
-        return 'İşaretli satırları düzeltin: hizmet adı, 1–999 arası adet ve sıfırdan büyük fiyat gerekli.';
+        return 'İşaretli satırları düzeltin: hizmet adı ve sıfırdan büyük fiyat gerekli.';
       }
     }
     return this.serverError();
@@ -195,6 +260,7 @@ export class ReceiptFormComponent implements OnInit {
 
   submit(): void {
     if (this.submitting()) return;
+    this.rows.forEach(r => this.closeQty(r));
     this.attempted.set(true);
     this.serverError.set('');
     if (this.errorMessage) return;
@@ -238,12 +304,36 @@ export class ReceiptFormComponent implements OnInit {
   // ─── Yardımcılar ─────────────────────────────────────────
 
   private makeRow(serviceName = '', quantity: number | null = 1, unitPrice: number | null = null): ReceiptRow {
-    return { key: this.nextKey++, serviceName, quantity, unitPrice: unitPrice && unitPrice > 0 ? unitPrice : null };
+    return {
+      key: this.nextKey++,
+      serviceName,
+      quantity: this.clamp(quantity),
+      unitPrice: unitPrice && unitPrice > 0 ? unitPrice : null,
+      qtyOpen: false,
+    };
+  }
+
+  private closeQty(row: ReceiptRow): void {
+    row.quantity = this.clamp(row.quantity);
+    row.qtyOpen  = false;
+  }
+
+  private clamp(value: number | null | undefined): number {
+    if (value == null || !Number.isFinite(value)) return 1;
+    return Math.min(MAX_QUANTITY, Math.max(1, Math.round(value)));
+  }
+
+  /** Fiş TRY kesiliyor; başka para birimindeki hizmetin fiyatı getirilmez. */
+  private priceOf(service: Service): number | null {
+    return service.price > 0 && (service.currency ?? 'TRY') === 'TRY' ? service.price : null;
+  }
+
+  private sameName(a: string, b: string): boolean {
+    return a.trim().toLocaleLowerCase('tr-TR') === b.trim().toLocaleLowerCase('tr-TR');
   }
 
   private findService(name: string): Service | undefined {
-    const wanted = name.trim().toLocaleLowerCase('tr-TR');
-    if (!wanted) return undefined;
-    return this.services().find(s => s.name.trim().toLocaleLowerCase('tr-TR') === wanted);
+    if (!name.trim()) return undefined;
+    return this.services().find(s => this.sameName(s.name, name));
   }
 }
