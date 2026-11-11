@@ -88,6 +88,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   waQrCountdown = 0;
   private qrRefreshTimer: ReturnType<typeof setInterval> | null = null;
   private qrCountdownTimer: ReturnType<typeof setInterval> | null = null;
+  /** Önceki oturum açılırken durumun ne sıklıkla ve ne kadar süre sorulacağı. */
+  private restorePollTimer: ReturnType<typeof setInterval> | null = null;
+  private static readonly RESTORE_POLL_MS    = 5000;
+  private static readonly RESTORE_POLL_LIMIT = 12;   // 12 × 5 sn = 1 dk
+  /** Bilgi mesajı (yeşil ya da nötr); hata için waError. */
+  waNotice = '';
+  waNoticeKind: 'success' | 'info' = 'info';
 
   // Pairing code
   waConnectMode: 'qr' | 'pairing' = 'qr';
@@ -175,6 +182,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopQrAutoRefresh();
+    this.stopRestorePoll();
   }
 
   private startQrAutoRefresh(): void {
@@ -628,11 +636,25 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
   }
 
-  connectWhatsApp(): void {
+  /**
+   * "Bağlan" / "Yeniden Bağlan".
+   *
+   * Sunucu önce mevcut oturumu QR'sız geri getirmeyi dener; yalnızca WhatsApp
+   * cihazı gerçekten düşürdüyse QR gösterilir. `fresh` (Sıfırdan bağla) eski
+   * cihazı düşürüp yeni QR ile baştan başlar — farklı numara bağlamak ya da
+   * takılmış bir oturumdan çıkmak için.
+   */
+  connectWhatsApp(fresh = false): void {
+    if (fresh && this.waSession &&
+        !confirm('Mevcut WhatsApp bağlantısı kesilecek ve yeni bir QR oluşturulacak. Devam edilsin mi?')) {
+      return;
+    }
     this.waActionLoading = true;
-    this.waError = '';
+    this.waError  = '';
+    this.waNotice = '';
     this.waQrCode = '';
-    this.http.post<any>(`${environment.apiUrl}/tenants/whatsapp/connect`, {}).subscribe({
+    this.stopRestorePoll();
+    this.http.post<any>(`${environment.apiUrl}/tenants/whatsapp/connect`, { freshSession: fresh }).subscribe({
       next: (res) => {
         this.waActionLoading = false;
         if (!res.success) {
@@ -641,23 +663,26 @@ export class SettingsComponent implements OnInit, OnDestroy {
         }
         this.waSession = res.data?.session ?? '';
         if (res.data?.isConnected) {
-          // Session had saved credentials and auto-connected — no QR needed
-          this.waIsConnected = true;
-          this.waStatus      = 'connected';
-          this.waQrCode      = '';
-          this.waError       = '';
-          this.stopQrAutoRefresh();
+          this.markWhatsAppConnected(res.data?.restored
+            ? 'Hattınız QR okutmadan yeniden bağlandı.'
+            : '');
+          return;
+        }
+
+        const qr: string = res.data?.qrCode ?? '';
+        if (qr.startsWith('data:image')) {
+          this.waQrCode = qr;
+          this.waStatus = 'disconnected';
+          if (res.data?.message) this.showNotice(res.data.message, 'info');
+          this.startQrAutoRefresh();
+        } else if (res.data?.restoring) {
+          this.waStatus = 'disconnected';
+          this.showNotice(res.data?.message || 'Önceki oturum açılıyor…', 'info');
+          this.startRestorePoll();
         } else {
-          const qr = res.data?.qrCode ?? '';
-          if (qr.startsWith('data:image')) {
-            this.waQrCode = qr;
-            this.waStatus = 'disconnected';
-            this.startQrAutoRefresh();
-          } else {
-            this.waStatus = 'disconnected';
-            this.waError  = 'QR kod hazırlanıyor…';
-            setTimeout(() => this.refreshWhatsAppQr(), 3000);
-          }
+          this.waStatus = 'disconnected';
+          this.showNotice('QR kod hazırlanıyor…', 'info');
+          setTimeout(() => this.refreshWhatsAppQr(), 3000);
         }
       },
       error: (err) => {
@@ -665,6 +690,58 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.waError = err.error?.message || 'Bağlantı hatası.';
       }
     });
+  }
+
+  private markWhatsAppConnected(notice: string): void {
+    this.waIsConnected = true;
+    this.waStatus      = 'connected';
+    this.waQrCode      = '';
+    this.waError       = '';
+    this.stopQrAutoRefresh();
+    this.stopRestorePoll();
+    if (notice) this.showNotice(notice, 'success');
+    else this.waNotice = '';
+  }
+
+  private showNotice(text: string, kind: 'success' | 'info'): void {
+    this.waNotice     = text;
+    this.waNoticeKind = kind;
+  }
+
+  /**
+   * Önceki oturum açılırken durumu sorar: bağlanınca bağlı gösterir, WhatsApp
+   * QR isterse QR'ı getirir, bir dakikada sonuç çıkmazsa ne yapılacağını söyler.
+   */
+  private startRestorePoll(): void {
+    this.stopRestorePoll();
+    let attempts = 0;
+    this.restorePollTimer = setInterval(() => {
+      attempts++;
+      this.http.get<any>(`${environment.apiUrl}/tenants/whatsapp/status`).subscribe({
+        next: (res) => {
+          if (!this.restorePollTimer) return;
+          const status: string = res.data?.status ?? '';
+          if (res.success && res.data?.isConnected) {
+            this.markWhatsAppConnected('Hattınız QR okutmadan yeniden bağlandı.');
+          } else if (status === 'QRCODE' || status === 'notLogged') {
+            this.stopRestorePoll();
+            this.showNotice('WhatsApp bu cihazı düşürmüş; QR\'ı yeniden okutmanız gerekiyor.', 'info');
+            this.refreshWhatsAppQr();
+          } else if (attempts >= SettingsComponent.RESTORE_POLL_LIMIT) {
+            this.stopRestorePoll();
+            this.waNotice = '';
+            this.waError  = 'Önceki oturum açılamadı. "QR Yenile" ile QR isteyin ya da "Sıfırdan bağla"yı kullanın.';
+          }
+        },
+        error: () => {
+          if (attempts >= SettingsComponent.RESTORE_POLL_LIMIT) this.stopRestorePoll();
+        }
+      });
+    }, SettingsComponent.RESTORE_POLL_MS);
+  }
+
+  private stopRestorePoll(): void {
+    if (this.restorePollTimer) { clearInterval(this.restorePollTimer); this.restorePollTimer = null; }
   }
 
   requestPairingCode(): void {
@@ -711,7 +788,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.http.get<any>(`${environment.apiUrl}/tenants/whatsapp/qr`).subscribe({
       next: (res) => {
         this.waActionLoading = false;
-        if (res.success && res.data?.qrCode) {
+        // Sunucu oturum zaten bağlıysa QR yerine bu değeri döndürüyor; eskiden
+        // resim diye gösterilmeye çalışılıyor ve kırık bir görsel çıkıyordu.
+        if (res.success && res.data?.qrCode === 'ALREADY_CONNECTED') {
+          this.markWhatsAppConnected('WhatsApp hattınız bağlı.');
+        } else if (res.success && typeof res.data?.qrCode === 'string' && res.data.qrCode.startsWith('data:image')) {
           this.waQrCode = res.data.qrCode;
           this.waError  = '';
           if (!this.qrRefreshTimer) this.startQrAutoRefresh();
@@ -737,7 +818,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.waSession       = '';
         this.waQrCode        = '';
         this.waStatus        = 'disconnected';
+        this.waNotice        = '';
         this.stopQrAutoRefresh();
+        this.stopRestorePoll();
       },
       error: (err) => {
         this.waActionLoading = false;

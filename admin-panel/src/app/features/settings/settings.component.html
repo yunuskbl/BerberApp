@@ -563,7 +563,9 @@
             @if (!waQrCode) {
               <div class="card-actions">
                 <button class="btn btn-primary" (click)="connectWhatsApp()" [disabled]="waActionLoading">
-                  {{ waActionLoading ? 'Başlatılıyor…' : (waSession ? '🔄 Yeniden Bağlan' : '🔗 WhatsApp\'ı Bağla') }}
+                  {{ waActionLoading
+                       ? (waSession ? 'Önceki oturum geri getiriliyor…' : 'Başlatılıyor…')
+                       : (waSession ? '🔄 Yeniden Bağlan' : '🔗 WhatsApp\'ı Bağla') }}
                 </button>
                 @if (waSession && !waActionLoading) {
                   <button class="btn btn-outline" (click)="refreshWhatsAppQr()" [disabled]="waActionLoading">
@@ -571,6 +573,13 @@
                   </button>
                 }
               </div>
+              @if (waSession && !waActionLoading) {
+                <p class="wa-fresh-hint">
+                  Yeniden Bağlan önce önceki oturumu QR'sız geri getirmeyi dener.
+                  Farklı bir numara bağlamak ya da takılan bir oturumdan çıkmak için
+                  <button type="button" class="wa-link-btn" (click)="connectWhatsApp(true)">sıfırdan bağlayın</button>.
+                </p>
+              }
             } @else {
               <div class="wa-qr-container">
                 <p class="wa-qr-hint">WhatsApp uygulamanızdan <strong>Bağlı Cihazlar → Cihaz Ekle</strong> seçeneğiyle bu QR kodu okutun.</p>
@@ -609,6 +618,9 @@
               }
             </div>
           }
+        }
+        @if (waNotice) {
+          <div class="alert wa-notice" [class.alert-success]="waNoticeKind === 'success'" [class.alert-info]="waNoticeKind === 'info'">{{ waNotice }}</div>
         }
         @if (waError) {
           <div class="alert alert-error">{{ waError }}</div>

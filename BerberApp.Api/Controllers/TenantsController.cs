@@ -324,14 +324,135 @@ public class TenantsController : BaseApiController
 
     // ── WhatsApp Oturum Yönetimi ─────────────────────────────────────────────
 
+    /// <summary>
+    /// "Bağlan" / "Yeniden Bağlan".
+    ///
+    /// Önceden her basışta eski cihaz WhatsApp'tan düşürülüp (logout) yeni bir
+    /// oturum açılıyordu; QR kesin isteniyordu. Oysa hat çoğu zaman yalnızca
+    /// sunucudaki tarayıcı kapandığı için kopuk görünüyor ve telefonda cihaz hâlâ
+    /// bağlı oluyor. Paniğe kapılıp "Bağlan"a basan işletme, kendiliğinden
+    /// dönebilecek oturumu kendi eliyle siliyordu.
+    ///
+    /// Şimdi önce mevcut oturum aynı adla geri getirilmeye çalışılıyor:
+    ///  - bağlanırsa QR gerekmiyor;
+    ///  - WhatsApp QR isterse aynı oturumun QR'ı gösteriliyor (cihaz zaten
+    ///    WhatsApp tarafında düşmüş; yeni oturum açıp telefonda hayalet kayıt
+    ///    bırakmaya gerek yok);
+    ///  - bu sürede ikisi de olmazsa "açılıyor" denip panel durumu soruyor.
+    /// Eski cihazı düşürüp sıfırdan başlamak yalnızca <c>freshSession</c> ile
+    /// (paneldeki "Sıfırdan bağla") ya da eski oturum geçersizse yapılıyor.
+    /// </summary>
     [HttpPost("whatsapp/connect")]
     public async Task<IActionResult> WhatsAppConnect(
+        [FromBody] WhatsAppConnectRequest? req,
         [FromServices] IWppConnectManagementService mgmt,
         [FromServices] WhatsAppSessionRecoveryState recovery)
     {
         var tenant = await _context.Tenants.FirstOrDefaultAsync(x => x.Id == TenantId);
         if (tenant is null) return NotFound();
 
+        var hasSession = !string.IsNullOrWhiteSpace(tenant.WppConnectSession)
+                      && !string.IsNullOrWhiteSpace(tenant.WppConnectToken);
+
+        if (hasSession && req?.FreshSession != true)
+        {
+            // Kurtarma işi bu sırada aynı oturuma ayrıca dokunmasın.
+            recovery.Suppress(tenant.WppConnectSession);
+            var restore = await TryRestoreWhatsAppAsync(tenant.WppConnectSession!, tenant.WppConnectToken!, mgmt);
+            if (restore is not null) return restore;
+            // null: eski oturum geçersiz (token/oturum tanınmıyor) — sıfırdan bağlanılacak.
+        }
+
+        return await StartFreshWhatsAppAsync(tenant, mgmt, recovery);
+    }
+
+    /// <summary>Mevcut oturumu QR'sız geri getirmeye ne kadar süre çalışılır.</summary>
+    private static readonly TimeSpan RestoreWait = TimeSpan.FromSeconds(35);
+    private static readonly TimeSpan RestorePoll = TimeSpan.FromMilliseconds(2500);
+
+    /// <summary>
+    /// Mevcut oturumu aynı adla geri getirmeyi dener. Sonuç yanıtı döner; eski
+    /// oturum kullanılamaz durumdaysa (geçersiz token, bilinmeyen oturum) null.
+    /// </summary>
+    private async Task<IActionResult?> TryRestoreWhatsAppAsync(
+        string session, string token, IWppConnectManagementService mgmt)
+    {
+        var status = await mgmt.GetSessionStatusAsync(session, token);
+
+        // WPPConnect'in kendisine ulaşılamıyor: hiçbir şeyi silme, sonra denesin.
+        if (status.Value == "UNREACHABLE")
+            return Ok(new { success = false, message = "WhatsApp servisine şu an ulaşılamıyor. Birkaç dakika sonra tekrar deneyin; mevcut bağlantınız silinmedi." });
+
+        var condition = WhatsAppSessionRecoveryState.Classify(status);
+
+        // HTTP 4xx: token ya da oturum WPPConnect'te tanınmıyor — kurtarılacak bir şey yok.
+        if (condition == SessionCondition.Unknown && !status.IsReachable)
+            return null;
+
+        if (condition == SessionCondition.Healthy)
+            return Success(new { session, qrCode = (string?)null, isConnected = true, restored = true });
+
+        if (condition == SessionCondition.AwaitingQr)
+            return await RestoredQrResponseAsync(session, token, mgmt);
+
+        // Kapalıysa aynı adla başlat; zaten açılıyorsa üstüne bir daha basma.
+        if (condition == SessionCondition.Closed && !await mgmt.TriggerStartAsync(session, token))
+            return null;
+
+        var deadline = DateTime.UtcNow + RestoreWait;
+        while (DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(RestorePoll);
+            var s = await mgmt.GetSessionStatusAsync(session, token);
+            switch (WhatsAppSessionRecoveryState.Classify(s))
+            {
+                case SessionCondition.Healthy:
+                    return Success(new { session, qrCode = (string?)null, isConnected = true, restored = true });
+                case SessionCondition.AwaitingQr:
+                    return await RestoredQrResponseAsync(session, token, mgmt);
+            }
+        }
+
+        // Tarayıcı hâlâ açılıyor (sunucu yoğunsa uzun sürebiliyor). Panel durumu sorar.
+        return Success(new
+        {
+            session,
+            qrCode = (string?)null,
+            isConnected = false,
+            restoring = true,
+            message = "Önceki oturum açılıyor; birkaç saniye içinde bağlanacak ya da QR gösterilecek.",
+        });
+    }
+
+    /// <summary>WhatsApp aynı oturum için QR istiyor: o QR'ı döndür (yeni oturum açmadan).</summary>
+    private async Task<IActionResult> RestoredQrResponseAsync(
+        string session, string token, IWppConnectManagementService mgmt)
+    {
+        string qr;
+        try { qr = await mgmt.GetQrCodeAsync(session, token); }
+        catch { qr = string.Empty; }
+
+        if (qr == "ALREADY_CONNECTED")
+            return Success(new { session, qrCode = (string?)null, isConnected = true, restored = true });
+
+        return Success(new
+        {
+            session,
+            qrCode = qr.StartsWith("data:image", StringComparison.Ordinal) ? qr : null,
+            isConnected = false,
+            restoring = !qr.StartsWith("data:image", StringComparison.Ordinal),
+            message = "WhatsApp bu cihazı düşürmüş; QR'ı yeniden okutmanız gerekiyor.",
+        });
+    }
+
+    /// <summary>
+    /// Eski cihazı WhatsApp'tan düşürüp yeni bir oturumla sıfırdan bağlanır (QR kesin istenir).
+    /// </summary>
+    private async Task<IActionResult> StartFreshWhatsAppAsync(
+        BerberApp.Domain.Entities.Tenant tenant,
+        IWppConnectManagementService mgmt,
+        WhatsAppSessionRecoveryState recovery)
+    {
         // Use a unique session name each time to guarantee no cached credentials.
         // WppConnect caches session data by name; a fresh name always starts with QR.
         var session = $"t-{tenant.Subdomain}-{Guid.NewGuid():N}"[..32];
@@ -502,3 +623,9 @@ public class TenantsController : BaseApiController
 
 public record TestWhatsAppRequest(string Phone, string Message);
 public record PairingCodeRequest(string PhoneNumber);
+
+/// <param name="FreshSession">
+/// true: mevcut oturumu kurtarmayı deneme, eski cihazı düşürüp yeni QR ile sıfırdan bağlan
+/// (paneldeki "Sıfırdan bağla"). Varsayılan false.
+/// </param>
+public record WhatsAppConnectRequest(bool FreshSession = false);
