@@ -17,8 +17,9 @@
 }
 .rf-chip {
   flex: none;
-  display: inline-flex; align-items: baseline; gap: 6px;
-  height: 30px; padding: 0 12px;
+  /* baseline hizası sabit yükseklikli kutuda yazıyı üste yapıştırıyordu. */
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 32px; padding: 0 12px; line-height: 1;
   border: 1.5px solid #e5e7eb; border-radius: 999px; background: #fff;
   font: inherit; font-size: 13px; color: #111827; white-space: nowrap;
   cursor: pointer; transition: border-color .15s, background .15s;
@@ -26,8 +27,8 @@
   &:active { background: #f3f4f6; }
   &:focus-visible { outline: 2px solid #111827; outline-offset: 1px; }
 }
-.rf-chip-name  { font-weight: 600; }
-.rf-chip-price { color: #6b7280; font-variant-numeric: tabular-nums; }
+.rf-chip-name  { font-weight: 600; line-height: 1; }
+.rf-chip-price { color: #6b7280; font-variant-numeric: tabular-nums; line-height: 1; }
 
 /* Satırlar tek ızgarayı paylaşıyor (subgrid): adet sütunu yalnızca bir
    satırda seçici açıldığında genişliyor, kapalıyken "×1" kadar yer tutuyor.
