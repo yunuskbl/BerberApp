@@ -9,8 +9,8 @@
       @for (s of services(); track s.id) {
         <button type="button" class="rf-chip" (click)="quickAdd(s)">
           <span class="rf-chip-name">{{ s.name }}</span>
-          @if (s.price > 0 && (s.currency ?? 'TRY') === 'TRY') {
-            <span class="rf-chip-price">{{ money(s.price) }}</span>
+          @if (servicePrice(s); as price) {
+            <span class="rf-chip-price">{{ money(price) }}</span>
           }
         </button>
       }
@@ -28,19 +28,50 @@
 
     @for (row of rows; track row.key; let i = $index) {
       <div class="rf-row" role="row">
-        <input
-          #nameInput
-          class="rf-input rf-name"
-          type="text"
-          [attr.list]="listId"
-          maxlength="200"
-          autocomplete="off"
-          placeholder="Hizmet adı"
-          aria-label="Hizmet adı"
-          [class.invalid]="showProblem(row, 'name')"
-          [(ngModel)]="row.serviceName"
-          (ngModelChange)="fillPriceFromService(row)"
-          (blur)="normalizeName(row)">
+        <div class="rf-name">
+          <input
+            #nameInput
+            class="rf-input"
+            type="text"
+            role="combobox"
+            aria-autocomplete="list"
+            [attr.aria-expanded]="isSuggestOpen(row)"
+            [attr.aria-controls]="isSuggestOpen(row) ? listId + '-' + row.key : null"
+            [attr.aria-activedescendant]="isSuggestOpen(row) && activeIndex >= 0 ? listId + '-' + row.key + '-' + activeIndex : null"
+            maxlength="200"
+            autocomplete="off"
+            placeholder="Hizmet adı"
+            aria-label="Hizmet adı"
+            [class.invalid]="showProblem(row, 'name')"
+            [(ngModel)]="row.serviceName"
+            (ngModelChange)="onNameInput(row)"
+            (focus)="openSuggest(row)"
+            (keydown)="onNameKeydown($event, row)"
+            (blur)="onNameBlur(row)">
+
+          @if (isSuggestOpen(row)) {
+            <!-- mousedown'ı engellemek odağın kutuda kalmasını sağlıyor; yoksa
+                 seçime tıklamak önce kutudan çıkıp listeyi kapatıyordu. -->
+            <ul class="rf-suggest" role="listbox" [id]="listId + '-' + row.key" aria-label="Tanımlı hizmetler">
+              @for (s of suggestionsFor(row); track s.id; let j = $index) {
+                <li
+                  role="option"
+                  class="rf-option"
+                  [id]="listId + '-' + row.key + '-' + j"
+                  [class.active]="j === activeIndex"
+                  [attr.aria-selected]="j === activeIndex"
+                  (mousedown)="$event.preventDefault()"
+                  (mouseenter)="activeIndex = j"
+                  (click)="pick(row, s)">
+                  <span class="rf-option-name">{{ s.name }}</span>
+                  @if (servicePrice(s); as price) {
+                    <span class="rf-option-price">{{ money(price) }}</span>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </div>
 
         <div class="rf-price">
           <span class="rf-currency" aria-hidden="true">₺</span>
@@ -104,12 +135,6 @@
       </div>
     }
   </div>
-
-  <datalist [id]="listId">
-    @for (s of services(); track s.id) {
-      <option [value]="s.name">{{ money(s.price) }}</option>
-    }
-  </datalist>
 
   <button type="button" class="rf-add" (click)="addRow()" [disabled]="!canAddRow">
     + Hizmet ekle

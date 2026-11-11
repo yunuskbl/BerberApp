@@ -73,8 +73,10 @@ export class ReceiptFormComponent implements OnInit {
   readonly maxItems    = MAX_ITEMS;
   readonly maxQuantity = MAX_QUANTITY;
   readonly maxPrice    = MAX_UNIT_PRICE;
-  /** Aynı sayfada iki form olursa datalist kimlikleri çakışmasın. */
+  /** Aynı sayfada iki form olursa öneri listesi kimlikleri çakışmasın. */
   readonly listId = `receipt-services-${Math.random().toString(36).slice(2, 8)}`;
+  /** Öneri listesi en fazla bu kadar hizmet gösterir; gerisi yazarak süzülür. */
+  readonly maxSuggestions = 8;
 
   rows: ReceiptRow[] = [];
   note = '';
@@ -85,6 +87,10 @@ export class ReceiptFormComponent implements OnInit {
   readonly attempted  = signal(false);
   /** Sunucudan dönen hata; bir sonraki gönderimde temizlenir. */
   readonly serverError = signal('');
+
+  /** Öneri listesi açık olan satır ve klavyeyle seçili öneri. */
+  suggestKey: number | null = null;
+  activeIndex = -1;
 
   private nextKey = 1;
 
@@ -140,7 +146,7 @@ export class ReceiptFormComponent implements OnInit {
    * boş satırı doldurur, o da yoksa yeni satır açar.
    */
   quickAdd(service: Service): void {
-    const price = this.priceOf(service);
+    const price = this.servicePrice(service);
     const same = this.rows.find(r =>
       this.sameName(r.serviceName, service.name) && (price == null || r.unitPrice === price));
     if (same) {
@@ -197,8 +203,89 @@ export class ReceiptFormComponent implements OnInit {
   fillPriceFromService(row: ReceiptRow): void {
     if (row.unitPrice != null && row.unitPrice > 0) return;
     const match = this.findService(row.serviceName);
-    const price = match ? this.priceOf(match) : null;
+    const price = match ? this.servicePrice(match) : null;
     if (price != null) row.unitPrice = price;
+  }
+
+  // ─── Hizmet adı önerileri ────────────────────────────────
+  //
+  // Önceden tarayıcının kendi öneri kutusu (<datalist>) kullanılıyordu. O kutu
+  // CSS ile biçimlenemiyor: Opera/Chrome'da koyu bir baloncuk olarak açılıyor,
+  // kutunun içine de bir ▼ oku koyuyordu. Bu liste uygulamanın görünümünde,
+  // fare, klavye (↑ ↓ Enter Esc) ve dokunmatikle çalışıyor.
+
+  suggestionsFor(row: ReceiptRow): Service[] {
+    const query = this.norm(row.serviceName);
+    const all = this.services();
+    const matches = query ? all.filter(s => this.norm(s.name).includes(query)) : all;
+    // Yazılan ad zaten tek eşleşmeyle birebir aynıysa listeyi göstermenin anlamı yok.
+    if (matches.length === 1 && this.norm(matches[0].name) === query) return [];
+    return matches.slice(0, this.maxSuggestions);
+  }
+
+  isSuggestOpen(row: ReceiptRow): boolean {
+    return this.suggestKey === row.key && this.suggestionsFor(row).length > 0;
+  }
+
+  openSuggest(row: ReceiptRow): void {
+    this.suggestKey  = row.key;
+    this.activeIndex = -1;
+  }
+
+  closeSuggest(): void {
+    this.suggestKey  = null;
+    this.activeIndex = -1;
+  }
+
+  onNameInput(row: ReceiptRow): void {
+    this.fillPriceFromService(row);
+    this.suggestKey = row.key;
+    // Yazmaya başlayınca ilk öneri seçili gelsin: Enter onu alır.
+    this.activeIndex = this.norm(row.serviceName) ? 0 : -1;
+  }
+
+  onNameKeydown(event: KeyboardEvent, row: ReceiptRow): void {
+    const items = this.suggestionsFor(row);
+    switch (event.key) {
+      case 'ArrowDown':
+        if (!items.length) return;
+        event.preventDefault();
+        this.suggestKey  = row.key;
+        this.activeIndex = (this.activeIndex + 1) % items.length;
+        break;
+      case 'ArrowUp':
+        if (!items.length) return;
+        event.preventDefault();
+        this.suggestKey  = row.key;
+        this.activeIndex = this.activeIndex <= 0 ? items.length - 1 : this.activeIndex - 1;
+        break;
+      case 'Enter':
+        if (this.isSuggestOpen(row) && this.activeIndex >= 0) {
+          event.preventDefault();
+          this.pick(row, items[this.activeIndex]);
+        }
+        break;
+      case 'Escape':
+        if (this.isSuggestOpen(row)) {
+          event.preventDefault();
+          event.stopPropagation();
+          this.closeSuggest();
+        }
+        break;
+    }
+  }
+
+  /** Öneriden seçilen hizmet: ad ve (TRY ise) fiyatı satıra yazılır. */
+  pick(row: ReceiptRow, service: Service): void {
+    row.serviceName = service.name;
+    const price = this.servicePrice(service);
+    if (price != null) row.unitPrice = price;
+    this.closeSuggest();
+  }
+
+  onNameBlur(row: ReceiptRow): void {
+    this.normalizeName(row);
+    this.closeSuggest();
   }
 
   /** Alandan çıkınca adı tanımlı hizmetin yazımına çevirir ("saç kesimi" → "Saç Kesimi"). */
@@ -324,12 +411,16 @@ export class ReceiptFormComponent implements OnInit {
   }
 
   /** Fiş TRY kesiliyor; başka para birimindeki hizmetin fiyatı getirilmez. */
-  private priceOf(service: Service): number | null {
+  servicePrice(service: Service): number | null {
     return service.price > 0 && (service.currency ?? 'TRY') === 'TRY' ? service.price : null;
   }
 
+  private norm(value: string): string {
+    return value.trim().toLocaleLowerCase('tr-TR');
+  }
+
   private sameName(a: string, b: string): boolean {
-    return a.trim().toLocaleLowerCase('tr-TR') === b.trim().toLocaleLowerCase('tr-TR');
+    return this.norm(a) === this.norm(b);
   }
 
   private findService(name: string): Service | undefined {

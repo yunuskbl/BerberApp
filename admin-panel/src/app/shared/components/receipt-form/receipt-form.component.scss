@@ -66,6 +66,30 @@
   &[type='number']::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 }
 
+/* Hizmet adı ve öneri listesi */
+.rf-name { position: relative; min-width: 0; }
+.rf-suggest {
+  position: absolute; z-index: 30;
+  top: calc(100% + 4px); left: 0;
+  min-width: 100%; width: max-content; max-width: min(340px, calc(100vw - 48px));
+  margin: 0; padding: 4px; list-style: none;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(17, 24, 39, .12), 0 2px 6px rgba(17, 24, 39, .06);
+}
+.rf-option {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  padding: 8px 10px; border-radius: 6px;
+  font-size: 14px; color: #111827; cursor: pointer;
+  &.active { background: #f3f4f6; }
+}
+.rf-option-name {
+  font-weight: 500; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rf-option-price {
+  flex: none; font-size: 13px; color: #6b7280; font-variant-numeric: tabular-nums;
+}
+
 .rf-price { position: relative; }
 .rf-price .rf-input { padding-left: 22px; }
 .rf-currency {
