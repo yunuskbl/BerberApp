@@ -6,6 +6,10 @@
 
 .layout-content {
   flex: 1;
+  /* Esnek öğe varsayılan olarak içeriğinden dar olamaz: geniş bir tablo
+     (ör. Fişler) tüm sayfayı ekranın dışına itiyor, tablonun kendi yatay
+     kaydırması hiç devreye girmiyordu. */
+  min-width: 0;
   margin-left: 220px;
   display: flex;
   flex-direction: column;

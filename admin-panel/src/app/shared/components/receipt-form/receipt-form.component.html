@@ -1,0 +1,110 @@
+<div class="rf">
+  <div class="rf-head">
+    <span class="rf-title">Hizmetler</span>
+    <span class="rf-count">{{ rows.length }} satır</span>
+  </div>
+
+  <div class="rf-table" role="table" aria-label="Fiş kalemleri">
+    <div class="rf-row rf-row--header" role="row">
+      <span role="columnheader">Hizmet</span>
+      <span role="columnheader" class="num">Adet</span>
+      <span role="columnheader" class="num">Birim fiyat</span>
+      <span role="columnheader" class="num">Tutar</span>
+      <span role="columnheader" class="sr-only">Sil</span>
+    </div>
+
+    @for (row of rows; track row.key; let i = $index) {
+      <div class="rf-row" role="row">
+        <input
+          #nameInput
+          class="rf-input rf-name"
+          type="text"
+          [attr.list]="listId"
+          maxlength="200"
+          autocomplete="off"
+          placeholder="Hizmet adı"
+          aria-label="Hizmet adı"
+          [class.invalid]="showProblem(row, 'name')"
+          [(ngModel)]="row.serviceName"
+          (ngModelChange)="fillPriceFromService(row)"
+          (blur)="normalizeName(row)">
+
+        <input
+          class="rf-input rf-qty num"
+          type="number"
+          inputmode="numeric"
+          min="1"
+          [max]="maxQuantity"
+          step="1"
+          placeholder="Adet"
+          aria-label="Adet"
+          [class.invalid]="showProblem(row, 'quantity')"
+          [(ngModel)]="row.quantity">
+
+        <div class="rf-price">
+          <span class="rf-currency" aria-hidden="true">₺</span>
+          <input
+            class="rf-input num"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            [max]="maxPrice"
+            step="0.01"
+            placeholder="Fiyat"
+            aria-label="Birim fiyat (₺)"
+            [class.invalid]="showProblem(row, 'price')"
+            [(ngModel)]="row.unitPrice">
+        </div>
+
+        <span class="rf-line num" role="cell">
+          @if (lineTotal(row); as line) { {{ money(line) }} } @else { <span class="muted">—</span> }
+        </span>
+
+        <button
+          type="button"
+          class="rf-remove"
+          [attr.aria-label]="rows.length > 1 ? 'Satırı sil' : 'Satırı temizle'"
+          [title]="rows.length > 1 ? 'Satırı sil' : 'Satırı temizle'"
+          (click)="removeRow(i)">
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+            <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          </svg>
+        </button>
+      </div>
+    }
+  </div>
+
+  <datalist [id]="listId">
+    @for (s of services(); track s.id) {
+      <option [value]="s.name">{{ money(s.price) }}</option>
+    }
+  </datalist>
+
+  <button type="button" class="rf-add" (click)="addRow()" [disabled]="!canAddRow">
+    + Hizmet ekle
+  </button>
+  @if (!canAddRow) {
+    <p class="rf-hint">Bir fişte en fazla {{ maxItems }} kalem olabilir.</p>
+  }
+
+  <div class="rf-total">
+    <span>Toplam</span>
+    <strong>{{ money(total) }}</strong>
+  </div>
+
+  <label class="rf-note">
+    <span>Not <em>(isteğe bağlı)</em></span>
+    <input class="rf-input" type="text" maxlength="500" placeholder="Fiş notu…" [(ngModel)]="note">
+  </label>
+
+  @if (errorMessage; as message) {
+    <div class="rf-error" role="alert">{{ message }}</div>
+  }
+
+  <div class="rf-actions">
+    <button type="button" class="rf-btn rf-btn--ghost" (click)="cancel()" [disabled]="submitting()">İptal</button>
+    <button type="button" class="rf-btn rf-btn--primary" (click)="submit()" [disabled]="submitting()">
+      {{ submitting() ? 'Kesiliyor…' : 'Fişi Kes' }}
+    </button>
+  </div>
+</div>

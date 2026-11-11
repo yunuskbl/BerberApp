@@ -55,6 +55,19 @@ export function formatPrice(value: number, locale = 'tr-TR'): string {
   return new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value);
 }
 
+/**
+ * Tutar — kuruş varsa gösterilir: 250 → "250", 250,5 → "250,50".
+ * Fiş gibi mali belgelerde kullanılır; formatPrice kuruşu yuvarlayıp atar.
+ */
+export function formatAmount(value: number, locale = 'tr-TR'): string {
+  const rounded = Math.round(value * 100) / 100;
+  const hasFraction = Math.abs(rounded % 1) > 0.0001;
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: hasFraction ? 2 : 0,
+    maximumFractionDigits: 2,
+  }).format(rounded);
+}
+
 export function durationDays(period: BillingPeriod): number {
   return period === 'annual' ? 365 : 30;
 }

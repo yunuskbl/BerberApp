@@ -131,7 +131,7 @@
 
 /* ── Broadcast modal ── */
 .modal--broadcast { max-width: 520px; }
-.modal--receipt   { max-width: 500px; }
+.modal--receipt   { max-width: 580px; }
 
 /* Receipt modal styles */
 .receipt-customer-info {
@@ -141,36 +141,12 @@
 .receipt-customer-name  { font-weight: 700; font-size: 15px; }
 .receipt-customer-phone { font-size: 13px; color: #6b7280; margin-left: auto; }
 
-.receipt-items-section { margin-bottom: 14px; }
-.receipt-items-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.receipt-items-label  { font-weight: 600; font-size: 14px; }
-.btn-add-receipt-item { background: none; border: 1px solid #6366f1; color: #6366f1; border-radius: 6px; padding: 4px 10px; font-size: 13px; cursor: pointer; &:hover { background: #ede9fe; } }
-
-.receipt-item-row {
-  display: grid;
-  grid-template-columns: 1fr 54px 110px auto;
-  gap: 6px;
-  margin-bottom: 8px;
-  align-items: center;
-}
-.ri-price-wrap { position: relative; }
-.ri-currency    { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 13px; pointer-events: none; }
-.ri-price       { padding-right: 24px !important; }
-.btn-remove-ri  { background: none; border: none; color: #dc2626; cursor: pointer; font-size: 16px; padding: 0 4px; }
-
-.receipt-total-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 0; border-top: 1px dashed #e5e7eb;
-  font-weight: 600;
-}
-.receipt-total-label  { font-size: 15px; }
-.receipt-total-amount { font-size: 18px; color: #059669; }
-
 .receipt-success {
   text-align: center; padding: 24px 0;
   .receipt-success-icon   { font-size: 40px; margin-bottom: 8px; }
   .receipt-success-num    { font-size: 14px; color: #6b7280; margin-bottom: 4px; }
   .receipt-success-amount { font-size: 28px; font-weight: 700; color: #059669; }
+  .receipt-success-items  { font-size: 13px; color: #9ca3af; margin-top: 2px; }
 }
 .broadcast-info { font-size: 14px; color: #6b7280; margin-bottom: 16px; strong { color: #111827; } }
 .filter-param { margin-top: -4px; }
