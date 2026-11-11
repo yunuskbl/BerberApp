@@ -148,6 +148,9 @@ else // Hybrid — her iki servisi de kaydet, yönlendirmeyi HybridWhatsAppServi
     builder.Services.AddScoped<IWhatsAppService, HybridWhatsAppService>();
 }
 builder.Services.AddHttpClient<IWppConnectManagementService, WppConnectManagementService>(SessionTimeout);
+// Sessiz kurtarma kararları (hangi oturum ne zaman yeniden denenir, hangisi
+// elle bağlanıyor) API ömrü boyunca bellekte; iş ve denetleyiciler paylaşıyor.
+builder.Services.AddSingleton(_ => new BerberApp.Application.Common.Services.WhatsAppSessionRecoveryState());
 // ── SMS sağlayıcı zinciri ────────────────────────────────────────────────
 // .env → Sms__Providers: sırayla denenecek sağlayıcılar, ör. "Netgsm,Twilio".
 // İlki başarısız olursa bir sonrakine geçilir (ChainedSmsService).
@@ -402,6 +405,12 @@ RecurringJob.AddOrUpdate<AppointmentReminder1hJob>(
 RecurringJob.AddOrUpdate<ExpireAppointmentsJob>(
     "expire-appointments",
     job => job.ExpireOldAppointmentsAsync(),
+    "*/5 * * * *"
+);
+// Her 5 dakikada bir — kapanmış WhatsApp oturumlarını QR'sız geri getirmeyi dene
+RecurringJob.AddOrUpdate<WhatsAppSessionRecoveryJob>(
+    "whatsapp-session-recovery",
+    job => job.RunAsync(),
     "*/5 * * * *"
 );
 // Her gün sabah 09:00 — abonelik sona erme uyarısı

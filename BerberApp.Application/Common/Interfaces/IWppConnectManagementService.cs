@@ -3,6 +3,16 @@ namespace BerberApp.Application.Common.Interfaces;
 public interface IWppConnectManagementService
 {
     Task<WppConnectSessionResult> StartSessionAsync(string session, string token, CancellationToken ct = default);
+
+    /// <summary>
+    /// Var olan oturumu AYNI adla yeniden başlatmayı tetikler ve beklemeden döner.
+    ///
+    /// <see cref="StartSessionAsync"/>'ten farkı: önce close-session çağırmaz ve QR
+    /// beklemez. Telefonda cihaz hâlâ bağlıysa WPPConnect oturumu kayıtlı tarayıcı
+    /// profilinden QR'sız geri getirir. Sessiz kurtarma bunu kullanır.
+    /// </summary>
+    /// <returns>WPPConnect isteği kabul ettiyse true.</returns>
+    Task<bool> TriggerStartAsync(string session, string token, CancellationToken ct = default);
     Task<string> GenerateTokenAsync(string session, CancellationToken ct = default);
     Task<string> GetQrCodeAsync(string session, string token, CancellationToken ct = default);
 

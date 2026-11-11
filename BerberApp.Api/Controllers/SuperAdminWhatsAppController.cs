@@ -1,4 +1,5 @@
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Application.Common.Services;
 using BerberApp.Application.Common.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -132,10 +133,13 @@ public class SuperAdminWhatsAppController : ControllerBase
 
     /// <summary>Oturumu başlatır ve QR kodu döner</summary>
     [HttpGet("qr")]
-    public async Task<IActionResult> GetQr()
+    public async Task<IActionResult> GetQr([FromServices] WhatsAppSessionRecoveryState recovery)
     {
         if (string.IsNullOrWhiteSpace(_cfg.Token))
             return Ok(new { success = false, message = "Token yapılandırılmamış." });
+
+        // QR ekranı açık: sessiz kurtarma bu oturuma dokunmasın.
+        recovery.Suppress(_cfg.Session);
 
         var http  = _httpFactory.CreateClient("wppconnect");
         var base_ = _cfg.BaseUrl.TrimEnd('/');
@@ -246,10 +250,12 @@ public class SuperAdminWhatsAppController : ControllerBase
 
     /// <summary>Oturumu başlatır</summary>
     [HttpPost("start")]
-    public async Task<IActionResult> StartSession()
+    public async Task<IActionResult> StartSession([FromServices] WhatsAppSessionRecoveryState recovery)
     {
         if (string.IsNullOrWhiteSpace(_cfg.Token))
             return BadRequest(new { success = false, message = "Token yapılandırılmamış." });
+
+        recovery.Suppress(_cfg.Session);
 
         try
         {
@@ -279,10 +285,14 @@ public class SuperAdminWhatsAppController : ControllerBase
     /// ReleaseSessionAsync cihazı WhatsApp tarafında da düşürüyor.
     /// </summary>
     [HttpPost("disconnect")]
-    public async Task<IActionResult> Disconnect([FromServices] IWppConnectManagementService mgmt)
+    public async Task<IActionResult> Disconnect(
+        [FromServices] IWppConnectManagementService mgmt,
+        [FromServices] WhatsAppSessionRecoveryState recovery)
     {
         if (string.IsNullOrWhiteSpace(_cfg.Token))
             return BadRequest(new { success = false, message = "Token yapılandırılmamış." });
+
+        recovery.Suppress(_cfg.Session);
 
         await mgmt.ReleaseSessionAsync(_cfg.Session, _cfg.Token);
         return Ok(new { success = true, message = "Oturum kapatıldı ve cihaz bağlantısı kesildi." });

@@ -100,6 +100,47 @@ public class WppConnectManagementService : IWppConnectManagementService
         return new WppConnectSessionResult(session, token, qr);
     }
 
+    /// <summary>
+    /// start-session isteğine tanınan süre. Yeni sürümlerde istek hemen dönüyor;
+    /// bazı sürümler tarayıcı açılana kadar bekletiyor. Zaman aşımı başlatmanın
+    /// başarısız olduğu anlamına gelmiyor — sonucu durum sorgusu söylüyor.
+    /// </summary>
+    private static readonly TimeSpan TriggerStartTimeout = TimeSpan.FromSeconds(20);
+
+    public async Task<bool> TriggerStartAsync(string session, string token, CancellationToken ct = default)
+    {
+        var url = $"{_cfg.BaseUrl.TrimEnd('/')}/api/{session}/start-session";
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TriggerStartTimeout);
+
+        using var req = new HttpRequestMessage(HttpMethod.Post, url);
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        req.Content = new StringContent("{\"waitQrCode\":false}", Encoding.UTF8, "application/json");
+
+        try
+        {
+            var res  = await _http.SendAsync(req, timeout.Token);
+            var body = await res.Content.ReadAsStringAsync(timeout.Token);
+            // Gövde base64 QR içerebiliyor; logu şişirmesin.
+            var shortBody = body.Length > 160 ? body[..160] + "…" : body;
+            _log.LogInformation("[WPPConnect-MGMT] TriggerStart {Status} ({Session}): {Body}",
+                (int)res.StatusCode, session, shortBody);
+            return res.IsSuccessStatusCode;
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            _log.LogInformation("[WPPConnect-MGMT] TriggerStart {Seconds} sn içinde dönmedi ({Session}); başlatma sürüyor sayılıyor.",
+                TriggerStartTimeout.TotalSeconds, session);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _log.LogWarning(ex, "[WPPConnect-MGMT] TriggerStart başarısız ({Session})", session);
+            return false;
+        }
+    }
+
     private static bool TryExtractQr(string body, out string qr)
     {
         qr = string.Empty;

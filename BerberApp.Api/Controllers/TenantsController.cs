@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using BerberApp.Application.Common.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using BerberApp.Application.Tenant.Commands;
 using BerberApp.Application.Tenant.Queries;
@@ -325,7 +326,8 @@ public class TenantsController : BaseApiController
 
     [HttpPost("whatsapp/connect")]
     public async Task<IActionResult> WhatsAppConnect(
-        [FromServices] IWppConnectManagementService mgmt)
+        [FromServices] IWppConnectManagementService mgmt,
+        [FromServices] WhatsAppSessionRecoveryState recovery)
     {
         var tenant = await _context.Tenants.FirstOrDefaultAsync(x => x.Id == TenantId);
         if (tenant is null) return NotFound();
@@ -333,6 +335,11 @@ public class TenantsController : BaseApiController
         // Use a unique session name each time to guarantee no cached credentials.
         // WppConnect caches session data by name; a fresh name always starts with QR.
         var session = $"t-{tenant.Subdomain}-{Guid.NewGuid():N}"[..32];
+
+        // Bağlanma sürerken sessiz kurtarma ne bırakılan eski oturumu
+        // diriltmeye ne de QR'ı okutulmakta olan yenisini kapatmaya kalksın.
+        recovery.Suppress(tenant.WppConnectSession);
+        recovery.Suppress(session);
         try
         {
             // Eski oturumu WhatsApp tarafında da düşür. Yalnızca close-session
@@ -364,11 +371,15 @@ public class TenantsController : BaseApiController
 
     [HttpGet("whatsapp/qr")]
     public async Task<IActionResult> WhatsAppQr(
-        [FromServices] IWppConnectManagementService mgmt)
+        [FromServices] IWppConnectManagementService mgmt,
+        [FromServices] WhatsAppSessionRecoveryState recovery)
     {
         var tenant = await _context.Tenants.FirstOrDefaultAsync(x => x.Id == TenantId);
         if (string.IsNullOrWhiteSpace(tenant?.WppConnectSession))
             return Ok(new { success = false, message = "Oturum başlatılmamış." });
+
+        // QR ekranı açık: kurtarma işi bu oturumu "QR'a düşmüş" sanıp kapatmasın.
+        recovery.Suppress(tenant.WppConnectSession);
 
         try
         {
@@ -384,7 +395,8 @@ public class TenantsController : BaseApiController
     [HttpPost("whatsapp/pairing-code")]
     public async Task<IActionResult> WhatsAppPairingCode(
         [FromBody] PairingCodeRequest req,
-        [FromServices] IWppConnectManagementService mgmt)
+        [FromServices] IWppConnectManagementService mgmt,
+        [FromServices] WhatsAppSessionRecoveryState recovery)
     {
         if (string.IsNullOrWhiteSpace(req.PhoneNumber))
             return BadRequest(new { success = false, message = "Telefon numarası gerekli." });
@@ -392,10 +404,13 @@ public class TenantsController : BaseApiController
         var tenant = await _context.Tenants.FirstOrDefaultAsync(x => x.Id == TenantId);
         if (tenant is null) return NotFound();
 
+        recovery.Suppress(tenant.WppConnectSession);
+
         // Start a fresh unique session if not already started
         if (string.IsNullOrWhiteSpace(tenant.WppConnectSession))
         {
             var session = $"t-{tenant.Subdomain}-{Guid.NewGuid():N}"[..32];
+            recovery.Suppress(session);
             var newToken = await mgmt.GenerateTokenAsync(session);
             // Start without waiting for QR — just get it into INITIALIZING state
             _ = mgmt.StartSessionAsync(session, newToken);
@@ -462,13 +477,16 @@ public class TenantsController : BaseApiController
 
     [HttpDelete("whatsapp/disconnect")]
     public async Task<IActionResult> WhatsAppDisconnect(
-        [FromServices] IWppConnectManagementService mgmt)
+        [FromServices] IWppConnectManagementService mgmt,
+        [FromServices] WhatsAppSessionRecoveryState recovery)
     {
         var tenant = await _context.Tenants.FirstOrDefaultAsync(x => x.Id == TenantId);
         if (tenant is null) return NotFound();
 
         if (!string.IsNullOrWhiteSpace(tenant.WppConnectSession))
         {
+            // Bırakılan oturumu kurtarma işi geri açmaya çalışmasın.
+            recovery.Suppress(tenant.WppConnectSession);
             // Cihazı WhatsApp'tan da düşür, yoksa listede hayalet kayıt kalır.
             // ReleaseSessionAsync kendi içinde best-effort; hata fırlatmaz.
             await mgmt.ReleaseSessionAsync(tenant.WppConnectSession, tenant.WppConnectToken!);
