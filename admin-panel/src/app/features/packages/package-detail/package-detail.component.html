@@ -1,0 +1,235 @@
+@if (loading()) {
+  <p class="pd-loading">Yükleniyor…</p>
+} @else {
+  @if (detail(); as d) {
+  @if (d.package; as p) {
+  <div class="pd">
+    <!-- Başlık -->
+    <header class="pd-head">
+      <div class="pd-title">
+        <span class="pd-customer">{{ p.customerName }}</span>
+        <h2>{{ p.name }}</h2>
+        <span class="pd-sub">
+          {{ shortDate(p.startedAt) }} tarihinde satıldı
+          @if (p.expiresAt) { · {{ shortDate(p.expiresAt) }} tarihine kadar geçerli }
+        </span>
+      </div>
+      <span class="badge"
+            [class.active]="p.status === 'Active' && !p.isExpired"
+            [class.expired]="p.isExpired"
+            [class.completed]="p.status === 'Completed'"
+            [class.cancelled]="p.status === 'Cancelled'">{{ statusLabel(p.status, p.isExpired) }}</span>
+    </header>
+
+    @if (notice()) { <div class="pd-notice" role="status">{{ notice() }}</div> }
+    @if (error()) { <div class="pk-error" role="alert">{{ error() }}</div> }
+
+    <!-- İlerleme -->
+    <section class="pd-progress" aria-label="Seans ilerlemesi">
+      <div class="pd-count">
+        <strong>{{ p.usedSessions }}</strong><span>/ {{ p.totalSessions }} seans</span>
+        <em>{{ p.remainingSessions }} seans kaldı</em>
+      </div>
+      @if (dots().length) {
+        <ol class="pd-dots">
+          @for (dot of dots(); track dot.n) {
+            <li [class.used]="dot.used" [class.confirmed]="dot.confirmed"
+                [attr.aria-label]="dot.n + '. seans: ' + (dot.used ? (dot.confirmed ? 'yapıldı, müşteri onayladı' : 'yapıldı') : 'kalan')"
+                [title]="dot.n + '. seans'">
+              @if (dot.confirmed) { <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.5l2.5 2.5L12 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> }
+            </li>
+          }
+        </ol>
+        <p class="pd-legend"><span class="lg used"></span> yapıldı <span class="lg confirmed"></span> müşteri onayladı <span class="lg"></span> kalan</p>
+      } @else {
+        <div class="pd-bar"><span [style.width.%]="p.totalSessions ? (p.usedSessions / p.totalSessions) * 100 : 0"></span></div>
+      }
+    </section>
+
+    <!-- Seans işle -->
+    @if (canRecord()) {
+      <section class="pd-card">
+        <h3>Seans işle</h3>
+        <div class="pd-record">
+          <label class="fld">
+            <span>Personel</span>
+            <select [(ngModel)]="sessionStaffId">
+              <option value="">— Seçilmedi —</option>
+              @for (s of staff(); track s.id) { <option [value]="s.id">{{ s.fullName }}</option> }
+            </select>
+          </label>
+          <label class="fld">
+            <span>Not <em>(yalnızca işletme görür)</em></span>
+            <input type="text" maxlength="500" placeholder="ör. bölge, ayar, cilt tepkisi" [(ngModel)]="sessionNote">
+          </label>
+        </div>
+        <button type="button" class="btn btn-primary pd-record-btn" (click)="recordSession()" [disabled]="busy()">
+          {{ busy() ? 'İşleniyor…' : (p.usedSessions + 1) + '. seansı işle' }}
+        </button>
+        <p class="pd-hint">Seans hemen düşer. Ardından müşteriye okutacağı bir QR gösterilir; okutursa seans "müşteri onayladı" olarak işaretlenir.</p>
+      </section>
+    } @else if (p.status === 'Completed') {
+      <section class="pd-card pd-done">Tüm seanslar kullanıldı. Yanlış işlenmiş bir seans varsa aşağıdan iptal edebilirsiniz.</section>
+    } @else if (p.status === 'Cancelled') {
+      <section class="pd-card pd-done">
+        Paket iptal edildi{{ d.cancelledAt ? ' (' + shortDate(d.cancelledAt) + ')' : '' }}.
+        @if (d.cancelReason) { <span>Neden: {{ d.cancelReason }}</span> }
+      </section>
+    }
+
+    <!-- Ödeme -->
+    <section class="pd-card">
+      <div class="pd-card-head">
+        <h3>Ödeme</h3>
+        @if (p.remainingDebt > 0 && !paymentOpen) {
+          <button type="button" class="btn btn-ghost btn-sm" (click)="openPayment()">+ Ödeme al</button>
+        }
+      </div>
+      <dl class="pd-money">
+        <div><dt>Paket fiyatı</dt><dd>{{ money(p.price) }}</dd></div>
+        <div><dt>Ödenen</dt><dd>{{ money(p.paid) }}</dd></div>
+        <div class="debt" [class.zero]="p.remainingDebt === 0"><dt>Kalan borç</dt><dd>{{ money(p.remainingDebt) }}</dd></div>
+      </dl>
+      @if (paymentOpen) {
+        <div class="pd-payform">
+          <div class="fld-row">
+            <label class="fld">
+              <span>Tutar (₺)</span>
+              <input type="number" inputmode="decimal" min="0" step="0.01" [(ngModel)]="paymentAmount">
+            </label>
+            <label class="fld">
+              <span>Ödeme şekli</span>
+              <select [(ngModel)]="paymentMethod">
+                @for (m of methods; track m[0]) { <option [value]="m[0]">{{ m[1] }}</option> }
+              </select>
+            </label>
+          </div>
+          <label class="fld">
+            <span>Not <em>(isteğe bağlı)</em></span>
+            <input type="text" maxlength="300" [(ngModel)]="paymentNote">
+          </label>
+          <div class="pd-row-actions">
+            <button type="button" class="btn btn-ghost btn-sm" (click)="paymentOpen = false">Vazgeç</button>
+            <button type="button" class="btn btn-primary btn-sm" (click)="savePayment()" [disabled]="busy()">Ödemeyi kaydet</button>
+          </div>
+        </div>
+      }
+      @if (d.payments.length) {
+        <ul class="pd-list">
+          @for (pay of d.payments; track pay.id) {
+            <li [class.void]="pay.isVoid">
+              <div class="pd-li-main">
+                <span>{{ shortDate(pay.paidAt) }} · {{ methodLabel[pay.method] }}</span>
+                @if (pay.note) { <small>{{ pay.note }}</small> }
+                @if (pay.isVoid) { <small class="pd-void-tag">İptal edildi</small> }
+              </div>
+              <strong>{{ money(pay.amount) }}</strong>
+              @if (!pay.isVoid) {
+                <button type="button" class="link muted" (click)="voidPayment(pay.id, pay.amount)">İptal</button>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <!-- Müşteri kartı -->
+    <section class="pd-card pd-share">
+      @if (trackQr()) { <img [src]="trackQr()" alt="Müşteri takip QR kodu" width="132" height="132"> }
+      <div class="pd-share-body">
+        <h3>Müşteri takip bağlantısı</h3>
+        <p>Müşteri bu QR'ı okutarak ya da bağlantıyı açarak seanslarını, onaylarını ve kalan borcunu görür. Giriş gerekmez.</p>
+        <div class="pd-row-actions">
+          <button type="button" class="btn btn-ghost btn-sm" (click)="copyLink()">{{ copied() ? 'Kopyalandı ✓' : 'Bağlantıyı kopyala' }}</button>
+          @if (p.customerPhone) {
+            <a class="btn btn-ghost btn-sm" [href]="whatsAppUrl()" target="_blank" rel="noopener">WhatsApp ile gönder</a>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Seans geçmişi -->
+    <section class="pd-card">
+      <h3>Seans geçmişi</h3>
+      @if (d.sessions.length === 0) {
+        <p class="pd-empty">Henüz seans işlenmedi.</p>
+      } @else {
+        <ul class="pd-list">
+          @for (s of d.sessions; track s.id) {
+            <li [class.void]="s.isVoid">
+              <span class="pd-num">{{ s.isVoid ? '—' : s.number }}</span>
+              <div class="pd-li-main">
+                <span>{{ dateTime(s.performedAt) }}@if (s.staffName) { · {{ s.staffName }} }</span>
+                @if (s.note) { <small>{{ s.note }}</small> }
+                @if (s.isVoid) {
+                  <small class="pd-void-tag">İptal edildi{{ s.voidReason ? ': ' + s.voidReason : '' }}</small>
+                } @else if (s.customerConfirmedAt) {
+                  <small class="pd-ok">✓ Müşteri onayladı · {{ relativeDay(s.customerConfirmedAt) }}</small>
+                } @else {
+                  <small class="pd-wait">Müşteri onayı yok
+                    @if (p.status !== 'Cancelled') { · <button type="button" class="link" (click)="showQrFor(s)">QR göster</button> }
+                  </small>
+                }
+              </div>
+              @if (!s.isVoid) {
+                <button type="button" class="link muted" (click)="voidSession(s)">İptal</button>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    @if (p.note) { <p class="pd-note"><strong>Not:</strong> {{ p.note }}</p> }
+
+    @if (p.status !== 'Cancelled') {
+      <button type="button" class="btn btn-danger-ghost pd-cancel" (click)="cancelPackage()" [disabled]="busy()">Paketi iptal et</button>
+    }
+  </div>
+  }
+  }
+}
+
+<!-- Müşteriye okutulacak onay QR'ı -->
+@if (dialog(); as dlg) {
+  <div class="pk-overlay">
+    <div class="pk-modal pd-qr" role="dialog" aria-modal="true" aria-label="Seans onay QR kodu">
+      <div class="pk-modal-head">
+        <h3>{{ dlg.sessionNumber ? dlg.sessionNumber + '. seans' : 'Seans' }} işlendi</h3>
+        <button type="button" class="pk-x" aria-label="Kapat" (click)="closeDialog()">✕</button>
+      </div>
+      <div class="pk-modal-body">
+        @switch (dlg.state) {
+          @case ('waiting') {
+            <p class="pd-qr-lead">Müşteri telefonunun kamerasıyla okutup onaylasın.</p>
+            @if (dlg.qr) { <img class="pd-qr-img" [src]="dlg.qr" alt="Seans onay QR kodu" width="260" height="260"> }
+            <p class="pd-qr-status"><span class="pulse" aria-hidden="true"></span> Müşteri onayı bekleniyor · {{ countdown() }}</p>
+          }
+          @case ('confirmed') {
+            <div class="pd-qr-done" role="status">
+              <span class="pd-qr-check" aria-hidden="true">✓</span>
+              <strong>Müşteri onayladı</strong>
+              <span>Seans iki tarafta da onaylı görünüyor.</span>
+            </div>
+          }
+          @case ('expired') {
+            <div class="pd-qr-done expired" role="status">
+              <strong>Kodun süresi doldu</strong>
+              <span>Seans yine de işlendi. Müşteri onaylamak isterse yeni kod oluşturun.</span>
+            </div>
+          }
+        }
+      </div>
+      <div class="pk-modal-foot">
+        @if (dlg.state === 'expired') {
+          <button type="button" class="btn btn-ghost" (click)="closeDialog()">Kapat</button>
+          <button type="button" class="btn btn-primary" (click)="renewInDialog()">Yeni kod oluştur</button>
+        } @else if (dlg.state === 'confirmed') {
+          <button type="button" class="btn btn-success" (click)="closeDialog()">Tamam</button>
+        } @else {
+          <button type="button" class="btn btn-ghost" (click)="closeDialog()">Onaysız devam et</button>
+        }
+      </div>
+    </div>
+  </div>
+}

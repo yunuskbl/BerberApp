@@ -1,0 +1,59 @@
+<div class="pub">
+  <header class="pub-top"><app-logo></app-logo></header>
+
+  <main class="pub-card sc">
+    @if (loading()) {
+      <p class="pub-muted">Yükleniyor…</p>
+    } @else {
+    @if (info(); as s) {
+      <div class="pub-salon">
+        @if (s.salon.logoUrl) { <img [src]="s.salon.logoUrl" alt="" width="28" height="28"> }
+        <span>{{ s.salon.name }}</span>
+      </div>
+
+      @if (s.confirmed) {
+        <div class="sc-done" role="status">
+          <span class="sc-check" aria-hidden="true">✓</span>
+          <h1>{{ justConfirmed() ? 'Teşekkürler, seans onaylandı' : 'Bu seansı onayladınız' }}</h1>
+          <p>{{ s.packageName }} · {{ s.sessionNumber }}. seans / {{ s.totalSessions }}</p>
+        </div>
+        <a class="pub-btn" [routerLink]="['/paket', s.packageToken]">Paketimi görüntüle</a>
+      } @else if (s.isVoid) {
+        <div class="pub-state">
+          <h1>Bu seans iptal edildi</h1>
+          <p>Salon bu kaydı iptal etti; seans paketinize geri eklendi.</p>
+        </div>
+        <a class="pub-btn ghost" [routerLink]="['/paket', s.packageToken]">Paketimi görüntüle</a>
+      } @else if (s.expired) {
+        <div class="pub-state">
+          <h1>Onay kodunun süresi doldu</h1>
+          <p>Personelden QR'ı yeniden göstermesini isteyin. Seans kaydı yine de işlenmiş durumda.</p>
+        </div>
+        <a class="pub-btn ghost" [routerLink]="['/paket', s.packageToken]">Paketimi görüntüle</a>
+      } @else {
+        <p class="sc-lead">Aldığınız seansı onaylayın</p>
+        <h1>{{ s.packageName }}</h1>
+        <div class="sc-session">
+          <strong>{{ s.sessionNumber }}<small>/{{ s.totalSessions }}</small></strong>
+          <div>
+            <span>{{ s.sessionNumber }}. seans</span>
+            <small>{{ dateTime(s.performedAt) }}@if (s.staffName) { · {{ s.staffName }} }</small>
+          </div>
+        </div>
+        @if (error()) { <div class="sc-error" role="alert">{{ error() }}</div> }
+        <button type="button" class="pub-btn" (click)="confirm()" [disabled]="confirming()">
+          {{ confirming() ? 'Onaylanıyor…' : 'Bu seansı aldım, onaylıyorum' }}
+        </button>
+        <p class="sc-note">Onayınız seans kaydının doğru olduğunu gösterir; hem siz hem salon görür.</p>
+      }
+    } @else {
+      <div class="pub-state">
+        <h1>Kod açılamadı</h1>
+        <p>{{ error() }}</p>
+      </div>
+    }
+    }
+  </main>
+
+  <p class="pub-foot">ayarlıyo ile güçlendirildi</p>
+</div>

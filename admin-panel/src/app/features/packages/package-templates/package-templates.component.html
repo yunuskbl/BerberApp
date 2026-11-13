@@ -1,0 +1,80 @@
+<div class="pt">
+  <div class="pt-head">
+    <p class="pt-intro">Sık sattığınız paketleri bir kez tanımlayın; satışta tek dokunuşla seçilir. Fiyatı satış sırasında değiştirebilirsiniz.</p>
+    <button type="button" class="btn btn-primary" (click)="openNew()">+ Paket tanımı</button>
+  </div>
+
+  @if (loading()) {
+    <p class="pt-empty">Yükleniyor…</p>
+  } @else if (templates().length === 0) {
+    <div class="pt-empty">
+      <strong>Henüz paket tanımı yok.</strong>
+      <span>Örneğin "Lazer Epilasyon — 8 seans" ya da "Cilt Bakımı — 5 seans" ekleyin.</span>
+    </div>
+  } @else {
+    <ul class="pt-list">
+      @for (t of templates(); track t.id) {
+        <li class="pt-card" [class.inactive]="!t.isActive">
+          <div class="pt-main">
+            <span class="pt-name">{{ t.name }}</span>
+            <span class="pt-meta">
+              {{ t.sessionCount }} seans · {{ money(t.price) }} · {{ validityLabel(t.validityDays) }}
+              @if (t.serviceName) { · {{ t.serviceName }} }
+              @if (!t.isActive) { · <em>Satışa kapalı</em> }
+            </span>
+          </div>
+          <div class="pt-actions">
+            <button type="button" class="link" (click)="openEdit(t)">Düzenle</button>
+            <button type="button" class="link danger" (click)="remove(t)">Sil</button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+@if (form) {
+  <div class="pk-overlay">
+    <div class="pk-modal" role="dialog" aria-modal="true" [attr.aria-label]="form.id ? 'Paket tanımını düzenle' : 'Yeni paket tanımı'">
+      <div class="pk-modal-head">
+        <h3>{{ form.id ? 'Paket tanımını düzenle' : 'Yeni paket tanımı' }}</h3>
+        <button type="button" class="pk-x" aria-label="Kapat" (click)="close()">✕</button>
+      </div>
+      <div class="pk-modal-body">
+        <label class="fld">
+          <span>Hizmet <em>(isteğe bağlı)</em></span>
+          <select [(ngModel)]="form.serviceId" (ngModelChange)="onServiceChange()">
+            <option value="">— Seçilmedi —</option>
+            @for (s of services(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+          </select>
+        </label>
+        <label class="fld">
+          <span>Paket adı</span>
+          <input type="text" maxlength="150" placeholder="ör. Lazer Epilasyon — 8 seans" [(ngModel)]="form.name">
+        </label>
+        <div class="fld-row">
+          <label class="fld">
+            <span>Seans sayısı</span>
+            <input type="number" inputmode="numeric" min="1" max="200" [(ngModel)]="form.sessionCount">
+          </label>
+          <label class="fld">
+            <span>Paket fiyatı (₺)</span>
+            <input type="number" inputmode="decimal" min="0" step="0.01" [(ngModel)]="form.price">
+          </label>
+        </div>
+        <label class="fld">
+          <span>Geçerlilik <em>(gün, boş = süresiz)</em></span>
+          <input type="number" inputmode="numeric" min="1" max="3650" placeholder="ör. 180" [(ngModel)]="form.validityDays">
+        </label>
+        <label class="chk">
+          <input type="checkbox" [(ngModel)]="form.isActive"> Satışa açık
+        </label>
+        @if (error()) { <div class="pk-error" role="alert">{{ error() }}</div> }
+      </div>
+      <div class="pk-modal-foot">
+        <button type="button" class="btn btn-ghost" (click)="close()">Vazgeç</button>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving()">{{ saving() ? 'Kaydediliyor…' : 'Kaydet' }}</button>
+      </div>
+    </div>
+  </div>
+}

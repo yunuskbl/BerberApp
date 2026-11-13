@@ -95,6 +95,21 @@ export const routes: Routes = [
         (m) => m.RateComponent,
       ),
   },
+  // Seans paketi — müşteri tarafı, giriş istemez (QR ile açılır).
+  {
+    path: 'paket/:token',
+    loadComponent: () =>
+      import('./features/package-public/package-track/package-track.component').then(
+        (m) => m.PackageTrackComponent,
+      ),
+  },
+  {
+    path: 'seans-onay/:code',
+    loadComponent: () =>
+      import('./features/package-public/session-confirm/session-confirm.component').then(
+        (m) => m.SessionConfirmComponent,
+      ),
+  },
   {
     path: 'pricing',
     loadComponent: () =>
@@ -289,6 +304,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/services/service-list/service-list.component').then(
             (m) => m.ServiceListComponent,
+          ),
+      },
+      {
+        path: 'packages',
+        loadComponent: () =>
+          import('./features/packages/packages-page/packages-page.component').then(
+            (m) => m.PackagesPageComponent,
           ),
       },
       {

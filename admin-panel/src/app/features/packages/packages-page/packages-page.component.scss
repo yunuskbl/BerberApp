@@ -1,0 +1,82 @@
+@use '../packages-shared' as *;
+
+:host { display: block; }
+.pp { max-width: 1000px; margin: 0 auto; }
+
+.pp-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px;
+  h1 { margin: 0 0 4px; font-family: 'Syne', 'Inter', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -.3px; }
+  p { margin: 0; font-size: 13.5px; color: #6b7280; max-width: 560px; line-height: 1.5; }
+}
+
+.pp-tabs {
+  display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 16px;
+  background: #eef0f3; border-radius: 12px;
+  button {
+    height: 34px; padding: 0 14px; border: none; border-radius: 9px; background: none;
+    font: inherit; font-size: 13.5px; font-weight: 600; color: #6b7280; cursor: pointer;
+    &.on { background: #fff; color: #111827; box-shadow: 0 1px 3px rgba(17, 24, 39, .08); }
+    &:focus-visible { outline: 2px solid #111827; outline-offset: 1px; }
+  }
+}
+
+.pp-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.pp-filters {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  button {
+    height: 32px; padding: 0 12px; border: 1.5px solid #e5e7eb; border-radius: 999px; background: #fff;
+    font: inherit; font-size: 13px; font-weight: 600; color: #4b5563; cursor: pointer;
+    &.on { background: #111827; border-color: #111827; color: #fff; }
+  }
+}
+.pp-search {
+  width: 260px; max-width: 100%; height: 38px; padding: 0 12px; box-sizing: border-box;
+  border: 1.5px solid #e5e7eb; border-radius: 10px; font: inherit; font-size: 14px; outline: none;
+  &:focus { border-color: #111827; }
+}
+.pp-summary { margin: 0 0 12px; font-size: 13px; color: #4b5563; strong { color: #b91c1c; } }
+
+.pp-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+  padding: 48px 16px; border: 1.5px dashed #e5e7eb; border-radius: 14px; color: #6b7280; font-size: 13.5px;
+  strong { color: #111827; font-size: 14.5px; }
+}
+
+.pp-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 10px; }
+.pp-card {
+  width: 100%; display: grid; gap: 10px; padding: 14px 16px; text-align: left;
+  background: #fff; border: 1px solid #eef0f3; border-radius: 14px; cursor: pointer;
+  font: inherit; color: inherit; transition: border-color .15s, box-shadow .15s;
+  &:hover { border-color: #d1d5db; box-shadow: 0 4px 14px rgba(17, 24, 39, .06); }
+  &.selected { border-color: #111827; }
+  &:focus-visible { outline: 2px solid #111827; outline-offset: 2px; }
+}
+.pp-card-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.pp-who { display: grid; gap: 2px; min-width: 0;
+  strong { font-size: 14.5px; }
+  span { font-size: 13px; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+.pp-badges { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; flex: none; }
+.pp-progress { display: flex; align-items: center; gap: 10px; }
+.pp-bar { flex: 1; height: 8px; border-radius: 999px; background: #eef0f3; overflow: hidden;
+  span { display: block; height: 100%; background: #111827; border-radius: 999px; } }
+.pp-count { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pp-last { font-size: 12px; color: #9ca3af; }
+
+/* Ayrıntı paneli */
+/* Telefondaki alt menünün (z 500) üstünde: panel açıkken menü örtülür. */
+.pp-drawer-backdrop { position: fixed; inset: 0; background: rgba(17, 24, 39, .35); z-index: 600; }
+.pp-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 601;
+  width: min(560px, 100vw); overflow-y: auto; background: #f9fafb;
+  box-shadow: -12px 0 40px rgba(17, 24, 39, .15);
+  padding: 12px 20px 32px; box-sizing: border-box;
+}
+.pp-drawer-bar { position: sticky; top: 0; display: flex; justify-content: flex-end; padding: 4px 0 8px; z-index: 1; }
+
+@media (max-width: 560px) {
+  .pp-head { flex-direction: column; .btn { width: 100%; } }
+  .pp-search { width: 100%; }
+  .pp-tabs { display: flex; button { flex: 1; } }
+  .pp-drawer { padding: 8px 16px 28px; }
+}

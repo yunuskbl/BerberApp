@@ -1,0 +1,98 @@
+<div class="pp">
+  <header class="pp-head">
+    <div>
+      <h1>Seans Paketleri</h1>
+      <p>Paket satın, her gelişte seans işleyin; müşteri QR ile onaylasın ve kendi telefonundan takip etsin.</p>
+    </div>
+    <button type="button" class="btn btn-primary" (click)="selling.set(true)">+ Paket sat</button>
+  </header>
+
+  <div class="pp-tabs" role="tablist">
+    <button type="button" role="tab" [attr.aria-selected]="tab() === 'packages'" [class.on]="tab() === 'packages'" (click)="tab.set('packages')">Müşteri paketleri</button>
+    <button type="button" role="tab" [attr.aria-selected]="tab() === 'templates'" [class.on]="tab() === 'templates'" (click)="tab.set('templates')">Paket tanımları</button>
+  </div>
+
+  @if (tab() === 'packages') {
+    <div class="pp-toolbar">
+      <div class="pp-filters" role="group" aria-label="Duruma göre süz">
+        @for (f of filters; track f.key) {
+          <button type="button" [class.on]="status() === f.key" [attr.aria-pressed]="status() === f.key" (click)="setStatus(f.key)">{{ f.label }}</button>
+        }
+      </div>
+      <input class="pp-search" type="search" placeholder="Müşteri ya da paket ara" aria-label="Paket ara"
+             [ngModel]="query()" (ngModelChange)="query.set($event)">
+    </div>
+
+    @if (!loading() && packages().length && totalDebt() > 0) {
+      <p class="pp-summary">Bu listedeki paketlerde toplam <strong>{{ money(totalDebt()) }}</strong> alacak var.</p>
+    }
+
+    @if (error()) { <div class="pk-error" role="alert">{{ error() }}</div> }
+
+    @if (loading()) {
+      <p class="pp-empty">Yükleniyor…</p>
+    } @else if (visible().length === 0) {
+      <div class="pp-empty">
+        @if (query()) {
+          <strong>Eşleşen paket yok.</strong>
+        } @else if (status() === 'active') {
+          <strong>Aktif paket yok.</strong>
+          <span>Seanslı bir hizmet sattığınızda "+ Paket sat" ile kaydedin.</span>
+          @if (templates().length === 0) {
+            <button type="button" class="link" (click)="tab.set('templates')">Önce bir paket tanımı ekleyin</button>
+          }
+        } @else {
+          <strong>Bu durumda paket yok.</strong>
+        }
+      </div>
+    } @else {
+      <ul class="pp-list">
+        @for (p of visible(); track p.id) {
+          <li>
+            <button type="button" class="pp-card" (click)="open(p)" [class.selected]="selectedId() === p.id">
+              <div class="pp-card-top">
+                <div class="pp-who">
+                  <strong>{{ p.customerName }}</strong>
+                  <span>{{ p.name }}</span>
+                </div>
+                <div class="pp-badges">
+                  @if (p.remainingDebt > 0 && p.status !== 'Cancelled') { <span class="badge debt">{{ money(p.remainingDebt) }} borç</span> }
+                  @if (p.status !== 'Active' || p.isExpired) {
+                    <span class="badge" [class.expired]="p.isExpired" [class.completed]="p.status === 'Completed'" [class.cancelled]="p.status === 'Cancelled'">{{ statusLabel(p.status, p.isExpired) }}</span>
+                  }
+                </div>
+              </div>
+              <div class="pp-progress">
+                <div class="pp-bar" role="progressbar" [attr.aria-valuenow]="p.usedSessions" aria-valuemin="0" [attr.aria-valuemax]="p.totalSessions"
+                     [attr.aria-label]="p.usedSessions + ' / ' + p.totalSessions + ' seans'">
+                  <span [style.width.%]="percent(p)"></span>
+                </div>
+                <span class="pp-count">{{ p.usedSessions }}/{{ p.totalSessions }}</span>
+              </div>
+              <span class="pp-last">{{ p.lastSessionAt ? 'Son seans ' + relativeDay(p.lastSessionAt) : 'Henüz seans yok' }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  } @else {
+    <app-package-templates (changed)="templates.set($event)" />
+  }
+</div>
+
+<!-- Ayrıntı paneli -->
+@if (selectedId(); as id) {
+  <div class="pp-drawer-backdrop" (click)="closeDetail()"></div>
+  <aside class="pp-drawer" role="dialog" aria-modal="true" aria-label="Paket ayrıntısı">
+    <div class="pp-drawer-bar">
+      <button type="button" class="pk-x" aria-label="Kapat" (click)="closeDetail()">✕</button>
+    </div>
+    @defer {
+      <app-package-detail [packageId]="id" (changed)="onChanged($event)" (closed)="closeDetail()" />
+    }
+  </aside>
+}
+
+@if (selling()) {
+  <app-sell-package [templates]="templates()" (sold)="onSold($event)" (cancelled)="selling.set(false)" />
+}

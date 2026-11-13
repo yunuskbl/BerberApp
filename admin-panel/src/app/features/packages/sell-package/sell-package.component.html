@@ -1,0 +1,108 @@
+<div class="pk-overlay">
+  <div class="pk-modal" role="dialog" aria-modal="true" aria-label="Paket sat">
+    <div class="pk-modal-head">
+      <h3>Paket sat</h3>
+      <button type="button" class="pk-x" aria-label="Kapat" (click)="cancelled.emit()">✕</button>
+    </div>
+
+    <div class="pk-modal-body">
+      <!-- Müşteri -->
+      <div class="fld">
+        <span>Müşteri</span>
+        @if (customer) {
+          <div class="sp-picked">
+            <div>
+              <strong>{{ customer.fullName }}</strong>
+              <small>{{ customer.phone }}</small>
+            </div>
+            <button type="button" class="link muted" (click)="customer = null">Değiştir</button>
+          </div>
+        } @else {
+          <div class="sp-search">
+            <input type="search" autocomplete="off" placeholder="Ad ya da telefonla arayın" aria-label="Müşteri ara"
+                   [(ngModel)]="customerQuery">
+            @if (customerQuery.trim()) {
+              <ul class="sp-results" role="listbox" aria-label="Müşteriler">
+                @for (c of matches; track c.id) {
+                  <li role="option" [attr.aria-selected]="false">
+                    <button type="button" (click)="pickCustomer(c)">
+                      <strong>{{ c.fullName }}</strong><small>{{ c.phone }}</small>
+                    </button>
+                  </li>
+                } @empty {
+                  <li class="sp-none">Eşleşen müşteri yok. Yeni müşteriyi Müşteriler sayfasından ekleyin.</li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Paket -->
+      @if (activeTemplates().length) {
+        <label class="fld">
+          <span>Paket tanımı</span>
+          <select [(ngModel)]="templateId" (ngModelChange)="onTemplateChange()">
+            <option value="">Özel paket (elle gir)</option>
+            @for (t of activeTemplates(); track t.id) {
+              <option [value]="t.id">{{ t.name }} · {{ t.sessionCount }} seans · {{ money(t.price) }}</option>
+            }
+          </select>
+        </label>
+      }
+      <label class="fld">
+        <span>Paket adı</span>
+        <input type="text" maxlength="150" placeholder="ör. Lazer Epilasyon — 8 seans" [(ngModel)]="name">
+      </label>
+      <div class="fld-row">
+        <label class="fld">
+          <span>Seans sayısı</span>
+          <input type="number" inputmode="numeric" min="1" max="200" [(ngModel)]="totalSessions">
+        </label>
+        <label class="fld">
+          <span>Paket fiyatı (₺)</span>
+          <input type="number" inputmode="decimal" min="0" step="0.01" [(ngModel)]="price">
+        </label>
+      </div>
+      <label class="fld">
+        <span>Geçerlilik <em>(gün, boş = süresiz)</em></span>
+        <input type="number" inputmode="numeric" min="1" max="3650" placeholder="ör. 180" [(ngModel)]="validityDays">
+      </label>
+
+      <!-- Ödeme -->
+      <div class="sp-pay">
+        <div class="fld-row">
+          <label class="fld">
+            <span>Şimdi alınan ödeme (₺)</span>
+            <input type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" [(ngModel)]="paymentAmount">
+          </label>
+          <label class="fld">
+            <span>Ödeme şekli</span>
+            <select [(ngModel)]="paymentMethod" [disabled]="!paymentAmount">
+              @for (m of methods; track m[0]) { <option [value]="m[0]">{{ m[1] }}</option> }
+            </select>
+          </label>
+        </div>
+        @if (remainingAfterPayment !== null) {
+          <p class="sp-debt" [class.zero]="remainingAfterPayment === 0">
+            Kalan borç: <strong>{{ money(remainingAfterPayment) }}</strong>
+          </p>
+        }
+      </div>
+
+      <label class="fld">
+        <span>Not <em>(isteğe bağlı, yalnızca işletme görür)</em></span>
+        <input type="text" maxlength="500" [(ngModel)]="note">
+      </label>
+
+      @if (error()) { <div class="pk-error" role="alert">{{ error() }}</div> }
+    </div>
+
+    <div class="pk-modal-foot">
+      <button type="button" class="btn btn-ghost" (click)="cancelled.emit()">Vazgeç</button>
+      <button type="button" class="btn btn-primary" (click)="submit()" [disabled]="saving()">
+        {{ saving() ? 'Kaydediliyor…' : 'Paketi sat' }}
+      </button>
+    </div>
+  </div>
+</div>

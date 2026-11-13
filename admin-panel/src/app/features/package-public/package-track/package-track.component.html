@@ -1,0 +1,110 @@
+<div class="pub">
+  <header class="pub-top"><app-logo></app-logo></header>
+
+  <main class="pub-card">
+    @if (loading()) {
+      <p class="pub-muted">Yükleniyor…</p>
+    } @else if (error()) {
+      <div class="pub-state">
+        <h1>Paket açılamadı</h1>
+        <p>{{ error() }}</p>
+      </div>
+    } @else {
+    @if (data(); as d) {
+      <div class="pub-salon">
+        @if (d.salon.logoUrl) { <img [src]="d.salon.logoUrl" alt="" width="28" height="28"> }
+        <span>{{ d.salon.name }}</span>
+      </div>
+
+      <p class="pub-hello">Merhaba{{ d.customerFirstName ? ' ' + d.customerFirstName : '' }},</p>
+      <h1>{{ d.package.name }}</h1>
+      @if (d.package.serviceName && d.package.serviceName !== d.package.name) { <p class="pub-muted">{{ d.package.serviceName }}</p> }
+
+      <!-- İlerleme halkası -->
+      <div class="pt-ring" role="img" [attr.aria-label]="d.package.usedSessions + ' / ' + d.package.totalSessions + ' seans kullanıldı'">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="52" class="track"></circle>
+          <circle cx="60" cy="60" r="52" class="fill"
+                  [attr.stroke-dasharray]="circumference"
+                  [attr.stroke-dashoffset]="circumference * (1 - ratio())"></circle>
+        </svg>
+        <div class="pt-ring-text">
+          <strong>{{ d.package.usedSessions }}<small>/{{ d.package.totalSessions }}</small></strong>
+          <span>seans</span>
+        </div>
+      </div>
+
+      <p class="pt-left">
+        @switch (d.package.status) {
+          @case ('Completed') { Tüm seanslarınız tamamlandı. }
+          @case ('Cancelled') { Bu paket salon tarafından kapatıldı. }
+          @default {
+            <strong>{{ d.package.remainingSessions }} seansınız</strong> kaldı.
+            @if (d.package.expiresAt) {
+              <span [class.warn]="d.package.isExpired">
+                {{ d.package.isExpired ? 'Geçerlilik ' + shortDate(d.package.expiresAt) + ' tarihinde doldu.' : shortDate(d.package.expiresAt) + ' tarihine kadar geçerli.' }}
+              </span>
+            }
+          }
+        }
+      </p>
+
+      @if (d.package.status === 'Active' && !d.package.isExpired) {
+        <a class="pub-btn" [routerLink]="['/book', d.salon.subdomain]">Sonraki seans için randevu al</a>
+      }
+
+      <!-- Seanslar -->
+      <section class="pub-sec">
+        <h2>Seanslarınız</h2>
+        @if (d.sessions.length === 0) {
+          <p class="pub-muted">Henüz seans yapılmadı.</p>
+        } @else {
+          <ul class="pt-sessions">
+            @for (s of d.sessions; track $index) {
+              <li [class.void]="s.isVoid">
+                <span class="pt-num">{{ s.isVoid ? '—' : s.number }}</span>
+                <div>
+                  <span>{{ dateTime(s.performedAt) }}@if (s.staffName) { · {{ s.staffName }} }</span>
+                  @if (s.isVoid) {
+                    <small>Salon bu kaydı iptal etti; paketinize geri eklendi.</small>
+                  } @else if (s.confirmed) {
+                    <small class="ok">✓ Onayladınız</small>
+                  } @else {
+                    <small>Salon kaydetti</small>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <!-- Ödeme -->
+      <section class="pub-sec">
+        <h2>Ödeme</h2>
+        <dl class="pt-money">
+          <div><dt>Paket ücreti</dt><dd>{{ money(d.package.price) }}</dd></div>
+          <div><dt>Ödenen</dt><dd>{{ money(d.package.paid) }}</dd></div>
+          <div class="debt" [class.zero]="d.package.remainingDebt === 0"><dt>Kalan</dt><dd>{{ money(d.package.remainingDebt) }}</dd></div>
+        </dl>
+        @if (d.payments.length) {
+          <ul class="pt-payments">
+            @for (p of d.payments; track $index) {
+              <li><span>{{ shortDate(p.paidAt) }} · {{ methodLabel[p.method] }}</span><strong>{{ money(p.amount) }}</strong></li>
+            }
+          </ul>
+        }
+      </section>
+
+      @if (d.salon.phone || d.salon.address) {
+        <section class="pub-contact">
+          @if (d.salon.address) { <span>{{ d.salon.address }}</span> }
+          @if (d.salon.phone) { <a [href]="telHref(d.salon.phone)">Salonu ara · {{ d.salon.phone }}</a> }
+        </section>
+      }
+    }
+    }
+  </main>
+
+  <p class="pub-foot">ayarlıyo ile güçlendirildi</p>
+</div>
