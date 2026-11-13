@@ -37,6 +37,10 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<PaymentRequest> PaymentRequests => Set<PaymentRequest>();
     public DbSet<BroadcastJob> BroadcastJobs => Set<BroadcastJob>();
     public DbSet<BroadcastRecipient> BroadcastRecipients => Set<BroadcastRecipient>();
+    public DbSet<PackageTemplate> PackageTemplates => Set<PackageTemplate>();
+    public DbSet<CustomerPackage> CustomerPackages => Set<CustomerPackage>();
+    public DbSet<PackageSession> PackageSessions => Set<PackageSession>();
+    public DbSet<PackagePayment> PackagePayments => Set<PackagePayment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

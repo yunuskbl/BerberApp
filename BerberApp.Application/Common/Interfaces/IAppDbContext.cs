@@ -38,6 +38,10 @@ namespace BerberApp.Application.Common.Interfaces
         DbSet<BerberApp.Domain.Entities.PaymentRequest> PaymentRequests { get; }
         DbSet<BerberApp.Domain.Entities.BroadcastJob> BroadcastJobs { get; }
         DbSet<BerberApp.Domain.Entities.BroadcastRecipient> BroadcastRecipients { get; }
+        DbSet<BerberApp.Domain.Entities.PackageTemplate> PackageTemplates { get; }
+        DbSet<BerberApp.Domain.Entities.CustomerPackage> CustomerPackages { get; }
+        DbSet<BerberApp.Domain.Entities.PackageSession> PackageSessions { get; }
+        DbSet<BerberApp.Domain.Entities.PackagePayment> PackagePayments { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
