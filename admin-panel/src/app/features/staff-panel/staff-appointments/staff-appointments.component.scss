@@ -1,4 +1,4 @@
-.page-header { margin-bottom: 24px; }
+.page-header { display: block; margin-bottom: 24px; }   // genel .page-header yan yana diziyordu; başlık ve açıklama alt alta
 .page-title { font-size: 22px; font-weight: 700; color: #1e293b; margin: 0 0 4px; }
 .page-sub { font-size: 14px; color: #64748b; margin: 0; }
 
@@ -80,3 +80,17 @@
 }
 
 .past-card { opacity: 0.65; }
+
+// Telefon: üç sütun (tarih | bilgi | durum) sığmıyordu; durum etiketi kartın
+// dışına taşıyor, sayfa yana kayıyordu. Üstte tarih + durum, altta müşteri.
+@media (max-width: 600px) {
+  .apt-card {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "time status" "info info";
+    align-items: start; gap: 10px 12px; padding: 16px;
+  }
+  .apt-time { grid-area: time; min-width: 0; }
+  .apt-status { grid-area: status; margin-left: 0; }
+  .apt-info { grid-area: info; padding-top: 10px; border-top: 1px dashed #e2e8f0; min-width: 0; overflow-wrap: anywhere; }
+  .status-badge { white-space: nowrap; }
+  .past-card .apt-info { padding-top: 8px; }
+}

@@ -4,6 +4,7 @@
 }
 
 .page-header {
+  display: block;   // genel .page-header yan yana diziyor; burada başlık ve açıklama alt alta
   margin-bottom: 24px;
   h1 { font-size: 22px; font-weight: 700; color: #111; margin: 0 0 4px; }
   .page-subtitle { color: #6b7280; font-size: 14px; margin: 0; }
@@ -288,6 +289,9 @@
 
 @media (max-width: 600px) {
   .reviews-page { padding: 16px; }
-  .summary-card { flex-direction: column; gap: 20px; padding: 20px; }
+  .summary-card { flex-direction: column; align-items: stretch; gap: 20px; padding: 20px; }
   .divider-v { display: none; }
+  // Sütun düzeninde dağılım bloğu içerik genişliğine büzülüp çubukları 0 genişliğe indiriyordu.
+  .dist-block { width: 100%; }
+  .dist-row .dist-label { width: 32px; }
 }

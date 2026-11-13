@@ -201,8 +201,9 @@
   position: fixed; top: 0; right: 0; bottom: 0; width: 440px;
   background: white; z-index: 601; display: flex; flex-direction: column;
   transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-  box-shadow: -8px 0 32px rgba(0,0,0,0.1);
-  &.open { transform: translateX(0); }
+  // Gölge yalnızca açıkken: kapalı çekmece ekranın sağında durduğu için gölgesi
+  // telefonda sayfanın sağ kenarına gri bir şerit olarak taşıyordu.
+  &.open { transform: translateX(0); box-shadow: -8px 0 32px rgba(0,0,0,0.1); }
 }
 
 .drawer-header {
