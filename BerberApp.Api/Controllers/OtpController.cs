@@ -72,6 +72,10 @@ public class OtpController : ControllerBase
         });
         await _context.SaveChangesAsync();
 
+        // Not: hata yanıtlarında 502/504 kullanılmıyor. Önümüzdeki Cloudflare,
+        // sunucudan gelen 502/504'ü kendi HTML hata sayfasıyla değiştiriyor;
+        // müşteri gerçek mesaj yerine "Bir hata oluştu" görüyordu.
+
         // E-posta verildiyse öncelik e-posta (ücretsiz, güvenilir)
         if (!string.IsNullOrWhiteSpace(request.Email))
         {
@@ -82,8 +86,27 @@ public class OtpController : ControllerBase
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[OTP] E-posta gönderilemedi: {Email}", request.Email);
-                return StatusCode(502, new { success = false, message = "Doğrulama kodu gönderilemedi. Lütfen tekrar deneyin." });
+                _logger.LogError(ex, "[OTP] E-posta gönderilemedi ({Reason})", ex.GetBaseException().Message);
+
+                // Randevu akışında telefon zaten doğrulanan şey: e-posta gitmediyse
+                // kodu telefona gönder, müşteri randevusunu yine alabilsin. İşletme
+                // kaydında ise e-postanın kendisi doğrulanıyor, orada geri düşülmez.
+                if (!request.AllowPhoneFallback)
+                    return StatusCode(503, new { success = false, message = "Doğrulama kodu e-posta ile gönderilemedi. Lütfen birkaç dakika sonra tekrar deneyin." });
+                try
+                {
+                    await _waOtp.SendOtpAsync(request.Phone, otp, salonName);
+                    return Ok(new
+                    {
+                        success = true, channel = "whatsapp_or_sms", emailFailed = true,
+                        message = "E-posta gönderilemedi; doğrulama kodu telefonunuza gönderildi.",
+                    });
+                }
+                catch (Exception phoneEx)
+                {
+                    _logger.LogError(phoneEx, "[OTP] Telefona yedek gönderim de başarısız");
+                    return StatusCode(503, new { success = false, message = "Doğrulama kodu gönderilemedi. Lütfen birkaç dakika sonra tekrar deneyin." });
+                }
             }
         }
 
@@ -98,7 +121,7 @@ public class OtpController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "[OTP] WhatsApp/SMS gönderilemedi: {Phone}", request.Phone);
-            return StatusCode(502, new
+            return StatusCode(503, new
             {
                 success = false,
                 message = "Doğrulama kodu gönderilemedi. Lütfen e-posta adresinizi girerek tekrar deneyin."
@@ -152,5 +175,11 @@ public class SendOtpRequest
     /// İşletme kaydı gibi salon bağlamı olmayan akışlarda boş bırakılır.
     /// </summary>
     public string? Subdomain { get; set; }
+
+    /// <summary>
+    /// E-posta gönderilemezse kod telefona (WhatsApp, olmazsa SMS) gönderilsin mi.
+    /// Randevu akışı açar; e-postanın kendisini doğrulayan işletme kaydı açmaz.
+    /// </summary>
+    public bool AllowPhoneFallback { get; set; }
 }
 public class VerifyOtpRequest { public string Phone { get; set; } = string.Empty; public string Code { get; set; } = string.Empty; }

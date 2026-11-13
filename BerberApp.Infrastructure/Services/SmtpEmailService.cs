@@ -478,7 +478,10 @@ public class SmtpEmailService : IEmailService
         {
             Credentials = new NetworkCredential(_smtpUsername, _smtpPassword),
             EnableSsl = true,
-            DeliveryMethod = SmtpDeliveryMethod.Network
+            DeliveryMethod = SmtpDeliveryMethod.Network,
+            // Varsayılan 100 sn: SMTP sunucusu yanıt vermezse istek, önümüzdeki
+            // Cloudflare'in 100 sn sınırına takılıp HTML hata sayfasıyla düşüyordu.
+            Timeout = 20_000,
         };
 
         // Kimlik bloğu burada ekleniyor, şablonların her birinde ayrı ayrı

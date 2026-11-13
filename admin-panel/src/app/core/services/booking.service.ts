@@ -148,7 +148,9 @@ export class BookingApiService {
     return this.http.post(`${this.apiUrl}/otp/send`, {
       phone,
       email: email || null,
-      subdomain: subdomain || null
+      subdomain: subdomain || null,
+      // E-posta gitmezse kod telefona gelsin; randevuda doğrulanan şey telefon.
+      allowPhoneFallback: true,
     });
   }
 

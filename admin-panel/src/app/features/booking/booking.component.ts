@@ -674,13 +674,15 @@ export class BookingComponent implements OnInit, OnDestroy {
           this.otpSent = true;
           // Sunucu mesajı Türkçe geldiği için yerel çeviri tercih ediliyor;
           // başka dildeki müşteri kendi dilinde okuyor.
-          this.otpSuccess = this.langService.t(email ? 'otp.sentEmail' : 'otp.sentSms');
+          this.otpSuccess = this.langService.t(
+            res.channel === 'email' ? 'otp.sentEmail' : res.emailFailed ? 'otp.sentPhoneFallback' : 'otp.sentSms');
           this.startTimer();
         }
         this.isSendingOtp = false;
       },
       error: (err) => {
-        this.otpError = err.error?.message || this.langService.t('otp.error');
+        // Sunucu mesajı yalnızca JSON gelirse var; ağ/ara sunucu hatasında yerel metin.
+        this.otpError = (typeof err.error === 'object' && err.error?.message) || this.langService.t('otp.error');
         this.isSendingOtp = false;
       },
     });
