@@ -160,7 +160,8 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
             Status = request.IsFromBookingPage
                   ? AppointmentStatus.Pending
                   : AppointmentStatus.Confirmed,
-            Notes = request.Notes
+            Notes = request.Notes,
+            CustomerPackageId = request.CustomerPackageId
         };
 
         await _appointmentRepo.AddAsync(appointment, ct);
@@ -225,7 +226,8 @@ public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand
             EndTime = appointment.EndTime,
             Status = appointment.Status,
             Notes = appointment.Notes,
-            DurationMinutes = durationMinutes
+            DurationMinutes = durationMinutes,
+            CustomerPackageId = appointment.CustomerPackageId
         };
     }
 

@@ -1,5 +1,6 @@
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Entities;
+using BerberApp.Application.Common.Services;
 using BerberApp.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -45,6 +46,8 @@ public class PublicPackagesController : ControllerBase
         var now  = DateTime.UtcNow;
         var used = R.UsedSessions(p.Sessions);
         var paid = R.Paid(p.Payments);
+        var booking  = await PackageBooking.GetStateAsync(_context, p, ct);
+        var upcoming = await UpcomingAsync(p.Id, ct);
 
         return Ok(new
         {
@@ -68,15 +71,20 @@ public class PublicPackagesController : ControllerBase
                     paid,
                     remainingDebt     = R.RemainingDebt(p.Price, paid),
                     p.Currency,
+                    canBook            = booking.CanBook,
+                    bookingBlockReason = booking.BlockReason,
                 },
+                upcoming,
                 sessions = R.Numbered(p.Sessions)
                     .Select(x => new
                     {
+                        id          = x.Session.Id,
                         number      = x.Number,
                         performedAt = x.Session.PerformedAt,
                         staffName   = R.ShortName(x.Session.Staff?.FullName),
                         confirmed   = x.Session.CustomerConfirmedAt != null,
                         isVoid      = x.Session.IsVoid,
+                        canConfirm  = CanConfirmRemotely(x.Session, now),
                     })
                     .Reverse()
                     .ToList(),
@@ -87,6 +95,88 @@ public class PublicPackagesController : ControllerBase
                     .ToList(),
             },
         });
+    }
+
+    /// <summary>
+    /// Paketten randevu sayfası için bağlam: hangi hizmet, kaçıncı seans,
+    /// randevu alınabilir mi. Randevu sayfası paket kipine bununla geçer.
+    /// </summary>
+    [HttpGet("{token}/booking")]
+    public async Task<IActionResult> GetBookingContext(string token, CancellationToken ct)
+    {
+        if (!LooksLikeToken(token)) return NotFoundResponse("Paket bulunamadı.");
+
+        var p = await _context.CustomerPackages.AsNoTracking()
+            .Include(x => x.Tenant)
+            .Include(x => x.Customer)
+            .Include(x => x.Service)
+            .FirstOrDefaultAsync(x => x.PublicToken == token, ct);
+        if (p is null) return NotFoundResponse("Paket bulunamadı.");
+
+        var state = await PackageBooking.GetStateAsync(_context, p, ct);
+        return Ok(new { success = true, data = BookingContext(p, state) });
+    }
+
+    /// <summary>
+    /// Randevu sayfasında telefonunu doğrulayan müşterinin, o salondaki
+    /// aktif paketleri. Yalnızca son bir saatte doğrulama kodu girilmiş
+    /// numaraya cevap verir — numarayı bilen herkes paket bilgisini göremesin.
+    /// </summary>
+    [HttpPost("lookup")]
+    public async Task<IActionResult> LookupByPhone([FromBody] PackageLookupRequest req, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(req.Subdomain) || string.IsNullOrWhiteSpace(req.Phone))
+            return BadRequest(new { success = false, message = "Eksik bilgi." });
+
+        var verified = await _context.OtpRecords.AnyAsync(o =>
+            o.Phone == req.Phone && o.IsVerified && o.VerifiedAt != null &&
+            o.VerifiedAt > DateTime.UtcNow.AddHours(-1), ct);
+        if (!verified)
+            return StatusCode(403, new { success = false, message = "Telefon doğrulanmamış." });
+
+        var packages = await _context.CustomerPackages.AsNoTracking()
+            .Include(x => x.Tenant)
+            .Include(x => x.Customer)
+            .Include(x => x.Service)
+            .Where(x => x.Tenant.Subdomain == req.Subdomain
+                        && x.Customer.Phone == req.Phone
+                        && x.Status == CustomerPackageStatus.Active)
+            .OrderByDescending(x => x.StartedAt)
+            .ToListAsync(ct);
+
+        var list = new List<object>();
+        foreach (var p in packages)
+        {
+            var state = await PackageBooking.GetStateAsync(_context, p, ct);
+            list.Add(BookingContext(p, state));
+        }
+        return Ok(new { success = true, data = list });
+    }
+
+    /// <summary>
+    /// Müşteri seansı takip sayfasından onaylar (salonda QR okutmadıysa).
+    /// Takip anahtarı müşteriyi kanıtladığı için kod gerekmez; yalnızca son
+    /// 30 günde yapılmış, iptal edilmemiş seanslar onaylanabilir.
+    /// </summary>
+    [HttpPost("{token}/sessions/{sessionId:guid}/confirm")]
+    public async Task<IActionResult> ConfirmFromTrackingPage(string token, Guid sessionId, CancellationToken ct)
+    {
+        if (!LooksLikeToken(token)) return NotFoundResponse("Paket bulunamadı.");
+
+        var s = await _context.PackageSessions
+            .Include(x => x.CustomerPackage)
+            .FirstOrDefaultAsync(x => x.Id == sessionId && x.CustomerPackage.PublicToken == token, ct);
+        if (s is null) return NotFoundResponse("Seans bulunamadı.");
+        if (s.IsVoid) return BadRequest(new { success = false, message = "Bu seans salon tarafından iptal edilmiş." });
+
+        if (s.CustomerConfirmedAt is null)
+        {
+            if (!CanConfirmRemotely(s, DateTime.UtcNow))
+                return BadRequest(new { success = false, message = "Bu seans artık onaylanamıyor." });
+            s.CustomerConfirmedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync(ct);
+        }
+        return Ok(new { success = true, message = "Seans onaylandı." });
     }
 
     /// <summary>Seans onay sayfası: QR okutulunca hangi seansın onaylanacağını gösterir.</summary>
@@ -161,6 +251,47 @@ public class PublicPackagesController : ControllerBase
         };
     }
 
+    /// <summary>Takip sayfasından onay penceresi: seans yapıldıktan sonraki 30 gün.</summary>
+    private static readonly TimeSpan RemoteConfirmWindow = TimeSpan.FromDays(30);
+
+    private static bool CanConfirmRemotely(PackageSession s, DateTime now)
+        => !s.IsVoid && s.CustomerConfirmedAt is null && now - s.PerformedAt <= RemoteConfirmWindow;
+
+    /// <summary>Paketten alınmış, henüz tamamlanmamış randevular (müşteriye "planlanan seanslar").</summary>
+    private async Task<List<object>> UpcomingAsync(Guid packageId, CancellationToken ct)
+    {
+        var list = await _context.Appointments.AsNoTracking()
+            .Where(a => a.CustomerPackageId == packageId &&
+                        (a.Status == AppointmentStatus.Pending || a.Status == AppointmentStatus.Confirmed))
+            .OrderBy(a => a.StartTime)
+            .Select(a => new { a.StartTime, a.Status, StaffName = a.Staff.FullName })
+            .ToListAsync(ct);
+        return list.Select(a => (object)new
+        {
+            startTime = a.StartTime,
+            status    = a.Status,
+            staffName = R.ShortName(a.StaffName),
+        }).ToList();
+    }
+
+    private static object BookingContext(CustomerPackage p, PackageBookingState state) => new
+    {
+        token             = p.PublicToken,
+        packageName       = p.Name,
+        serviceId         = p.ServiceId,
+        serviceName       = p.Service?.Name,
+        customerFirstName = R.FirstName(p.Customer?.FullName),
+        salonSubdomain    = p.Tenant?.Subdomain,
+        totalSessions     = p.TotalSessions,
+        usedSessions      = state.Used,
+        remainingSessions = state.Remaining,
+        bookableSessions  = state.Bookable,
+        nextSessionNumber = state.NextNumber,
+        expiresAt         = p.ExpiresAt,
+        canBook           = state.CanBook,
+        reason            = state.BlockReason,
+    };
+
     private static object SalonInfo(Tenant? t) => new
     {
         name      = t?.Name ?? string.Empty,
@@ -176,3 +307,5 @@ public class PublicPackagesController : ControllerBase
 
     private IActionResult NotFoundResponse(string message) => NotFound(new { success = false, message });
 }
+
+public record PackageLookupRequest(string? Subdomain, string? Phone);

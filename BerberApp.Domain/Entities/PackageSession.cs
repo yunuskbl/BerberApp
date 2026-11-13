@@ -15,6 +15,8 @@ public class PackageSession : BaseEntity
     public Guid TenantId { get; set; }
     public Guid CustomerPackageId { get; set; }
     public Guid? StaffId { get; set; }
+    /// <summary>Seans paketten alınan bir randevunun tamamlanmasından geldiyse o randevu.</summary>
+    public Guid? AppointmentId { get; set; }
 
     public DateTime PerformedAt { get; set; } = DateTime.UtcNow;
     public string? Note { get; set; }
@@ -31,4 +33,5 @@ public class PackageSession : BaseEntity
     // Navigation
     public CustomerPackage CustomerPackage { get; set; } = null!;
     public Staff? Staff { get; set; }
+    public Appointment? Appointment { get; set; }
 }

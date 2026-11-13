@@ -53,12 +53,46 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
 
         var now = DateTime.UtcNow;
 
+        // Paket seansı: ücret paket satışında/ödemelerinde alındı. Fiyat
+        // girilmediyse 0 sayılır ki gelir raporu aynı parayı ikinci kez
+        // saymasın; fiş ve fiyat farkı kaydı da oluşturulmaz.
+        var isPackageSession = appointment.CustomerPackageId is not null;
+
         appointment.Status           = AppointmentStatus.Completed;
         appointment.CompletedAt      = now;
-        appointment.ActualTotalPrice = request.ActualTotalPrice;
+        appointment.ActualTotalPrice = isPackageSession ? (request.ActualTotalPrice ?? 0m) : request.ActualTotalPrice;
         appointment.CompletionNotes  = request.CompletionNotes;
 
         await _appointmentRepo.UpdateAsync(appointment, ct);
+
+        CompleteAppointmentResult? packageResult = null;
+        if (isPackageSession)
+        {
+            var session = await BerberApp.Application.Common.Services.PackageBooking
+                .RecordFromAppointmentAsync(_context, appointment, now, ct);
+            await _context.SaveChangesAsync(ct);
+
+            if (session is not null)
+            {
+                var pkg = await _context.CustomerPackages.AsNoTracking()
+                    .Where(p => p.Id == session.CustomerPackageId)
+                    .Select(p => new { p.Id, p.TotalSessions })
+                    .FirstAsync(ct);
+                var sessions = await _context.PackageSessions.AsNoTracking()
+                    .Where(x => x.CustomerPackageId == pkg.Id)
+                    .ToListAsync(ct);
+                var number = BerberApp.Application.Common.Services.SessionPackageRules.Numbered(sessions)
+                    .FirstOrDefault(x => x.Session.Id == session.Id).Number;
+
+                packageResult = new CompleteAppointmentResult
+                {
+                    PackageId            = pkg.Id,
+                    PackageSessionId     = session.Id,
+                    PackageSessionNumber = number,
+                    PackageTotalSessions = pkg.TotalSessions,
+                };
+            }
+        }
 
         // Gerçekte yapılan hizmetleri kaydet ve fiş kalemleri için topla
         var receiptItems = new List<(string Name, decimal Price)>();
@@ -85,8 +119,8 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
             receiptItems.Add((originalSvc?.Name ?? "Hizmet", request.ActualTotalPrice ?? originalSvc?.Price ?? 0));
         }
 
-        // Fiyat farkı kaydı
-        if (request.ActualTotalPrice.HasValue)
+        // Fiyat farkı kaydı (paket seansında anlamsız: fiyat paketten)
+        if (request.ActualTotalPrice.HasValue && !isPackageSession)
         {
             var originalService = await _serviceRepo.GetByIdAsync(appointment.ServiceId, ct);
             var originalPrice   = originalService?.Price ?? 0;
@@ -108,7 +142,10 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
         }
 
         // ── Otomatik fiş oluştur ──────────────────────────────
-        var receiptNumber = await GenerateReceiptNumberAsync(appointment.TenantId, now.Year, ct);
+        // Paket seansında fiş yok: ödeme pakete yapıldı, seans ücretsiz.
+        var receiptNumber = isPackageSession
+            ? string.Empty
+            : await GenerateReceiptNumberAsync(appointment.TenantId, now.Year, ct);
         var totalAmount   = request.ActualTotalPrice ?? receiptItems.Sum(x => x.Price);
 
         // Fişin para birimi: istemci belirtmişse onu, yoksa orijinal hizmetin
@@ -141,8 +178,11 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
             Items         = items,
         };
 
-        _context.Receipts.Add(receipt);
-        await _context.SaveChangesAsync(ct);
+        if (!isPackageSession)
+        {
+            _context.Receipts.Add(receipt);
+            await _context.SaveChangesAsync(ct);
+        }
 
         // ── Müşteriye değerlendirme bildirimi gönder ──────────
         if (!string.IsNullOrWhiteSpace(request.ReviewUrl))
@@ -172,7 +212,9 @@ public class CompleteAppointmentHandler : IRequestHandler<CompleteAppointmentCom
             }
         }
 
-        return new CompleteAppointmentResult { ReceiptNumber = receiptNumber };
+        var result = packageResult ?? new CompleteAppointmentResult();
+        result.ReceiptNumber = receiptNumber;
+        return result;
     }
 
     private async Task<string> GenerateReceiptNumberAsync(Guid tenantId, int year, CancellationToken ct)

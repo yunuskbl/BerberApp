@@ -2,6 +2,7 @@
 using BerberApp.Application.Appointment.DTOs;
 using BerberApp.Application.Appointment.Queries;
 using BerberApp.Application.Common.Interfaces;
+using BerberApp.Application.Common.Services;
 using BerberApp.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -249,8 +250,31 @@ public class BookingController : ControllerBase
         if (isSalonClosed)
             return BadRequest(new { success = false, message = "Salon bu tarihte kapalıdır." });
 
+        // ── Paketten randevu ──────────────────────────────────────────────
+        // Müşteri paket takip bağlantısından (gizli anahtar) geliyor: anahtar
+        // müşterinin kendisini kanıtlıyor, ad/telefon ve doğrulama kodu
+        // istenmiyor. Hizmet paketin hizmeti; ücret alınmaz. Kalan seanstan
+        // fazla ileri randevu alınamaz.
+        BerberApp.Domain.Entities.CustomerPackage? package = null;
+        if (!string.IsNullOrWhiteSpace(request.PackageToken))
+        {
+            package = await _context.CustomerPackages
+                .Include(p => p.Customer)
+                .FirstOrDefaultAsync(p => p.PublicToken == request.PackageToken && p.TenantId == tenant.Id);
+            if (package is null)
+                return BadRequest(new { success = false, message = "Paket bulunamadı." });
+
+            var state = await PackageBooking.GetStateAsync(_context, package);
+            if (!state.CanBook)
+                return BadRequest(new { success = false, message = state.BlockReason });
+
+            if (package.ExpiresAt is { } packageExpiry &&
+                DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc) > packageExpiry)
+                return BadRequest(new { success = false, message = "Seçilen tarih paketinizin geçerlilik süresinden sonra." });
+        }
+
         // Mevcut müşteri kontrolü (dönen müşteriler için OTP atlanır)
-        var existingCustomer = await _context.Customers
+        var existingCustomer = package?.Customer ?? await _context.Customers
             .FirstOrDefaultAsync(x => x.Phone == request.Phone && x.TenantId == tenant.Id);
 
         // Telefon doğrulanmış mı kontrol et — yalnızca yeni müşteriler için
@@ -323,10 +347,14 @@ public class BookingController : ControllerBase
             await _context.SaveChangesAsync();
         }
 
-        // Çoklu hizmet desteği: toplam süre ve görüntüleme adı hesapla
-        var effectiveServiceIds = request.ServiceIds?.Count > 0
-            ? request.ServiceIds
-            : new List<Guid> { request.ServiceId };
+        // Çoklu hizmet desteği: toplam süre ve görüntüleme adı hesapla.
+        // Paket randevusu tek hizmettir: paketin hizmeti (paket hizmetsiz
+        // tanımlandıysa müşterinin seçtiği ilk hizmet).
+        var effectiveServiceIds = package is not null
+            ? new List<Guid> { package.ServiceId ?? request.ServiceIds?.FirstOrDefault() ?? request.ServiceId }
+            : request.ServiceIds?.Count > 0
+                ? request.ServiceIds
+                : new List<Guid> { request.ServiceId };
 
         int? totalDurationMinutes = null;
         string? serviceNamesDisplay = null;
@@ -365,7 +393,8 @@ public class BookingController : ControllerBase
             IsFromBookingPage = true,
             NotificationPhone = tenant.NotificationPhone,
             TotalDurationMinutes = totalDurationMinutes,
-            ServiceNamesDisplay = serviceNamesDisplay
+            ServiceNamesDisplay = serviceNamesDisplay,
+            CustomerPackageId = package?.Id
         });
 
         // Tüm seçilen hizmetleri AppointmentServices tablosuna kaydet
@@ -465,6 +494,12 @@ public class BookingController : ControllerBase
         /// için gerekmez (sözleşmenin ifası); yalnızca pazarlama için.
         /// </summary>
         public bool MarketingConsent { get; set; }
+
+        /// <summary>
+        /// Paketten randevu: müşterinin paket takip anahtarı. Verilirse müşteri
+        /// ve hizmet paketten alınır, ad/telefon/doğrulama gerekmez.
+        /// </summary>
+        public string? PackageToken { get; set; }
     }
 
     [HttpPost("{subdomain}/appointments/{appointmentId}/cancel")]

@@ -21,4 +21,6 @@ public class CreateAppointmentCommand : IRequest<AppointmentDto>
     public string? NotificationPhone { get; set; }
     public int? TotalDurationMinutes { get; set; }
     public string? ServiceNamesDisplay { get; set; }
+    /// <summary>Paketten alınan randevuda paket (ücret paketten; tamamlanınca seans işlenir).</summary>
+    public Guid? CustomerPackageId { get; set; }
 }

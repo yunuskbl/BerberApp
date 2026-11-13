@@ -70,8 +70,12 @@ public class PackageSessionConfiguration : IEntityTypeConfiguration<PackageSessi
 
         builder.HasOne(x => x.Staff).WithMany()
                .HasForeignKey(x => x.StaffId).OnDelete(DeleteBehavior.SetNull);
+        builder.HasOne(x => x.Appointment).WithMany()
+               .HasForeignKey(x => x.AppointmentId).OnDelete(DeleteBehavior.SetNull);
 
         builder.HasIndex(x => x.CustomerPackageId);
+        // Bir randevudan en fazla bir seans.
+        builder.HasIndex(x => x.AppointmentId).IsUnique().HasFilter("\"AppointmentId\" IS NOT NULL");
         builder.HasIndex(x => x.ConfirmCode).IsUnique().HasFilter("\"ConfirmCode\" IS NOT NULL");
     }
 }

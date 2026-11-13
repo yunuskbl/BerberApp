@@ -43,6 +43,9 @@ namespace BerberApp.Infrastructure.Migrations
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("CustomerPackageId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("timestamp without time zone");
 
@@ -79,6 +82,8 @@ namespace BerberApp.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("CustomerPackageId");
 
                     b.HasIndex("ServiceId");
 
@@ -644,6 +649,9 @@ namespace BerberApp.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("AppointmentId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("ConfirmCode")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
@@ -690,6 +698,10 @@ namespace BerberApp.Infrastructure.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId")
+                        .IsUnique()
+                        .HasFilter("\"AppointmentId\" IS NOT NULL");
 
                     b.HasIndex("ConfirmCode")
                         .IsUnique()
@@ -1602,6 +1614,11 @@ namespace BerberApp.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("BerberApp.Domain.Entities.CustomerPackage", "CustomerPackage")
+                        .WithMany()
+                        .HasForeignKey("CustomerPackageId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("BerberApp.Domain.Entities.Service", "Service")
                         .WithMany()
                         .HasForeignKey("ServiceId")
@@ -1621,6 +1638,8 @@ namespace BerberApp.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Customer");
+
+                    b.Navigation("CustomerPackage");
 
                     b.Navigation("Service");
 
@@ -1757,6 +1776,11 @@ namespace BerberApp.Infrastructure.Migrations
 
             modelBuilder.Entity("BerberApp.Domain.Entities.PackageSession", b =>
                 {
+                    b.HasOne("BerberApp.Domain.Entities.Appointment", "Appointment")
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("BerberApp.Domain.Entities.CustomerPackage", "CustomerPackage")
                         .WithMany("Sessions")
                         .HasForeignKey("CustomerPackageId")
@@ -1767,6 +1791,8 @@ namespace BerberApp.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("StaffId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Appointment");
 
                     b.Navigation("CustomerPackage");
 

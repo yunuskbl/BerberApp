@@ -32,5 +32,11 @@ public class AppointmentConfiguration : IEntityTypeConfiguration<Appointment>
                .WithMany()
                .HasForeignKey(x => x.ServiceId)
                .OnDelete(DeleteBehavior.Restrict);
+
+        // Paketten alınan randevu. Paket silinirse randevu kalır, bağ kopar.
+        builder.HasOne(x => x.CustomerPackage)
+               .WithMany()
+               .HasForeignKey(x => x.CustomerPackageId)
+               .OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -143,7 +143,7 @@ public class PackagesController : BaseApiController
         var p = await PackagesWithDetails().AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id && x.TenantId == TenantId, ct);
         if (p is null) return NotFound(new { success = false, message = "Paket bulunamadı." });
-        return Success(ToDetail(p, DateTime.UtcNow));
+        return Success(ToDetail(p, DateTime.UtcNow, await UpcomingAsync(p.Id, ct)));
     }
 
     [HttpPost]
@@ -390,7 +390,7 @@ public class PackagesController : BaseApiController
         Guid id, string message, CancellationToken ct, bool created = false, SessionConfirmDto? confirm = null)
     {
         var p = await PackagesWithDetails().AsNoTracking().FirstAsync(x => x.Id == id, ct);
-        var detail = ToDetail(p, DateTime.UtcNow) with { Confirm = confirm };
+        var detail = ToDetail(p, DateTime.UtcNow, await UpcomingAsync(id, ct)) with { Confirm = confirm };
         return created ? Created(detail, message) : Success(detail, message);
     }
 
@@ -412,13 +412,23 @@ public class PackagesController : BaseApiController
             p.PublicToken, p.Note);
     }
 
-    internal static PackageDetailDto ToDetail(CustomerPackage p, DateTime now)
+    /// <summary>Paketten alınmış, henüz tamamlanmamış randevular.</summary>
+    private async Task<List<PackageAppointmentDto>> UpcomingAsync(Guid packageId, CancellationToken ct)
+        => await _context.Appointments.AsNoTracking()
+            .Where(a => a.CustomerPackageId == packageId && a.TenantId == TenantId &&
+                        (a.Status == AppointmentStatus.Pending || a.Status == AppointmentStatus.Confirmed))
+            .OrderBy(a => a.StartTime)
+            .Select(a => new PackageAppointmentDto(a.Id, a.StartTime, a.Staff.FullName, a.Status))
+            .ToListAsync(ct);
+
+    internal static PackageDetailDto ToDetail(CustomerPackage p, DateTime now, IReadOnlyList<PackageAppointmentDto> upcoming)
     {
         var sessions = R.Numbered(p.Sessions)
             .Select(x => new PackageSessionDto(
                 x.Session.Id, x.Number, x.Session.PerformedAt,
                 x.Session.StaffId, x.Session.Staff?.FullName, x.Session.Note,
-                x.Session.CustomerConfirmedAt, x.Session.IsVoid, x.Session.VoidedAt, x.Session.VoidReason))
+                x.Session.CustomerConfirmedAt, x.Session.IsVoid, x.Session.VoidedAt, x.Session.VoidReason,
+                x.Session.AppointmentId))
             .Reverse()   // en yeni üstte
             .ToList();
 
@@ -427,7 +437,7 @@ public class PackagesController : BaseApiController
             .Select(x => new PackagePaymentDto(x.Id, x.Amount, x.PaidAt, x.Method, x.Note, x.IsVoid, x.VoidedAt))
             .ToList();
 
-        return new PackageDetailDto(ToSummary(p, now), sessions, payments, p.CancelledAt, p.CancelReason, null);
+        return new PackageDetailDto(ToSummary(p, now), sessions, payments, upcoming, p.CancelledAt, p.CancelReason, null);
     }
 }
 
@@ -464,7 +474,11 @@ public record PackageSummaryDto(
 
 public record PackageSessionDto(
     Guid Id, int? Number, DateTime PerformedAt, Guid? StaffId, string? StaffName, string? Note,
-    DateTime? CustomerConfirmedAt, bool IsVoid, DateTime? VoidedAt, string? VoidReason);
+    DateTime? CustomerConfirmedAt, bool IsVoid, DateTime? VoidedAt, string? VoidReason,
+    Guid? AppointmentId);
+
+/// <summary>Paketten alınmış, henüz tamamlanmamış randevu.</summary>
+public record PackageAppointmentDto(Guid Id, DateTime StartTime, string? StaffName, AppointmentStatus Status);
 
 public record PackagePaymentDto(
     Guid Id, decimal Amount, DateTime PaidAt, PackagePaymentMethod Method, string? Note, bool IsVoid, DateTime? VoidedAt);
@@ -476,5 +490,6 @@ public record PackageDetailDto(
     PackageSummaryDto Package,
     IReadOnlyList<PackageSessionDto> Sessions,
     IReadOnlyList<PackagePaymentDto> Payments,
+    IReadOnlyList<PackageAppointmentDto> Upcoming,
     DateTime? CancelledAt, string? CancelReason,
     SessionConfirmDto? Confirm);

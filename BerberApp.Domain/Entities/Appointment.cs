@@ -26,11 +26,16 @@ public class Appointment : BaseEntity
     public DateTime? CompletedAt { get; set; }
     public string? CompletionNotes { get; set; }
 
+    /// <summary>Paketten alınan randevuda paket. Ücret paketten; tamamlanınca seans otomatik işlenir.</summary>
+    public Guid? CustomerPackageId { get; set; }
+
     // Navigation
     public Tenant Tenant { get; set; } = null!;
     public Customer Customer { get; set; } = null!;
     public Staff Staff { get; set; } = null!;
     public Service Service { get; set; } = null!;
+    /// <summary>Randevu bir seans paketinden alındıysa o paket; tamamlanınca seans pakete işlenir.</summary>
+    public CustomerPackage? CustomerPackage { get; set; }
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
     public ICollection<AppointmentService> AppointmentServices { get; set; } = new List<AppointmentService>();
     public ICollection<AppointmentActualService> ActualServices { get; set; } = new List<AppointmentActualService>();

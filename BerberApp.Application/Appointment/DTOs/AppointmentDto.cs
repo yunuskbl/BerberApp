@@ -21,4 +21,8 @@ public class AppointmentDto
     public AppointmentStatus Status { get; set; }
     public string? Notes { get; set; }
     public int DurationMinutes { get; set; }
+
+    /// <summary>Paketten alınan randevuda paket; ücret paketten, tamamlanınca seans otomatik işlenir.</summary>
+    public Guid? CustomerPackageId { get; set; }
+    public string? PackageName { get; set; }
 }

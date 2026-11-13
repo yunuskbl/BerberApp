@@ -18,5 +18,12 @@ public class CompleteAppointmentCommand : IRequest<CompleteAppointmentResult>
 
 public class CompleteAppointmentResult
 {
+    /// <summary>Paket seansında fiş kesilmez (ücret pakete ödeniyor); boş kalır.</summary>
     public string ReceiptNumber { get; set; } = string.Empty;
+
+    // Paketten alınan randevu: pakete işlenen seans (panel müşteri onay QR'ını gösterebilsin).
+    public Guid? PackageId { get; set; }
+    public Guid? PackageSessionId { get; set; }
+    public int? PackageSessionNumber { get; set; }
+    public int? PackageTotalSessions { get; set; }
 }

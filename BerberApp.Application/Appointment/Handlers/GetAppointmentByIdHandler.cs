@@ -41,7 +41,9 @@ public class GetAppointmentByIdHandler : IRequestHandler<GetAppointmentByIdQuery
                 EndTime = x.EndTime,
                 Status = x.Status,
                 Notes = x.Notes,
-                DurationMinutes = x.Service.DurationMinutes
+                DurationMinutes = x.Service.DurationMinutes,
+                CustomerPackageId = x.CustomerPackageId,
+                PackageName = x.CustomerPackage != null ? x.CustomerPackage.Name : null
             })
             .FirstOrDefaultAsync(ct);
 

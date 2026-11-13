@@ -192,7 +192,16 @@ public class AppointmentsController : BaseApiController
             ActualCurrency   = body?.ActualCurrency,
             CompletionNotes  = body?.CompletionNotes
         });
-        return Success(new { receiptNumber = result.ReceiptNumber }, "Randevu tamamlandı.");
+        return Success(new
+        {
+            receiptNumber        = result.ReceiptNumber,
+            packageId            = result.PackageId,
+            packageSessionId     = result.PackageSessionId,
+            packageSessionNumber = result.PackageSessionNumber,
+            packageTotalSessions = result.PackageTotalSessions,
+        }, result.PackageSessionId is not null
+            ? $"Randevu tamamlandı; paket seansı işlendi ({result.PackageSessionNumber}/{result.PackageTotalSessions})."
+            : "Randevu tamamlandı.");
     }
 
 }

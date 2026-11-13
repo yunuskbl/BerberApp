@@ -27,6 +27,7 @@ public class GetAllAppointmentsHandler : IRequestHandler<GetAllAppointmentsQuery
             .Include(x => x.Customer)
             .Include(x => x.Staff)
             .Include(x => x.Service)
+            .Include(x => x.CustomerPackage)
             .Where(x => x.TenantId == request.TenantId && !x.IsDeleted)
             .AsQueryable();
 
@@ -75,7 +76,9 @@ public class GetAllAppointmentsHandler : IRequestHandler<GetAllAppointmentsQuery
             EndTime = x.EndTime,
             Status = x.Status,
             Notes = x.Notes,
-            DurationMinutes = x.Service.DurationMinutes
+            DurationMinutes = x.Service.DurationMinutes,
+            CustomerPackageId = x.CustomerPackageId,
+            PackageName = x.CustomerPackage != null ? x.CustomerPackage.Name : null
         }).ToList();
     }
 }
