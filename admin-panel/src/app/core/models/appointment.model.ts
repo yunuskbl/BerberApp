@@ -12,6 +12,9 @@ export interface Appointment {
   notes?: string;
   durationMinutes: number;
   price?: number;
+  /** Paketten alınan randevu: ücret paketten, tamamlanınca seans pakete işlenir. */
+  customerPackageId?: string | null;
+  packageName?: string | null;
 }
 
 export enum AppointmentStatus {

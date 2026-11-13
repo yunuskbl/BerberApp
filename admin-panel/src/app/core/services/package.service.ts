@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { ApiResponse } from '../models/api-response.model';
 import {
   PackageDetail, PackagePaymentMethod, PackageSummary, PackageTemplate, PackageTemplateRequest,
-  PublicPackage, PublicSessionInfo, SellPackageRequest, SessionConfirm,
+  PackageBookingContext, PublicPackage, PublicSessionInfo, SellPackageRequest, SessionConfirm,
 } from '../models/package.model';
 import { environment } from '../../../environments/environment';
 
@@ -76,5 +76,18 @@ export class PackageService {
   }
   confirmPublicSession(code: string): Observable<ApiResponse<PublicSessionInfo>> {
     return this.http.post<ApiResponse<PublicSessionInfo>>(`${this.public}/sessions/${code}/confirm`, {});
+  }
+  /** Müşteri seansı takip sayfasından onaylar (salonda QR okutmadıysa). */
+  confirmFromTracking(token: string, sessionId: string): Observable<ApiResponse<null>> {
+    return this.http.post<ApiResponse<null>>(`${this.public}/${token}/sessions/${sessionId}/confirm`, {});
+  }
+
+  // ── Paketten randevu ──
+  getBookingContext(token: string): Observable<ApiResponse<PackageBookingContext>> {
+    return this.http.get<ApiResponse<PackageBookingContext>>(`${this.public}/${token}/booking`);
+  }
+  /** Doğrulama kodu girilmiş numaranın o salondaki aktif paketleri. */
+  lookupPackages(subdomain: string, phone: string): Observable<ApiResponse<PackageBookingContext[]>> {
+    return this.http.post<ApiResponse<PackageBookingContext[]>>(`${this.public}/lookup`, { subdomain, phone });
   }
 }

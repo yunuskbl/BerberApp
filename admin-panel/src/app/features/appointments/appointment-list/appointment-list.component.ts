@@ -1,4 +1,5 @@
 import { Component, HostListener, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -90,6 +91,7 @@ export class AppointmentListComponent implements OnInit {
     private serviceService: ServiceService,
     private fb: FormBuilder,
     public langService: LanguageService,
+    private router: Router,
   ) {
     this.appointmentForm = this.fb.group({
       customerId:  ['', Validators.required],
@@ -509,6 +511,8 @@ export class AppointmentListComponent implements OnInit {
   isCompleteSubmitting = false;
   completeError = '';
   completeReceiptNumber = '';
+  /** Paket randevusu tamamlandı: pakete işlenen seans (müşteri onay QR'ı için). */
+  completePackageResult: { packageId: string; sessionId: string; number: number; total: number } | null = null;
 
   openCompleteModal(apt: Appointment): void {
     this.completingAppointment = apt;
@@ -521,11 +525,15 @@ export class AppointmentListComponent implements OnInit {
     this.completeError = '';
     this.completeReceiptNumber = '';
     this.isCompleteSubmitting = false;
+    this.completePackageResult = null;
+    // Paket seansı: ücret paketten alındı; tutar 0, fiş kesilmez.
+    if (apt.customerPackageId) this.completeActualPrice = 0;
   }
 
   closeCompleteModal(): void {
     this.completingAppointment = null;
     this.completeReceiptNumber = '';
+    this.completePackageResult = null;
   }
 
   toggleCompleteService(id: string): void {
@@ -544,6 +552,7 @@ export class AppointmentListComponent implements OnInit {
    * tutarı elle girer.
    */
   recalcActualPrice(): void {
+    if (this.completingAppointment?.customerPackageId) { this.completeActualPrice = 0; return; }
     const selected = this.serviceList.filter(svc => this.completeSelectedServiceIds.has(svc.id));
     if (selected.length === 0) {
       this.completeActualPrice = null;
@@ -576,8 +585,15 @@ export class AppointmentListComponent implements OnInit {
     }).subscribe({
       next: (res) => {
         this.refreshViews();
-        if (res?.data?.receiptNumber) {
-          this.completeReceiptNumber = res.data.receiptNumber;
+        const d: any = res?.data;
+        if (d?.packageSessionId) {
+          this.completePackageResult = {
+            packageId: d.packageId, sessionId: d.packageSessionId,
+            number: d.packageSessionNumber, total: d.packageTotalSessions,
+          };
+          this.isCompleteSubmitting = false;
+        } else if (d?.receiptNumber) {
+          this.completeReceiptNumber = d.receiptNumber;
           this.isCompleteSubmitting = false;
         } else {
           this.closeCompleteModal();
@@ -588,6 +604,14 @@ export class AppointmentListComponent implements OnInit {
         this.isCompleteSubmitting = false;
       }
     });
+  }
+
+  /** Paket ayrıntısını açar ve işlenen seansın müşteri onay QR'ını gösterir. */
+  openPackageQr(): void {
+    const r = this.completePackageResult;
+    if (!r) return;
+    this.closeCompleteModal();
+    this.router.navigate(['/packages'], { queryParams: { id: r.packageId, qr: r.sessionId } });
   }
 
   confirmAppointment(id: string): void {

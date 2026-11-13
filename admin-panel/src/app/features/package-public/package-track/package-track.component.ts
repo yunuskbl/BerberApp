@@ -20,6 +20,10 @@ export class PackageTrackComponent implements OnInit {
   readonly data    = signal<PublicPackage | null>(null);
   readonly loading = signal(true);
   readonly error   = signal('');
+  /** Paketten randevu alındıktan sonra buraya dönülür (?booked=1). */
+  readonly booked  = signal(false);
+  readonly confirming = signal<string | null>(null);
+  token = '';
 
   readonly methodLabel = PAYMENT_METHOD_LABELS;
   readonly money = money;
@@ -36,8 +40,13 @@ export class PackageTrackComponent implements OnInit {
   constructor(private route: ActivatedRoute, private packages: PackageService) {}
 
   ngOnInit(): void {
-    const token = this.route.snapshot.paramMap.get('token') ?? '';
-    this.packages.getPublicPackage(token).subscribe({
+    this.token = this.route.snapshot.paramMap.get('token') ?? '';
+    this.booked.set(this.route.snapshot.queryParamMap.has('booked'));
+    this.load();
+  }
+
+  private load(): void {
+    this.packages.getPublicPackage(this.token).subscribe({
       next: r => { this.loading.set(false); if (r.success) this.data.set(r.data); },
       error: err => {
         this.loading.set(false);
@@ -45,6 +54,16 @@ export class PackageTrackComponent implements OnInit {
           ? 'Paket bulunamadı. Bağlantıyı salonunuzdan yeniden isteyin.'
           : 'Bilgiler şu an yüklenemedi. Lütfen biraz sonra tekrar deneyin.');
       },
+    });
+  }
+
+  /** Seansı buradan onayla (salonda QR okutulmadıysa). */
+  confirmSession(id: string): void {
+    if (this.confirming()) return;
+    this.confirming.set(id);
+    this.packages.confirmFromTracking(this.token, id).subscribe({
+      next: () => { this.confirming.set(null); this.load(); },
+      error: () => { this.confirming.set(null); this.load(); },
     });
   }
 

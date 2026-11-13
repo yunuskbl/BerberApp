@@ -134,15 +134,23 @@ public class PublicPackagesController : ControllerBase
         if (!verified)
             return StatusCode(403, new { success = false, message = "Telefon doğrulanmamış." });
 
-        var packages = await _context.CustomerPackages.AsNoTracking()
-            .Include(x => x.Tenant)
-            .Include(x => x.Customer)
-            .Include(x => x.Service)
-            .Where(x => x.Tenant.Subdomain == req.Subdomain
-                        && x.Customer.Phone == req.Phone
-                        && x.Status == CustomerPackageStatus.Active)
-            .OrderByDescending(x => x.StartedAt)
-            .ToListAsync(ct);
+        // Telefonlar farklı biçimlerde kayıtlı olabiliyor: randevu sayfası
+        // "+905551112233" gönderiyor, işletmenin elle eklediği müşteri
+        // "0555 111 22 33" olabilir. Rakamların son 10 hanesiyle eşleştir.
+        // Salonun aktif paketleri az olduğu için süzme bellekte.
+        var wanted = PhoneTail(req.Phone);
+        if (wanted.Length < 7)
+            return BadRequest(new { success = false, message = "Telefon numarası geçersiz." });
+
+        var packages = (await _context.CustomerPackages.AsNoTracking()
+                .Include(x => x.Tenant)
+                .Include(x => x.Customer)
+                .Include(x => x.Service)
+                .Where(x => x.Tenant.Subdomain == req.Subdomain && x.Status == CustomerPackageStatus.Active)
+                .OrderByDescending(x => x.StartedAt)
+                .ToListAsync(ct))
+            .Where(x => PhoneTail(x.Customer?.Phone) == wanted)
+            .ToList();
 
         var list = new List<object>();
         foreach (var p in packages)
@@ -249,6 +257,13 @@ public class PublicPackagesController : ControllerBase
             // salonda ekranı gören müşterinin kendisi.
             packageToken    = pkg.PublicToken,
         };
+    }
+
+    /// <summary>Telefonun rakamlarının son 10 hanesi (ülke kodu ve baştaki 0 farkını yok sayar).</summary>
+    private static string PhoneTail(string? phone)
+    {
+        var digits = new string((phone ?? string.Empty).Where(char.IsDigit).ToArray());
+        return digits.Length > 10 ? digits[^10..] : digits;
     }
 
     /// <summary>Takip sayfasından onay penceresi: seans yapıldıktan sonraki 30 gün.</summary>

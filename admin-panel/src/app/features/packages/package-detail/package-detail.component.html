@@ -77,6 +77,25 @@
       </section>
     }
 
+    <!-- Paketten alınmış, yaklaşan randevular -->
+    @if (d.upcoming.length) {
+      <section class="pd-card">
+        <h3>Planlanan randevular</h3>
+        <ul class="pd-list">
+          @for (a of d.upcoming; track a.id) {
+            <li>
+              <span class="pd-num pd-num--plan" aria-hidden="true">📅</span>
+              <div class="pd-li-main">
+                <span>{{ dateTime(a.startTime) }}@if (a.staffName) { · {{ a.staffName }} }</span>
+                <small [class.pd-ok]="a.status === 'Confirmed'" [class.pd-wait]="a.status !== 'Confirmed'">{{ a.status === 'Confirmed' ? 'Onaylandı' : 'Onay bekliyor' }}</small>
+              </div>
+            </li>
+          }
+        </ul>
+        <p class="pd-hint">Bu randevular tamamlanınca seans pakete kendiliğinden işlenir; ayrıca "seans işle"ye gerek yok.</p>
+      </section>
+    }
+
     <!-- Ödeme -->
     <section class="pd-card">
       <div class="pd-card-head">
@@ -159,7 +178,7 @@
             <li [class.void]="s.isVoid">
               <span class="pd-num">{{ s.isVoid ? '—' : s.number }}</span>
               <div class="pd-li-main">
-                <span>{{ dateTime(s.performedAt) }}@if (s.staffName) { · {{ s.staffName }} }</span>
+                <span>{{ dateTime(s.performedAt) }}@if (s.staffName) { · {{ s.staffName }} }@if (s.appointmentId) { <em class="pd-from-apt">randevudan</em> }</span>
                 @if (s.note) { <small>{{ s.note }}</small> }
                 @if (s.isVoid) {
                   <small class="pd-void-tag">İptal edildi{{ s.voidReason ? ': ' + s.voidReason : '' }}</small>

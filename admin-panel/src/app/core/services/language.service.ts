@@ -553,6 +553,14 @@ const T: Record<Lang, Record<string, string>> = {
     'otp.phoneVerified': 'Telefon doğrulandı! ✓',
     'otp.error':         'Bir hata oluştu. Lütfen tekrar deneyin.',
     'booking.poweredBy':        'ayarlıyo ile güçlendirildi',
+    'booking.pkg.title': '{name} paketinizden {n}. seans',
+    'booking.pkg.sub': 'Ücret alınmaz · {remaining} seansınız kaldı',
+    'booking.pkg.free': 'Paketten',
+    'booking.pkg.forCustomer': 'Randevu {name} adına paketinizden alınacak; ad ve telefon gerekmez.',
+    'booking.pkg.normal': 'Normal randevu al',
+    'booking.pkg.offer': 'Bu hizmet için aktif paketiniz var: {name} · {remaining} seans kaldı.',
+    'booking.pkg.use': 'Paketimden kullan',
+    'booking.pkg.staffMismatch': 'Seçtiğiniz personel paketinizdeki hizmeti vermiyor; lütfen başka bir personel seçin.',
   },
 
   /* ══════════════════════════════════════ ENGLISH ══════════════════════════════════════ */
@@ -1091,6 +1099,14 @@ const T: Record<Lang, Record<string, string>> = {
     'otp.phoneVerified': 'Phone verified! ✓',
     'otp.error':         'Something went wrong. Please try again.',
     'booking.poweredBy':        'Powered by ayarlıyo',
+    'booking.pkg.title': 'Session {n} from your {name} package',
+    'booking.pkg.sub': 'No charge · {remaining} sessions left',
+    'booking.pkg.free': 'From package',
+    'booking.pkg.forCustomer': 'The appointment will be booked for {name} from your package; no name or phone needed.',
+    'booking.pkg.normal': 'Book a regular appointment',
+    'booking.pkg.offer': 'You have an active package for this service: {name} · {remaining} sessions left.',
+    'booking.pkg.use': 'Use my package',
+    'booking.pkg.staffMismatch': "The selected staff member doesn't offer your package's service; please choose someone else.",
   },
 
   /* ══════════════════════════════════════ РУССКИЙ ══════════════════════════════════════ */
@@ -1629,6 +1645,14 @@ const T: Record<Lang, Record<string, string>> = {
     'otp.phoneVerified': 'Телефон подтверждён! ✓',
     'otp.error':         'Произошла ошибка. Пожалуйста, попробуйте снова.',
     'booking.poweredBy':        'Работает на ayarlıyo',
+    'booking.pkg.title': 'Сеанс {n} из вашего пакета «{name}»',
+    'booking.pkg.sub': 'Без оплаты · осталось сеансов: {remaining}',
+    'booking.pkg.free': 'Из пакета',
+    'booking.pkg.forCustomer': 'Запись будет оформлена на {name} из вашего пакета; имя и телефон не нужны.',
+    'booking.pkg.normal': 'Обычная запись',
+    'booking.pkg.offer': 'У вас есть активный пакет на эту услугу: {name} · осталось сеансов: {remaining}.',
+    'booking.pkg.use': 'Использовать пакет',
+    'booking.pkg.staffMismatch': 'Выбранный мастер не оказывает услугу из вашего пакета; выберите другого.',
   },
 
   /* ══════════════════════════════════════ DEUTSCH ══════════════════════════════════════ */
@@ -2154,6 +2178,14 @@ const T: Record<Lang, Record<string, string>> = {
     'otp.phoneVerified': 'Telefonnummer bestätigt! ✓',
     'otp.error':         'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.',
     'booking.poweredBy':        'Unterstützt von ayarlıyo',
+    'booking.pkg.title': 'Sitzung {n} aus Ihrem Paket „{name}“',
+    'booking.pkg.sub': 'Kostenlos · noch {remaining} Sitzungen',
+    'booking.pkg.free': 'Aus dem Paket',
+    'booking.pkg.forCustomer': 'Der Termin wird für {name} aus Ihrem Paket gebucht; Name und Telefon sind nicht nötig.',
+    'booking.pkg.normal': 'Normalen Termin buchen',
+    'booking.pkg.offer': 'Sie haben ein aktives Paket für diese Leistung: {name} · noch {remaining} Sitzungen.',
+    'booking.pkg.use': 'Mein Paket verwenden',
+    'booking.pkg.staffMismatch': 'Die gewählte Person bietet die Leistung Ihres Pakets nicht an; bitte wählen Sie jemand anderen.',
   },
 };
 

@@ -112,7 +112,7 @@
                   <span>{{ apt.staffName }}</span>
                 </div>
               </td>
-              <td class="text-muted">{{ apt.serviceName }}</td>
+              <td class="text-muted">{{ apt.serviceName }}@if (apt.customerPackageId) { <span class="pkg-badge" [title]="apt.packageName">📦 Paket</span> }</td>
               <td class="text-muted">{{ apt.durationMinutes }} {{ 'common.min' | translate }}</td>
               <td>
                 <span class="badge {{ getStatusClass(apt.status) }}">{{ getStatusLabel(apt.status) }}</span>
@@ -240,7 +240,7 @@
                     </div>
                     <div class="mcal-apt-body">
                       <div class="mcal-apt-customer">{{ apt.customerName }}</div>
-                      <div class="mcal-apt-meta">{{ apt.staffName }} · {{ apt.serviceName }}</div>
+                      <div class="mcal-apt-meta">{{ apt.staffName }} · {{ apt.serviceName }}@if (apt.customerPackageId) { <span class="pkg-badge">📦</span> }</div>
                     </div>
                     <div class="mcal-apt-right">
                       <span class="badge {{ getStatusClass(apt.status) }}">{{ getStatusLabel(apt.status) }}</span>
@@ -566,7 +566,17 @@
         <button class="drawer-close" (click)="closeCompleteModal()">✕</button>
       </div>
       <div class="modal-body">
-        @if (completeReceiptNumber) {
+        @if (completePackageResult) {
+          <div class="complete-success">
+            <div class="complete-success-icon">📦</div>
+            <div class="complete-success-title">Paket seansı işlendi · {{ completePackageResult.number }}/{{ completePackageResult.total }}</div>
+            <p class="pkg-complete-note">Müşteri onay için QR'ı okutabilir ya da paket takip sayfasından onaylayabilir.</p>
+          </div>
+          <div class="drawer-footer" style="padding: 0; margin-top: 20px;">
+            <button type="button" class="btn btn-outline" (click)="closeCompleteModal()">Kapat</button>
+            <button type="button" class="btn btn-primary" (click)="openPackageQr()">Müşteriye onay QR'ı göster</button>
+          </div>
+        } @else if (completeReceiptNumber) {
           <!-- Başarı ekranı -->
           <div class="complete-success">
             <div class="complete-success-icon">✅</div>
@@ -580,6 +590,9 @@
             <button type="button" class="btn btn-primary" (click)="closeCompleteModal()">Kapat</button>
           </div>
         } @else {
+          @if (completingAppointment.customerPackageId) {
+            <div class="pkg-complete-info">📦 <strong>{{ completingAppointment.packageName }}</strong> paket seansı. Tamamlanınca seans pakete otomatik işlenir; ücret paketten alındığı için tutar 0 ve fiş kesilmez.</div>
+          }
           <div class="form-group">
             <label class="form-label">Yapılan Hizmetler</label>
             <div class="service-checklist">

@@ -37,12 +37,19 @@ public static class PackageBooking
         var remaining = Math.Max(0, p.TotalSessions - used);
         var bookable  = Math.Max(0, remaining - reserved);
 
+        // Randevu sayfasının genel kuralı: müşteri başına tek onay bekleyen
+        // randevu (CreateAppointmentHandler). Burada önceden söylenmezse müşteri
+        // personel, gün ve saat seçtikten sonra son adımda reddediliyordu.
+        var hasPending = await db.Appointments.AnyAsync(a =>
+            a.CustomerId == p.CustomerId && a.TenantId == p.TenantId && a.Status == AppointmentStatus.Pending, ct);
+
         string? reason =
             p.Status == CustomerPackageStatus.Cancelled ? "Bu paket salon tarafından kapatıldı." :
             remaining == 0                              ? "Paketinizin tüm seansları kullanıldı." :
             SessionPackageRules.IsExpired(p.Status, p.ExpiresAt, DateTime.UtcNow)
                                                         ? "Paketinizin geçerlilik süresi doldu." :
             bookable == 0                               ? "Kalan seanslarınızın hepsi için zaten randevunuz var." :
+            hasPending                                  ? "Onay bekleyen bir randevunuz var; salon onaylayınca sonraki seansı alabilirsiniz." :
             null;
 
         return new PackageBookingState(used, remaining, reserved, bookable, used + reserved + 1, reason);

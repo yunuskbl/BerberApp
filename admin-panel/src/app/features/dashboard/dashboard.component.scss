@@ -579,3 +579,5 @@
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr; }
 }
+
+.pkg-badge { display: inline-block; margin-left: 4px; padding: 0 6px; border-radius: 999px; background: #ecfdf5; color: #047857; font-size: 10.5px; font-weight: 700; }

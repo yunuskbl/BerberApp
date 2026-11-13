@@ -232,6 +232,24 @@
           </div>
         }
 
+        <!-- Paketten randevu -->
+        @if (pkg) {
+          <div class="pkg-banner" role="status">
+            <span class="pkg-icon" aria-hidden="true">📦</span>
+            <div class="pkg-text">
+              <strong>{{ 'booking.pkg.title' | translate: { name: pkg.packageName, n: pkg.nextSessionNumber } }}</strong>
+              <span>{{ 'booking.pkg.sub' | translate: { remaining: pkg.remainingSessions } }}</span>
+              @if (pkgNotice) { <span class="pkg-warn">{{ pkgNotice }}</span> }
+            </div>
+            <button type="button" class="pkg-leave" (click)="leavePackageMode()">{{ 'booking.pkg.normal' | translate }}</button>
+          </div>
+        } @else if (pkgNotice) {
+          <div class="pkg-banner pkg-banner--muted" role="status">
+            <span class="pkg-icon" aria-hidden="true">📦</span>
+            <div class="pkg-text"><span>{{ pkgNotice }}</span></div>
+          </div>
+        }
+
         <!-- 1. Personel -->
         <div class="step-block">
           <div class="step-header">
@@ -266,8 +284,8 @@
               <div class="step-sep"></div>
             </div>
             <div class="service-list">
-              @for (service of services; track service.id) {
-                <div class="service-item" [class.selected]="isServiceSelected(service)" (click)="toggleService(service)">
+              @for (service of visibleServices; track service.id) {
+                <div class="service-item" [class.selected]="isServiceSelected(service)" [class.locked]="!!pkg" (click)="toggleService(service)">
                   <div class="service-left">
                     <div class="service-check" [class.checked]="isServiceSelected(service)"></div>
                     <div>
@@ -275,7 +293,7 @@
                       <div class="service-dur">⏱ {{ service.durationMinutes }} {{ 'booking.min' | translate }}</div>
                     </div>
                   </div>
-                  <div class="service-price">{{ formatPriceRange(service) }}</div>
+                  <div class="service-price">{{ pkg ? ('booking.pkg.free' | translate) : formatPriceRange(service) }}</div>
                 </div>
               }
             </div>
@@ -338,6 +356,9 @@
               <div class="step-sep"></div>
             </div>
             <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+              @if (pkg) {
+                <p class="pkg-for">{{ 'booking.pkg.forCustomer' | translate: { name: pkg.customerFirstName } }}</p>
+              } @else {
               <div class="form-group">
                 <div class="phone-row">
                   <!-- Country code selector -->
@@ -398,11 +419,13 @@
               <div class="form-group">
                 <input class="form-input" type="email" formControlName="email" [placeholder]="'booking.emailPh' | translate" maxlength="80" />
               </div>
+              }
               <div class="form-group">
                 <textarea class="form-textarea" formControlName="notes" [placeholder]="'booking.notePh' | translate" rows="3" maxlength="200"></textarea>
               </div>
 
               <!-- Bilgilerimi Hatırla -->
+              @if (!pkg) {
               <div class="check-row">
                 <label class="check-label">
                   <input type="checkbox" class="check-input" [(ngModel)]="rememberMe" [ngModelOptions]="{standalone: true}" (ngModelChange)="onRememberMeChange()" />
@@ -410,6 +433,7 @@
                   <span class="check-text">Bilgilerimi hatırla</span>
                 </label>
               </div>
+              }
 
               <!-- Aydınlatma: bilgilendirme yükümlülüğü, rızaya bağlı değil.
                    Randevu verisi sözleşmenin ifası kapsamında işlendiği için
@@ -432,6 +456,7 @@
                    Randevu almak için gerekmez; yalnızca pazarlama mesajları
                    için. Zorunlu tutulsaydı ya da önceden işaretli gelseydi
                    özgür iradeye dayanmadığı için geçerli bir rıza sayılmazdı. -->
+              @if (!pkg) {
               <div class="check-row">
                 <label class="check-label">
                   <input type="checkbox" class="check-input" formControlName="marketingConsent" />
@@ -441,7 +466,9 @@
                   </span>
                 </label>
               </div>
+              }
 
+@if (!pkg) {
               @if (!otpVerified && !otpSent && customerForm.get('email')?.value) {
                 <p class="otp-hint-email" style="font-size:12px;color:#6b7280;margin:4px 0 6px;">
                   {{ 'otp.emailHint' | translate: { email: customerForm.get('email')?.value } }}
@@ -488,12 +515,23 @@
                   </div>
                 </div>
               }
+              }
+
+              @if (!pkg && pkgOffers.length) {
+                @for (offer of pkgOffers; track offer.token) {
+                  <div class="pkg-offer">
+                    <span class="pkg-icon" aria-hidden="true">📦</span>
+                    <span class="pkg-offer-text">{{ 'booking.pkg.offer' | translate: { name: offer.packageName, remaining: offer.remainingSessions } }}</span>
+                    <button type="button" class="pkg-use" (click)="enterPackageMode(offer)">{{ 'booking.pkg.use' | translate }}</button>
+                  </div>
+                }
+              }
 
               @if (errorMessage) {
                 <div class="error-message">{{ errorMessage }}</div>
               }
 
-              <button type="submit" class="btn-submit" [disabled]="isSubmitting || customerForm.invalid || !otpVerified || salon?.isAtCapacity">
+              <button type="submit" class="btn-submit" [disabled]="isSubmitting || customerForm.invalid || (!otpVerified && !pkg) || salon?.isAtCapacity">
                 {{ isSubmitting ? ('booking.submitting' | translate) : ('booking.submit' | translate) }}
               </button>
             </form>
@@ -545,7 +583,7 @@
         <button
           type="button"
           class="island-submit-btn"
-          [disabled]="isSubmitting || customerForm.invalid || !otpVerified"
+          [disabled]="isSubmitting || customerForm.invalid || (!otpVerified && !pkg) || salon?.isAtCapacity"
           (click)="onSubmit()">
           {{ isSubmitting ? ('booking.submitting' | translate) : ('booking.submit' | translate) }}
         </button>

@@ -31,6 +31,9 @@ interface ConfirmDialog {
 })
 export class PackageDetailComponent implements OnInit, OnDestroy {
   readonly packageId = input.required<string>();
+  /** Açılınca bu seansın müşteri onay QR'ını göster (randevu tamamlandıktan sonra). */
+  readonly autoQrSessionId = input<string | null>(null);
+  private autoQrShown = false;
   /** Liste güncel özeti göstersin diye. */
   readonly changed = output<PackageSummary>();
   readonly closed  = output<void>();
@@ -105,6 +108,7 @@ export class PackageDetailComponent implements OnInit, OnDestroy {
         if (!r.success) return;
         this.apply(r.data);
         after?.(r.data);
+        this.maybeAutoQr(r.data);
       },
       error: err => { this.loading.set(false); this.error.set(err?.error?.message || 'Paket yüklenemedi.'); },
     });
@@ -121,6 +125,14 @@ export class PackageDetailComponent implements OnInit, OnDestroy {
     QRCode.toDataURL(packageTrackUrl(d.package.publicToken), { margin: 1, width: 220 })
       .then(url => this.trackQr.set(url))
       .catch(() => this.trackQr.set(''));
+  }
+
+  private maybeAutoQr(d: PackageDetail): void {
+    const id = this.autoQrSessionId();
+    if (!id || this.autoQrShown) return;
+    this.autoQrShown = true;
+    const s = d.sessions.find(x => x.id === id);
+    if (s && !s.isVoid && !s.customerConfirmedAt) this.showQrFor(s);
   }
 
   // ─── Seans ───────────────────────────────────────────────

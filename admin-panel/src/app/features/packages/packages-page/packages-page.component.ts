@@ -31,6 +31,8 @@ export class PackagesPageComponent implements OnInit {
   readonly query     = signal('');
 
   readonly selectedId = signal<string | null>(null);
+  /** Randevu tamamlandıktan sonra gelindiyse açılınca QR'ı gösterilecek seans. */
+  readonly qrSessionId = signal<string | null>(null);
   readonly selling    = signal(false);
 
   readonly filters: { key: StatusFilter; label: string }[] = [
@@ -67,6 +69,7 @@ export class PackagesPageComponent implements OnInit {
     // ?id=… ile doğrudan bir paketi aç (ör. müşteri sayfasından gelindiğinde).
     const id = this.route.snapshot.queryParamMap.get('id');
     if (id) this.selectedId.set(id);
+    this.qrSessionId.set(this.route.snapshot.queryParamMap.get('qr'));
   }
 
   load(): void {
@@ -84,12 +87,13 @@ export class PackagesPageComponent implements OnInit {
     this.load();
   }
 
-  open(p: PackageSummary): void { this.selectedId.set(p.id); }
+  open(p: PackageSummary): void { this.qrSessionId.set(null); this.selectedId.set(p.id); }
 
   closeDetail(): void {
     this.selectedId.set(null);
+    this.qrSessionId.set(null);
     if (this.route.snapshot.queryParamMap.has('id')) {
-      this.router.navigate([], { queryParams: { id: null }, queryParamsHandling: 'merge', replaceUrl: true });
+      this.router.navigate([], { queryParams: { id: null, qr: null }, queryParamsHandling: 'merge', replaceUrl: true });
     }
   }
 

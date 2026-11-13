@@ -65,6 +65,16 @@ export interface PackageSession {
   isVoid: boolean;
   voidedAt?: string | null;
   voidReason?: string | null;
+  /** Seans paketten alınan bir randevunun tamamlanmasından geldiyse. */
+  appointmentId?: string | null;
+}
+
+/** Paketten alınmış, henüz tamamlanmamış randevu. */
+export interface PackageAppointment {
+  id: string;
+  startTime: string;
+  staffName?: string | null;
+  status: 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled' | 'NoShow';
 }
 
 export interface PackagePayment {
@@ -88,6 +98,7 @@ export interface PackageDetail {
   package: PackageSummary;
   sessions: PackageSession[];
   payments: PackagePayment[];
+  upcoming: PackageAppointment[];
   cancelledAt?: string | null;
   cancelReason?: string | null;
   confirm?: SessionConfirm | null;
@@ -132,8 +143,11 @@ export interface PublicPackage {
     paid: number;
     remainingDebt: number;
     currency: string;
+    canBook: boolean;
+    bookingBlockReason?: string | null;
   };
-  sessions: { number: number | null; performedAt: string; staffName: string; confirmed: boolean; isVoid: boolean }[];
+  upcoming: { startTime: string; status: PackageAppointment['status']; staffName: string }[];
+  sessions: { id: string; number: number | null; performedAt: string; staffName: string; confirmed: boolean; isVoid: boolean; canConfirm: boolean }[];
   payments: { amount: number; paidAt: string; method: PackagePaymentMethod }[];
 }
 
@@ -149,6 +163,24 @@ export interface PublicSessionInfo {
   isVoid: boolean;
   expired: boolean;
   packageToken: string;
+}
+
+/** Paketten randevu: randevu sayfasının paket kipine geçmek için gereken bilgi. */
+export interface PackageBookingContext {
+  token: string;
+  packageName: string;
+  serviceId?: string | null;
+  serviceName?: string | null;
+  customerFirstName: string;
+  salonSubdomain?: string | null;
+  totalSessions: number;
+  usedSessions: number;
+  remainingSessions: number;
+  bookableSessions: number;
+  nextSessionNumber: number;
+  expiresAt?: string | null;
+  canBook: boolean;
+  reason?: string | null;
 }
 
 /** Müşteri bağlantıları panelin kendi adresinden üretilir (aynı uygulama). */

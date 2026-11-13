@@ -24,6 +24,8 @@ import { LanguageSwitcherComponent } from '../../shared/components/language-swit
 import { LanguageService } from '../../core/services/language.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { DecorativeBgComponent } from '../../shared/components/decorative-bg/decorative-bg.component';
+import { PackageService } from '../../core/services/package.service';
+import { PackageBookingContext } from '../../core/models/package.model';
 
 @Component({
   selector: 'app-booking',
@@ -60,6 +62,17 @@ export class BookingComponent implements OnInit, OnDestroy {
   isSuccess = false;
   errorMessage = '';
   bookingResult: any = null;
+
+  /**
+   * Paketten randevu kipi. Müşteri paket takip bağlantısından (?paket=…) ya da
+   * telefonunu doğruladıktan sonra "Paketimden kullan" ile gelir: hizmet
+   * paketin hizmeti, ücret alınmaz, ad/telefon/doğrulama istenmez.
+   */
+  pkg: PackageBookingContext | null = null;
+  /** Paket kipine geçilemediyse nedeni (ör. tüm seanslar için randevu var). */
+  pkgNotice = '';
+  /** Doğrulanmış müşterinin seçili hizmete uyan, randevu alınabilir paketleri. */
+  pkgOffers: PackageBookingContext[] = [];
 
   lightboxPhoto: string | null = null;
   lightboxIndex = 0;
@@ -195,6 +208,7 @@ export class BookingComponent implements OnInit, OnDestroy {
     private el: ElementRef,
     private renderer: Renderer2,
     public langService: LanguageService,
+    private packageService: PackageService,
   ) {
     this.customerForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.maxLength(30)]],
@@ -213,6 +227,80 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.loadSavedCustomer();
     this.updatePhoneValidators();
     this.loadSalon();
+    const token = this.route.snapshot.queryParamMap.get('paket');
+    if (token) this.loadPackageContext(token);
+  }
+
+  // ─── Paketten randevu ────────────────────────────────────
+
+  private loadPackageContext(token: string): void {
+    this.packageService.getBookingContext(token).subscribe({
+      next: r => {
+        if (!r.success) return;
+        if (r.data.canBook) this.enterPackageMode(r.data);
+        else this.pkgNotice = r.data.reason || '';
+      },
+      error: () => { this.pkgNotice = 'Paket bulunamadı.'; },
+    });
+  }
+
+  enterPackageMode(ctx: PackageBookingContext): void {
+    this.pkg = ctx;
+    this.pkgOffers = [];
+    this.pkgNotice = '';
+    // Kimlik paketten geliyor; bu alanlar formun geçerliliğine katılmasın.
+    for (const c of ['fullName', 'phone', 'email']) this.customerForm.get(c)?.disable();
+    this.errorMessage = '';
+    if (this.selectedStaff) {
+      this.applyPackageService();
+    } else {
+      this.loadStaff();
+    }
+  }
+
+  leavePackageMode(): void {
+    this.pkg = null;
+    for (const c of ['fullName', 'phone', 'email']) this.customerForm.get(c)?.enable();
+    this.router.navigate([], { queryParams: { paket: null }, queryParamsHandling: 'merge', replaceUrl: true });
+    this.loadStaff();
+    if (this.selectedStaff) this.loadServicesForStaff(this.selectedStaff.id);
+  }
+
+  /** Seçimi paketin hizmetine indirger; personel o hizmeti vermiyorsa söyler. */
+  private applyPackageService(): void {
+    if (!this.pkg) return;
+    const before = this.selectedServices.map(s => s.id).join();
+    const svc = this.pkg.serviceId
+      ? this.services.find(s => s.id === this.pkg!.serviceId)
+      : this.selectedServices[0];
+    this.selectedServices = svc ? [svc] : [];
+    this.pkgNotice = !svc && this.pkg.serviceId && this.selectedStaff
+      ? this.langService.t('booking.pkg.staffMismatch')
+      : '';
+    if (this.selectedServices.map(s => s.id).join() !== before) {
+      this.selectedSlot = '';
+      this.slots = [];
+      this.loadSlotsIfReady();
+    }
+  }
+
+  /** Paket kipinde hizmet listesi yalnızca paketin hizmeti. */
+  get visibleServices(): BookingService[] {
+    return this.pkg?.serviceId ? this.services.filter(s => s.id === this.pkg!.serviceId) : this.services;
+  }
+
+  /** Telefon doğrulandı: bu salonda, seçili hizmete uyan paketi var mı? */
+  private checkPackagesForVerifiedPhone(): void {
+    if (this.pkg) return;
+    this.packageService.lookupPackages(this.subdomain, this.fullPhone).subscribe({
+      next: r => {
+        if (!r.success) return;
+        const selected = new Set(this.selectedServices.map(s => s.id));
+        this.pkgOffers = (r.data ?? []).filter(p =>
+          p.canBook && (!p.serviceId || selected.has(p.serviceId)));
+      },
+      error: () => { /* paket önerisi yalnızca kolaylık */ },
+    });
   }
 
   private loadSavedCustomer(): void {
@@ -304,7 +392,8 @@ export class BookingComponent implements OnInit, OnDestroy {
   }
 
   loadStaff(): void {
-    this.bookingService.getStaff(this.subdomain).subscribe({
+    // Paket kipinde yalnızca paketin hizmetini veren personel listelenir.
+    this.bookingService.getStaff(this.subdomain, this.pkg?.serviceId).subscribe({
       next: (res) => {
         if (res.success) this.staffList = res.data;
       },
@@ -324,11 +413,13 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.bookingService.getServices(this.subdomain, staffId).subscribe({
       next: (res) => {
         if (res.success) this.services = res.data;
+        if (this.pkg) this.applyPackageService();
       },
     });
   }
 
   toggleService(service: BookingService): void {
+    if (this.pkg) return;   // paket kipinde hizmet paketten, değiştirilemez
     const idx = this.selectedServices.findIndex(s => s.id === service.id);
     if (idx >= 0) {
       this.selectedServices = this.selectedServices.filter(s => s.id !== service.id);
@@ -363,6 +454,7 @@ export class BookingComponent implements OnInit, OnDestroy {
   }
 
   get formattedTotalPrice(): string {
+    if (this.pkg) return this.langService.t('booking.pkg.free');
     if (this.selectedServices.length === 0) return '—';
     if (this.hasMixedCurrencies) {
       const byCurrency = new Map<string, number>();
@@ -423,6 +515,7 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.customerForm.invalid || !this.canProceed()) return;
+    if (this.pkg) { this.submitPackageBooking(); return; }
 
     this.isSubmitting = true;
     this.errorMessage = '';
@@ -472,6 +565,44 @@ export class BookingComponent implements OnInit, OnDestroy {
           setTimeout(() => {
             document.querySelector('.error-message')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }, 50);
+        },
+      });
+  }
+
+  /** Paketten randevu: kimlik paket anahtarından, ad/telefon/kod gönderilmez. */
+  private submitPackageBooking(): void {
+    const pkg = this.pkg!;
+    this.isSubmitting = true;
+    this.errorMessage = '';
+    const serviceId = this.selectedServices[0].id;
+    this.bookingService
+      .createAppointment(this.subdomain, {
+        fullName: '',
+        phone: '',
+        staffId: this.selectedStaff!.id,
+        serviceId,
+        serviceIds: [serviceId],
+        startTime: this.selectedSlot,
+        notes: this.customerForm.get('notes')?.value || undefined,
+        packageToken: pkg.token,
+      })
+      .subscribe({
+        next: (res) => {
+          this.isSubmitting = false;
+          if (res.success) {
+            // Randevu paketin "planlanan seansları"nda görünür.
+            this.router.navigate(['/paket', pkg.token], { queryParams: { booked: 1 } });
+          } else {
+            this.errorMessage = res.message;
+          }
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+          this.errorMessage = err.status < 500 && err.error?.message
+            ? err.error.message
+            : 'Bir hata oluştu. Lütfen tekrar deneyin.';
+          this.loadSlotsIfReady();
+          if (err.status === 409) this.selectedSlot = '';
         },
       });
   }
@@ -587,6 +718,8 @@ export class BookingComponent implements OnInit, OnDestroy {
           this.otpSuccess = this.langService.t('otp.phoneVerified');
           // Numaranın sahibi olduğu doğrulandı; kayıtlı adı şimdi getirebiliriz.
           this.prefillVerifiedCustomer();
+          // ve bu hizmet için aktif paketi varsa önerebiliriz.
+          this.checkPackagesForVerifiedPhone();
         }
         this.isVerifyingOtp = false;
       },

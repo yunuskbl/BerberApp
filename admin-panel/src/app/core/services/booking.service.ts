@@ -63,6 +63,8 @@ export interface BookingRequest {
   notes?: string;
   /** Kampanya mesajları için açık rıza. Randevu için gerekli değil. */
   marketingConsent?: boolean;
+  /** Paketten randevu: müşterinin paket takip anahtarı (ad/telefon/kod gerekmez). */
+  packageToken?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -80,8 +82,9 @@ export class BookingApiService {
     return this.http.get(`${this.apiUrl}/booking/${subdomain}/services`, { params });
   }
 
-  getStaff(subdomain: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/booking/${subdomain}/staff`);
+  getStaff(subdomain: string, serviceId?: string | null): Observable<any> {
+    const params = serviceId ? new HttpParams().set('serviceId', serviceId) : undefined;
+    return this.http.get(`${this.apiUrl}/booking/${subdomain}/staff`, { params });
   }
 
   getAvailableSlots(
