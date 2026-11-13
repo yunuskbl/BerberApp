@@ -254,11 +254,13 @@
 }
 
 /* Modal */
+// Telefondaki alt menü (z-index 500) çekmece ve pencerelerin üstünde kalıp
+// alttaki butonları örtüyordu: çekmeceler 600/601, pencereler 700.
 .modal-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.4);
-  z-index: 100;
+  z-index: 700;
 }
 
 .modal {
@@ -270,7 +272,7 @@
   border-radius: 16px;
   width: 100%;
   max-width: 480px;
-  z-index: 101;
+  z-index: 701;
   box-shadow: 0 20px 60px rgba(0,0,0,0.15);
 }
 

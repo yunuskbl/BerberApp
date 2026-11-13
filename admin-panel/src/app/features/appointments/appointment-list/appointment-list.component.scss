@@ -238,11 +238,13 @@
 }
 
 // ─── Drawer ───────────────────────────────────────────────────
+// Telefondaki alt menü (z-index 500) çekmece ve pencerelerin üstünde kalıp
+// alttaki butonları örtüyordu: çekmeceler 600/601, pencereler 700.
 .drawer-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.45);
-  z-index: 200;
+  z-index: 600;
   animation: fadeIn .2s ease;
 }
 
@@ -253,7 +255,7 @@
   top: 0; right: 0; bottom: 0;
   width: 480px;
   background: #fff;
-  z-index: 201;
+  z-index: 601;
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
@@ -489,14 +491,21 @@
 }
 
 // Footer
+// Form uzun (takvim + saatler): butonlar en altta kaybolmasın, hep görünür kalsın.
 .drawer-footer {
   display: flex;
   gap: 10px;
   padding: 16px 22px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid #f3f4f6;
   background: #fafafa;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;   // saat kutuları üzerine gelince z-index 5 alıyor
 
-  .btn { flex: 1; justify-content: center; gap: 6px; }
+  .btn { flex: 1; justify-content: center; gap: 6px; white-space: nowrap; padding-left: 12px; padding-right: 12px; }
+  // Dar telefonda asıl işlem daha geniş, yazı tek satır
+  @media (max-width: 480px) { .btn-outline { flex: 0 0 34%; } }
 }
 
 .btn-spinner {
@@ -647,7 +656,7 @@ select {
 
 /* ── Güncelle Modal ── */
 .modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 400;
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 700;
   display: flex; align-items: center; justify-content: center; padding: 20px;
   backdrop-filter: blur(2px);
 }

@@ -239,12 +239,14 @@
 .svc-success-message { margin: 0.5rem 1rem 0; padding: 8px 12px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 6px; color: #15803d; font-size: 0.85rem; }
 
 // Drawer
-.drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 200; animation: fadeIn 0.2s ease; backdrop-filter: blur(2px); }
+// Telefondaki alt menü (z-index 500) çekmece ve pencerelerin üstünde kalıp
+// alttaki butonları örtüyordu: çekmeceler 600/601, pencereler 700.
+.drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 600; animation: fadeIn 0.2s ease; backdrop-filter: blur(2px); }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .drawer {
   position: fixed; top: 0; right: 0; bottom: 0; width: 480px;
-  background: white; z-index: 201; display: flex; flex-direction: column;
+  background: white; z-index: 601; display: flex; flex-direction: column;
   transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
   box-shadow: -8px 0 32px rgba(0,0,0,0.1);
   &.open { transform: translateX(0); }
@@ -275,7 +277,7 @@
 .error-text { display: block; font-size: 12px; color: #dc2626; margin-top: 4px; }
 .error-message { background: #fef2f2; color: #dc2626; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; text-align: center; }
 
-.drawer-footer { display: flex; gap: 10px; padding: 20px 24px; border-top: 1px solid #f0f0f0; background: white; }
+.drawer-footer { display: flex; gap: 10px; padding: 20px 24px; padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid #f0f0f0; background: white; }
 
 .wh-row { display: grid; grid-template-columns: 90px 90px 1fr; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid #f9fafb; &:last-child { border-bottom: none; } }
 .wh-day { font-size: 14px; font-weight: 500; color: #374151; }

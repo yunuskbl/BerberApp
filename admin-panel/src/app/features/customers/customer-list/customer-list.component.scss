@@ -105,7 +105,9 @@
 }
 
 /* ── Modal ── */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 400; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
+// Telefondaki alt menü (z-index 500) çekmece ve pencerelerin üstünde kalıp
+// alttaki butonları örtüyordu: çekmeceler 600/601, pencereler 700.
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 700; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
 .modal {
   background: white; border-radius: 16px; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto;
   box-shadow: 0 24px 64px rgba(0,0,0,0.18);
@@ -253,10 +255,10 @@
   span:nth-child(2) { color: #d1d5db; }
 }
 
-.drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 200; animation: fadeIn 0.2s ease; backdrop-filter: blur(2px); }
+.drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 600; animation: fadeIn 0.2s ease; backdrop-filter: blur(2px); }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 420px; background: white; z-index: 201; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); box-shadow: -8px 0 32px rgba(0,0,0,0.1); &.open { transform: translateX(0); } }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 420px; background: white; z-index: 601; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); box-shadow: -8px 0 32px rgba(0,0,0,0.1); &.open { transform: translateX(0); } }
 
 .drawer-header { display: flex; align-items: center; justify-content: space-between; padding: 24px; border-bottom: 1px solid #f0f0f0; min-height: 72px;
   h3 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: #111827; flex: 1; letter-spacing: -0.3px; }
@@ -285,7 +287,7 @@
 
 .error-text { display: block; font-size: 12px; color: #dc2626; margin-top: 4px; }
 .error-message { background: #fef2f2; color: #dc2626; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; text-align: center; }
-.drawer-footer { display: flex; gap: 10px; padding: 20px 24px; border-top: 1px solid #f0f0f0; }
+.drawer-footer { display: flex; gap: 10px; padding: 20px 24px; padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid #f0f0f0; }
 
 @media (max-width: 768px) {
   .page-header { flex-direction: column; align-items: flex-start; gap: 12px; .btn { width: 100%; justify-content: center; } }
