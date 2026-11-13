@@ -15,6 +15,17 @@ export interface EarningsDto {
   weekAppointments:     number;
   monthEarnings:        number;
   monthAppointments:    number;
+  /** totalInTry = serviceRevenueInTry + packageRevenueInTry */
+  serviceRevenueInTry:  number;
+  /** Dönemde tahsil edilen paket ödemeleri (tahsilat gününe göre). */
+  packageRevenueInTry:  number;
+  packagePaymentCount:  number;
+  packageSales:         PackageSalesDto[];
+  /** Bugün itibarıyla paketlerden alınacak kalan borç (döneme bağlı değil). */
+  packageOutstandingInTry: number;
+  packageOutstandingCount: number;
+  previousServiceRevenueInTry: number;
+  previousPackageRevenueInTry: number;
   byCurrency:           CurrencyEarningDto[];
   daily:                DailyEarningDto[];
   byStaff:              StaffEarningDto[];
@@ -99,8 +110,18 @@ export interface CurrencyEarningDto {
 
 export interface DailyEarningDto {
   date:               string;
+  /** Hizmet + paket tahsilatı */
   earnings:           number;
+  /** Bunun paket tahsilatı kısmı */
+  packageEarnings?:   number;
   appointmentCount:   number;
+}
+
+export interface PackageSalesDto {
+  name:         string;
+  packageCount: number;
+  paymentCount: number;
+  total:        number;
 }
 
 export interface DailyExpenseDto {

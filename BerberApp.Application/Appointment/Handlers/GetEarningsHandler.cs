@@ -2,6 +2,7 @@
 using BerberApp.Application.Common.Interfaces;
 using BerberApp.Domain.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace BerberApp.Application.Appointment.Handlers;
 
@@ -14,6 +15,7 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
     private readonly IGenericRepository<ExpenseEntity> _expenseRepo;
     private readonly IGenericRepository<PriceDifferenceEntity> _priceDiffRepo;
     private readonly IExchangeRateService _exchangeRates;
+    private readonly IAppDbContext _context;
 
     public GetEarningsHandler(
         IGenericRepository<AppointmentEntity> appointmentRepo,
@@ -22,8 +24,10 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
         IGenericRepository<CustomerEntity> customerRepo,
         IGenericRepository<ExpenseEntity> expenseRepo,
         IGenericRepository<PriceDifferenceEntity> priceDiffRepo,
-        IExchangeRateService exchangeRates)
+        IExchangeRateService exchangeRates,
+        IAppDbContext context)
     {
+        _context = context;
         _appointmentRepo = appointmentRepo;
         _serviceRepo = serviceRepo;
         _staffRepo = staffRepo;
@@ -247,6 +251,91 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             }
         }
 
+        // ── Paket tahsilatları ──────────────────────────────────────────────
+        // Seans paketinin parası satışta ya da taksitle alınıyor; paket seansı
+        // randevusu ise 0 ₺ ile kapanıyor (ek ücret girilmediyse). Yani bu para
+        // başka hiçbir kalemde yok, çift sayım olmaz. Tahsilat gününe yazılır
+        // (kasaya girdiği gün) — giderler de böyle. Ödemelerde personel bilgisi
+        // olmadığı için personel süzgecinde paket tahsilatı gösterilmez.
+        var packagePaymentsWithPrevious = request.StaffId.HasValue
+            ? new List<PackagePaymentRow>()
+            : await _context.PackagePayments.AsNoTracking()
+                .Where(x => tenantIds.Contains(x.TenantId) && !x.IsVoid &&
+                            x.PaidAt >= previousStartUtc && x.PaidAt < endUtc)
+                .Select(x => new PackagePaymentRow(
+                    x.Amount, x.Currency, x.PaidAt, x.CustomerPackageId,
+                    x.CustomerPackage.Name, x.CustomerPackage.PackageTemplateId))
+                .ToListAsync(ct);
+
+        foreach (var cur in packagePaymentsWithPrevious.Select(x => x.Currency.ToUpper()).Distinct())
+        {
+            if (!rates.ContainsKey(cur))
+            {
+                var extraRates = await _exchangeRates.GetRatesToTryAsync([cur], ct);
+                foreach (var kv in extraRates) rates[kv.Key] = kv.Value;
+            }
+        }
+        decimal PaymentInTry(PackagePaymentRow x) => x.Amount * rates.GetValueOrDefault(x.Currency.ToUpper(), 1m);
+
+        var packagePayments = packagePaymentsWithPrevious.Where(x => x.PaidAt >= startUtc).ToList();
+        var previousPackagePayments = packagePaymentsWithPrevious.Where(x => x.PaidAt < startUtc).ToList();
+        var packageRevenue = packagePayments.Sum(PaymentInTry);
+        var previousPackageRevenue = previousPackagePayments.Sum(PaymentInTry);
+
+        DateTime LocalDay(DateTime utc) => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), turkeyTz).Date;
+        decimal PackageRevenueBetween(DateTime localStart, DateTime localEnd)
+        {
+            var from = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(localStart, DateTimeKind.Unspecified), turkeyTz);
+            var to   = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(localEnd, DateTimeKind.Unspecified), turkeyTz);
+            return packagePayments.Where(x => x.PaidAt >= from && x.PaidAt < to).Sum(PaymentInTry);
+        }
+
+        // Grafik: tahsilat olan ama randevu olmayan günler de görünsün.
+        var packageByDay = packagePayments.GroupBy(x => LocalDay(x.PaidAt))
+            .ToDictionary(g => g.Key, g => g.Sum(PaymentInTry));
+        foreach (var d in daily)
+            if (packageByDay.TryGetValue(d.Date, out var amount)) { d.PackageEarnings = amount; d.Earnings += amount; }
+        daily.AddRange(packageByDay.Where(kv => daily.All(d => d.Date != kv.Key))
+            .Select(kv => new DailyEarningDto { Date = kv.Key, Earnings = kv.Value, PackageEarnings = kv.Value, AppointmentCount = 0 }));
+        daily = daily.OrderBy(d => d.Date).ToList();
+
+        foreach (var g in packagePayments.GroupBy(x => x.Currency.ToUpper()))
+        {
+            var rate = rates.GetValueOrDefault(g.Key, 1m);
+            var total = g.Sum(x => x.Amount);
+            var row = byCurrency.FirstOrDefault(c => c.Currency == g.Key);
+            if (row is null)
+                byCurrency.Add(new CurrencyEarningDto { Currency = g.Key, TotalEarnings = total, TotalInTry = total * rate, ExchangeRate = rate });
+            else { row.TotalEarnings += total; row.TotalInTry += total * rate; }
+        }
+
+        // Paket türüne göre (şablondan satılanlar şablonla, elle tanımlananlar adıyla birleşir).
+        var packageSales = packagePayments
+            .GroupBy(x => x.TemplateId?.ToString() ?? x.PackageName)
+            .Select(g => new PackageSalesDto
+            {
+                Name         = g.OrderByDescending(x => x.PaidAt).First().PackageName,
+                PackageCount = g.Select(x => x.PackageId).Distinct().Count(),
+                PaymentCount = g.Count(),
+                Total        = g.Sum(PaymentInTry),
+            })
+            .OrderByDescending(x => x.Total)
+            .ToList();
+
+        // Alacak: bugün itibarıyla iptal edilmemiş paketlerin ödenmemiş kısmı (döneme bağlı değil).
+        var openPackages = request.StaffId.HasValue
+            ? []
+            : await _context.CustomerPackages.AsNoTracking()
+                .Where(x => tenantIds.Contains(x.TenantId) && x.Status != BerberApp.Domain.Enums.CustomerPackageStatus.Cancelled)
+                .Select(x => new
+                {
+                    x.Price, x.Currency,
+                    Paid = x.Payments.Where(pp => !pp.IsVoid && !pp.IsDeleted).Sum(pp => (decimal?)pp.Amount) ?? 0m,
+                })
+                .ToListAsync(ct);
+        var receivables = openPackages.Where(x => x.Price - x.Paid > 0.009m).ToList();
+        var packageOutstanding = receivables.Sum(x => (x.Price - x.Paid) * rates.GetValueOrDefault(x.Currency.ToUpper(), 1m));
+
         var totalExpenses = allExpenses.Sum(e =>
             e.Amount * rates.GetValueOrDefault(e.Currency.ToUpper(), 1m));
 
@@ -276,7 +365,8 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             .ToList();
 
         // ── Önceki dönem karşılaştırması ────────────────────────────────────
-        var previousTotalInTry = previousAppointments.Sum(EffectivePriceInTry);
+        var previousServiceRevenue = previousAppointments.Sum(EffectivePriceInTry);
+        var previousTotalInTry = previousServiceRevenue + previousPackageRevenue;
         var previousExpenses = expensesWithPrevious
             .Where(e => e.Date >= previousStartUtc && e.Date < startUtc)
             .Sum(e => e.Amount * rates.GetValueOrDefault(e.Currency.ToUpper(), 1m));
@@ -355,25 +445,36 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
             })
             .ToList();
 
+        var serviceRevenue = totalInTry;
         return new EarningsDto
         {
-            TotalEarnings = totalEarnings,
-            TotalInTry = totalInTry,
+            TotalEarnings = totalEarnings + packagePayments.Sum(x => x.Amount),
+            TotalInTry = serviceRevenue + packageRevenue,
             ExchangeRateDate = rateDate,
             TotalAppointments = appointments.Count,
-            AveragePerAppointment = appointments.Count > 0 ? totalInTry / appointments.Count : 0,
-            TodayEarnings = todayEarnings,
+            // Randevu başına ortalama yalnızca hizmet gelirinden: paket parası
+            // satış günü topluca girdiği için ortalamayı şişirirdi.
+            AveragePerAppointment = appointments.Count > 0 ? serviceRevenue / appointments.Count : 0,
+            TodayEarnings = todayEarnings + PackageRevenueBetween(todayStart, todayEnd),
             TodayAppointments = today.Count,
-            WeekEarnings = weekEarnings,
+            WeekEarnings = weekEarnings + PackageRevenueBetween(weekStart, weekStart.AddDays(7)),
             WeekAppointments = thisWeek.Count,
-            MonthEarnings = monthEarnings,
+            MonthEarnings = monthEarnings + PackageRevenueBetween(monthStart, monthStart.AddMonths(1)),
             MonthAppointments = thisMonth.Count,
+            ServiceRevenueInTry = serviceRevenue,
+            PackageRevenueInTry = packageRevenue,
+            PackagePaymentCount = packagePayments.Count,
+            PackageSales = packageSales,
+            PackageOutstandingInTry = packageOutstanding,
+            PackageOutstandingCount = receivables.Count,
+            PreviousServiceRevenueInTry = previousServiceRevenue,
+            PreviousPackageRevenueInTry = previousPackageRevenue,
             ByCurrency = byCurrency,
             Daily = daily,
             ByStaff = byStaff,
             ByService = byService,
             TotalExpenses = totalExpenses,
-            NetProfit = totalInTry - totalExpenses,
+            NetProfit = serviceRevenue + packageRevenue - totalExpenses,
             ExpenseByCategory = expenseByCategory,
             ExpenseDaily = expenseDaily,
             TotalPriceDifference = totalPriceDiff,
@@ -397,3 +498,6 @@ public class GetEarningsHandler : IRequestHandler<GetEarningsQuery, EarningsDto>
         };
     }
 }
+
+internal sealed record PackagePaymentRow(
+    decimal Amount, string Currency, DateTime PaidAt, Guid PackageId, string PackageName, Guid? TemplateId);

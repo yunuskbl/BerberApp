@@ -1,3 +1,4 @@
+import { RouterLink } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -36,7 +37,8 @@ interface BranchOption { id: string; name: string; }
 interface DayRow {
   date:    Date;
   key:     string;   // YYYY-MM-DD
-  income:  number;   // TRY
+  income:  number;   // TRY (hizmet + paket)
+  pkg:     number;   // TRY, gelirin paket tahsilatı kısmı
   count:   number;   // randevu
   expense: number;   // TRY
 }
@@ -47,7 +49,7 @@ interface DayRow {
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule, TranslatePipe,
     TrendChartComponent, BarChartComponent, StackedBarChartComponent,
-    HeatmapChartComponent,
+    HeatmapChartComponent, RouterLink,
   ],
   templateUrl: './reports-list.component.html',
   styleUrl: './reports-list.component.scss'
@@ -512,7 +514,9 @@ export class ReportsListComponent implements OnInit {
 
     this.incomeTrend = buckets.map(b => ({
       label: b.label, fullLabel: b.fullLabel, value: b.income,
-      note: this.countFull(b.count),
+      note: b.pkg > 0
+        ? `${this.countFull(b.count)} · paket tahsilatı ${this.formatCurrency(b.pkg)}`
+        : this.countFull(b.count),
     }));
 
     this.apptTrend = buckets.map(b => ({
@@ -539,16 +543,16 @@ export class ReportsListComponent implements OnInit {
    * yanlış bir süreklilik gösterirdi.
    */
   private buildDayRows(
-    daily: { date: string; earnings: number; appointmentCount: number }[],
+    daily: { date: string; earnings: number; packageEarnings?: number; appointmentCount: number }[],
     expenseDaily: { date: string; total: number }[],
   ): DayRow[] {
     const start = this.parseDayKey(this.reportStartDate);
     const end   = this.parseDayKey(this.reportEndDate);
     if (!start || !end || end < start) return [];
 
-    const income = new Map<string, { value: number; count: number }>();
+    const income = new Map<string, { value: number; pkg: number; count: number }>();
     for (const d of daily) {
-      income.set(this.dayKeyOf(d.date), { value: d.earnings, count: d.appointmentCount });
+      income.set(this.dayKeyOf(d.date), { value: d.earnings, pkg: d.packageEarnings ?? 0, count: d.appointmentCount });
     }
     const expense = new Map<string, number>();
     for (const x of expenseDaily) {
@@ -565,6 +569,7 @@ export class ReportsListComponent implements OnInit {
         date:    new Date(cursor),
         key,
         income:  inc?.value ?? 0,
+        pkg:     inc?.pkg ?? 0,
         count:   inc?.count ?? 0,
         expense: expense.get(key) ?? 0,
       });
@@ -619,19 +624,20 @@ export class ReportsListComponent implements OnInit {
   }
 
   private bucketDays(days: DayRow[], bucket: 'day' | 'week' | 'month') {
-    const groups = new Map<string, { first: Date; last: Date; income: number; count: number; expense: number }>();
+    const groups = new Map<string, { first: Date; last: Date; income: number; pkg: number; count: number; expense: number }>();
     for (const d of days) {
       const key = this.bucketKey(d, bucket);
       const g = groups.get(key);
       if (g) {
         g.last = d.date;
         g.income  += d.income;
+        g.pkg     += d.pkg;
         g.count   += d.count;
         g.expense += d.expense;
       } else {
         groups.set(key, {
           first: d.date, last: d.date,
-          income: d.income, count: d.count, expense: d.expense,
+          income: d.income, pkg: d.pkg, count: d.count, expense: d.expense,
         });
       }
     }
@@ -639,6 +645,7 @@ export class ReportsListComponent implements OnInit {
     return [...groups.entries()].map(([key, g]) => ({
       key,
       income: g.income,
+      pkg: g.pkg,
       count: g.count,
       expense: g.expense,
       ...this.bucketLabels(g.first, g.last, bucket),
@@ -920,6 +927,11 @@ export class ReportsListComponent implements OnInit {
     return Math.round((earnings / this.earnings.totalInTry) * 100);
   }
 
+  packageShare(total: number): number {
+    const sum = this.earnings?.packageRevenueInTry ?? 0;
+    return sum > 0 ? Math.round(total / sum * 100) : 0;
+  }
+
   serviceShare(count: number): number {
     if (!this.earnings?.totalAppointments) return 0;
     return Math.round((count / this.earnings.totalAppointments) * 100);
@@ -985,6 +997,27 @@ export class ReportsListComponent implements OnInit {
     ]);
     for (const s of e.byService) {
       rows.push([s.serviceName, s.currency, s.price.toFixed(2), s.totalEarnings.toFixed(2), String(s.appointmentCount)]);
+    }
+
+    if (e.packageRevenueInTry > 0 || e.packageOutstandingInTry > 0) {
+      rows.push([]);
+      rows.push([lang === 'tr' ? 'PAKET TAHSİLATI' : lang === 'en' ? 'PACKAGE PAYMENTS' : 'ОПЛАТЫ ПАКЕТОВ']);
+      rows.push([
+        lang === 'tr' ? 'Hizmet Geliri (TRY)' : lang === 'en' ? 'Service Income (TRY)' : 'Доход от услуг (TRY)',
+        lang === 'tr' ? 'Paket Tahsilatı (TRY)' : lang === 'en' ? 'Package Payments (TRY)' : 'Оплаты пакетов (TRY)',
+        lang === 'tr' ? 'Ödeme Sayısı' : lang === 'en' ? 'Payments' : 'Платежей',
+        lang === 'tr' ? 'Paket Alacağı — bugün (TRY)' : lang === 'en' ? 'Package Receivables — today (TRY)' : 'Долг по пакетам — сегодня (TRY)',
+      ]);
+      rows.push([e.serviceRevenueInTry.toFixed(2), e.packageRevenueInTry.toFixed(2), String(e.packagePaymentCount), e.packageOutstandingInTry.toFixed(2)]);
+      if (e.packageSales.length > 0) {
+        rows.push([
+          lang === 'tr' ? 'Paket' : lang === 'en' ? 'Package' : 'Пакет',
+          lang === 'tr' ? 'Müşteri Sayısı' : lang === 'en' ? 'Customers' : 'Клиентов',
+          lang === 'tr' ? 'Ödeme Sayısı' : lang === 'en' ? 'Payments' : 'Платежей',
+          lang === 'tr' ? 'Tahsilat (TRY)' : lang === 'en' ? 'Collected (TRY)' : 'Получено (TRY)',
+        ]);
+        for (const p of e.packageSales) rows.push([p.name, String(p.packageCount), String(p.paymentCount), p.total.toFixed(2)]);
+      }
     }
 
     if (e.byCurrency.length > 1) {

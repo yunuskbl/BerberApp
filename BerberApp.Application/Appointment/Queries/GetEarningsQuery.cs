@@ -28,6 +28,20 @@ public class EarningsDto
     public decimal MonthEarnings { get; set; }
     public int MonthAppointments { get; set; }
 
+    // ── Gelir kaynakları ────────────────────────────────────────────────────
+    // TotalInTry = ServiceRevenueInTry + PackageRevenueInTry. Personel, hizmet
+    // ve yoğunluk kırılımları randevulardan; paket tahsilatı yalnızca toplamlarda.
+    public decimal ServiceRevenueInTry { get; set; }
+    /// <summary>Dönemde tahsil edilen (iptal edilmemiş) paket ödemeleri, tahsilat gününe göre.</summary>
+    public decimal PackageRevenueInTry { get; set; }
+    public int PackagePaymentCount { get; set; }
+    public List<PackageSalesDto> PackageSales { get; set; } = new();
+    /// <summary>Bugün itibarıyla iptal edilmemiş paketlerden alınacak kalan borç (döneme bağlı değil).</summary>
+    public decimal PackageOutstandingInTry { get; set; }
+    public int PackageOutstandingCount { get; set; }
+    public decimal PreviousServiceRevenueInTry { get; set; }
+    public decimal PreviousPackageRevenueInTry { get; set; }
+
     public List<CurrencyEarningDto> ByCurrency { get; set; } = new();
     public List<DailyEarningDto> Daily { get; set; } = new();
     public List<StaffEarningDto> ByStaff { get; set; } = new();
@@ -137,10 +151,22 @@ public class CurrencyEarningDto
     public int AppointmentCount { get; set; }
 }
 
+public class PackageSalesDto
+{
+    public string Name { get; set; } = string.Empty;
+    /// <summary>Dönemde ödeme alınan farklı paket (müşteri) sayısı.</summary>
+    public int PackageCount { get; set; }
+    public int PaymentCount { get; set; }
+    public decimal Total { get; set; }
+}
+
 public class DailyEarningDto
 {
     public DateTime Date { get; set; }
+    /// <summary>Hizmet + paket tahsilatı.</summary>
     public decimal Earnings { get; set; }
+    /// <summary>Bunun paket tahsilatı kısmı.</summary>
+    public decimal PackageEarnings { get; set; }
     public int AppointmentCount { get; set; }
 }
 

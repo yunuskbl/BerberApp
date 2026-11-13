@@ -124,6 +124,11 @@
         <div class="pnl-value">{{ formatCurrency(earnings.totalInTry) }}</div>
         <div class="pnl-sub">
           {{ earnings.totalAppointments }} randevu
+          @if (earnings.packageRevenueInTry > 0) {
+            <span class="pnl-pkg" title="Hizmet geliri + paket tahsilatı">
+              + paket {{ formatCurrency(earnings.packageRevenueInTry) }}
+            </span>
+          }
           @if (delta(earnings.totalInTry, earnings.previousTotalInTry); as d) {
             <span class="delta" [class.delta--good]="d.good" [class.delta--bad]="!d.good"
                   [title]="'Önceki dönem: ' + previousPeriodLabel + ' · ' + formatCurrency(earnings.previousTotalInTry)">
@@ -212,6 +217,21 @@
           <div class="stat-value">{{ formatCurrency(earnings.weekEarnings) }}</div>
           <div class="stat-sub">{{ earnings.weekAppointments }} {{ 'reports.appt' | translate }}</div>
         </div>
+        @if (earnings.packageRevenueInTry > 0 || earnings.packageOutstandingInTry > 0) {
+          <div class="stat-card stat-card--teal">
+            <div class="stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>
+            </div>
+            <div class="stat-label">Paket Tahsilatı</div>
+            <div class="stat-value">{{ formatCurrency(earnings.packageRevenueInTry) }}</div>
+            <div class="stat-sub">
+              {{ earnings.packagePaymentCount }} ödeme
+              @if (earnings.packageOutstandingInTry > 0) {
+                · <span title="Bugün itibarıyla paketlerden alınacak kalan borç">alacak {{ formatCurrency(earnings.packageOutstandingInTry) }}</span>
+              }
+            </div>
+          </div>
+        }
         @if (earnings.priceDifferenceCount > 0) {
           <div class="stat-card stat-card--clickable"
                [class.stat-card--green]="earnings.totalPriceDifference >= 0"
@@ -611,6 +631,64 @@
           }
         </div>
       </div>
+
+      <!-- Paket satışları (tahsilat) -->
+      @if (earnings.packageSales.length > 0 || earnings.packageOutstandingInTry > 0) {
+        <div class="report-section">
+          <div class="section-title-row">
+            <div class="section-icon section-icon--teal">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>
+            </div>
+            <h3>Paket Tahsilatı</h3>
+            <span class="chart-chip" title="Paket parası, ödemenin alındığı güne yazılır">tahsilat gününe göre</span>
+          </div>
+          <div class="table-card">
+            @if (earnings.packageSales.length > 0) {
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Paket</th>
+                    <th>Müşteri</th>
+                    <th>Ödeme</th>
+                    <th>Tahsilat</th>
+                    <th class="col-share">Pay</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of earnings.packageSales; track p.name) {
+                    <tr>
+                      <td><span class="service-name">{{ p.name }}</span></td>
+                      <td class="center-cell">{{ p.packageCount }}</td>
+                      <td class="center-cell">{{ p.paymentCount }}</td>
+                      <td class="amount-cell">{{ formatCurrency(p.total) }}</td>
+                      <td class="share-cell">
+                        <div class="share-wrap">
+                          <div class="share-bar-bg">
+                            <div class="share-bar-fill share-bar-fill--teal" [style.width.%]="packageShare(p.total)"></div>
+                          </div>
+                          <span class="share-pct">%{{ packageShare(p.total) }}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <div class="table-empty-state">
+                <span class="table-empty-icon">📦</span>
+                <p>Bu dönemde paket ödemesi alınmadı.</p>
+              </div>
+            }
+            @if (earnings.packageOutstandingInTry > 0) {
+              <div class="pkg-receivable">
+                <span>Paketlerden alınacak kalan borç <small>(bugün itibarıyla · {{ earnings.packageOutstandingCount }} paket)</small></span>
+                <a routerLink="/packages" class="pkg-receivable-amount">{{ formatCurrency(earnings.packageOutstandingInTry) }} →</a>
+              </div>
+            }
+          </div>
+          <p class="section-note">Paket seansları randevuda 0 ₺ olarak kapanır, parası burada sayılır; personel ve hizmet tablolarına girmez.</p>
+        </div>
+      }
 
     </div><!-- /tab-section income -->
 
