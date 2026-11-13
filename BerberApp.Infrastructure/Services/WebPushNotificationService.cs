@@ -122,7 +122,7 @@ public sealed class WebPushNotificationService : IPushNotificationService
                 title = m.Title,
                 body = m.Body,
                 icon = "/icon-maskable-192.png",
-                badge = "/favicon-192.png",
+                badge = "/badge-96.png",   // Android durum çubuğu: yalnızca saydamlık kullanılır, beyaz işaret
                 tag = m.Tag,
                 renotify = m.Tag != null,
                 data = new
