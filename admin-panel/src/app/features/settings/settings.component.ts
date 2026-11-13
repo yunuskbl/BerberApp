@@ -17,6 +17,8 @@ import { LanguageService } from '../../core/services/language.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { SalonClosureService, SalonClosure } from '../../core/services/salon-closure.service';
 import { CustomCalendarComponent } from '../../shared/components/custom-calendar/custom-calendar.component';
+import { PushToggleComponent } from '../../shared/components/push-toggle/push-toggle.component';
+import { PushService } from '../../core/services/push.service';
 import { catchError, of } from 'rxjs';
 import { BranchService } from '../../core/services/branch.service';
 import QRCode from 'qrcode';
@@ -40,7 +42,7 @@ function numberValidator(ctrl: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, DatePipe, ReactiveFormsModule, FormsModule, RouterModule, TranslatePipe, CustomCalendarComponent],
+  imports: [CommonModule, DatePipe, ReactiveFormsModule, FormsModule, RouterModule, TranslatePipe, CustomCalendarComponent, PushToggleComponent],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })
@@ -139,7 +141,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private salonClosureService: SalonClosureService,
     private branchService: BranchService,
     public langService: LanguageService,
+    public push: PushService,
   ) {
+    // Kart, sunucuda bildirim yapılandırılmışsa görünür; durumu hemen yükle.
+    this.push.init();
     this.salonForm = this.fb.group({
       name:              ['', Validators.required],
       phone:             ['', phoneValidator],

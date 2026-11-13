@@ -3,6 +3,8 @@
   <p class="page-sub">Gelecek ve geçmiş tüm randevularınız</p>
 </div>
 
+<app-push-toggle audience="staff" [compact]="true" />
+
 @if (isLoading) {
   <div class="loading-state">
     <div class="spinner"></div>

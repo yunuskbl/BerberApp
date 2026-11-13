@@ -21,9 +21,12 @@ public abstract class BaseApiController : ControllerBase
     protected Guid TenantId => Guid.Parse(
         User.Claims.First(x => x.Type == "tenant_id").Value);
 
-    // JWT'den UserId'yi otomatik al
+    // JWT'den UserId'yi otomatik al. JWT doğrulaması "sub" claim'ini varsayılan
+    // olarak NameIdentifier'a çeviriyor; yalnızca "sub" aramak her gerçek
+    // istekte "Sequence contains no matching element" ile 500 veriyordu
+    // (AuthController ikisine de bakıyor, burada da aynısı).
     protected Guid UserId => Guid.Parse(
-        User.Claims.First(x => x.Type == "sub").Value);
+        (User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub"))!.Value);
 
     // JWT'den StaffId'yi al (sadece Role=Staff için dolu, diğerleri null)
     protected Guid? CurrentStaffId

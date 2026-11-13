@@ -225,7 +225,8 @@ public class BookingController : ControllerBase
     [HttpPost("{subdomain}/appointments")]
     public async Task<IActionResult> CreateAppointment(
     string subdomain,
-    [FromBody] CustomerBookingRequest request)
+    [FromBody] CustomerBookingRequest request,
+    [FromServices] BerberApp.Api.Services.PushEvents push)
     {
         var tenant = await _context.Tenants
             .FirstOrDefaultAsync(x => x.Subdomain == subdomain && x.IsActive);
@@ -433,6 +434,9 @@ public class BookingController : ControllerBase
             }
         }
 
+        // İşletme sahibine ve randevunun personeline anlık bildirim (arka planda).
+        push.AppointmentBooked(tenant.Id, request.StaffId, customer.FullName, result.ServiceName, result.StartTime, package is not null);
+
         return Ok(new { success = true, data = result, appointmentId = result.Id });
     }
 
@@ -506,7 +510,8 @@ public class BookingController : ControllerBase
     public async Task<IActionResult> CancelAppointment(
         string subdomain,
         Guid appointmentId,
-        [FromQuery] string phone)
+        [FromQuery] string phone,
+        [FromServices] BerberApp.Api.Services.PushEvents push)
     {
         if (string.IsNullOrWhiteSpace(phone))
             return BadRequest(new { success = false, message = "Telefon numarası gerekli." });
@@ -519,7 +524,7 @@ public class BookingController : ControllerBase
 
         var appt = await _context.Appointments
             .Where(x => x.Id == appointmentId && x.TenantId == tenant.Id)
-            .Select(x => new { x.CustomerId, x.Status, x.StartTime })
+            .Select(x => new { x.CustomerId, x.Status, x.StartTime, x.StaffId, CustomerName = x.Customer.FullName })
             .FirstOrDefaultAsync();
 
         if (appt is null)
@@ -551,6 +556,8 @@ public class BookingController : ControllerBase
             Id = appointmentId,
             TenantId = tenant.Id
         });
+
+        push.AppointmentCancelledByCustomer(tenant.Id, appt.StaffId, appt.CustomerName, appt.StartTime);
 
         return Ok(new { success = true, message = "Randevunuz iptal edildi." });
     }

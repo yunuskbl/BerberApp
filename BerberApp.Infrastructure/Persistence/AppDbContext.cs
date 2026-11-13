@@ -41,6 +41,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<CustomerPackage> CustomerPackages => Set<CustomerPackage>();
     public DbSet<PackageSession> PackageSessions => Set<PackageSession>();
     public DbSet<PackagePayment> PackagePayments => Set<PackagePayment>();
+    public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -79,7 +80,10 @@ public class AppDbContext : DbContext, IAppDbContext
             if (entry.State == EntityState.Modified)
                 entry.Entity.UpdatedAt = DateTime.UtcNow;
 
-            if (entry.State == EntityState.Deleted)
+            // Bildirim aboneliği teknik bir kayıt ve Endpoint'i benzersiz: yumuşak
+            // silinirse aynı cihaz yeniden abone olurken (filtre onu görmediği için)
+            // yeni satır eklenmeye çalışılır ve benzersizlik ihlaliyle 500 döner.
+            if (entry.State == EntityState.Deleted && entry.Entity is not BerberApp.Domain.Entities.PushSubscription)
             {
                 entry.State = EntityState.Modified;
                 entry.Entity.IsDeleted = true;

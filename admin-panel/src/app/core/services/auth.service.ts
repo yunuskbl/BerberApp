@@ -5,6 +5,7 @@ import { LoginRequest, LoginResponse } from '../models/auth.model';
 import { ApiResponse } from '../models/api-response.model';
 import { environment } from '../../../environments/environment';
 import { jwtDecode } from 'jwt-decode';
+import { PushService } from './push.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -81,6 +82,7 @@ export class AuthService {
       catchError(() => of(null))
     ).subscribe();
 
+    PushService.forgetDevice();
     this.clearLocalStorage();
   }
 

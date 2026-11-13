@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { InstallCardComponent } from '../../shared/components/install-card/install-card.component';
+import { PushPromptComponent } from '../../shared/components/push-prompt/push-prompt.component';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AppointmentService } from '../../core/services/appointment.service';
@@ -25,7 +26,7 @@ interface Stat {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslatePipe, InstallCardComponent],
+  imports: [CommonModule, RouterModule, TranslatePipe, InstallCardComponent, PushPromptComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })

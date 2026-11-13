@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { PushToggleComponent } from '../../../shared/components/push-toggle/push-toggle.component';
 
 interface StaffAppointment {
   id: string;
@@ -17,7 +18,7 @@ interface StaffAppointment {
 @Component({
   selector: 'app-staff-appointments',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PushToggleComponent],
   templateUrl: './staff-appointments.component.html',
   styleUrl: './staff-appointments.component.scss',
 })

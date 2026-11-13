@@ -167,12 +167,14 @@ public class PublicPackagesController : ControllerBase
     /// 30 günde yapılmış, iptal edilmemiş seanslar onaylanabilir.
     /// </summary>
     [HttpPost("{token}/sessions/{sessionId:guid}/confirm")]
-    public async Task<IActionResult> ConfirmFromTrackingPage(string token, Guid sessionId, CancellationToken ct)
+    public async Task<IActionResult> ConfirmFromTrackingPage(
+        string token, Guid sessionId, [FromServices] BerberApp.Api.Services.PushEvents push, CancellationToken ct)
     {
         if (!LooksLikeToken(token)) return NotFoundResponse("Paket bulunamadı.");
 
         var s = await _context.PackageSessions
-            .Include(x => x.CustomerPackage)
+            .Include(x => x.CustomerPackage).ThenInclude(p => p.Customer)
+            .Include(x => x.CustomerPackage).ThenInclude(p => p.Sessions)
             .FirstOrDefaultAsync(x => x.Id == sessionId && x.CustomerPackage.PublicToken == token, ct);
         if (s is null) return NotFoundResponse("Seans bulunamadı.");
         if (s.IsVoid) return BadRequest(new { success = false, message = "Bu seans salon tarafından iptal edilmiş." });
@@ -183,6 +185,12 @@ public class PublicPackagesController : ControllerBase
                 return BadRequest(new { success = false, message = "Bu seans artık onaylanamıyor." });
             s.CustomerConfirmedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync(ct);
+
+            // Salonda QR okutulduğunda panel bunu zaten canlı gösteriyor; uzaktan
+            // (takip sayfasından) verilen onayı işletme ancak bildirimle öğrenir.
+            var pkg = s.CustomerPackage;
+            var number = R.Numbered(pkg.Sessions).FirstOrDefault(x => x.Session.Id == s.Id).Number;
+            push.PackageSessionConfirmed(pkg.TenantId, pkg.Id, R.FirstName(pkg.Customer?.FullName), pkg.Name, number);
         }
         return Ok(new { success = true, message = "Seans onaylandı." });
     }

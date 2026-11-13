@@ -42,6 +42,7 @@ namespace BerberApp.Application.Common.Interfaces
         DbSet<BerberApp.Domain.Entities.CustomerPackage> CustomerPackages { get; }
         DbSet<BerberApp.Domain.Entities.PackageSession> PackageSessions { get; }
         DbSet<BerberApp.Domain.Entities.PackagePayment> PackagePayments { get; }
+        DbSet<BerberApp.Domain.Entities.PushSubscription> PushSubscriptions { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

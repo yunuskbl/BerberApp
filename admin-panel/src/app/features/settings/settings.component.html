@@ -305,6 +305,20 @@
         </button>
       </div>
 
+      <!-- ── Anlık bildirimler (bu cihaz) ── -->
+      @if (push.state() !== 'hidden') {
+        <div class="settings-card">
+          <div class="card-header">
+            <div class="card-icon">📲</div>
+            <div>
+              <h3>Anlık bildirimler</h3>
+              <p>Bu cihaz için · telefonda ve bilgisayarda ayrı ayrı açılır</p>
+            </div>
+          </div>
+          <app-push-toggle audience="owner" />
+        </div>
+      }
+
       <!-- ── Profil Bilgileri ── -->
       <div class="settings-card">
         <div class="card-header">

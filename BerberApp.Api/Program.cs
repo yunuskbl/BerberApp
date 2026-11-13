@@ -148,6 +148,11 @@ else // Hybrid — her iki servisi de kaydet, yönlendirmeyi HybridWhatsAppServi
     builder.Services.AddScoped<IWhatsAppService, HybridWhatsAppService>();
 }
 builder.Services.AddHttpClient<IWppConnectManagementService, WppConnectManagementService>(SessionTimeout);
+// Anlık bildirim (Web Push). Anahtarlar boşsa özellik kapalı kalır.
+builder.Services.Configure<BerberApp.Application.Common.Settings.WebPushSettings>(
+    builder.Configuration.GetSection("WebPush"));
+builder.Services.AddHttpClient<IPushNotificationService, WebPushNotificationService>(c => c.Timeout = TimeSpan.FromSeconds(15));
+builder.Services.AddScoped<BerberApp.Api.Services.PushEvents>();
 // Sessiz kurtarma kararları (hangi oturum ne zaman yeniden denenir, hangisi
 // elle bağlanıyor) API ömrü boyunca bellekte; iş ve denetleyiciler paylaşıyor.
 builder.Services.AddSingleton(_ => new BerberApp.Application.Common.Services.WhatsAppSessionRecoveryState());

@@ -88,6 +88,12 @@ services:
       - Company__Phone=${COMPANY_PHONE:-}
       - Company__TaxInfo=${COMPANY_TAX_INFO:-}
 
+      # Anlık bildirim (Web Push). Boşsa bildirimler kapalı kalır.
+      # Anahtar üretmek için: docker run --rm node:22-alpine npx -y web-push generate-vapid-keys
+      - WebPush__PublicKey=${WEBPUSH_PUBLIC_KEY:-}
+      - WebPush__PrivateKey=${WEBPUSH_PRIVATE_KEY:-}
+      - WebPush__Subject=${WEBPUSH_SUBJECT:-mailto:info@ayarliyo.com}
+
       # Uygulama URL
       - AppSettings__BaseUrl=${APP_BASE_URL}
       - AppSettings__FrontendBaseUrl=${APP_BASE_URL}
